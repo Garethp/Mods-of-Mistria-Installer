@@ -13,7 +13,8 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         new MistGenerator(),
         new PointsGenerator(),
         new ScheduleGenerator(),
-        new SimpleConversationsGenerator()
+        new SimpleConversationsGenerator(),
+        new CostumeGenerator()
     ];
 
     private readonly List<IModuleInstaller> _installers = [
@@ -24,6 +25,7 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         new PointsInstaller(),
         new ScheduleInstaller(),
         new ScriptsInstaller(),
+        new GraphicsInstaller(),
     ];
     
     public void InstallMod(string modLocation)
