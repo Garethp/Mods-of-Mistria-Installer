@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Garethp.ModsOfMistriaInstaller.Installer.UMT;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstaller.Installer.Generator;
 
@@ -10,6 +11,7 @@ public class CostumeGenerator : IGenerator
     {
         var information = new GeneratedInformation();
         var costumeDirectory = Path.Combine(modLocation, "costumes");
+        var newSprites = new List<SpriteData>();
 
         foreach (var costumeFile in Directory.GetFiles(costumeDirectory))
         {
@@ -32,7 +34,6 @@ public class CostumeGenerator : IGenerator
                 /**
                  * @TODO:
                  * 1. Add the costume to the AssetParts list in the information object.
-                 * 5. Add the sprites to UMT
                  * 6. Map ui_sub_category to the correct naming convention. IE: "back" -> "back_gear"
                  */
 
@@ -47,6 +48,19 @@ public class CostumeGenerator : IGenerator
                         continue;
                     }
                     
+                    // @TODO: Handle trailing slashes in the animationData string
+                    newSprites.Add(new ()
+                    {
+                        Name = $"spr_player_{name}_{animationName}",
+                        Location = animationData.ToString(),
+                        HasFrames = true,
+                        BoundingBoxMode = 1,
+                        DeleteCollisionMask = true,
+                        SpecialType = true,
+                        SpecialTypeVersion = 3,
+                        SpecialPlaybackSpeed = 40,
+                        IsPlayerSprite = true,
+                    });
                     assetParts.Add(animationName, $"spr_player_{name}_{animationName}");
                 }
                 
@@ -76,6 +90,31 @@ public class CostumeGenerator : IGenerator
                     { $"spr_ui_item_wearable_{name}", $"spr_ui_item_wearable_{name}_outline" }
                 };
 
+                newSprites.AddRange([
+                    new ()
+                    {
+                        Name = $"spr_player_{name}_lut",
+                        Location = costumeData["lutFile"].ToString(),
+                        HasFrames = false,
+                        IsPlayerSprite = true,
+                    },
+                    new ()
+                    {
+                        Name = $"spr_ui_item_wearable_{name}",
+                        Location = costumeData["uiItem"].ToString(),
+                        HasFrames = false,
+                        IsUiSprite = true,
+                    },
+                    new ()
+                    {
+                        Name = $"spr_ui_item_wearable_{name}_outline",
+                        Location = costumeData["outlineFile"].ToString(),
+                        HasFrames = false,
+                        IsUiSprite = true,
+                    }
+                ]);
+                
+                information.Sprites.AddRange(newSprites);
                 information.Localisations.Add(localisation);
                 information.Fiddles.Add(fiddle);
                 information.Outlines.Add(outline);

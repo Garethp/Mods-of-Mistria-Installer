@@ -35,5 +35,6 @@ public class GeneratedInformation
         Schedules.AddRange(other.Schedules);
         Outlines.AddRange(other.Outlines);
         AssetParts.AddRange(other.AssetParts);
+        Sprites.AddRange(other.Sprites);
     }
 }
