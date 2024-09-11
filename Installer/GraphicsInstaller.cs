@@ -7,6 +7,8 @@ public class GraphicsInstaller : IModuleInstaller
 {
     public void Install(string fieldsOfMistriaLocation, GeneratedInformation information)
     {
+        // if (information.Sprites.Count == 0) return;
+        
         var dataFile = new FileInfo(Path.Combine(fieldsOfMistriaLocation, "data.win"));
 
         using var fileRead = dataFile.OpenRead();
@@ -19,19 +21,22 @@ public class GraphicsInstaller : IModuleInstaller
             {
                 Name = "spr_player_back_gear_basic_cape2_lut",
                 Location = "lut.png",
-                HasFrames = false
+                HasFrames = false,
+                IsPlayerSprite = true,
             },
             new ()
             {
-                Name = "spr_ui_item_wearable_back_gear_basic_cape2.png",
+                Name = "spr_ui_item_wearable_back_gear_basic_cape2",
                 Location = "ui.png",
-                HasFrames = false
+                HasFrames = false,
+                IsUiSprite = true,
             },
             new ()
             {
                 Name = "spr_ui_item_wearable_back_gear_basic_cape2_outline",
                 Location = "outline.png",
-                HasFrames = false
+                HasFrames = false,
+                IsUiSprite = true,
             },
             new ()
             {
@@ -43,18 +48,14 @@ public class GraphicsInstaller : IModuleInstaller
                 SpecialType = true,
                 SpecialTypeVersion = 3,
                 SpecialPlaybackSpeed = 40,
+                IsPlayerSprite = true,
             }
         };
         
         new GraphicsImporter().ImportSpriteData(
             "D:\\SteamLibrary\\steamapps\\common\\RimWorld\\Mods\\FoMInstaller\\olrics_love\\images",
             fieldsOfMistriaLocation, gmData, spritesToImport);
-
-
-        new GraphicsImporter().Import(
-            "D:\\SteamLibrary\\steamapps\\common\\RimWorld\\Mods\\FoMInstaller\\olrics_love\\images",
-            fieldsOfMistriaLocation, gmData, true);
-
+        
         using var fileWrite = dataFile.OpenWrite();
         UndertaleIO.Write(fileWrite, gmData);
         fileWrite.Close();

@@ -41,7 +41,7 @@ public class GraphicsImporter
 
         var prefix = outName.Replace(Path.GetExtension(outName), "");
         var atlasCount = 0;
-        
+
         foreach (var atlas in packer.Atlasses)
         {
             var atlasName = Path.Combine(packDir, String.Format(prefix + "{0:000}" + ".png", atlasCount));
@@ -79,11 +79,128 @@ public class GraphicsImporter
 
                 SetTextureTargetBounds(texturePageItem, stripped, node);
 
+                var spriteData =
+                    sprites.Find(sprite =>
+                        (sprite.HasFrames && Path.Combine(sourcePath, sprite.Location) ==
+                            Path.GetDirectoryName(node.Texture.Source))
+                        || Path.Combine(sourcePath, sprite.Location) == node.Texture.Source
+                    );
+
+                spriteData?.PageItems.Add(stripped, texturePageItem);
+
                 // ImportSprite(gameData, sprFrameRegex, stripped, texturePageItem, node, atlasBitmap);
             }
 
             // Increment atlas
             atlasCount++;
+        }
+
+        sprites.ForEach(sprite => ImportSprite(gameData, sprite));
+    }
+
+    public void ImportSprite(UndertaleData gameData, SpriteData spriteData)
+    {
+        var count = spriteData.PageItems.Count;
+        if (count == 0) return;
+
+        var pageItems = spriteData
+            .PageItems
+            .ToList()
+            .Select(item =>
+            {
+                var indexMatch = new Regex(@"(\d+)$").Match(item.Key);
+                if (!indexMatch.Success) return item;
+
+                var indexNumber = int.Parse(indexMatch.Groups[1].Value);
+                var index = indexNumber.ToString($"D{count.ToString().Length}");
+                return new KeyValuePair<string, UndertaleTexturePageItem>(index, item.Value);
+            })
+            .OrderBy(item => item.Key)
+            .Select(item => item.Value)
+            .ToList();
+
+
+        var sprite = gameData.Sprites.ByName(spriteData.Name);
+
+        if (sprite is null)
+        {
+            sprite = new UndertaleSprite()
+            {
+                Name = gameData.Strings.MakeString(spriteData.Name),
+                Width = pageItems[0].SourceWidth,
+                Height = pageItems[0].SourceHeight,
+                MarginLeft = 0,
+                MarginRight = pageItems[0].SourceWidth - 1,
+                MarginTop = 0,
+                MarginBottom = pageItems[0].SourceHeight - 1,
+                OriginX = 0,
+                OriginY = 0
+            };
+
+            gameData.Sprites.Add(sprite);
+        }
+
+        if (spriteData.DeleteCollisionMask)
+            sprite.CollisionMasks.Clear();
+
+        if (spriteData.IsPlayerSprite)
+        {
+            var playerInformation = gameData.TextureGroupInfo.ByName("player");
+            if (playerInformation.Sprites.All(item => item.Resource.Name != sprite.Name))
+                playerInformation.Sprites.Add(new UndertaleResourceById<UndertaleSprite, UndertaleChunkSPRT>(sprite));
+        }
+
+        if (spriteData.IsUiSprite)
+        {
+            var uiInformation = gameData.TextureGroupInfo.ByName("ui");
+            if (uiInformation.Sprites.All(item => item.Resource.Name != sprite.Name))
+                uiInformation.Sprites.Add(new UndertaleResourceById<UndertaleSprite, UndertaleChunkSPRT>(sprite));
+        }
+
+        sprite.BBoxMode = spriteData.BoundingBoxMode;
+        sprite.IsSpecialType = spriteData.SpecialType;
+        sprite.SVersion = spriteData.SpecialTypeVersion;
+        sprite.GMS2PlaybackSpeed = spriteData.SpecialPlaybackSpeed;
+
+        Dictionary<string, UndertaleEmbeddedTexture> allTextures = [];
+
+        for (var pageIndex = 0; pageIndex < pageItems.Count; pageIndex++)
+        {
+            allTextures[pageItems[pageIndex].TexturePage.Name.ToString()] = pageItems[pageIndex].TexturePage;
+
+            var textureEntry = new UndertaleSprite.TextureEntry()
+            {
+                Texture = pageItems[pageIndex]
+            };
+
+            if (sprite.Textures.Count - 1 < pageIndex)
+            {
+                sprite.Textures.Add(textureEntry);
+            }
+            else
+            {
+                sprite.Textures[pageIndex] = textureEntry;
+            }
+        }
+
+
+        foreach (var embeddedTexture in allTextures.Values.ToList())
+        {
+            if (spriteData.IsPlayerSprite)
+            {
+                var playerInformation = gameData.TextureGroupInfo.ByName("player");
+                if (playerInformation.TexturePages.All(item => item.Resource.Name != embeddedTexture.Name))
+                    playerInformation.TexturePages.Add(
+                        new UndertaleResourceById<UndertaleEmbeddedTexture, UndertaleChunkTXTR>(embeddedTexture));
+            }
+            
+            if (spriteData.IsUiSprite)
+            {
+                var uiInformation = gameData.TextureGroupInfo.ByName("ui");
+                if (uiInformation.TexturePages.All(item => item.Resource.Name != embeddedTexture.Name))
+                    uiInformation.TexturePages.Add(
+                        new UndertaleResourceById<UndertaleEmbeddedTexture, UndertaleChunkTXTR>(embeddedTexture));
+            }
         }
     }
 

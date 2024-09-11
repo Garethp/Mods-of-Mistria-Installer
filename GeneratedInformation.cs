@@ -1,4 +1,5 @@
 ﻿
+using Garethp.ModsOfMistriaInstaller.Installer.UMT;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstaller;
@@ -21,6 +22,8 @@ public class GeneratedInformation
     public List<JObject> Outlines = [];
     
     public List<JObject> AssetParts = [];
+
+    public List<SpriteData> Sprites = [];
     
     public void Merge(GeneratedInformation other)
     {

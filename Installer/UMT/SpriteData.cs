@@ -1,4 +1,6 @@
-﻿namespace Garethp.ModsOfMistriaInstaller.Installer.UMT;
+﻿using UndertaleModLib.Models;
+
+namespace Garethp.ModsOfMistriaInstaller.Installer.UMT;
 
 public class SpriteData
 {
@@ -8,13 +10,19 @@ public class SpriteData
     
     public bool HasFrames;
 
-    public int BoundingBoxMode;
+    public uint BoundingBoxMode;
     
     public bool DeleteCollisionMask;
     
     public bool SpecialType;
     
-    public int SpecialTypeVersion;
+    public uint SpecialTypeVersion;
     
     public int SpecialPlaybackSpeed;
+    
+    public bool IsPlayerSprite;
+
+    public bool IsUiSprite;
+
+    public Dictionary<string, UndertaleTexturePageItem> PageItems = [];
 }
