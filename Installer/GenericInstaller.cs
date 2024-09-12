@@ -20,16 +20,19 @@ public abstract class GenericInstaller(List<string> fileNamePaths) : IModuleInst
         {
             File.Copy(
                 Path.Combine(location, $"{fileName}.json"),
-                Path.Combine(location, $"${fileName}.bak.json")
+                Path.Combine(location, $"{fileName}.bak.json")
             );
         }
+        
+        var newInformation = GetNewInformation(information);
+        if (newInformation.Count == 0) return;
         
         var existingInformation = JObject.Parse(
             File.ReadAllText(Path.Combine(location, $"{fileName}.bak.json"))
         );
 
         var allSources = new List<JObject> { existingInformation };
-        allSources.AddRange(GetNewInformation(information));
+        allSources.AddRange(newInformation);
 
         var merged = new JObject();
         

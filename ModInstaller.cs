@@ -1,5 +1,7 @@
-﻿using Garethp.ModsOfMistriaInstaller.Installer;
+﻿using System.Diagnostics;
+using Garethp.ModsOfMistriaInstaller.Installer;
 using Garethp.ModsOfMistriaInstaller.Installer.Generator;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstaller;
 
@@ -13,7 +15,8 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         new MistGenerator(),
         new PointsGenerator(),
         new ScheduleGenerator(),
-        new SimpleConversationsGenerator()
+        new SimpleConversationsGenerator(),
+        new CostumeGenerator()
     ];
 
     private readonly List<IModuleInstaller> _installers = [
@@ -24,32 +27,69 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         new PointsInstaller(),
         new ScheduleInstaller(),
         new ScriptsInstaller(),
+        new GraphicsInstaller(),
     ];
     
-    public void InstallMod(string modLocation)
+    public void InstallMods(List<string> modLocations)
     {
         if (!Directory.Exists(fieldsOfMistriaLocation))
         {
             throw new DirectoryNotFoundException("The Fields of Mistria location does not exist.");
         }
-        
-        if (!Directory.Exists(modLocation))
+
+        if (IsFreshInstall())
         {
-            throw new DirectoryNotFoundException("The mod location does not exist.");
+            DeleteIfExists([fieldsOfMistriaLocation, "__fiddle__.bak.json"]);
+            DeleteIfExists([fieldsOfMistriaLocation, "__mist__.bak.json"]);
+            DeleteIfExists([fieldsOfMistriaLocation, "t2_input.bak.json"]);
+            DeleteIfExists([fieldsOfMistriaLocation, "t2_output.bak.json"]);
+            DeleteIfExists([fieldsOfMistriaLocation, "localization.bak.json"]);
+            DeleteIfExists([fieldsOfMistriaLocation, "animation", "generated", "outlines.bak.json"]);
+            DeleteIfExists([fieldsOfMistriaLocation, "animation", "generated", "player_asset_parts.bak.json"]);
+            DeleteIfExists([fieldsOfMistriaLocation, "room_data", "points.bak.json"]);
         }
 
         var generatedInformation = new GeneratedInformation();
-
-        foreach (var generator in _generators.Where(generator => generator.CanGenerate(modLocation)))
+        
+        foreach (var modLocation in modLocations)
         {
-            generatedInformation.Merge(generator.Generate(modLocation));
+            if (!Directory.Exists(modLocation))
+            {
+                throw new DirectoryNotFoundException("The mod location does not exist.");
+            }
+            
+            Console.WriteLine("Generating information for " + modLocation);
+            foreach (var generator in _generators.Where(generator => generator.CanGenerate(modLocation)))
+            {
+                generatedInformation.Merge(generator.Generate(modLocation));
+            }
         }
 
+        var timer = new Stopwatch();
+        
         foreach (var installer in _installers)
         {
+            timer.Restart();
             installer.Install(fieldsOfMistriaLocation, generatedInformation);
+            timer.Stop();
+            Console.WriteLine($"Ran {installer.GetType()} in {timer}");
         }
         
-        return;
+        new ChecksumInstaller().Install(fieldsOfMistriaLocation, generatedInformation);
+    }
+
+    bool IsFreshInstall()
+    {
+        var checksums = JObject.Parse(File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "checksums.json")));
+
+        return checksums["mods_installed"]?.Value<bool>() != true;
+    }
+    
+    void DeleteIfExists(string[] paths)
+    {
+        if (File.Exists(Path.Combine(paths)))
+        {
+            File.Delete(Path.Combine(paths));
+        }
     }
 }

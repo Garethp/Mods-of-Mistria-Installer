@@ -19,6 +19,8 @@ public class ScheduleInstaller : IModuleInstaller
             );
         }
         
+        if (information.Schedules.Count == 0) return;
+        
         var existingInformation = JObject.Parse(
             File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "t2_output.bak.json"))
         );

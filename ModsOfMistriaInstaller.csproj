@@ -7,6 +7,11 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>Garethp.ModsOfMistriaInstaller</RootNamespace>
+        <PublishSingleFile>true</PublishSingleFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DebugType>none</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="olrics_love\schedules\" />
+      <Folder Include="mods\" />
     </ItemGroup>
 
     <ItemGroup>

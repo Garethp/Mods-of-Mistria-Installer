@@ -1,4 +1,5 @@
 ﻿
+using Garethp.ModsOfMistriaInstaller.Installer.UMT;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstaller;
@@ -21,6 +22,8 @@ public class GeneratedInformation
     public List<JObject> Outlines = [];
     
     public List<JObject> AssetParts = [];
+
+    public Dictionary<string, List<SpriteData>> Sprites = [];
     
     public void Merge(GeneratedInformation other)
     {
@@ -32,5 +35,11 @@ public class GeneratedInformation
         Schedules.AddRange(other.Schedules);
         Outlines.AddRange(other.Outlines);
         AssetParts.AddRange(other.AssetParts);
+        
+        foreach (var modName in other.Sprites.Keys)
+        {
+            if (!Sprites.ContainsKey(modName)) Sprites[modName] = [];
+            Sprites[modName].AddRange(other.Sprites[modName]);;
+        }
     }
 }

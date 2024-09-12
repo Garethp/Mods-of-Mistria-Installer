@@ -18,6 +18,8 @@ public class LocalisationInstaller : IModuleInstaller
                 Path.Combine(fieldsOfMistriaLocation, "localization.bak.json")
             );
         }
+        
+        if (information.Localisations.Count == 0) return;
 
         var existingFiddle = JObject.Parse(
             File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "localization.bak.json"))
