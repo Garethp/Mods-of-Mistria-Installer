@@ -7,6 +7,8 @@ public class SpriteData
     public string Name;
 
     public string Location;
+
+    public string BaseLocation;
     
     public bool HasFrames;
 

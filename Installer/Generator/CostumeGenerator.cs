@@ -9,6 +9,12 @@ public class CostumeGenerator : IGenerator
 
     public GeneratedInformation Generate(string modLocation)
     {
+        // @TODO: Fetch the name from a manifest file
+        var modName = "olrics_love";
+
+        // @TODO: Remove the images here so that we can store them in whatever folders we want
+        var basePath = Path.Combine(modLocation, "images");
+
         var information = new GeneratedInformation();
         var costumeDirectory = Path.Combine(modLocation, "costumes");
         var newSprites = new List<SpriteData>();
@@ -23,14 +29,14 @@ public class CostumeGenerator : IGenerator
                 {
                     continue;
                 }
-                
+
                 if (costumeData.Property("animationFiles")?.Value is not JObject animationFiles)
                 {
                     continue;
                 }
 
                 var name = costume.Name;
-                
+
                 /**
                  * @TODO:
                  * 1. Add the costume to the AssetParts list in the information object.
@@ -47,11 +53,12 @@ public class CostumeGenerator : IGenerator
                     {
                         continue;
                     }
-                    
+
                     // @TODO: Handle trailing slashes in the animationData string
-                    newSprites.Add(new ()
+                    newSprites.Add(new()
                     {
                         Name = $"spr_player_{name}_{animationName}",
+                        BaseLocation = basePath,
                         Location = animationData.ToString(),
                         HasFrames = true,
                         BoundingBoxMode = 1,
@@ -63,7 +70,7 @@ public class CostumeGenerator : IGenerator
                     });
                     assetParts.Add(animationName, $"spr_player_{name}_{animationName}");
                 }
-                
+
                 var localisation = new JObject
                 {
                     {
@@ -84,43 +91,48 @@ public class CostumeGenerator : IGenerator
                         }
                     }
                 };
-                
+
                 var outline = new JObject
                 {
                     { $"spr_ui_item_wearable_{name}", $"spr_ui_item_wearable_{name}_outline" }
                 };
 
                 newSprites.AddRange([
-                    new ()
+                    new()
                     {
                         Name = $"spr_player_{name}_lut",
+                        BaseLocation = basePath,
                         Location = costumeData["lutFile"].ToString(),
                         HasFrames = false,
                         IsPlayerSprite = true,
                     },
-                    new ()
+                    new()
                     {
                         Name = $"spr_ui_item_wearable_{name}",
+                        BaseLocation = basePath,
                         Location = costumeData["uiItem"].ToString(),
                         HasFrames = false,
                         IsUiSprite = true,
                     },
-                    new ()
+                    new()
                     {
                         Name = $"spr_ui_item_wearable_{name}_outline",
+                        BaseLocation = basePath,
                         Location = costumeData["outlineFile"].ToString(),
                         HasFrames = false,
                         IsUiSprite = true,
                     }
                 ]);
-                
-                information.Sprites.AddRange(newSprites);
+
+                if (!information.Sprites.ContainsKey(modName)) information.Sprites[modName] = [];
+                information.Sprites[modName].AddRange(newSprites);
+
                 information.Localisations.Add(localisation);
                 information.Fiddles.Add(fiddle);
                 information.Outlines.Add(outline);
                 information.AssetParts.Add(new JObject
                 {
-                    { name, assetParts}
+                    { name, assetParts }
                 });
             }
         }

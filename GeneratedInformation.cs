@@ -23,7 +23,7 @@ public class GeneratedInformation
     
     public List<JObject> AssetParts = [];
 
-    public List<SpriteData> Sprites = [];
+    public Dictionary<string, List<SpriteData>> Sprites = [];
     
     public void Merge(GeneratedInformation other)
     {
@@ -35,6 +35,11 @@ public class GeneratedInformation
         Schedules.AddRange(other.Schedules);
         Outlines.AddRange(other.Outlines);
         AssetParts.AddRange(other.AssetParts);
-        Sprites.AddRange(other.Sprites);
+        
+        foreach (var modName in other.Sprites.Keys)
+        {
+            if (!Sprites.ContainsKey(modName)) Sprites[modName] = [];
+            Sprites[modName].AddRange(other.Sprites[modName]);;
+        }
     }
 }

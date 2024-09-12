@@ -11,13 +11,21 @@ public class GraphicsInstaller : IModuleInstaller
         
         var dataFile = new FileInfo(Path.Combine(fieldsOfMistriaLocation, "data.win"));
 
+        Console.WriteLine("Reading data.win");
+        
         using var fileRead = dataFile.OpenRead();
         var gmData = UndertaleIO.Read(fileRead);
         fileRead.Close();
 
-        new GraphicsImporter().ImportSpriteData(
-            "D:\\SteamLibrary\\steamapps\\common\\RimWorld\\Mods\\FoMInstaller\\olrics_love\\images",
-            fieldsOfMistriaLocation, gmData, information.Sprites);
+        Console.WriteLine("Importing Sprites");
+        var importer = new GraphicsImporter();
+        
+        foreach (var modName in information.Sprites.Keys)
+        {
+            importer.ImportSpriteData(fieldsOfMistriaLocation, gmData, information.Sprites[modName], modName);
+        }
+        
+        Console.WriteLine("Writing data.win");
         
         using var fileWrite = dataFile.OpenWrite();
         UndertaleIO.Write(fileWrite, gmData);

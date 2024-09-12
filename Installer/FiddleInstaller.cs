@@ -19,6 +19,8 @@ public class FiddleInstaller : IModuleInstaller
             );
         }
         
+        if (information.Fiddles.Count == 0) return;
+        
         var existingFiddle = JObject.Parse(
             File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "__fiddle__.bak.json"))
         );
