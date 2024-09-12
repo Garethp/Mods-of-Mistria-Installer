@@ -115,7 +115,6 @@ public class GraphicsImporter
 
                 SetTextureTargetBounds(texturePageItem, stripped, node);
 
-                // @TODO: ERROR: This doesn't compare paths as expected
                 var spriteData =
                     sprites.Find(sprite =>
                         (sprite.HasFrames && Path.GetFullPath(Path.Combine(sourcePath, sprite.Location)) ==
