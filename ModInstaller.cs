@@ -16,7 +16,7 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         new PointsGenerator(),
         new ScheduleGenerator(),
         new SimpleConversationsGenerator(),
-        new CostumeGenerator()
+        new OutfitGenerator()
     ];
 
     private readonly List<IModuleInstaller> _installers = [

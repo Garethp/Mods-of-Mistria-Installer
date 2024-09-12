@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstaller.Installer.Generator;
 
-public class CostumeGenerator : IGenerator
+public class OutfitGenerator : IGenerator
 {
     private string _s;
 
@@ -16,30 +16,29 @@ public class CostumeGenerator : IGenerator
         var basePath = Path.Combine(modLocation, "images");
 
         var information = new GeneratedInformation();
-        var costumeDirectory = Path.Combine(modLocation, "costumes");
+        var outfitsDirectory = Path.Combine(modLocation, "outfits");
         var newSprites = new List<SpriteData>();
 
-        foreach (var costumeFile in Directory.GetFiles(costumeDirectory))
+        foreach (var outfitFile in Directory.GetFiles(outfitsDirectory))
         {
-            var costumeJson = JObject.Parse(File.ReadAllText(costumeFile));
+            var outfitJson = JObject.Parse(File.ReadAllText(outfitFile));
 
-            foreach (var costume in costumeJson.Properties())
+            foreach (var outfit in outfitJson.Properties())
             {
-                if (costume.Value is not JObject costumeData)
+                if (outfit.Value is not JObject outfitData)
                 {
                     continue;
                 }
 
-                if (costumeData.Property("animationFiles")?.Value is not JObject animationFiles)
+                if (outfitData.Property("animationFiles")?.Value is not JObject animationFiles)
                 {
                     continue;
                 }
 
-                var name = costume.Name;
+                var name = outfit.Name;
 
                 /**
                  * @TODO:
-                 * 1. Add the costume to the AssetParts list in the information object.
                  * 6. Map ui_sub_category to the correct naming convention. IE: "back" -> "back_gear"
                  */
 
@@ -74,7 +73,7 @@ public class CostumeGenerator : IGenerator
                 var localisation = new JObject
                 {
                     {
-                        "eng", new JObject { { $"player_assets/{name}/name", costumeData["name"] } }
+                        "eng", new JObject { { $"player_assets/{name}/name", outfitData["name"] } }
                     }
                 };
 
@@ -88,9 +87,9 @@ public class CostumeGenerator : IGenerator
                                 {
                                     { "name", $"player_assets/{name}/name" },
                                     { "lut", $"spr_player_{name}_lut" },
-                                    { "ui_slot", costumeData["ui_slot"] },
-                                    { "default_unlocked", costumeData["default_unlocked"] },
-                                    { "ui_sub_category", costumeData["ui_sub_category"] }
+                                    { "ui_slot", outfitData["ui_slot"] },
+                                    { "default_unlocked", outfitData["default_unlocked"] },
+                                    { "ui_sub_category", outfitData["ui_sub_category"] }
                                 }
                             }
                         }
@@ -107,7 +106,7 @@ public class CostumeGenerator : IGenerator
                     {
                         Name = $"spr_player_{name}_lut",
                         BaseLocation = basePath,
-                        Location = costumeData["lutFile"].ToString(),
+                        Location = outfitData["lutFile"].ToString(),
                         HasFrames = false,
                         IsPlayerSprite = true,
                     },
@@ -115,7 +114,7 @@ public class CostumeGenerator : IGenerator
                     {
                         Name = $"spr_ui_item_wearable_{name}",
                         BaseLocation = basePath,
-                        Location = costumeData["uiItem"].ToString(),
+                        Location = outfitData["uiItem"].ToString(),
                         HasFrames = false,
                         IsUiSprite = true,
                     },
@@ -123,7 +122,7 @@ public class CostumeGenerator : IGenerator
                     {
                         Name = $"spr_ui_item_wearable_{name}_outline",
                         BaseLocation = basePath,
-                        Location = costumeData["outlineFile"].ToString(),
+                        Location = outfitData["outlineFile"].ToString(),
                         HasFrames = false,
                         IsUiSprite = true,
                     }
@@ -145,5 +144,5 @@ public class CostumeGenerator : IGenerator
         return information;
     }
 
-    public bool CanGenerate(string modLocation) => Directory.Exists(Path.Combine(modLocation, "costumes"));
+    public bool CanGenerate(string modLocation) => Directory.Exists(Path.Combine(modLocation, "outfits"));
 }
