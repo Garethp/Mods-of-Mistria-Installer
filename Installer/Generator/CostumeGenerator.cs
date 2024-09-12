@@ -83,11 +83,16 @@ public class CostumeGenerator : IGenerator
                     {
                         "player_assets", new JObject
                         {
-                            { "name", $"player_assets/{name}/name" },
-                            { "lut", $"spr_player_{name}_lut" },
-                            { "ui_slot", costumeData["ui_slot"] },
-                            { "default_unlocked", costumeData["default_unlocked"] },
-                            { "ui_sub_category", costumeData["ui_sub_category"] }
+                            {
+                                $"{name}", new JObject
+                                {
+                                    { "name", $"player_assets/{name}/name" },
+                                    { "lut", $"spr_player_{name}_lut" },
+                                    { "ui_slot", costumeData["ui_slot"] },
+                                    { "default_unlocked", costumeData["default_unlocked"] },
+                                    { "ui_sub_category", costumeData["ui_sub_category"] }
+                                }
+                            }
                         }
                     }
                 };
