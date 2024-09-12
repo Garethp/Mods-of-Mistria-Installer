@@ -2,7 +2,7 @@
 
 public interface IGenerator
 {
-    public GeneratedInformation Generate(string modLocation);
+    public GeneratedInformation Generate(Mod mod);
     
-    public bool CanGenerate(string modLocation);
+    public bool CanGenerate(Mod mod);
 }

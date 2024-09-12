@@ -7,13 +7,13 @@ public class OutfitGenerator : IGenerator
 {
     private string _s;
 
-    public GeneratedInformation Generate(string modLocation)
+    public GeneratedInformation Generate(Mod mod)
     {
-        // @TODO: Fetch the name from a manifest file
-        var modName = "olrics_love";
+        var modLocation = mod.Location;
+        var modId = mod.Id;
 
         // @TODO: Remove the images here so that we can store them in whatever folders we want
-        var basePath = Path.Combine(modLocation, "images");
+        var basePath = modLocation;
 
         var information = new GeneratedInformation();
         var outfitsDirectory = Path.Combine(modLocation, "outfits");
@@ -128,8 +128,8 @@ public class OutfitGenerator : IGenerator
                     }
                 ]);
 
-                if (!information.Sprites.ContainsKey(modName)) information.Sprites[modName] = [];
-                information.Sprites[modName].AddRange(newSprites);
+                if (!information.Sprites.ContainsKey(modId)) information.Sprites[modId] = [];
+                information.Sprites[modId].AddRange(newSprites);
 
                 information.Localisations.Add(localisation);
                 information.Fiddles.Add(fiddle);
@@ -144,5 +144,5 @@ public class OutfitGenerator : IGenerator
         return information;
     }
 
-    public bool CanGenerate(string modLocation) => Directory.Exists(Path.Combine(modLocation, "outfits"));
+    public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "outfits"));
 }

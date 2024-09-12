@@ -68,8 +68,9 @@ class ConversationOutput
 
 public class SimpleConversationsGenerator : IGenerator
 {
-    public GeneratedInformation Generate(string modLocation)
+    public GeneratedInformation Generate(Mod mod)
     {
+        var modLocation = mod.Location;
         var files = Directory.GetFiles(Path.Combine(modLocation, "conversations"));
         var generatedInformation = new GeneratedInformation();
 
@@ -182,8 +183,8 @@ public class SimpleConversationsGenerator : IGenerator
         return generatedInformation;
     }
 
-    public bool CanGenerate(string modLocation)
+    public bool CanGenerate(Mod mod)
     {
-        return Directory.Exists(Path.Combine(modLocation, "conversations"));
+        return Directory.Exists(Path.Combine(mod.Location, "conversations"));
     }
 }

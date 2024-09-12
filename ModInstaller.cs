@@ -30,7 +30,7 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         new GraphicsInstaller(),
     ];
     
-    public void InstallMods(List<string> modLocations)
+    public void InstallMods(List<Mod> mods)
     {
         if (!Directory.Exists(fieldsOfMistriaLocation))
         {
@@ -51,17 +51,17 @@ public class ModInstaller(string fieldsOfMistriaLocation)
 
         var generatedInformation = new GeneratedInformation();
         
-        foreach (var modLocation in modLocations)
+        foreach (var mod in mods)
         {
-            if (!Directory.Exists(modLocation))
+            if (!Directory.Exists(mod.Location))
             {
                 throw new DirectoryNotFoundException("The mod location does not exist.");
             }
             
-            Console.WriteLine("Generating information for " + modLocation);
-            foreach (var generator in _generators.Where(generator => generator.CanGenerate(modLocation)))
+            Console.WriteLine("Generating information for " + mod.Id);
+            foreach (var generator in _generators.Where(generator => generator.CanGenerate(mod)))
             {
-                generatedInformation.Merge(generator.Generate(modLocation));
+                generatedInformation.Merge(generator.Generate(mod));
             }
         }
 

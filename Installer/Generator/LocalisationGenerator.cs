@@ -5,8 +5,9 @@ namespace Garethp.ModsOfMistriaInstaller.Installer.Generator;
 
 public class LocalisationGenerator: IGenerator
 {
-    public GeneratedInformation Generate(string modLocation)
+    public GeneratedInformation Generate(Mod mod)
     {
+        var modLocation = mod.Location;
         var localisationFiles = new List<string>();
 
         if (Directory.Exists(Path.Combine(modLocation, "localisation")))
@@ -35,9 +36,9 @@ public class LocalisationGenerator: IGenerator
         return generatedInformation;
     }
 
-    public bool CanGenerate(string modLocation)
+    public bool CanGenerate(Mod mod)
     {
-        return Directory.Exists(Path.Combine(modLocation, "localisation"))
-               || Directory.Exists(Path.Combine(modLocation, "localization"));
+        return Directory.Exists(Path.Combine(mod.Location, "localisation"))
+               || Directory.Exists(Path.Combine(mod.Location, "localization"));
     }
 }

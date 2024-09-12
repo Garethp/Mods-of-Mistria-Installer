@@ -39,6 +39,7 @@ totalTime.Start();
 var mods = Directory
     .GetDirectories(detectedModsLocation)
     .Where(folder => File.Exists(Path.Combine(folder, "manifest.json")))
+    .Select(location => Mod.FromManifest(Path.Combine(location, "manifest.json")))
     .ToList();
 
 var installer = new ModInstaller(detectedLocation);

@@ -18,23 +18,25 @@ public class GraphicsImporter
         var groupInfo = gameData.TextureGroupInfo.ByName($"mod_{modName}");
         var playerInfo = gameData.TextureGroupInfo.ByName("player");
         var uiInfo = gameData.TextureGroupInfo.ByName("ui");
-        
+
         if (groupInfo is null) return;
 
         foreach (var texturePage in groupInfo.TexturePages.ToList())
         {
             groupInfo.TexturePages.Remove(texturePage);
             gameData.EmbeddedTextures.Remove(texturePage.Resource);
-            
-            playerInfo.TexturePages.Where(resource => resource.Resource.Name.ToString() == texturePage.Resource.Name.ToString())
+
+            playerInfo.TexturePages.Where(resource =>
+                    resource.Resource.Name.ToString() == texturePage.Resource.Name.ToString())
                 .ToList()
                 .ForEach(resource => playerInfo.TexturePages.Remove(resource));
-            
-            uiInfo.TexturePages.Where(resource => resource.Resource.Name.ToString() == texturePage.Resource.Name.ToString())
+
+            uiInfo.TexturePages.Where(resource =>
+                    resource.Resource.Name.ToString() == texturePage.Resource.Name.ToString())
                 .ToList()
                 .ForEach(resource => uiInfo.TexturePages.Remove(resource));
         }
-        
+
         foreach (var sprite in groupInfo.Sprites.ToList())
         {
             var pageItems = sprite.Resource.Textures.ToList();
@@ -47,18 +49,18 @@ public class GraphicsImporter
             groupInfo.Sprites.Remove(sprite);
         }
     }
-    
+
     public void ImportSpriteData(
         string fieldsOfMistriaPath,
         UndertaleData gameData,
-        List<SpriteData> sprites, 
+        List<SpriteData> sprites,
         string modName)
     {
         // @TODO: Either support multiple base paths or group sprites by base path
         var sourcePath = sprites[0].BaseLocation;
-        
+
         ClearTextureData(gameData, modName);
-        
+
         var packDir = Path.Combine(fieldsOfMistriaPath, "Packager");
         Directory.CreateDirectory(packDir);
 
@@ -70,7 +72,7 @@ public class GraphicsImporter
         var packer = new Packer();
         packer.Process(sourcePath, searchPattern, textureSize, PaddingValue, debug);
         packer.SaveAtlasses(outName);
-        
+
         var prefix = outName.Replace(Path.GetExtension(outName), "");
         var atlasCount = 0;
 
@@ -80,11 +82,11 @@ public class GraphicsImporter
             var atlasBitmap = new Bitmap(atlasName);
             var texture = new UndertaleEmbeddedTexture();
             texture.Name = new UndertaleString(GetNextTextureName(gameData));
-            
+
             // @TODO: We should keep this all in memory instead of reading/writing to a temp file
             texture.TextureData.TextureBlob = File.ReadAllBytes(atlasName);
             gameData.EmbeddedTextures.Add(texture);
-            
+
             EnsureEmbeddedTextureInformation(gameData, $"mod_{modName}", texture);
 
             foreach (var node in atlas.Nodes)
@@ -113,15 +115,17 @@ public class GraphicsImporter
 
                 SetTextureTargetBounds(texturePageItem, stripped, node);
 
+                // @TODO: ERROR: This doesn't compare paths as expected
                 var spriteData =
                     sprites.Find(sprite =>
-                        (sprite.HasFrames && Path.Combine(sourcePath, sprite.Location) ==
-                            Path.GetDirectoryName(node.Texture.Source))
-                        || Path.Combine(sourcePath, sprite.Location) == node.Texture.Source
+                        (sprite.HasFrames && Path.GetFullPath(Path.Combine(sourcePath, sprite.Location)) ==
+                            Path.GetFullPath(Path.GetDirectoryName(node.Texture.Source)))
+                        || Path.GetFullPath(Path.Combine(sourcePath, sprite.Location)) ==
+                        Path.GetFullPath(node.Texture.Source)
                     );
 
                 if (spriteData is null) continue;
-                
+
                 gameData.TexturePageItems.Add(texturePageItem);
                 spriteData.PageItems.Add(stripped, texturePageItem);
 
@@ -134,29 +138,29 @@ public class GraphicsImporter
 
         sprites.ForEach(sprite => ImportSprite(gameData, sprite, modName));
     }
-    
+
     string GetNextTextureName(UndertaleData gameData)
     {
         var lastTextureIndex = gameData.EmbeddedTextures.Count - 1;
         var lastTexture = gameData.EmbeddedTextures[lastTextureIndex];
         var lastTextureName = lastTexture.Name.ToString();
         var numberMatch = Regex.Match(lastTextureName, "(\\d+)\"?$");
-        if (!numberMatch.Success) 
+        if (!numberMatch.Success)
             throw new Exception($"Texture name does not end with a number: {lastTextureName}");
-        
+
         var lastTextureNumber = int.Parse(numberMatch.Groups[1].Value);
         return $"Texture {lastTextureNumber + 1}";
     }
-    
+
     string GetNextTexturePageItemName(UndertaleData gameData)
     {
         var lastTexturePageItemIndex = gameData.TexturePageItems.Count - 1;
         var lastTexturePageItem = gameData.TexturePageItems[lastTexturePageItemIndex];
         var lastTexturePageItemName = lastTexturePageItem.Name.ToString();
         var numberMatch = Regex.Match(lastTexturePageItemName, "(\\d+)\"?$");
-        if (!numberMatch.Success) 
+        if (!numberMatch.Success)
             throw new Exception($"Texture Page Item name does not end with a number: {lastTexturePageItemName}");
-        
+
         var lastPageItemNumber = int.Parse(numberMatch.Groups[1].Value);
         return $"PageItem {lastPageItemNumber + 1}";
     }
@@ -208,7 +212,7 @@ public class GraphicsImporter
             sprite.CollisionMasks.Clear();
 
         EnsureSpriteInformation(gameData, $"mod_{modName}", sprite);
-        
+
         if (spriteData.IsPlayerSprite)
         {
             EnsureSpriteInformation(gameData, "player", sprite);
@@ -252,7 +256,7 @@ public class GraphicsImporter
             {
                 EnsureEmbeddedTextureInformation(gameData, "player", embeddedTexture);
             }
-            
+
             if (spriteData.IsUiSprite)
             {
                 EnsureEmbeddedTextureInformation(gameData, "ui", embeddedTexture);
@@ -264,7 +268,7 @@ public class GraphicsImporter
     {
         var resourceInfo = gameData.TextureGroupInfo.ByName(name);
         if (resourceInfo is not null) return resourceInfo;
-        
+
         resourceInfo = new UndertaleTextureGroupInfo()
         {
             Name = gameData.Strings.MakeString(name)
@@ -273,23 +277,24 @@ public class GraphicsImporter
 
         return resourceInfo;
     }
-    
+
     void EnsureSpriteInformation(UndertaleData gameData, string name, UndertaleSprite resource)
     {
         var resourceInfo = AddOrGetGroupInfo(gameData, name);
-        
+
         if (resourceInfo.Sprites.All(item => item.Resource.Name != resource.Name))
             resourceInfo.Sprites.Add(new UndertaleResourceById<UndertaleSprite, UndertaleChunkSPRT>(resource));
     }
-    
+
     void EnsureEmbeddedTextureInformation(UndertaleData gameData, string name, UndertaleEmbeddedTexture resource)
     {
         var resourceInfo = AddOrGetGroupInfo(gameData, name);
-        
+
         if (resourceInfo.TexturePages.All(item => item.Resource.Name != resource.Name))
-            resourceInfo.TexturePages.Add(new UndertaleResourceById<UndertaleEmbeddedTexture, UndertaleChunkTXTR>(resource));
+            resourceInfo.TexturePages.Add(
+                new UndertaleResourceById<UndertaleEmbeddedTexture, UndertaleChunkTXTR>(resource));
     }
-    
+
     void SetTextureTargetBounds(UndertaleTexturePageItem tex, string textureName, Node n)
     {
         tex.TargetX = 0;
