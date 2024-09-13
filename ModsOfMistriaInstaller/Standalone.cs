@@ -7,7 +7,7 @@ public class Standalone
 {
     public static void Run()
     {
-        var modOverride = "D:\\SteamLibrary\\steamapps\\common\\RimWorld\\Mods\\FoMInstaller\\mods";
+        string? modOverride = null;
 
         var detectedLocation = MistriaLocator.GetMistriaLocation();
         if (detectedLocation == null)
