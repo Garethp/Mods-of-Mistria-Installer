@@ -202,10 +202,10 @@ public class GraphicsImporter
 
         sprite.Width = pageItems[0].SourceWidth;
         sprite.Height = pageItems[0].SourceHeight;
-        sprite.MarginLeft = sprite.MarginLeft;
-        sprite.MarginRight = pageItems[0].SourceWidth - 1;
-        sprite.MarginTop = sprite.MarginRight;
-        sprite.MarginBottom = pageItems[0].SourceHeight - 1;
+        sprite.MarginLeft = spriteData.MarginLeft ?? sprite.MarginLeft;
+        sprite.MarginRight = spriteData.MarginRight ?? pageItems[0].SourceWidth - 1;
+        sprite.MarginTop = spriteData.MarginTop ?? sprite.MarginRight;
+        sprite.MarginBottom = spriteData.MarginBottom ?? pageItems[0].SourceHeight - 1;
         sprite.OriginX = spriteData.OriginX ?? sprite.OriginX;
         sprite.OriginY = spriteData.OriginY ?? sprite.OriginY;
 

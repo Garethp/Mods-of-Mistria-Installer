@@ -1,0 +1,15 @@
+{
+  "awesome_new_cape": {
+    "name": "A cooler cape",
+    "description": "A cape that is cooler than the last one.",
+    "ui_slot": "back",
+    "default_unlocked": true,
+    "ui_sub_category": "back",
+    "lutFile": "lut.png",
+    "uiItem": "ui.png",
+    "outlineFile": "outline.png",
+    "animationFiles": {
+      "back_gear": "animation"
+    }
+  }
+}

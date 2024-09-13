@@ -42,6 +42,10 @@ public class SpriteGenerator : IGenerator
                     IsAnimated = isAnimated,
                     OriginX =  spriteData["OriginX"]?.Value<int>(),
                     OriginY = spriteData["OriginY"]?.Value<int>(),
+                    MarginRight = spriteData["MarginRight"]?.Value<int>(),
+                    MarginLeft = spriteData["MarginLeft"]?.Value<int>(),
+                    MarginTop = spriteData["MarginTop"]?.Value<int>(),
+                    MarginBottom = spriteData["MarginBottom"]?.Value<int>(),
                     BoundingBoxMode = spriteData["BoundingBoxMode"]?.Value<uint>(),
                     IsPlayerSprite = spriteData["IsPlayerSprite"]?.Value<bool>() ?? false,
                     IsUiSprite = spriteData["IsUiSprite"]?.Value<bool>() ?? false

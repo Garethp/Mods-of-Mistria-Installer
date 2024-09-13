@@ -30,5 +30,13 @@ public class SpriteData
 
     public int? OriginY;
 
+    public int? MarginLeft;
+
+    public int? MarginRight;
+
+    public int? MarginTop;
+
+    public int? MarginBottom;
+
     public Dictionary<string, UndertaleTexturePageItem> PageItems = [];
 }

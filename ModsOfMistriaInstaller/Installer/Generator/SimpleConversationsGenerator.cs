@@ -42,7 +42,7 @@ class NextLineBehaviorNextLine : NextLineBehavior
 class NextLineBehaviorPrompts : NextLineBehavior
 {
     public string type = "prompts";
-    public List<Prompt> prompts = [];
+    public List<Prompt> content = [];
 }
 
 class Line
@@ -148,7 +148,7 @@ public class SimpleConversationsGenerator : IGenerator
                         prompt["text"] = $"{name}/{index}/prompt/{promptIndexString}";
                         
                         
-                        (nextLine as NextLineBehaviorPrompts).prompts.Add(new Prompt()
+                        (nextLine as NextLineBehaviorPrompts).content.Add(new Prompt()
                         {
                             local = prompt["text"].ToString(),
                             next_line = prompt["nextLine"].ToString()
