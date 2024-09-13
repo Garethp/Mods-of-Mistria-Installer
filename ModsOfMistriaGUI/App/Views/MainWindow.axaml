@@ -1,0 +1,56 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        xmlns:vm="using:Garethp.ModsOfMistriaGUI.App.ViewModels"
+        x:Class="Garethp.ModsOfMistriaGUI.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Mods Of Mistria Installer"
+        Icon="/App/Assets/small_icon.png"
+        MaxWidth="1000"
+        Width="800" Height="600">
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="50"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+            <Image Source="/App/Assets/header.jpg"></Image>
+
+            <Panel Margin="50 20 50 0">
+                <StackPanel>
+                    <TextBlock>Welcome to the Mods Of Mistria Installer!</TextBlock>
+                    <TextBlock></TextBlock>
+                    <WrapPanel>
+                        <TextBlock Margin="0 0 5 0">Fields of Mistria has been detected at: </TextBlock>
+                        <TextBlock Text="{Binding MistriaLocation}" />
+                    </WrapPanel>
+                    <TextBlock>Installing will install the following mods:</TextBlock>
+                    <ScrollViewer Grid.Row="1" Margin="15 5 0 0">
+                        <ItemsRepeater ItemsSource="{Binding Mods}">
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate>
+                                    <WrapPanel>
+                                        <CheckBox IsChecked="true"><TextBlock Text="{Binding Full}" /></CheckBox>
+                                    </WrapPanel>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+                        <!-- <ItemsControl ItemsSource="{Binding Mods}" /> -->
+                    </ScrollViewer>
+                    <TextBlock></TextBlock>
+                </StackPanel>
+            </Panel>
+        </StackPanel>
+        <WrapPanel Grid.Row="1" Margin="0 0 30 0" HorizontalAlignment="Right">
+            <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
+            <Button Command="{Binding InstallModsCommand}">Install</Button>
+        </WrapPanel>
+    </Grid>
+</Window>

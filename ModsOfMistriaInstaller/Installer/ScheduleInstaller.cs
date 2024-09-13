@@ -4,7 +4,7 @@ namespace Garethp.ModsOfMistriaInstaller.Installer;
 
 public class ScheduleInstaller : IModuleInstaller
 {
-    public void Install(string fieldsOfMistriaLocation, GeneratedInformation information)
+    public void Install(string fieldsOfMistriaLocation, GeneratedInformation information, Action<string, string> reportStatus)
     {
         if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "t2_output.json")))
         {

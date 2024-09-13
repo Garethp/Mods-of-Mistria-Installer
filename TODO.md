@@ -24,11 +24,11 @@
    * [ ] Implement Tileset Generators/Installers
    * [ ] Implement Portrait Generators/Installers
  * [x] Add a way to check if an update has occurred for fresh installs
- * [ ] Fetch modnames from the manifest
- * [ ] Pass around a mod object instead of a source folder
- * [ ] Add a basic GUI
-   * [ ] Auto-detect the game's location
+ * [x] Fetch modnames from the manifest
+ * [x] Pass around a mod object instead of a source folder
+ * [/] Add a basic GUI
+   * [x] Auto-detect the game's location
    * [ ] Allow for selecting the game's location
    * [ ] Allow for selecting the mod folder
-   * [ ] Show the progress of the installation
- * [/] Add an example mod
+   * [x] Show the progress of the installation
+ * [x] Add an example mod

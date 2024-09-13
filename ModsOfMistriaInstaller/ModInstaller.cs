@@ -24,14 +24,17 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         new ConversationInstaller(),
         new FiddleInstaller(),
         new LocalisationInstaller(),
+        new OutlineInstaller(),
         new PointsInstaller(),
         new ScheduleInstaller(),
         new ScriptsInstaller(),
         new GraphicsInstaller(),
     ];
     
-    public void InstallMods(List<Mod> mods)
+    public void InstallMods(List<Mod> mods, Action<string, string> reportStatus)
     {
+        var totalTime = new Stopwatch();
+        totalTime.Start();
         if (!Directory.Exists(fieldsOfMistriaLocation))
         {
             throw new DirectoryNotFoundException("The Fields of Mistria location does not exist.");
@@ -58,7 +61,7 @@ public class ModInstaller(string fieldsOfMistriaLocation)
                 throw new DirectoryNotFoundException("The mod location does not exist.");
             }
             
-            Console.WriteLine("Generating information for " + mod.Id);
+            reportStatus("Generating information for " + mod.Id, "");
             foreach (var generator in _generators.Where(generator => generator.CanGenerate(mod)))
             {
                 generatedInformation.Merge(generator.Generate(mod));
@@ -70,12 +73,15 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         foreach (var installer in _installers)
         {
             timer.Restart();
-            installer.Install(fieldsOfMistriaLocation, generatedInformation);
+            installer.Install(fieldsOfMistriaLocation, generatedInformation, reportStatus);
             timer.Stop();
-            Console.WriteLine($"Ran {installer.GetType()} in {timer}");
+            reportStatus(installer.GetType().Name, timer.ToString());
         }
         
-        new ChecksumInstaller().Install(fieldsOfMistriaLocation, generatedInformation);
+        new ChecksumInstaller().Install(fieldsOfMistriaLocation, generatedInformation, reportStatus);
+        totalTime.Stop();
+        
+        reportStatus("Finished", totalTime.ToString());
     }
 
     bool IsFreshInstall()

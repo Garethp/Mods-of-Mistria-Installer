@@ -4,7 +4,7 @@ namespace Garethp.ModsOfMistriaInstaller.Installer;
 
 public class ChecksumInstaller: IModuleInstaller
 {
-    public void Install(string fieldsOfMistriaLocation, GeneratedInformation information)
+    public void Install(string fieldsOfMistriaLocation, GeneratedInformation information, Action<string, string> reportStatus)
     {
         var checksums = JObject.Parse(File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "checksums.json")));
 

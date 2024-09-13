@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Drawing;
 using System.Text.RegularExpressions;
+using ImageMagick;
 using UndertaleModLib;
 using UndertaleModLib.Models;
+using UndertaleModLib.Util;
 
 namespace Garethp.ModsOfMistriaInstaller.Installer.UMT;
 
@@ -72,19 +74,20 @@ public class GraphicsImporter
         var packer = new Packer();
         packer.Process(sourcePath, searchPattern, textureSize, PaddingValue, debug);
         packer.SaveAtlasses(outName);
-
+        
         var prefix = outName.Replace(Path.GetExtension(outName), "");
         var atlasCount = 0;
 
         foreach (var atlas in packer.Atlasses)
         {
             var atlasName = Path.Combine(packDir, String.Format(prefix + "{0:000}" + ".png", atlasCount));
-            var atlasBitmap = new Bitmap(atlasName);
+            using MagickImage atlasImage = TextureWorker.ReadBGRAImageFromFile(atlasName);
+
             var texture = new UndertaleEmbeddedTexture();
             texture.Name = new UndertaleString(GetNextTextureName(gameData));
 
             // @TODO: We should keep this all in memory instead of reading/writing to a temp file
-            texture.TextureData.TextureBlob = File.ReadAllBytes(atlasName);
+            texture.TextureData.Image = GMImage.FromMagickImage(atlasImage).ConvertToPng();
             gameData.EmbeddedTextures.Add(texture);
 
             EnsureEmbeddedTextureInformation(gameData, $"mod_{modName}", texture);

@@ -5,19 +5,19 @@ namespace Garethp.ModsOfMistriaInstaller.Installer;
 
 public class GraphicsInstaller : IModuleInstaller
 {
-    public void Install(string fieldsOfMistriaLocation, GeneratedInformation information)
+    public void Install(string fieldsOfMistriaLocation, GeneratedInformation information, Action<string, string> reportStatus)
     {
         if (information.Sprites.Count == 0) return;
         
         var dataFile = new FileInfo(Path.Combine(fieldsOfMistriaLocation, "data.win"));
 
-        Console.WriteLine("Reading data.win");
+        reportStatus("Reading Textures/Sprites", "");
         
         using var fileRead = dataFile.OpenRead();
         var gmData = UndertaleIO.Read(fileRead);
         fileRead.Close();
 
-        Console.WriteLine("Importing Sprites");
+        reportStatus("Importing Textures/Sprites", "");
         var importer = new GraphicsImporter();
         
         foreach (var modName in information.Sprites.Keys)
@@ -25,7 +25,7 @@ public class GraphicsInstaller : IModuleInstaller
             importer.ImportSpriteData(fieldsOfMistriaLocation, gmData, information.Sprites[modName], modName);
         }
         
-        Console.WriteLine("Writing data.win");
+        reportStatus("Writing Textures/Sprites", "");
         
         using var fileWrite = dataFile.OpenWrite();
         UndertaleIO.Write(fileWrite, gmData);
