@@ -1,0 +1,46 @@
+{
+  "name": "Cutscenes/Story Quests/first_mod/first_mod",
+  "lines": [
+    {
+      "speaker": "march",
+      "portrait": "neutral",
+      "text": "Huh, you made this conversation? I guess it's not a bad job"
+    },
+    {
+      "speaker": "olric",
+      "portrait": "happy",
+      "text": "I think it's great. In fact, you could even say it rocks."
+    },
+    {
+      "speaker": "march",
+      "portrait": "ugh",
+      "text": "Don't you have something better to do than this, like farming?",
+      "choices": [
+        {
+          "text": "All my farmings done for the day",
+          "nextLine": 4
+        },
+        {
+          "text": "I'm just taking a short break",
+          "nextLine": 5
+        }
+      ]
+    },
+    {
+      "speaker": "march",
+      "portrait": "tsundere",
+      "text": "I guess I can't argue with that.",
+      "nextLine": 6
+    },
+    {
+      "speaker": "march",
+      "portrait": "ugh",
+      "text": "Somehow I knew you were slacking off while making mods."
+    },
+    {
+      "speaker": "olric",
+      "portrait": "happy",
+      "text": "I'm just excited to see what you make next!"
+    }
+  ]
+}

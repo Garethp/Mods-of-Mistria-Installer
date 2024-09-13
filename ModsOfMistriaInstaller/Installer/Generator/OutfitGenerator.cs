@@ -5,8 +5,6 @@ namespace Garethp.ModsOfMistriaInstaller.Installer.Generator;
 
 public class OutfitGenerator : IGenerator
 {
-    private string _s;
-
     public GeneratedInformation Generate(Mod mod)
     {
         var modLocation = mod.Location;
@@ -59,7 +57,7 @@ public class OutfitGenerator : IGenerator
                         Name = $"spr_player_{name}_{animationName}",
                         BaseLocation = basePath,
                         Location = animationData.ToString(),
-                        HasFrames = true,
+                        IsAnimated = true,
                         BoundingBoxMode = 1,
                         DeleteCollisionMask = true,
                         SpecialType = true,
@@ -107,7 +105,7 @@ public class OutfitGenerator : IGenerator
                         Name = $"spr_player_{name}_lut",
                         BaseLocation = basePath,
                         Location = outfitData["lutFile"].ToString(),
-                        HasFrames = false,
+                        IsAnimated = false,
                         IsPlayerSprite = true,
                     },
                     new()
@@ -115,7 +113,7 @@ public class OutfitGenerator : IGenerator
                         Name = $"spr_ui_item_wearable_{name}",
                         BaseLocation = basePath,
                         Location = outfitData["uiItem"].ToString(),
-                        HasFrames = false,
+                        IsAnimated = false,
                         IsUiSprite = true,
                     },
                     new()
@@ -123,7 +121,7 @@ public class OutfitGenerator : IGenerator
                         Name = $"spr_ui_item_wearable_{name}_outline",
                         BaseLocation = basePath,
                         Location = outfitData["outlineFile"].ToString(),
-                        HasFrames = false,
+                        IsAnimated = false,
                         IsUiSprite = true,
                     }
                 ]);

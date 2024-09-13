@@ -22,7 +22,7 @@
  * [/] Add UMT integration
    * [x] Implement Sprite Installers
    * [ ] Implement Tileset Generators/Installers
-   * [ ] Implement Portrait Generators/Installers
+   * [x] Implement Portrait Generators/Installers
  * [x] Add a way to check if an update has occurred for fresh installs
  * [x] Fetch modnames from the manifest
  * [x] Pass around a mod object instead of a source folder

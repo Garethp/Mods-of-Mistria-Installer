@@ -1,0 +1,10 @@
+{
+  "letters": {
+    "first_mod": {
+      "npc": "olric",
+      "subject_line": "letters/first_mod/subject_line",
+      "local": "letters/first_mod/local",
+      "default": true
+    }
+  }
+}

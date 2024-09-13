@@ -10,21 +10,25 @@ public class SpriteData
 
     public string BaseLocation;
     
-    public bool HasFrames;
+    public bool IsAnimated = false;
 
-    public uint BoundingBoxMode;
+    public uint? BoundingBoxMode;
     
-    public bool DeleteCollisionMask;
+    public bool DeleteCollisionMask = true;
     
-    public bool SpecialType;
+    public bool SpecialType = true;
     
-    public uint SpecialTypeVersion;
+    public uint SpecialTypeVersion = 3;
     
-    public int SpecialPlaybackSpeed;
-    
-    public bool IsPlayerSprite;
+    public int SpecialPlaybackSpeed = 40;
 
-    public bool IsUiSprite;
+    public bool IsPlayerSprite = false;
+
+    public bool IsUiSprite = false;
+
+    public int? OriginX;
+
+    public int? OriginY;
 
     public Dictionary<string, UndertaleTexturePageItem> PageItems = [];
 }

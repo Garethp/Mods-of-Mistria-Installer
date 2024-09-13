@@ -38,7 +38,7 @@ public class GraphicsImporter
                 .ToList()
                 .ForEach(resource => uiInfo.TexturePages.Remove(resource));
         }
-
+        
         foreach (var sprite in groupInfo.Sprites.ToList())
         {
             var pageItems = sprite.Resource.Textures.ToList();
@@ -74,7 +74,7 @@ public class GraphicsImporter
         var packer = new Packer();
         packer.Process(sourcePath, searchPattern, textureSize, PaddingValue, debug);
         packer.SaveAtlasses(outName);
-        
+
         var prefix = outName.Replace(Path.GetExtension(outName), "");
         var atlasCount = 0;
 
@@ -119,19 +119,17 @@ public class GraphicsImporter
                 SetTextureTargetBounds(texturePageItem, stripped, node);
 
                 var spriteData =
-                    sprites.Find(sprite =>
-                        (sprite.HasFrames && Path.GetFullPath(Path.Combine(sourcePath, sprite.Location)) ==
+                    sprites.FindAll(sprite =>
+                        (sprite.IsAnimated && Path.GetFullPath(Path.Combine(sourcePath, sprite.Location)) ==
                             Path.GetFullPath(Path.GetDirectoryName(node.Texture.Source)))
                         || Path.GetFullPath(Path.Combine(sourcePath, sprite.Location)) ==
                         Path.GetFullPath(node.Texture.Source)
                     );
 
-                if (spriteData is null) continue;
+                if (spriteData.Count == 0) continue;
 
                 gameData.TexturePageItems.Add(texturePageItem);
-                spriteData.PageItems.Add(stripped, texturePageItem);
-
-                // ImportSprite(gameData, sprFrameRegex, stripped, texturePageItem, node, atlasBitmap);
+                spriteData.ForEach(data => data.PageItems.Add(stripped, texturePageItem));
             }
 
             // Increment atlas
@@ -195,7 +193,8 @@ public class GraphicsImporter
         {
             sprite = new UndertaleSprite()
             {
-                Name = gameData.Strings.MakeString(spriteData.Name)
+                Name = gameData.Strings.MakeString(spriteData.Name),
+                BBoxMode = 1,
             };
 
             gameData.Sprites.Add(sprite);
@@ -203,12 +202,12 @@ public class GraphicsImporter
 
         sprite.Width = pageItems[0].SourceWidth;
         sprite.Height = pageItems[0].SourceHeight;
-        sprite.MarginLeft = 0;
+        sprite.MarginLeft = sprite.MarginLeft;
         sprite.MarginRight = pageItems[0].SourceWidth - 1;
-        sprite.MarginTop = 0;
+        sprite.MarginTop = sprite.MarginRight;
         sprite.MarginBottom = pageItems[0].SourceHeight - 1;
-        sprite.OriginX = 0;
-        sprite.OriginY = 0;
+        sprite.OriginX = spriteData.OriginX ?? sprite.OriginX;
+        sprite.OriginY = spriteData.OriginY ?? sprite.OriginY;
 
         if (spriteData.DeleteCollisionMask)
             sprite.CollisionMasks.Clear();
@@ -225,30 +224,25 @@ public class GraphicsImporter
             EnsureSpriteInformation(gameData, "ui", sprite);
         }
 
-        sprite.BBoxMode = spriteData.BoundingBoxMode;
+        sprite.BBoxMode = spriteData.BoundingBoxMode ?? sprite.BBoxMode;
         sprite.IsSpecialType = spriteData.SpecialType;
         sprite.SVersion = spriteData.SpecialTypeVersion;
         sprite.GMS2PlaybackSpeed = spriteData.SpecialPlaybackSpeed;
 
         Dictionary<string, UndertaleEmbeddedTexture> allTextures = [];
 
-        for (var pageIndex = 0; pageIndex < pageItems.Count; pageIndex++)
+        sprite.Textures.Clear();
+
+        foreach (var texturePageItem in pageItems)
         {
-            allTextures[pageItems[pageIndex].TexturePage.Name.ToString()] = pageItems[pageIndex].TexturePage;
+            allTextures[texturePageItem.TexturePage.Name.ToString()] = texturePageItem.TexturePage;
 
             var textureEntry = new UndertaleSprite.TextureEntry()
             {
-                Texture = pageItems[pageIndex]
+                Texture = texturePageItem
             };
 
-            if (sprite.Textures.Count - 1 < pageIndex)
-            {
-                sprite.Textures.Add(textureEntry);
-            }
-            else
-            {
-                sprite.Textures[pageIndex] = textureEntry;
-            }
+            sprite.Textures.Add(textureEntry);
         }
 
 

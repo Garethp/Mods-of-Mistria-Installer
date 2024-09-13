@@ -12,7 +12,7 @@ public class Mod
     
     public string Location;
     
-    public string Id { get => $"{Author}.{Name}"; }
+    public string Id => $"{Author.ToLower()}.{Name.ToLower()}".Replace(" ", "_");
 
     public static Mod FromManifest(string manifestLocation)
     {
