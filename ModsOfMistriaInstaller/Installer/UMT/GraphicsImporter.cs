@@ -199,15 +199,20 @@ public class GraphicsImporter
 
             gameData.Sprites.Add(sprite);
         }
-
+        
+        sprite.BBoxMode = spriteData.BoundingBoxMode ?? sprite.BBoxMode;
+        sprite.IsSpecialType = spriteData.SpecialType;
+        sprite.SVersion = spriteData.SpecialTypeVersion;
+        sprite.GMS2PlaybackSpeed = spriteData.SpecialPlaybackSpeed;
+        
         sprite.Width = pageItems[0].SourceWidth;
         sprite.Height = pageItems[0].SourceHeight;
         sprite.MarginLeft = spriteData.MarginLeft ?? sprite.MarginLeft;
         sprite.MarginRight = spriteData.MarginRight ?? pageItems[0].SourceWidth - 1;
         sprite.MarginTop = spriteData.MarginTop ?? sprite.MarginRight;
         sprite.MarginBottom = spriteData.MarginBottom ?? pageItems[0].SourceHeight - 1;
-        sprite.OriginX = spriteData.OriginX ?? sprite.OriginX;
-        sprite.OriginY = spriteData.OriginY ?? sprite.OriginY;
+        sprite.OriginXWrapper = spriteData.OriginX ?? sprite.OriginXWrapper;
+        sprite.OriginYWrapper = spriteData.OriginY ?? sprite.OriginYWrapper;
 
         if (spriteData.DeleteCollisionMask)
             sprite.CollisionMasks.Clear();
@@ -223,11 +228,6 @@ public class GraphicsImporter
         {
             EnsureSpriteInformation(gameData, "ui", sprite);
         }
-
-        sprite.BBoxMode = spriteData.BoundingBoxMode ?? sprite.BBoxMode;
-        sprite.IsSpecialType = spriteData.SpecialType;
-        sprite.SVersion = spriteData.SpecialTypeVersion;
-        sprite.GMS2PlaybackSpeed = spriteData.SpecialPlaybackSpeed;
 
         Dictionary<string, UndertaleEmbeddedTexture> allTextures = [];
 

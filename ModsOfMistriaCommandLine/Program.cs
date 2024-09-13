@@ -1,6 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-Console.WriteLine("Running Build 7");
+Console.WriteLine("Running Build 8");
 
 Standalone.Run();
 
