@@ -1,0 +1,15 @@
+{
+  "dolphin_tail": {
+    "name": "Dolphin Tail",
+    "description": "A dolphins tale.",
+    "ui_slot": "back",
+    "default_unlocked": true,
+    "ui_sub_category": "back",
+    "lutFile": "images/lut.png",
+    "uiItem": "images/ui.png",
+    "outlineFile": "images/outline.png",
+    "animationFiles": {
+      "back_gear": "images/tail_animation"
+    }
+  }
+}
