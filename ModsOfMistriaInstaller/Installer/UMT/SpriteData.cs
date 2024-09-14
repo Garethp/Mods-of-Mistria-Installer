@@ -40,3 +40,12 @@ public class SpriteData
 
     public Dictionary<string, UndertaleTexturePageItem> PageItems = [];
 }
+
+public class TilesetData
+{
+    public string Name;
+
+    public string Location;
+
+    public string BaseLocation;
+}

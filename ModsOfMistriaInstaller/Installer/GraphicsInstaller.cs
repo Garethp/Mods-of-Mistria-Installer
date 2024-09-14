@@ -7,7 +7,7 @@ public class GraphicsInstaller : IModuleInstaller
 {
     public void Install(string fieldsOfMistriaLocation, GeneratedInformation information, Action<string, string> reportStatus)
     {
-        if (information.Sprites.Count == 0) return;
+        if (information.Sprites.Count == 0 && information.Tilesets.Count == 0) return;
         
         var dataFile = new FileInfo(Path.Combine(fieldsOfMistriaLocation, "data.win"));
 
@@ -24,6 +24,12 @@ public class GraphicsInstaller : IModuleInstaller
         {
             importer.ImportSpriteData(fieldsOfMistriaLocation, gmData, information.Sprites[modName], modName);
         }
+        
+        foreach (var modName in information.Tilesets.Keys)
+        {
+            importer.ImportTilesetData(fieldsOfMistriaLocation, gmData, information.Tilesets[modName], modName);
+        }
+
         
         reportStatus("Writing Textures/Sprites", "");
         

@@ -18,6 +18,7 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         new SimpleConversationsGenerator(),
         new OutfitGenerator(),
         new SpriteGenerator(),
+        new TilesetGenerator(),
     ];
 
     private readonly List<IModuleInstaller> _installers = [

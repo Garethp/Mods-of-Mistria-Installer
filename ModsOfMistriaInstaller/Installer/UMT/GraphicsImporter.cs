@@ -52,6 +52,22 @@ public class GraphicsImporter
         }
     }
 
+    public void ImportTilesetData(
+        string fieldsOfMistriaPath,
+        UndertaleData gameData,
+        List<TilesetData> tilesets,
+        string modName)
+    {
+        foreach (var tilesetData in tilesets)
+        {
+            var tileset = gameData.Backgrounds.ByName(tilesetData.Name);
+            if (tileset is null) continue;
+            
+            using MagickImage newImage = TextureWorker.ReadBGRAImageFromFile(Path.Combine(tilesetData.BaseLocation, tilesetData.Location));
+            tileset.Texture.ReplaceTexture(newImage);
+        }
+    }
+    
     public void ImportSpriteData(
         string fieldsOfMistriaPath,
         UndertaleData gameData,

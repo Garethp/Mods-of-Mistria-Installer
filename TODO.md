@@ -12,16 +12,15 @@
  * [x] Generate correct checksums
  * [ ] Allow installers/generators to self-register
  * [ ] Add sounds?
- * [/] Rewrite to C#
+ * [x] Rewrite to C#
    * [x] Implement the Schedules Installer
    * [x] Implement the Conversations Installer
    * [x] Implement the Simple Conversations Generator
-   * [ ] Implement the Mist Generator
    * [x] Implement the Checksum Installer
    * [ ] Implement the Uninstaller
- * [/] Add UMT integration
+ * [x Add UMT integration
    * [x] Implement Sprite Installers
-   * [ ] Implement Tileset Generators/Installers
+   * [x] Implement Tileset Generators/Installers
    * [x] Implement Portrait Generators/Installers
  * [x] Add a way to check if an update has occurred for fresh installs
  * [x] Fetch modnames from the manifest
