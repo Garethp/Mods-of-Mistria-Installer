@@ -15,7 +15,6 @@ public class OutfitGenerator : IGenerator
 
         var information = new GeneratedInformation();
         var outfitsDirectory = Path.Combine(modLocation, "outfits");
-        var newSprites = new List<SpriteData>();
 
         foreach (var outfitFile in Directory.GetFiles(outfitsDirectory))
         {
@@ -23,6 +22,8 @@ public class OutfitGenerator : IGenerator
 
             foreach (var outfit in outfitJson.Properties())
             {
+                var newSprites = new List<SpriteData>();
+
                 if (outfit.Value is not JObject outfitData)
                 {
                     continue;
