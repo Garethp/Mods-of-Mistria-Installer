@@ -34,6 +34,24 @@ public class MistriaLocator
 
         return Path.GetFullPath(mistriaLocation);
     }
+    
+    public static string? GetModsLocation(string? mistriaLocation)
+    {
+        var possibleLocations = new List<string>();
+        if (mistriaLocation is not null && File.Exists(Path.Combine(mistriaLocation, "data.win")))
+        {
+            possibleLocations.Add(Path.Combine(mistriaLocation, "mods"));
+            possibleLocations.Add(Path.Combine(mistriaLocation, "Mods"));
+        }
+        
+        possibleLocations.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "mistria-mods"));
+        possibleLocations.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Mistria-Mods"));
+
+        return possibleLocations
+            .Where(location => Directory.Exists(location))
+            .Select(location => Path.GetFullPath(location))
+            .FirstOrDefault();
+    }
 
     private static IEnumerable<string> GetSteamLocations()
     {

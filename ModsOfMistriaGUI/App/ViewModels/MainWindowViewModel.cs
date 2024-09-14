@@ -13,27 +13,15 @@ public partial class MainWindowViewModel: ViewModelBase
 {
     public MainWindowViewModel()
     {
-        _mistriaLocation = MistriaLocator.GetMistriaLocation() ?? "";
+        MistriaLocation = MistriaLocator.GetMistriaLocation() ?? "";
+        ModsLocation = MistriaLocator.GetModsLocation(_mistriaLocation) ?? "";
         
-        var detectedModsLocation = _modOverride;
-
-        if (detectedModsLocation is null || !Directory.Exists(detectedModsLocation))
-        {
-            detectedModsLocation =
-                Path.Combine(_mistriaLocation, "mods");
-        }
-
-        if (!Directory.Exists(detectedModsLocation))
-        {
-            detectedModsLocation = Path.Combine(_mistriaLocation, "Mods");
-        }
-
-        if (Directory.Exists(detectedModsLocation))
+        if (Directory.Exists(ModsLocation))
         {
             Mods.Clear();
 
             mods = Directory
-                .GetDirectories(detectedModsLocation)
+                .GetDirectories(ModsLocation)
                 .Where(folder => File.Exists(Path.Combine(folder, "manifest.json")))
                 .Select(location => Mod.FromManifest(Path.Combine(location, "manifest.json")))
                 .ToList();
@@ -44,9 +32,22 @@ public partial class MainWindowViewModel: ViewModelBase
                 _author = mod.Author
             }));
         }
+
+        if (MistriaLocation.Equals(""))
+        {
+            InstallStatus = "Could not find Fields of Mistria location. Try placing this in the same folder as Fields of Mistria.";
+        } else if (ModsLocation.Equals(""))
+        {
+            InstallStatus = "Could not find a mods folder. Try creating a folder called 'mods' in the Fields of Mistria folder.";
+        } else if (Mods.Count == 0)
+        {
+            InstallStatus = "No mods found to install";
+        }
     }
 
     [ObservableProperty] string _installStatus = "";
+
+    [ObservableProperty] private string _modsLocation = "";
     
     [ObservableProperty] string _mistriaLocation = "";
 
@@ -57,11 +58,6 @@ public partial class MainWindowViewModel: ViewModelBase
     private bool _isInstalling;
     
     public ObservableCollection<ModModel> Mods { get; } = new ();
-
-    public List<string> GetMods()
-    {
-        return ["Mod 1", "mod 2"];
-    }
 
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private void InstallMods()
@@ -88,5 +84,5 @@ public partial class MainWindowViewModel: ViewModelBase
         _isInstalling = false;
     }
     
-    private bool CanInstall() => true && !_isInstalling;
+    private bool CanInstall() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !_isInstalling;
 }

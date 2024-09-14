@@ -7,46 +7,33 @@ public class Standalone
 {
     public static void Run()
     {
-        string? modOverride = null;
-
-        var detectedLocation = MistriaLocator.GetMistriaLocation();
-        if (detectedLocation == null)
+        var mistriaLocation = MistriaLocator.GetMistriaLocation();
+        if (mistriaLocation == null)
         {
             Console.WriteLine("Could not find Fields of Mistria location.");
             return;
         }
 
-        var detectedModsLocation = modOverride;
+        var modsLocation = MistriaLocator.GetModsLocation(mistriaLocation);
 
-        if (modOverride is null || !Directory.Exists(modOverride))
+        if (modsLocation is null || !Directory.Exists(modsLocation))
         {
-            detectedModsLocation =
-                Path.Combine(detectedLocation, "mods");
-        }
-
-        if (!Directory.Exists(detectedModsLocation))
-        {
-            detectedModsLocation = Path.Combine(detectedLocation, "Mods");
-        }
-
-        if (!Directory.Exists(detectedModsLocation))
-        {
-            Console.WriteLine($"Could not find a mods folder at {Path.Combine(detectedLocation, "mods")}.");
+            Console.WriteLine($"Could not find a mods folder at {Path.Combine(mistriaLocation, "mods")}.");
             return;
         }
 
-        Console.WriteLine($"Guessed Location: {detectedLocation}");
+        Console.WriteLine($"Guessed Location: {mistriaLocation}");
 
         var totalTime = new Stopwatch();
         totalTime.Start();
 
         var mods = Directory
-            .GetDirectories(detectedModsLocation)
+            .GetDirectories(modsLocation)
             .Where(folder => File.Exists(Path.Combine(folder, "manifest.json")))
             .Select(location => Mod.FromManifest(Path.Combine(location, "manifest.json")))
             .ToList();
 
-        var installer = new ModInstaller(detectedLocation);
+        var installer = new ModInstaller(mistriaLocation);
 
         installer.InstallMods(mods, (message, timeTaken) =>
         {
