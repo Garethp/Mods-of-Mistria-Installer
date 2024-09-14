@@ -34,7 +34,10 @@ public class FiddleInstaller : IModuleInstaller
         
         foreach (var source in allSources)
         {
-            merged.Merge(source);
+            merged.Merge(source, new JsonMergeSettings
+            {
+                MergeArrayHandling = MergeArrayHandling.Merge
+            });
         }
         
         File.WriteAllText(
