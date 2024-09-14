@@ -3,87 +3,151 @@
     "IsAnimated": true,
     "Location": "images/v1/bounce",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v1_opening": {
     "IsAnimated": true,
     "Location": "images/v1/opening",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v1_closed": {
     "Location": "images/v1/closed.png",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v1_opened": {
     "Location": "images/v1/opened.png",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v2_bounce": {
     "IsAnimated": true,
     "Location": "images/v2/bounce",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v2_opening": {
     "IsAnimated": true,
     "Location": "images/v2/opening",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v2_closed": {
     "Location": "images/v2/closed.png",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v2_opened": {
     "Location": "images/v2/opened.png",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v3_bounce": {
     "IsAnimated": true,
     "Location": "images/v3/bounce",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v3_opening": {
     "IsAnimated": true,
     "Location": "images/v3/opening",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v3_closed": {
     "Location": "images/v3/closed.png",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_spring_v3_opened": {
     "Location": "images/v3/opened.png",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_shadow_closed": {
     "Location": "images/shadow.png",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_shadow_opened": {
     "Location": "images/shadow.png",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_shadow_bounce": {
     "Location": "images/shadow.png",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_furniture_stone_storage_chest_shadow_opening": {
     "Location": "images/shadow.png",
     "OriginX": 16,
-    "OriginY": 56
+    "OriginY": 56,
+    "MarginLeft": 3,
+    "MarginRight": 29,
+    "MarginBottom": 39,
+    "MarginTop": 15
   },
   "spr_ui_item_decor_stone_storage_chest_v1": {
     "IsUiSprite": true,
