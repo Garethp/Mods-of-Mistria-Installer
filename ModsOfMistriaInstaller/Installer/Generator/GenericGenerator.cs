@@ -10,7 +10,7 @@ public abstract class GenericGenerator(string folderName) : IGenerator
         var files = Directory.GetFiles(Path.Combine(modLocation, folderName));
         var generatedInformation = new GeneratedInformation();
 
-        foreach (var file in files.Where(file => file.EndsWith(".json")))
+        foreach (var file in files.Order().Where(file => file.EndsWith(".json")))
         {
             var json = JObject.Parse(File.ReadAllText(file));
 

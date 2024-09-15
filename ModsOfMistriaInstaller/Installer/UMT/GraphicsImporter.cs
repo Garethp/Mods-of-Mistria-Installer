@@ -77,7 +77,7 @@ public class GraphicsImporter
         // @TODO: Either support multiple base paths or group sprites by base path
         var sourcePath = sprites[0].BaseLocation;
 
-        ClearTextureData(gameData, modName);
+        // ClearTextureData(gameData, modName);
 
         var packDir = Path.Combine(fieldsOfMistriaPath, "Packager");
         Directory.CreateDirectory(packDir);
@@ -184,6 +184,11 @@ public class GraphicsImporter
     void ImportSprite(UndertaleData gameData, SpriteData spriteData, string modName)
     {
         var count = spriteData.PageItems.Count;
+        if (spriteData.Location.Contains("stone_arch"))
+        {
+            var a = 1 + 1;
+        }
+        
         if (count == 0) return;
 
         var pageItems = spriteData

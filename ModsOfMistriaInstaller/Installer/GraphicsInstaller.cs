@@ -9,14 +9,32 @@ public class GraphicsInstaller : IModuleInstaller
     {
         if (information.Sprites.Count == 0 && information.Tilesets.Count == 0) return;
         
-        var dataFile = new FileInfo(Path.Combine(fieldsOfMistriaLocation, "data.win"));
-
+        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "data.bak.win")))
+        {
+            File.Copy(
+                Path.Combine(fieldsOfMistriaLocation, "data.win"),
+                Path.Combine(fieldsOfMistriaLocation, "data.bak.win")
+            );
+        }
+        else
+        {
+            // This is stupid. I don't know why we have to do this, but I ran into a bug where somehow just reading from
+            // the backup file isn't enough...
+            File.Delete(Path.Combine(fieldsOfMistriaLocation, "data.win"));
+            File.Copy(
+                Path.Combine(fieldsOfMistriaLocation, "data.bak.win"),
+                Path.Combine(fieldsOfMistriaLocation, "data.win")
+            );
+        }
+        
+        var readDataFile = new FileInfo(Path.Combine(fieldsOfMistriaLocation, "data.bak.win"));
+        
         reportStatus("Reading Textures/Sprites", "");
         
-        using var fileRead = dataFile.OpenRead();
+        var fileRead = readDataFile.OpenRead();
         var gmData = UndertaleIO.Read(fileRead);
         fileRead.Close();
-
+        
         reportStatus("Importing Textures/Sprites", "");
         var importer = new GraphicsImporter();
         
@@ -29,11 +47,11 @@ public class GraphicsInstaller : IModuleInstaller
         {
             importer.ImportTilesetData(fieldsOfMistriaLocation, gmData, information.Tilesets[modName], modName);
         }
-
         
         reportStatus("Writing Textures/Sprites", "");
         
-        using var fileWrite = dataFile.OpenWrite();
+        var writeDataFile = new FileInfo(Path.Combine(fieldsOfMistriaLocation, "data.win"));
+        var fileWrite = writeDataFile.OpenWrite();
         UndertaleIO.Write(fileWrite, gmData);
         fileWrite.Close();
     }

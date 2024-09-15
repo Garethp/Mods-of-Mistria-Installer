@@ -19,6 +19,7 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         new OutfitGenerator(),
         new SpriteGenerator(),
         new TilesetGenerator(),
+        new StoreGenerator(),
     ];
 
     private readonly List<IModuleInstaller> _installers = [
@@ -52,6 +53,7 @@ public class ModInstaller(string fieldsOfMistriaLocation)
             DeleteIfExists([fieldsOfMistriaLocation, "animation", "generated", "outlines.bak.json"]);
             DeleteIfExists([fieldsOfMistriaLocation, "animation", "generated", "player_asset_parts.bak.json"]);
             DeleteIfExists([fieldsOfMistriaLocation, "room_data", "points.bak.json"]);
+            DeleteIfExists([fieldsOfMistriaLocation, "data.bak.win"]);
         }
 
         var generatedInformation = new GeneratedInformation();

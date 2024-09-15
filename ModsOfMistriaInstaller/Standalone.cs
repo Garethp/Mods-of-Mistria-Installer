@@ -31,6 +31,7 @@ public class Standalone
             .GetDirectories(modsLocation)
             .Where(folder => File.Exists(Path.Combine(folder, "manifest.json")))
             .Select(location => Mod.FromManifest(Path.Combine(location, "manifest.json")))
+            .Where(mod => mod.CanInstall() == null)
             .ToList();
 
         var installer = new ModInstaller(mistriaLocation);

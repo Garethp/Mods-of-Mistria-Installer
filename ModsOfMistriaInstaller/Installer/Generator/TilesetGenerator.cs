@@ -13,7 +13,7 @@ public class TilesetGenerator: IGenerator
         var information = new GeneratedInformation();
         var directory = Path.Combine(mod.Location, "tilesets");
 
-        foreach (var file in Directory.GetFiles(directory))
+        foreach (var file in Directory.GetFiles(directory).Order())
         {
             var info = JObject.Parse(File.ReadAllText(file));
 

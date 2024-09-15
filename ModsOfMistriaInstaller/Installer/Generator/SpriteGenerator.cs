@@ -14,7 +14,7 @@ public class SpriteGenerator : IGenerator
         var spritesDirectory = Path.Combine(mod.Location, "sprites");
         var newSprites = new List<SpriteData>();
 
-        foreach (var file in Directory.GetFiles(spritesDirectory))
+        foreach (var file in Directory.GetFiles(spritesDirectory).Order())
         {
             var spriteInfo = JObject.Parse(File.ReadAllText(file));
 

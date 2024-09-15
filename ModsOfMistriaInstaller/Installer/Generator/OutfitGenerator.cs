@@ -16,7 +16,7 @@ public class OutfitGenerator : IGenerator
         var information = new GeneratedInformation();
         var outfitsDirectory = Path.Combine(modLocation, "outfits");
 
-        foreach (var outfitFile in Directory.GetFiles(outfitsDirectory))
+        foreach (var outfitFile in Directory.GetFiles(outfitsDirectory).Order())
         {
             var outfitJson = JObject.Parse(File.ReadAllText(outfitFile));
 

@@ -22,7 +22,7 @@ public class LocalisationGenerator: IGenerator
 
         var generatedInformation = new GeneratedInformation();
 
-        foreach (var localisationFile in localisationFiles.Where(file => file.EndsWith(".json")))
+        foreach (var localisationFile in localisationFiles.Order().Where(file => file.EndsWith(".json")))
         {
             var languageMatch = new Regex(".*?\\.(.*?).json$").Match(Path.GetFileName(localisationFile));
             var langauge = languageMatch.Success ? languageMatch.Groups[1].Value : "eng";

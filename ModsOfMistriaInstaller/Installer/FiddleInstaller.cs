@@ -19,11 +19,11 @@ public class FiddleInstaller : IModuleInstaller
             );
         }
         
-        if (information.Fiddles.Count == 0) return;
-        
         var existingFiddle = JObject.Parse(
             File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "__fiddle__.bak.json"))
         );
+
+        existingFiddle = new StoreInstaller().Install(existingFiddle, information, reportStatus);
         
         var allSources = new List<JObject> { existingFiddle };
         
@@ -36,7 +36,8 @@ public class FiddleInstaller : IModuleInstaller
         {
             merged.Merge(source, new JsonMergeSettings
             {
-                MergeArrayHandling = MergeArrayHandling.Merge
+                MergeArrayHandling = MergeArrayHandling.Merge,
+                MergeNullValueHandling = MergeNullValueHandling.Merge
             });
         }
         

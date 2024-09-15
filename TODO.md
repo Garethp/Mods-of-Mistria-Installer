@@ -31,3 +31,8 @@
    * [ ] Allow for selecting the mod folder
    * [x] Show the progress of the installation
  * [x] Add an example mod
+ * [x] When importing files, order them by name alphabetically
+ * [x] Add a `minInstallerVersion` and `manifestVersion` to the manifest
+ * [x] Add null handling to the fiddle merge
+ * [x] Add a shop generator
+ * [ ] Give the user a notice if there's a newer version of the installer

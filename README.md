@@ -50,11 +50,17 @@ documentation will be added in the future.
 {
   "author": "Mod Author Name",
   "name": "Mod Name",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "minInstallerVersion": "0.1.3",
+  "manifestVersion": 1
 }
 ```
 
 Your mod will be given an ID that's based on the author and name fields, so make sure that those two combined are unique.
+From version 0.1.3 onwards, the installer will check the `minInstallerVersion` field to make sure that the installer is
+new enough to install the mod and tell the user if they're unable to install the mod without updating the installer.
+The `manifestVersion` field isn't used yet, but will allow for backwards compatibility in future versions of the installer
+if large changes are made to how mods are structured.
 
 ### `fiddle/`
 JSON files in the `fiddle/` folder will get merged into the game's `__fiddle__.json` file. You can name the files however
@@ -98,6 +104,41 @@ in their own folder, separate from other sprites. Here's an example file:
 ```
 
 For a full example, check out the [`dolphin_tail`](./mods/dolphin_tail) example.
+
+### `stores/`
+If you want to add categories to a store, or new items to a category in a store, you can do so by placing a JSON in the
+`stores/` folder of your mod. In your JSON, you can either define a list of new categories to add to a store, a list
+of new items to add to categories or both. Below is an example of the options that you can set:
+
+```json
+{
+  "items": [
+    {
+      "item": "seed_turnip",
+      "store": "general",
+      "category": "modded_icon",
+      "season": "spring"
+    },
+    {
+      "item": { "cosmetic":  "froggy_hat" },
+      "store": "general",
+      "category": "modded_icon"
+    }
+  ],
+  "categories": [
+    {
+      "store": "general",
+      "icon_name": "modded_icon",
+      "sprite": "images/icon_modded.png"
+    }
+  ]
+}
+```
+
+If multiple mods add a category with the same `icon_name` to the same store, only one category by that name will be added.
+The `category` key for an item should always match the `icon_name` of the category you want to add it to, whether it's a
+category that's been modded in or a vanilla category. If you set the `season` key for an item, it will be added to the
+seasonal stock for that category, otherwise it will be added to the year-round stock.
 
 ### `sprites/`
 If you want to add new sprites to the game, you can do so by placing the sprites in the `images/` folder and then

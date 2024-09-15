@@ -74,7 +74,7 @@ public class SimpleConversationsGenerator : IGenerator
         var files = Directory.GetFiles(Path.Combine(modLocation, "conversations"));
         var generatedInformation = new GeneratedInformation();
 
-        foreach (var file in files.Where(file => file.EndsWith(".simple.json")))
+        foreach (var file in files.Order().Where(file => file.EndsWith(".simple.json")))
         {
             var simpleConversation = JObject.Parse(File.ReadAllText(file));
             var name = simpleConversation["name"].ToString();

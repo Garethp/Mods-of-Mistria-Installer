@@ -1,5 +1,6 @@
 ﻿
 using Garethp.ModsOfMistriaInstaller.Installer.UMT;
+using Garethp.ModsOfMistriaInstaller.Models;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstaller;
@@ -27,6 +28,10 @@ public class GeneratedInformation
 
     public Dictionary<string, List<TilesetData>> Tilesets = [];
     
+    public List<StoreCategory> StoreCategories = [];
+    
+    public List<StoreItem> StoreItems = [];
+    
     public void Merge(GeneratedInformation other)
     {
         Scripts.AddRange(other.Scripts);
@@ -37,6 +42,8 @@ public class GeneratedInformation
         Schedules.AddRange(other.Schedules);
         Outlines.AddRange(other.Outlines);
         AssetParts.AddRange(other.AssetParts);
+        StoreCategories.AddRange(other.StoreCategories);
+        StoreItems.AddRange(other.StoreItems);
         
         foreach (var modName in other.Sprites.Keys)
         {

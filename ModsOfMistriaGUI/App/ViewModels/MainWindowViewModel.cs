@@ -29,7 +29,8 @@ public partial class MainWindowViewModel: ViewModelBase
             mods.ForEach(mod => Mods.Add(new ModModel()
             {
                 _name = mod.Name,
-                _author = mod.Author
+                _author = mod.Author,
+                CanInstall = mod.CanInstall()
             }));
         }
 
@@ -42,6 +43,9 @@ public partial class MainWindowViewModel: ViewModelBase
         } else if (Mods.Count == 0)
         {
             InstallStatus = "No mods found to install";
+        } else if (Mods.Any(mod => mod.CanInstall is not null))
+        {
+            InstallStatus = "Some mods require a newer version of the installer. Please update the installer.";
         }
     }
 
@@ -84,5 +88,5 @@ public partial class MainWindowViewModel: ViewModelBase
         _isInstalling = false;
     }
     
-    private bool CanInstall() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !_isInstalling;
+    private bool CanInstall() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !_isInstalling && Mods.All(mod => mod.CanInstall is null);
 }
