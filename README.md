@@ -7,7 +7,7 @@ release up until now, each mod will need to be updated to work with this install
 ## Installation
 1. Create a mods folder to put your mods
    * On Windows, you'll want to create "mods" folder inside your Fields of Mistria folder, next to the `data.win` file
-   * On the Stem Deck (or other Linux distros) you can also create a mods folder inside your Fields of Mistria folder, 
+   * On the Steam Deck (or other Linux distros) you can also create a mods folder inside your Fields of Mistria folder, 
      or you can create a `mistria-mods` folder in your home directory.
 2. Download the installer from the [releases page](https://github.com/Garethp/Mods-of-Mistria-Installer/releases).
 3. Double-click the installer to run it. If it's not able to detect the Fields of Mistria location, try placing the
@@ -159,7 +159,7 @@ creating a definition JSON file in the `sprites/` folder. Here's an example file
 }
 ```
 
-For a full example, take a look at the [`Effe's Decot - Fridge`](./mods/Effe's%20Decor%20-%20Fridge) example. Files 
+For a full example, take a look at the [`Effe's Decor - Fridge`](./mods/Effe's%20Decor%20-%20Fridge) example. Files 
 that are multiple frames of the same animation should be in their own folder, separate from other sprites. For reference,
 the full list of sprite properties that you can control are:
 
