@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         xmlns:vm="using:Garethp.ModsOfMistriaGUI.App.ViewModels"
+        xmlns:i="https://github.com/projektanker/icons.avalonia"
         x:Class="Garethp.ModsOfMistriaGUI.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Mods Of Mistria Installer"
@@ -37,7 +38,28 @@
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate>
                                     <WrapPanel>
-                                        <CheckBox IsChecked="true"><TextBlock Text="{Binding Full}" /></CheckBox>
+                                        <CheckBox IsEnabled="{Binding !InError}" IsChecked="{Binding Enabled}">
+                                            <TextBlock Text="{Binding Full}" />
+                                        </CheckBox>
+
+                                        <Image Height="16" Margin="5 0 0 0" IsVisible="{Binding InWarning}">
+                                            <ToolTip.Tip>
+                                                <TextBlock Text="{Binding Warnings}"></TextBlock>
+                                            </ToolTip.Tip>
+                                            <Image.Source>
+                                                <i:IconImage Value="fa-exclamation-triangle" Brush="Orange" />
+                                            </Image.Source>
+                                        </Image>
+
+                                        <Image Height="16" Margin="5 0 0 0" IsVisible="{Binding InError}">
+                                            <ToolTip.Tip>
+                                                <TextBlock Text="{Binding Errors}"></TextBlock>
+                                            </ToolTip.Tip>
+                                            <Image.Source>
+                                                <i:IconImage Value="fa-exclamation-triangle" Brush="OrangeRed" />
+                                            </Image.Source>
+                                        </Image>
+
                                     </WrapPanel>
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>

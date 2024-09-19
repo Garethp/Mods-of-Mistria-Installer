@@ -16,7 +16,7 @@ release up until now, each mod will need to be updated to work with this install
 5. Next time the game updates, run the installer again to re-install your mods
 
 ## Troubleshooting
-**The installer says it cannot find teh Fields of Mistria Location**
+**The installer says it cannot find the Fields of Mistria Location**
 Try placing the installer in your Fields of Mistria folder, next to `data.win`, this should allow the installer to find
 the game.
 
@@ -66,7 +66,7 @@ if large changes are made to how mods are structured.
 JSON files in the `fiddle/` folder will get merged into the game's `__fiddle__.json` file. You can name the files however
 you want and have multiple JSON values in one file or split them up into multiple files as you see fit.
 
-### `localistaion/`
+### `localisation/`
 JSON files in the `localisation/` folder will get merged into the game's `__localisation__.json` file. You can name them
 however you want, but they should end in `.eng.json` or `.jpn.json` (or using a similar language code) to specify the
 language they're for. For now Mistria only supports English, but more languages may be supported in the future. Here's

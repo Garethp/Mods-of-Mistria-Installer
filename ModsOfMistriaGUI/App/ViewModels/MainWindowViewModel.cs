@@ -5,7 +5,7 @@ using Avalonia.Skia.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Garethp.ModsOfMistriaGUI.App.Models;
-using Garethp.ModsOfMistriaInstaller;
+using Garethp.ModsOfMistriaInstallerLib;
 
 namespace Garethp.ModsOfMistriaGUI.App.ViewModels;
 
@@ -26,14 +26,15 @@ public partial class MainWindowViewModel: ViewModelBase
                 .Select(location => Mod.FromManifest(Path.Combine(location, "manifest.json")))
                 .ToList();
             
+            new ModInstaller(MistriaLocation).ValidateMods(mods);
+            
             mods.ForEach(mod => Mods.Add(new ModModel()
             {
-                _name = mod.Name,
-                _author = mod.Author,
+                mod = mod,
                 CanInstall = mod.CanInstall()
             }));
         }
-
+        
         if (MistriaLocation.Equals(""))
         {
             InstallStatus = "Could not find Fields of Mistria location. Try placing this in the same folder as Fields of Mistria.";
@@ -69,19 +70,16 @@ public partial class MainWindowViewModel: ViewModelBase
         InstallStatus = "Installing mods...";
         _isInstalling = true;
         
-        Task.Run(() =>
-        {
-            backgroundInstall();
-        });
+        Task.Run(backgroundInstall);
     }
 
     private async void backgroundInstall()
     {
         var installer = new ModInstaller(_mistriaLocation);
 
-        installer.InstallMods(mods, (message, timeTaken) =>
+        installer.InstallMods(Mods.Where(model => model.Enabled).Select(model => model.mod).ToList(), (message, timeTaken) =>
         {
-            Console.Write($"Ran {message} in {timeTaken}");
+            Console.WriteLine($"Ran {message} in {timeTaken}");
             InstallStatus = message;
         });
 

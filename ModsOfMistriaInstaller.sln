@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModsOfMistriaInstaller", "ModsOfMistriaInstaller\ModsOfMistriaInstaller.csproj", "{0D2D2F9F-DF6B-44BD-AF8D-316C0A63B3CE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModsOfMistriaInstallerLib", "ModsOfMistriaInstallerLib\ModsOfMistriaInstallerLib.csproj", "{0D2D2F9F-DF6B-44BD-AF8D-316C0A63B3CE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModsOfMistriaCommandLine", "ModsOfMistriaCommandLine\ModsOfMistriaCommandLine.csproj", "{C4A8178F-8256-4454-9DEB-E8B4FB6223CB}"
 EndProject

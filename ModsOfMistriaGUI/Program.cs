@@ -1,4 +1,6 @@
 ﻿using Avalonia;
+using Projektanker.Icons.Avalonia;
+using Projektanker.Icons.Avalonia.FontAwesome;
 
 namespace Garethp.ModsOfMistriaGUI;
 
@@ -16,8 +18,12 @@ public class Program
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App.App>()
+    {
+        IconProvider.Current.Register<FontAwesomeIconProvider>();
+        
+        return AppBuilder.Configure<App.App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace();
+    }
 }
