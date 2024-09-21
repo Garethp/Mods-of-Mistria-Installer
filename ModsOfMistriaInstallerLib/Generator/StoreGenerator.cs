@@ -1,4 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models;
 using Newtonsoft.Json;
 
@@ -50,19 +51,19 @@ public class StoreGenerator: IGenerator
             }
             catch (Exception e)
             {
-                validation.AddError(mod, file, $"Could not parse file with message: {e.Message}");
+                validation.AddError(mod, file, string.Format(Resources.CouldNotParseJSON, e.Message));
                 continue;
             }
 
             if (storeData is null)
             {
-                validation.AddError(mod, file, $"No data was found in file");
+                validation.AddError(mod, file, Resources.NoDataInJSON);
                 continue;
             }
             
             if (storeData.Categories.Count == 0 && storeData.Items.Count == 0)
             {
-                validation.AddWarning(mod, file, "Store file has no categories or items.");
+                validation.AddWarning(mod, file, Resources.StoreFileHasNoData);
             }
             
             storeData.Categories.ForEach(category =>

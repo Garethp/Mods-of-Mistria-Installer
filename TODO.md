@@ -51,3 +51,5 @@
   * [ ] `room_data/hyper_points.json`
   * [ ] `t2_input.json`
   * [ ] `sounds`
+* [ ] Add translations for exceptions
+* [ ] Add translations for validation prefixes

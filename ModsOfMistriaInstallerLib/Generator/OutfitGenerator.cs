@@ -1,4 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -162,19 +164,19 @@ public class OutfitGenerator : IGenerator
             }
             catch (Exception e)
             {
-                validation.AddError(mod, file, $"Could not parse file with message: {e.Message}");
+                validation.AddError(mod, file, string.Format(Resources.CouldNotParseJSON, e.Message));
                 continue;
             }
             
             if (outfits is null)
             {
-                validation.AddError(mod, file, $"No data was found in file");
+                validation.AddError(mod, file, Resources.NoDataInJSON);
                 continue;
             }
 
             if (outfits.Count == 0)
             {
-                validation.AddWarning(mod, file, "Outfit file has no outfits.");
+                validation.AddWarning(mod, file, Resources.OutfitFileHasNoOutfits);
             }
 
             foreach (var outfitName in outfits.Keys)

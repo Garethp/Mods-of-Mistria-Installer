@@ -1,4 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -63,19 +64,19 @@ public class TilesetGenerator: IGenerator
             } 
             catch (Exception e)
             {
-                validation.AddError(mod, file, $"Could not parse file with message: {e.Message}");
+                validation.AddError(mod, file, string.Format(Resources.CouldNotParseJSON, e.Message));
                 continue;
             }
             
             if (tilesets is null)
             {
-                validation.AddError(mod, file, "Could not parse tilesets.");
+                validation.AddError(mod, file, Resources.NoDataInJSON);
                 continue;
             }
             
             if (tilesets.Count == 0)
             {
-                validation.AddWarning(mod, file, "Tileset file has no tilesets.");
+                validation.AddWarning(mod, file, Resources.TilesetsFileEmpty);
             }
             
             foreach (var tilesetName in tilesets.Keys)

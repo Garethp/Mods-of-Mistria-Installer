@@ -78,6 +78,69 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not parse file with message: {0}.
+        /// </summary>
+        public static string CouldNotParseJSON {
+            get {
+                return ResourceManager.GetString("CouldNotParseJSON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Outfit {0} has no animation files..
+        /// </summary>
+        public static string ErrorOutfitNoAnimation {
+            get {
+                return ResourceManager.GetString("ErrorOutfitNoAnimation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Outfit has no description..
+        /// </summary>
+        public static string ErrorOutfitNoDescription {
+            get {
+                return ResourceManager.GetString("ErrorOutfitNoDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Outfit has no name..
+        /// </summary>
+        public static string ErrorOutfitNoName {
+            get {
+                return ResourceManager.GetString("ErrorOutfitNoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Outfit {0} has not defined ui_sub_category..
+        /// </summary>
+        public static string ErrorOutfitNoSubCategory {
+            get {
+                return ResourceManager.GetString("ErrorOutfitNoSubCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Outfit {0} has not defined ui_slot..
+        /// </summary>
+        public static string ErrorOutfitNoUiSlot {
+            get {
+                return ResourceManager.GetString("ErrorOutfitNoUiSlot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Category has no icon name..
+        /// </summary>
+        public static string ErrorStoreCategoryNoName {
+            get {
+                return ResourceManager.GetString("ErrorStoreCategoryNoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Generating information for {0}.
         /// </summary>
         public static string GeneratingInformationForMod {
@@ -96,6 +159,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Importing Textures/Sprites.
+        /// </summary>
+        public static string ImportingSprites {
+            get {
+                return ResourceManager.GetString("ImportingSprites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Finished.
         /// </summary>
         public static string InstallCompleted {
@@ -110,6 +182,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string InstalledInReporter {
             get {
                 return ResourceManager.GetString("InstalledInReporter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} does not have a value.
+        /// </summary>
+        public static string ItemDoesNotHaveValue {
+            get {
+                return ResourceManager.GetString("ItemDoesNotHaveValue", resourceCulture);
             }
         }
         
@@ -222,6 +303,33 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No data was found in file.
+        /// </summary>
+        public static string NoDataInJSON {
+            get {
+                return ResourceManager.GetString("NoDataInJSON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Outfit file has no outfits..
+        /// </summary>
+        public static string OutfitFileHasNoOutfits {
+            get {
+                return ResourceManager.GetString("OutfitFileHasNoOutfits", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reading Textures/Sprites.
+        /// </summary>
+        public static string ReadingSprites {
+            get {
+                return ResourceManager.GetString("ReadingSprites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Skipping {0} for the following Errors:.
         /// </summary>
         public static string SkippingModBecauseErrors {
@@ -236,6 +344,69 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string SkippingModBecauseInstallerOld {
             get {
                 return ResourceManager.GetString("SkippingModBecauseInstallerOld", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} points to a sprite at {1} but that file does not exist.
+        /// </summary>
+        public static string SpriteFileDoesNotExist {
+            get {
+                return ResourceManager.GetString("SpriteFileDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sprite file has no sprites..
+        /// </summary>
+        public static string SpriteFileHasNoSprites {
+            get {
+                return ResourceManager.GetString("SpriteFileHasNoSprites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} points to a sprite folder at {1} but that folder does not exist.
+        /// </summary>
+        public static string SpriteFolderDoesNotExist {
+            get {
+                return ResourceManager.GetString("SpriteFolderDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} points to a sprite folder at {1} but that directory is empty.
+        /// </summary>
+        public static string SpriteFolderIsEmpty {
+            get {
+                return ResourceManager.GetString("SpriteFolderIsEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store file has no categories or items..
+        /// </summary>
+        public static string StoreFileHasNoData {
+            get {
+                return ResourceManager.GetString("StoreFileHasNoData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tileset file has no tilesets..
+        /// </summary>
+        public static string TilesetsFileEmpty {
+            get {
+                return ResourceManager.GetString("TilesetsFileEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Writing Textures/Sprites.
+        /// </summary>
+        public static string WritingSprites {
+            get {
+                return ResourceManager.GetString("WritingSprites", resourceCulture);
             }
         }
     }

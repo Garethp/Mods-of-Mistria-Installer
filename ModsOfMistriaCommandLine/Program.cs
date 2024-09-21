@@ -1,8 +1,15 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-Console.WriteLine("Running Build 8");
+using System.Reflection;
+using ModsOfMistriaCommandLine.Lang;
+
+var currentExe = Assembly.GetEntryAssembly();
+var currentVersionString =
+    currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
+
+Console.WriteLine(Resources.RunningBuild, currentVersionString);
 
 Standalone.Run();
 
-Console.WriteLine("Completed. Press any key to exit.");
+Console.WriteLine(Resources.Completed);
 Console.ReadKey();

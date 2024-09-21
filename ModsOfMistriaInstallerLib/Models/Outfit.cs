@@ -1,4 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -33,22 +34,22 @@ public class Outfit
     {
         if (string.IsNullOrWhiteSpace(Name))
         {
-            validation.AddError(mod, file, "Outfit has no name.");
+            validation.AddError(mod, file, Resources.ErrorOutfitNoName);
         }
 
         if (string.IsNullOrWhiteSpace(Description))
         {
-            validation.AddError(mod, file, "Outfit has no description.");
+            validation.AddError(mod, file, Resources.ErrorOutfitNoDescription);
         }
 
         if (string.IsNullOrWhiteSpace(UiSlot))
         {
-            validation.AddError(mod, file, $"Outfit {id} has not defined ui_slot.");
+            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoUiSlot, id));
         }
 
         if (string.IsNullOrWhiteSpace(UiSubCategory))
         {
-            validation.AddError(mod, file, $"Outfit {id} has not defined ui_sub_category.");
+            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoSubCategory, id));
         }
 
         if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s lutFile", LutFile) is { } lutError)
@@ -68,7 +69,7 @@ public class Outfit
 
         if (AnimationFiles.Count == 0)
         {
-            validation.AddError(mod, file, $"Outfit {id} has no animation files.");
+            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoAnimation, id));
         }
 
         foreach (var animationType in AnimationFiles.Keys)

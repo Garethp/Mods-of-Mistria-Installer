@@ -1,4 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -19,7 +20,7 @@ public class StoreCategory
     {
         if (string.IsNullOrWhiteSpace(IconName))
         {
-            validation.AddError(mod, file, "Category has no icon name.");
+            validation.AddError(mod, file, Resources.ErrorStoreCategoryNoName);
         }
         
         if (ValidationTools.CheckSpriteFileExists(mod, $"Category's sprite", Sprite) is { } spriteError)

@@ -35,10 +35,12 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AUndertaleSimpleResourcesList_00602_002Ecs_002Fl_003AC_0021_003FUsers_003FGareth_003FAppData_003FRoaming_003FJetBrains_003FRider2024_002E2_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F508d5d4bc8b34341869387de1734227c104400_003F4a_003Fd64a14c1_003FUndertaleSimpleResourcesList_00602_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AUndertaleSound_002Ecs_002Fl_003AC_0021_003FUsers_003FGareth_003FAppData_003FRoaming_003FJetBrains_003FRider2024_002E2_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F508d5d4bc8b34341869387de1734227c104400_003Ffc_003F477bb3cf_003FUndertaleSound_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AValidationUtils_002Ecs_002Fl_003AC_0021_003FUsers_003FGareth_003FAppData_003FRoaming_003FJetBrains_003FRider2024_002E2_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F7e62198beab24380bbac29171862d1d8adf10_003F92_003Fe69564b3_003FValidationUtils_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
+	<s:String x:Key="/Default/CodeInspection/PencilsConfiguration/ActualSeverity/@EntryValue">INFO</s:String>
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
   &lt;Assembly Path="D:\SteamLibrary\steamapps\common\RimWorld\Mods\FoMInstaller\packages\UndertaleModLib.dll" /&gt;&#xD;
   &lt;Assembly Path="C:\Users\Gareth\RiderProjects\FoMInstaller\ModsOfMistriaInstaller\packages\UndertaleModLib.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String>
+	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=ModsOfMistriaCommandLine_002FLang_002FResources/@EntryIndexedValue">False</s:Boolean>
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=ModsOfMistriaGUI_002FApp_002FAssets_002FLang_002FResources/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=ModsOfMistriaGUI_002FApp_002FLang_002FResources/@EntryIndexedValue">False</s:Boolean>
 	<s:Boolean x:Key="/Default/ResxEditorPersonal/CheckedGroups/=ModsOfMistriaInstallerLib_002FLang_002FResources/@EntryIndexedValue">True</s:Boolean>

@@ -78,4 +78,61 @@
     <data name="ModsInstalledInTime" xml:space="preserve">
         <value>Mods installed in {0}</value>
     </data>
+    <data name="ItemDoesNotHaveValue" xml:space="preserve">
+        <value>{0} does not have a value</value>
+    </data>
+    <data name="SpriteFileDoesNotExist" xml:space="preserve">
+        <value>{0} points to a sprite at {1} but that file does not exist</value>
+    </data>
+    <data name="SpriteFolderDoesNotExist" xml:space="preserve">
+        <value>{0} points to a sprite folder at {1} but that folder does not exist</value>
+    </data>
+    <data name="SpriteFolderIsEmpty" xml:space="preserve">
+        <value>{0} points to a sprite folder at {1} but that directory is empty</value>
+    </data>
+    <data name="CouldNotParseJSON" xml:space="preserve">
+        <value>Could not parse file with message: {0}</value>
+    </data>
+    <data name="NoDataInJSON" xml:space="preserve">
+        <value>No data was found in file</value>
+    </data>
+    <data name="OutfitFileHasNoOutfits" xml:space="preserve">
+        <value>Outfit file has no outfits.</value>
+    </data>
+    <data name="SpriteFileHasNoSprites" xml:space="preserve">
+        <value>Sprite file has no sprites.</value>
+    </data>
+    <data name="StoreFileHasNoData" xml:space="preserve">
+        <value>Store file has no categories or items.</value>
+    </data>
+    <data name="TilesetsFileEmpty" xml:space="preserve">
+        <value>Tileset file has no tilesets.</value>
+    </data>
+    <data name="ReadingSprites" xml:space="preserve">
+        <value>Reading Textures/Sprites</value>
+    </data>
+    <data name="ImportingSprites" xml:space="preserve">
+        <value>Importing Textures/Sprites</value>
+    </data>
+    <data name="WritingSprites" xml:space="preserve">
+        <value>Writing Textures/Sprites</value>
+    </data>
+    <data name="ErrorOutfitNoName" xml:space="preserve">
+        <value>Outfit has no name.</value>
+    </data>
+    <data name="ErrorOutfitNoDescription" xml:space="preserve">
+        <value>Outfit has no description.</value>
+    </data>
+    <data name="ErrorOutfitNoUiSlot" xml:space="preserve">
+        <value>Outfit {0} has not defined ui_slot.</value>
+    </data>
+    <data name="ErrorOutfitNoSubCategory" xml:space="preserve">
+        <value>Outfit {0} has not defined ui_sub_category.</value>
+    </data>
+    <data name="ErrorOutfitNoAnimation" xml:space="preserve">
+        <value>Outfit {0} has no animation files.</value>
+    </data>
+    <data name="ErrorStoreCategoryNoName" xml:space="preserve">
+        <value>Category has no icon name.</value>
+    </data>
 </root>

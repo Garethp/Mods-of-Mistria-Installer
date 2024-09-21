@@ -1,4 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -77,19 +78,19 @@ public class SpriteGenerator : IGenerator
             } 
             catch (Exception e)
             {
-                validation.AddError(mod, file, $"Could not parse file with message: {e.Message}");
+                validation.AddError(mod, file, string.Format(Resources.CouldNotParseJSON, e.Message));
                 continue;
             }
             
             if (sprites is null)
             {
-                validation.AddError(mod, file, "Could not parse file");
+                validation.AddError(mod, file, Resources.NoDataInJSON);
                 continue;
             }
 
             if (sprites.Count == 0)
             {
-                validation.AddWarning(mod, file, "Sprite file has no sprites.");
+                validation.AddWarning(mod, file, Resources.SpriteFileHasNoSprites);
             }
 
             foreach (var spriteName in sprites.Keys)
