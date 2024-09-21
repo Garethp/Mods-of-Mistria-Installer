@@ -26,3 +26,4 @@
 * [ ] Add a JSON browser
 * [ ] Scramble JSON automatically on install
 * [ ] Cutscene generator
+* [ ] Automatically refresh mods when a change has been made
