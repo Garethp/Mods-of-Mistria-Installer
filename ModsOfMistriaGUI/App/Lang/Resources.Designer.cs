@@ -175,5 +175,23 @@ namespace ModsOfMistriaGUI.App.Lang {
                 return ResourceManager.GetString("NoModsToInstall", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A new version of the Mods Of Mistria Installer is available, please update.
+        /// </summary>
+        public static string UpdateNagMessage {
+            get {
+                return ResourceManager.GetString("UpdateNagMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Version Available.
+        /// </summary>
+        public static string UpdateNagTitle {
+            get {
+                return ResourceManager.GetString("UpdateNagTitle", resourceCulture);
+            }
+        }
     }
 }

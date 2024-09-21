@@ -19,6 +19,10 @@
         <PublishReadyToRun>true</PublishReadyToRun>
         <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <PublishSingleFile>false</PublishSingleFile>
+    </PropertyGroup>
     
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x86'">
         <AssemblyName>ModsOfMistriaInstaller-cli-win-x86</AssemblyName>

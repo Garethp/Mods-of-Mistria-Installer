@@ -39,11 +39,11 @@
   * [ ] Validate Simple Conversation
   * [x] Show errors/warnings on Command Line
   * [x] Show errors/warnings in the GUI
-  * [ ] Perform exception checking when reading mod manifest
+  * [x] Perform exception checking when reading mod manifest
 * [x] Show warnings and errors in the GUI
 * [x] Allow users to select which mods to install
 * [ ] Store selected/deselected mods to install in a JSON file in the mods folder
-* [ ] Give the user a notice if there's a newer version of the installer
+* [x] Give the user a notice if there's a newer version of the installer
 * [ ] Allow mods to declare dependencies on other mods
 * [ ] New installers:
   * [ ] `animation/generated/player_tools.json`

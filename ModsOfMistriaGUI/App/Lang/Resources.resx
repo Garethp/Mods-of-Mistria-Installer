@@ -62,4 +62,10 @@
     <data name="ModHasErrors" xml:space="preserve">
         <value>This mod has errors and will not install</value>
     </data>
+    <data name="UpdateNagTitle" xml:space="preserve">
+        <value>New Version Available</value>
+    </data>
+    <data name="UpdateNagMessage" xml:space="preserve">
+        <value>A new version of the Mods Of Mistria Installer is available, please update</value>
+    </data>
 </root>
