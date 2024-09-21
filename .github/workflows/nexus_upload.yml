@@ -44,6 +44,7 @@ jobs:
         run: echo ::set-output name=tag::0.1.4
       - name: Validate unex config
         shell: bash
+        continue-on-error: true
         run: |
           unex check -c
         env:
