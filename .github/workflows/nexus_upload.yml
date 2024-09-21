@@ -17,6 +17,7 @@ jobs:
         configuration: [Release]
 
     runs-on: ubuntu-latest
+    environment: NEXUS_TOKEN
 
     steps:
       - uses: actions/checkout@v4
