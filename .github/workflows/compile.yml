@@ -42,4 +42,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          gh release upload v0.1.4 Release/*
+          gh release upload ${{github.event.release.tag_name}} Release/*
