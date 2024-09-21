@@ -23,6 +23,8 @@ public partial class ModModel: ObservableObject
     public bool InWarning => mod.validation.Status == ValidationStatus.Warning;
     public bool InError => mod.validation.Status == ValidationStatus.Invalid;
     
+    public bool IsValid => mod.validation.Status == ValidationStatus.Valid;
+    
     public string Warnings => String.Join("\r\n", mod.validation.Warnings.Select(warning => warning.Message).ToList());
     
     public string Errors => String.Join("\r\n", mod.validation.Errors.Select(warning => warning.Message).ToList());

@@ -37,30 +37,39 @@ public class Mod
         
         var manifest = JObject.Parse(File.ReadAllText(manifestLocation));
         
-        if (!manifest.ContainsKey("author"))
+        var mod = new Mod
         {
-            throw new Exception(Resources.ManifestHasNoAuthor);
-        }
-        
-        if (!manifest.ContainsKey("name"))
-        {
-            throw new Exception(Resources.ManifestHasNoName);
-        }
-        
-        if (!manifest.ContainsKey("version"))
-        {
-            throw new Exception(Resources.ManifestHasNoVersion);
-        }
-
-        return new Mod
-        {
-            Name = manifest["name"].ToString(),
-            Author = manifest["author"].ToString(),
-            Version = manifest["version"].ToString(),
-            Location = Path.GetDirectoryName(manifestLocation),
+            Name = manifest["name"]?.ToString() ?? "",
+            Author = manifest["author"]?.ToString() ?? "",
+            Version = manifest["version"]?.ToString() ?? "",
+            Location = Path.GetDirectoryName(manifestLocation) ?? "",
             MinimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0",
             ManifestVersion = manifest["manifestVersion"]?.ToString() ?? "1",
         };
+
+        mod.Validate();
+
+        return mod;
+    }
+
+    public Validation Validate()
+    {
+        if (string.IsNullOrEmpty(Author))
+        {
+            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"), Resources.ManifestHasNoAuthor));
+        }
+        
+        if (string.IsNullOrEmpty(Name))
+        {
+            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"), Resources.ManifestHasNoName));
+        }
+
+        if (string.IsNullOrEmpty(Version))
+        {
+            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"), Resources.ManifestHasNoVersion));
+        }
+        
+        return validation;
     }
 
     public string? CanInstall()

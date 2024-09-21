@@ -56,4 +56,10 @@
     <data name="InstallInProgress" xml:space="preserve">
         <value>Installing mods...</value>
     </data>
+    <data name="ModHasWarnings" xml:space="preserve">
+        <value>This mod has warnings that can be ignored</value>
+    </data>
+    <data name="ModHasErrors" xml:space="preserve">
+        <value>This mod has errors and will not install</value>
+    </data>
 </root>

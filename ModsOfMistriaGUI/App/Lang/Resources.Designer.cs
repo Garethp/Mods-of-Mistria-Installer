@@ -132,6 +132,24 @@ namespace ModsOfMistriaGUI.App.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This mod has errors and will not install.
+        /// </summary>
+        public static string ModHasErrors {
+            get {
+                return ResourceManager.GetString("ModHasErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This mod has warnings that can be ignored.
+        /// </summary>
+        public static string ModHasWarnings {
+            get {
+                return ResourceManager.GetString("ModHasWarnings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Some mods require a newer version of the installer. Please update the installer..
         /// </summary>
         public static string ModsRequireNewerVersion {
