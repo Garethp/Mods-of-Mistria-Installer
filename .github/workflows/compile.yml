@@ -33,6 +33,6 @@ jobs:
       - name: Publish ${{ matrix.arch }} CLI
         run: dotnet publish ${{ matrix.project }} -c ${{ matrix.configuration }} -r ${{ matrix.arch }} -o Release
       - name: Upload ${{ matrix.arch }} CLI
-        uses: kittaakos/upload-artifact-as-is@v1
+        uses: kittaakos/upload-artifact-as-is@v0
         with:
           path: Release
