@@ -132,6 +132,24 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Shadow {0} has no Location set.
+        /// </summary>
+        public static string ErrorShadowHasNoLocation {
+            get {
+                return ResourceManager.GetString("ErrorShadowHasNoLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shadow {0} does not have a regular_sprite_name.
+        /// </summary>
+        public static string ErrorShadowHasNoSprite {
+            get {
+                return ResourceManager.GetString("ErrorShadowHasNoSprite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Category has no icon name..
         /// </summary>
         public static string ErrorStoreCategoryNoName {
@@ -398,6 +416,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string TilesetsFileEmpty {
             get {
                 return ResourceManager.GetString("TilesetsFileEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Shadow file has no shadows..
+        /// </summary>
+        public static string WarningShadowFileNoShadows {
+            get {
+                return ResourceManager.GetString("WarningShadowFileNoShadows", resourceCulture);
             }
         }
         

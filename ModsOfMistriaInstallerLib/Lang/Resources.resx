@@ -135,4 +135,13 @@
     <data name="ErrorStoreCategoryNoName" xml:space="preserve">
         <value>Category has no icon name.</value>
     </data>
+    <data name="ErrorShadowHasNoLocation" xml:space="preserve">
+        <value>Shadow {0} has no Location set</value>
+    </data>
+    <data name="WarningShadowFileNoShadows" xml:space="preserve">
+        <value>Shadow file has no shadows.</value>
+    </data>
+    <data name="ErrorShadowHasNoSprite" xml:space="preserve">
+        <value>Shadow {0} does not have a regular_sprite_name</value>
+    </data>
 </root>

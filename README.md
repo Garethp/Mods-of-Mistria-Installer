@@ -130,6 +130,12 @@ of new items to add to categories or both. Below is an example of the options th
       "item": { "cosmetic":  "froggy_hat" },
       "store": "general",
       "category": "modded_icon"
+    },
+    {
+      "item": { "cosmetic":  "froggy_hat" },
+      "store": "louis",
+      "category": "modded_icon",
+      "random_stock": true
     }
   ],
   "categories": [
@@ -137,6 +143,12 @@ of new items to add to categories or both. Below is an example of the options th
       "store": "general",
       "icon_name": "modded_icon",
       "sprite": "images/icon_modded.png"
+    },
+    {
+      "store": "louis",
+      "icon_name": "modded_icon",
+      "sprite": "images/icon_modded.png",
+      "random_selections": 5
     }
   ]
 }
@@ -187,3 +199,27 @@ the full list of sprite properties that you can control are:
   }
 }
 ```
+
+### `shadows/`
+If you want to add shadow sprites to the game, create a JSON file in the `shadows/` folder with the following shape:
+
+```json
+{
+  "shadow_sprite_name": {
+    "regular_sprite_name": "spr_regular_sprite_name",
+    "sprite": "images/sprite.png",
+    "is_animated": false
+  }
+}
+```
+
+This will create new sprites in the `data.win` folder with the name `shadow_sprite_name` as well as an entry in
+`animation/generated/shadow_manifest.json` which will look like:
+
+```json
+{
+  "spr_regular_sprite_name": "shadow_sprite_name"
+}
+```
+
+If you use this, please set `minInstallerVersion` in your `manifest.json` to no lower than `0.1.4`
