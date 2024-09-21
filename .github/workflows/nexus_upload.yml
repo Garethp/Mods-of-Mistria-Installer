@@ -56,7 +56,7 @@ jobs:
         shell: bash
         run: |
           ls Release
-          unex upload 78 ./Release/ModsOfMistriaInstaller-cli.exe --file-name "Mods Of Mistria Installer Windows Command Line" -v ${{ steps.vars.outputs.tag }} --game fieldsofmistria --no-version-update 
+          unex upload 78 ./Release/ModsOfMistriaInstaller-cli.exe --game 6685 --file-name "Mods Of Mistria Installer Windows Command Line" -v ${{ steps.vars.outputs.tag }} --game fieldsofmistria --no-version-update 
         env:
           UNEX_APIKEY: ${{ secrets.NEXUS_TOKEN }}
           UNEX_COOKIES: ${{ secrets.NEXUS_COOKIES }}
