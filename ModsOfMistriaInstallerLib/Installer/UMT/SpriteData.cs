@@ -43,7 +43,7 @@ public class SpriteData
 
     public Dictionary<string, UndertaleTexturePageItem> PageItems = [];
 
-    public Validation Validate(Validation validation, Mod mod, string file)
+    public Validation Validate(Validation validation, IMod mod, string file)
     {
         if (IsAnimated && ValidationTools.CheckSpriteDirectoryExists(mod, Name, Location) is { } singleSpriteError)
         {

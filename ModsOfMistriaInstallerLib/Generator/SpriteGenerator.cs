@@ -8,7 +8,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class SpriteGenerator : IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
         var modLocation = mod.Location;
         var modId = mod.Id;
@@ -59,22 +59,19 @@ public class SpriteGenerator : IGenerator
         return information;
     }
 
-    public bool CanGenerate(Mod mod)
-    {
-        return Directory.Exists(Path.Combine(mod.Location, "sprites"));
-    }
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("sprites");
     
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
         if (!CanGenerate(mod)) return validation;
         
         Dictionary<string, SpriteData> sprites;
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "sprites")))
+        foreach (var file in mod.GetFilesInFolder("sprites"))
         {
             try
             {
-                sprites = JsonConvert.DeserializeObject<Dictionary<string, SpriteData>>(File.ReadAllText(file));
+                sprites = JsonConvert.DeserializeObject<Dictionary<string, SpriteData>>(mod.ReadFile(file));
             } 
             catch (Exception e)
             {

@@ -8,7 +8,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class TilesetGenerator: IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
         var modLocation = mod.Location;
         var modId = mod.Id;
@@ -44,23 +44,20 @@ public class TilesetGenerator: IGenerator
         return information;
     }
 
-    public bool CanGenerate(Mod mod)
-    {
-        return Directory.Exists(Path.Combine(mod.Location, "tilesets"));
-    }
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("tilesets");
     
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
         if (!CanGenerate(mod)) return validation;
 
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "tilesets")))
+        foreach (var file in mod.GetFilesInFolder("tilesets"))
         {
             Dictionary<string, string> tilesets;
             
             try
             {
-                tilesets = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(file));
+                tilesets = JsonConvert.DeserializeObject<Dictionary<string, string>>(mod.ReadFile(file));
             } 
             catch (Exception e)
             {

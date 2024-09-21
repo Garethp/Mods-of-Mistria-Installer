@@ -16,7 +16,7 @@ public class ShadowSprite
 
     public bool IsAnimated = false;
 
-    public Validation Validate(Validation validation, Mod mod, string file, string id)
+    public Validation Validate(Validation validation, IMod mod, string file, string id)
     {
         if (string.IsNullOrEmpty(RegularSpriteName))
         {

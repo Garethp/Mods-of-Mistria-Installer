@@ -6,20 +6,12 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class LocalisationGenerator: IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
-        var modLocation = mod.Location;
         var localisationFiles = new List<string>();
-
-        if (Directory.Exists(Path.Combine(modLocation, "localisation")))
-        {
-            localisationFiles.AddRange(Directory.GetFiles(Path.Combine(modLocation, "localisation")));
-        }
         
-        if (Directory.Exists(Path.Combine(modLocation, "localization")))
-        {
-            localisationFiles.AddRange(Directory.GetFiles(Path.Combine(modLocation, "localization")));
-        }
+        localisationFiles.AddRange(mod.GetFilesInFolder("localisation"));
+        localisationFiles.AddRange(mod.GetFilesInFolder("localization"));
 
         var generatedInformation = new GeneratedInformation();
 
@@ -28,7 +20,7 @@ public class LocalisationGenerator: IGenerator
             var languageMatch = new Regex(".*?\\.(.*?).json$").Match(Path.GetFileName(localisationFile));
             var langauge = languageMatch.Success ? languageMatch.Groups[1].Value : "eng";
             
-            var localisationJson = JObject.Parse(File.ReadAllText(localisationFile));
+            var localisationJson = JObject.Parse(mod.ReadFile(localisationFile));
 
             generatedInformation.Localisations.Add(new JObject { { langauge, localisationJson } });
 
@@ -37,11 +29,7 @@ public class LocalisationGenerator: IGenerator
         return generatedInformation;
     }
 
-    public bool CanGenerate(Mod mod)
-    {
-        return Directory.Exists(Path.Combine(mod.Location, "localisation"))
-               || Directory.Exists(Path.Combine(mod.Location, "localization"));
-    }
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("localisation") || mod.HasFilesInFolder("localization");
     
-    public Validation Validate(Mod mod) => new Validation();
+    public Validation Validate(IMod mod) => new Validation();
 }

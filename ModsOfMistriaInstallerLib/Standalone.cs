@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Models;
 
 public class Standalone
 {
@@ -36,6 +37,14 @@ public class Standalone
             .Where(folder => Mod.GetModLocation(folder) is not null)
             .Select(location => Mod.FromManifest(Path.Combine(Mod.GetModLocation(location)!, "manifest.json")))
             .ToList();
+
+        var zipMods = Directory.GetFiles(modsLocation, "*.zip")
+            .Select(path => ZipMod.FromZipFile(path))
+            .ToList();
+
+        var mod = zipMods.First();
+        var generator = new OutfitGenerator();
+        var zipCanGenerate = generator.Validate(mod);
 
         installer.ValidateMods(mods);
         

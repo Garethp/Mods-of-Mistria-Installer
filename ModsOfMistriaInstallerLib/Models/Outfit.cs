@@ -30,7 +30,7 @@ public class Outfit
     [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public Dictionary<string, string> AnimationFiles;
 
-    public Validation Validate(Validation validation, Mod mod, string file, string id)
+    public Validation Validate(Validation validation, IMod mod, string file, string id)
     {
         if (string.IsNullOrWhiteSpace(Name))
         {

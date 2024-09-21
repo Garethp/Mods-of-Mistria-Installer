@@ -9,7 +9,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class ShadowGenerator : IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
         var information = new GeneratedInformation();
         
@@ -43,20 +43,20 @@ public class ShadowGenerator : IGenerator
 
     }
 
-    public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "shadows"));
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("shadows");
 
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
 
         if (!CanGenerate(mod)) return validation;
         
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "shadows")))
+        foreach (var file in mod.GetFilesInFolder("shadows"))
         {
             Dictionary<string, ShadowSprite>? shadowSprites;
             try
             {
-                shadowSprites = JsonConvert.DeserializeObject<Dictionary<string, ShadowSprite>>(File.ReadAllText(file));
+                shadowSprites = JsonConvert.DeserializeObject<Dictionary<string, ShadowSprite>>(mod.ReadFile(file));
             }
             catch (Exception e)
             {

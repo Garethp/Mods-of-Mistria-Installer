@@ -1,19 +1,20 @@
 ﻿using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
-public class Mod
+public class Mod : IMod
 {
     public string Author;
 
     public string Name;
-    
+
     public string Version;
-    
+
     public string Location;
 
     public string MinimunInstallerVersion;
@@ -31,6 +32,22 @@ public class Mod
         }
     }
 
+    public string GetAuthor() => Author;
+
+    public string GetName() => Name;
+
+    public string GetVersion() => Version;
+
+    public string GetLocation() => Location;
+
+    public string GetMinimunInstallerVersion() => MinimunInstallerVersion;
+
+    public string GetManifestVersion() => ManifestVersion;
+
+    public Validation GetValidation() => validation;
+
+    public string GetId() => Id;
+
     public static Mod FromManifest(string manifestLocation)
     {
         if (!File.Exists(manifestLocation))
@@ -42,9 +59,9 @@ public class Mod
         {
             throw new Exception(Resources.ManifestFileNamedIncorrectly);
         }
-        
+
         var manifest = JObject.Parse(File.ReadAllText(manifestLocation));
-        
+
         var mod = new Mod
         {
             Name = manifest["name"]?.ToString() ?? "",
@@ -64,19 +81,22 @@ public class Mod
     {
         if (string.IsNullOrEmpty(Author))
         {
-            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"), Resources.ManifestHasNoAuthor));
+            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"),
+                Resources.ManifestHasNoAuthor));
         }
-        
+
         if (string.IsNullOrEmpty(Name))
         {
-            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"), Resources.ManifestHasNoName));
+            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"),
+                Resources.ManifestHasNoName));
         }
 
         if (string.IsNullOrEmpty(Version))
         {
-            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"), Resources.ManifestHasNoVersion));
+            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"),
+                Resources.ManifestHasNoVersion));
         }
-        
+
         return validation;
     }
 
@@ -87,12 +107,12 @@ public class Mod
             currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
         var currentVersion = new Version(currentVersionString);
         var requiredVersion = new Version(MinimunInstallerVersion);
-        
+
         if (requiredVersion.CompareTo(currentVersion) > 0)
         {
             return Resources.ModRequiresNewerInstaller;
         }
-        
+
         return null;
     }
 
@@ -103,12 +123,28 @@ public class Mod
 
         var childFiles = Directory.GetFiles(pathCandidate);
         if (childFiles.Length > 0) return null;
-        
+
         var children = Directory.GetDirectories(pathCandidate);
         if (children.Length != 1) return null;
-        
-        if (File.Exists(Path.Combine(pathCandidate, children[0], "manifest.json"))) return Path.Combine(pathCandidate, children[0]);
+
+        if (File.Exists(Path.Combine(pathCandidate, children[0], "manifest.json")))
+            return Path.Combine(pathCandidate, children[0]);
 
         return null;
+    }
+
+    public bool HasFilesInFolder(string folder) => Directory.Exists(Path.Combine(Location, folder)) &&
+                                                   Directory.GetFiles(Path.Combine(Location, folder)).Length > 0;
+
+    public bool FileExists(string path) => File.Exists(Path.Combine(Location, path));
+
+    public bool FolderExists(string path) => Directory.Exists(Path.Combine(Location, path));
+
+    public List<string> GetFilesInFolder(string folder) =>
+        !Directory.Exists(Path.Combine(Location, folder)) ? new List<string>(): Directory.GetFiles(Path.Combine(Location, folder)).ToList();
+
+    public string? ReadFile(string path)
+    {
+        return !FileExists(path) ? "" : File.ReadAllText(path);
     }
 }

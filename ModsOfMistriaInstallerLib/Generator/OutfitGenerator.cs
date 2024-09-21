@@ -10,7 +10,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class OutfitGenerator : IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
         var modLocation = mod.Location;
         var modId = mod.Id;
@@ -148,19 +148,19 @@ public class OutfitGenerator : IGenerator
         return information;
     }
 
-    public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "outfits"));
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("outfits");
     
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
         if (!CanGenerate(mod)) return validation;
 
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "outfits")))
+        foreach (var file in mod.GetFilesInFolder("outfits"))
         {
             Dictionary<string, Outfit>? outfits;
             try
             {
-                outfits = JsonConvert.DeserializeObject<Dictionary<string, Outfit>>(File.ReadAllText(file));
+                outfits = JsonConvert.DeserializeObject<Dictionary<string, Outfit>>(mod.ReadFile(file));
             }
             catch (Exception e)
             {

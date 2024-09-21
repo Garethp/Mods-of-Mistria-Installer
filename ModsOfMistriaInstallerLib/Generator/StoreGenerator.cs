@@ -8,7 +8,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class StoreGenerator: IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
         var information = new GeneratedInformation();
 
@@ -35,19 +35,19 @@ public class StoreGenerator: IGenerator
         return information;
     }
 
-    public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "stores"));
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("stores");
     
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
         if (!CanGenerate(mod)) return validation;
         
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "stores")).Order())
+        foreach (var file in mod.GetFilesInFolder("stores").Order())
         {
             StoreFile? storeData;
             try
             {
-                storeData = JsonConvert.DeserializeObject<StoreFile>(File.ReadAllText(file));
+                storeData = JsonConvert.DeserializeObject<StoreFile>(mod.ReadFile(file));
             }
             catch (Exception e)
             {
