@@ -17,8 +17,9 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         ["localization.json"],
         ["animation", "generated", "outlines.json"],
         ["animation", "generated", "player_asset_parts.json"],
+        ["animation", "generated", "shadow_manifest.json"],
         ["room_data", "points.json"],
-        ["data.win"]
+        ["data.win"],
     ];
 
     public void ValidateMods(List<Mod> mods)

@@ -31,6 +31,10 @@ public class GeneratedInformation
     public List<StoreCategory> StoreCategories = [];
     
     public List<StoreItem> StoreItems = [];
+
+    public List<JObject> Cutscenes = [];
+
+    public List<JObject> ShadowManifests = [];
     
     public void Merge(GeneratedInformation other)
     {
@@ -44,6 +48,8 @@ public class GeneratedInformation
         AssetParts.AddRange(other.AssetParts);
         StoreCategories.AddRange(other.StoreCategories);
         StoreItems.AddRange(other.StoreItems);
+        Cutscenes.AddRange(other.Cutscenes);
+        ShadowManifests.AddRange(other.ShadowManifests);
         
         foreach (var modName in other.Sprites.Keys)
         {
