@@ -16,7 +16,7 @@ jobs:
         os: [windows]
         configuration: [Release]
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -33,10 +33,8 @@ jobs:
       - name: Publish ${{ matrix.arch }} CLI
         run: dotnet publish ${{ matrix.project }} -c ${{ matrix.configuration }} -r ${{ matrix.arch }} -o Release
       - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: Release/*
-          file_glob: true
-          tag: ${{ github.ref }}
-          overwrite: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          gh release upload v0.1.4 Release/*
