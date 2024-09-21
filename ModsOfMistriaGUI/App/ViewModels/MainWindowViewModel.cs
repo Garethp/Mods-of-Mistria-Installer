@@ -29,7 +29,7 @@ public partial class MainWindowViewModel: ViewModelBase
             mods.ForEach(mod => Mods.Add(new ModModel()
             {
                 mod = mod,
-                CanInstall = mod.CanInstall()
+                CanInstall = mod.CanInstall() ?? ""
             }));
         }
         

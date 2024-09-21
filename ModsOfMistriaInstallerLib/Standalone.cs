@@ -42,9 +42,10 @@ public class Standalone
         mods = mods
             .Where(mod =>
             {
-                if (mod.CanInstall() != "")
+                if (mod.CanInstall() is not null)
                 {
                     Console.WriteLine(Resources.SkippingModBecauseInstallerOld, mod.Id);
+                    return false;
                 }
 
                 if (mod.validation.Status == ValidationStatus.Invalid)
