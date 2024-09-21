@@ -25,7 +25,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: |
+            8.0.x
+            3.1.x
       - name: Restore Tools
         shell: bash
         run: |
@@ -40,7 +42,6 @@ jobs:
         id: vars
         run: echo ::set-output name=tag::0.1.4
       - name: Validate unex config
-        continue-on-error: true
         shell: bash
         run: |
           unex check -c
@@ -52,9 +53,8 @@ jobs:
       - name: Run Nexus uploader
         shell: bash
         run: |
-          unex upload ./Release/ModsOfMistriaInstaller-cli.exe -v ${{ steps.vars.outputs.tag }}
+          UNEX_FILENAME="Mods Of Mistria Installer Windows Command Line" unex upload ./Release/ModsOfMistriaInstaller-cli.exe -v ${{ steps.vars.outputs.tag }}
         env:
           UNEX_APIKEY: ${{ secrets.NEXUS_TOKEN }}
           UNEX_COOKIES: ${{ secrets.NEXUS_COOKIES }}
           UNEX_DEBUG: true
-          UNEX_FILENAME: Mods Of Mistria Installer Windows Command Line
