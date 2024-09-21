@@ -46,7 +46,7 @@
                                             </CheckBox>
                                         </WrapPanel>
 
-                                        <Expander IsVisible="{Binding !IsValid}">
+                                        <Expander IsVisible="{Binding !IsValid}" Foreground="Black">
                                             <Expander.Styles>
                                                 <Style Selector="Expander ToggleButton">
                                                     <Style
