@@ -46,6 +46,7 @@ public class StoreItem
     public string Store;
     public string Category;
     public string? Season;
+    public bool RandomStock = false;
 }
 
 [JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]

@@ -68,6 +68,11 @@
         <DependentUpon>App.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="App\Lang\Resources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Resources.resx</DependentUpon>
+      </Compile>
     </ItemGroup>
     
     <ItemGroup>
@@ -81,6 +86,25 @@
     
     <ItemGroup>
         <AvaloniaResource Include="App\Assets\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="App\Lang\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="App\Lang\Resources.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="App\Lang\Resources.resx">
+        <Generator>PublicResXFileCodeGenerator</Generator>
+        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>

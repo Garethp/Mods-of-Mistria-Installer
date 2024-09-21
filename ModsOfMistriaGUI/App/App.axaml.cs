@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Garethp.ModsOfMistriaGUI.App.ViewModels;
 using Garethp.ModsOfMistriaGUI.App.Views;
+using HarfBuzzSharp;
 
 namespace Garethp.ModsOfMistriaGUI.App;
 

@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
@@ -26,29 +27,29 @@ public class Mod
     {
         if (!File.Exists(manifestLocation))
         {
-            throw new FileNotFoundException("Could not find the manifest file.");
+            throw new FileNotFoundException(Resources.CouldNotFindModManifest);
         }
 
         if (!manifestLocation.EndsWith("manifest.json"))
         {
-            throw new Exception("The manifest file must be named manifest.json.");
+            throw new Exception(Resources.ManifestFileNamedIncorrectly);
         }
         
         var manifest = JObject.Parse(File.ReadAllText(manifestLocation));
         
         if (!manifest.ContainsKey("author"))
         {
-            throw new Exception("The manifest must contain an author.");
+            throw new Exception(Resources.ManifestHasNoAuthor);
         }
         
         if (!manifest.ContainsKey("name"))
         {
-            throw new Exception("The manifest must contain a name.");
+            throw new Exception(Resources.ManifestHasNoName);
         }
         
         if (!manifest.ContainsKey("version"))
         {
-            throw new Exception("The manifest must contain a version.");
+            throw new Exception(Resources.ManifestHasNoVersion);
         }
 
         return new Mod
@@ -72,7 +73,7 @@ public class Mod
         
         if (requiredVersion.CompareTo(currentVersion) > 0)
         {
-            return "This mod requires a newer version of the installer.";
+            return Resources.ModRequiresNewerInstaller;
         }
         
         return null;

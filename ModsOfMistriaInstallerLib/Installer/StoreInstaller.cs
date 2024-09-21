@@ -28,10 +28,18 @@ public class StoreInstaller : ISubModuleInstaller
             if (categories.Any(existingCategory => existingCategory["icon"]?.ToString() == iconName))
                 return;
 
-            categories.Add(new JObject
+            var newCategory = new JObject
             {
                 { "icon", iconName }
-            });
+            };
+            
+            if (category.RandomSelections is not null)
+            {
+                newCategory["random_selections"] = category.RandomSelections;
+                newCategory["random_stock"] = new JArray();
+            }
+            
+            categories.Add(newCategory);
         });
         
         information.StoreItems.ForEach(item =>
@@ -48,13 +56,20 @@ public class StoreInstaller : ISubModuleInstaller
             if (category is null) throw new Exception($"Failed adding item to the {store} {categoryName} category because {categoryName} does not exist");
 
             JArray? arrayToAddTo = null;
-            if (item.Season is null)
+            
+            if (item.RandomStock)
+            {
+                if (category["random_stock"] is not JArray)
+                    category["random_stock"] = new JArray();
+                
+                arrayToAddTo = category["random_stock"] as JArray;
+            } else if (item.Season is null)
             {
                 if (category["constant_stock"] is not JArray)
                     category["constant_stock"] = new JArray();
                 
                 arrayToAddTo = category["constant_stock"] as JArray;
-            }
+            } 
             else
             {
                 if (category["seasonal"] is not JObject)

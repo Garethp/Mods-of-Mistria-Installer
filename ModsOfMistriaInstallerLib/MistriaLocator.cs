@@ -1,4 +1,6 @@
-﻿namespace Garethp.ModsOfMistriaInstallerLib;
+﻿using Garethp.ModsOfMistriaInstallerLib.Lang;
+
+namespace Garethp.ModsOfMistriaInstallerLib;
 
 public class MistriaLocator
 {
@@ -10,7 +12,7 @@ public class MistriaLocator
             .ToList()
             .ForEach(location =>
             {
-                Console.WriteLine($"Looking for Mistria at {Path.GetFullPath(Path.Combine(location, "data.win"))}");
+                Console.WriteLine(Resources.LookingForMistriaAt, Path.Combine(location, "data.win"));
             });
 
         Console.WriteLine(Directory.GetCurrentDirectory());
@@ -25,7 +27,7 @@ public class MistriaLocator
             var currentDirectory = Directory.GetCurrentDirectory();
             if (File.Exists(Path.Combine(currentDirectory, "data.win")))
             {
-                Console.WriteLine("Fields of Mistria not found, falling back to current folder");
+                Console.WriteLine(Resources.MistriaNotFoundFallback);
                 return currentDirectory;
             }
             

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
@@ -38,7 +39,7 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         totalTime.Start();
         if (!Directory.Exists(fieldsOfMistriaLocation))
         {
-            throw new DirectoryNotFoundException("The Fields of Mistria location does not exist.");
+            throw new DirectoryNotFoundException(Resources.MistriaLocationDoesNotExist);
         }
         
         if (IsFreshInstall())
@@ -67,10 +68,10 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         {
             if (!Directory.Exists(mod.Location))
             {
-                throw new DirectoryNotFoundException("The mod location does not exist.");
+                throw new DirectoryNotFoundException(Resources.ModDirectoryDoesNotExist);
             }
             
-            reportStatus("Generating information for " + mod.Id, "");
+            reportStatus(string.Format(Resources.GeneratingInformationForMod, mod.Id), "");
             foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
             {
                 generatedInformation.Merge(generator.Generate(mod));
@@ -90,7 +91,7 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         new ChecksumInstaller().Install(fieldsOfMistriaLocation, generatedInformation, reportStatus);
         totalTime.Stop();
         
-        reportStatus("Finished", totalTime.ToString());
+        reportStatus(Resources.InstallCompleted, totalTime.ToString());
     }
 
     bool IsFreshInstall()

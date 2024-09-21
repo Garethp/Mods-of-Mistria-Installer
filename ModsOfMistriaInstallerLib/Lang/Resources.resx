@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="LookingForMistriaAt" xml:space="preserve">
+        <value>Looking for Mistria at {0}</value>
+    </data>
+    <data name="MistriaNotFoundFallback" xml:space="preserve">
+        <value>Fields of Mistria not found, falling back to current folder</value>
+    </data>
+    <data name="CouldNotFindModManifest" xml:space="preserve">
+        <value>Could not find the manifest file.</value>
+    </data>
+    <data name="ManifestFileNamedIncorrectly" xml:space="preserve">
+        <value>The manifest file must be named manifest.json.</value>
+    </data>
+    <data name="ManifestHasNoAuthor" xml:space="preserve">
+        <value>The manifest must contain an author.</value>
+    </data>
+    <data name="ManifestHasNoName" xml:space="preserve">
+        <value>The manifest must contain a name.</value>
+    </data>
+    <data name="ManifestHasNoVersion" xml:space="preserve">
+        <value>The manifest must contain a version.</value>
+    </data>
+    <data name="ModRequiresNewerInstaller" xml:space="preserve">
+        <value>This mod requires a newer version of the installer.</value>
+    </data>
+    <data name="MistriaLocationDoesNotExist" xml:space="preserve">
+        <value>The Fields of Mistria location does not exist.</value>
+    </data>
+    <data name="ModDirectoryDoesNotExist" xml:space="preserve">
+        <value>The mod location does not exist.</value>
+    </data>
+    <data name="GeneratingInformationForMod" xml:space="preserve">
+        <value>Generating information for {0}</value>
+    </data>
+    <data name="InstallCompleted" xml:space="preserve">
+        <value>Finished</value>
+    </data>
+    <data name="MistriaNotFound" xml:space="preserve">
+        <value>Could not find Fields of Mistria location.</value>
+    </data>
+    <data name="CouldNotGuessModsAt" xml:space="preserve">
+        <value>Could not find a mods folder at {0}.</value>
+    </data>
+    <data name="GuessedMistriaAt" xml:space="preserve">
+        <value>Guessed Location: {0}</value>
+    </data>
+    <data name="SkippingModBecauseInstallerOld" xml:space="preserve">
+        <value>Skipping {0} as it requires a newer version of the installer.</value>
+    </data>
+    <data name="SkippingModBecauseErrors" xml:space="preserve">
+        <value>Skipping {0} for the following Errors:</value>
+    </data>
+    <data name="ModHasWarnings" xml:space="preserve">
+        <value>{0} has the following warnings, but will still install:</value>
+    </data>
+    <data name="InstalledInReporter" xml:space="preserve">
+        <value>{0} installed in {1}</value>
+    </data>
+    <data name="ModsInstalledInTime" xml:space="preserve">
+        <value>Mods installed in {0}</value>
+    </data>
+</root>

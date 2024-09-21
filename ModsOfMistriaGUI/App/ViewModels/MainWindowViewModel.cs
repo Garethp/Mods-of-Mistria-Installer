@@ -1,11 +1,9 @@
 ﻿using System.Collections.ObjectModel;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
-using Avalonia.Skia.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Garethp.ModsOfMistriaGUI.App.Models;
 using Garethp.ModsOfMistriaInstallerLib;
+using ModsOfMistriaGUI.App.Lang;
 
 namespace Garethp.ModsOfMistriaGUI.App.ViewModels;
 
@@ -37,16 +35,16 @@ public partial class MainWindowViewModel: ViewModelBase
         
         if (MistriaLocation.Equals(""))
         {
-            InstallStatus = "Could not find Fields of Mistria location. Try placing this in the same folder as Fields of Mistria.";
+            InstallStatus = Resources.CouldNotFindMistria;
         } else if (ModsLocation.Equals(""))
         {
-            InstallStatus = "Could not find a mods folder. Try creating a folder called 'mods' in the Fields of Mistria folder.";
+            InstallStatus = Resources.CouldNotFindMods;
         } else if (Mods.Count == 0)
         {
-            InstallStatus = "No mods found to install";
+            InstallStatus = Resources.NoModsToInstall;
         } else if (Mods.Any(mod => mod.CanInstall is not null))
         {
-            InstallStatus = "Some mods require a newer version of the installer. Please update the installer.";
+            InstallStatus = Resources.ModsRequireNewerVersion;
         }
     }
 
@@ -67,7 +65,7 @@ public partial class MainWindowViewModel: ViewModelBase
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private void InstallMods()
     {
-        InstallStatus = "Installing mods...";
+        InstallStatus = Resources.InstallInProgress;
         _isInstalling = true;
         
         Task.Run(backgroundInstall);

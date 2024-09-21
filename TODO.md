@@ -3,6 +3,7 @@
 * [ ] Anywhere where we auto-generate localisation, allow for more than one language to be defined
 * [x] Allow for installing either one mod or multiple
 * [ ] Add a way to install mods from a zip file
+* [x] Allow random stock for the Store Generator
 * [x] Generate correct checksums
 * [x] Allow installers/generators to self-register
 * [x] Rewrite to C#

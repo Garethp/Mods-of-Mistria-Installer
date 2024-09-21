@@ -13,6 +13,8 @@ public class StoreCategory
 
     public string Sprite;
 
+    public int? RandomSelections;
+
     public Validation Validate(Validation validation, Mod mod, string file)
     {
         if (string.IsNullOrWhiteSpace(IconName))

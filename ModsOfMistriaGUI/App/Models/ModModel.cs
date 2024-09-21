@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
+using ModsOfMistriaGUI.App.Lang;
 
 namespace Garethp.ModsOfMistriaGUI.App.Models;
 
@@ -25,7 +26,6 @@ public partial class ModModel: ObservableObject
     public string Warnings => String.Join("\r\n", mod.validation.Warnings.Select(warning => warning.Message).ToList());
     
     public string Errors => String.Join("\r\n", mod.validation.Errors.Select(warning => warning.Message).ToList());
-
     
-    public string Full => $"{mod.Author} by {mod.Name}";
+    public string Full => string.Format(Resources.ModByAuthor, mod.Author, mod.Name);
 }

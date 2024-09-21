@@ -6,10 +6,10 @@
         xmlns:vm="using:Garethp.ModsOfMistriaGUI.App.ViewModels"
         xmlns:i="https://github.com/projektanker/icons.avalonia"
         x:Class="Garethp.ModsOfMistriaGUI.App.Views.MainWindow"
+        xmlns:lang="clr-namespace:ModsOfMistriaGUI.App.Lang"
         x:DataType="vm:MainWindowViewModel"
-        Title="Mods Of Mistria Installer"
+        Title="{x:Static lang:Resources.ApplicationTitle}"
         Icon="/App/Assets/small_icon.png"
-        MaxWidth="1000"
         Width="800" Height="600">
     <Design.DataContext>
         <vm:MainWindowViewModel />
@@ -26,14 +26,14 @@
 
             <Panel Margin="50 20 50 0">
                 <StackPanel>
-                    <TextBlock>Welcome to the Mods Of Mistria Installer!</TextBlock>
+                    <TextBlock Text="{x:Static lang:Resources.GreetingText}" />
                     <TextBlock></TextBlock>
                     <WrapPanel>
-                        <TextBlock Margin="0 0 5 0">Fields of Mistria has been detected at: </TextBlock>
+                        <TextBlock Margin="0 0 5 0" Text="{x:Static lang:Resources.FieldsOfMistriaDetectedLocation}" />
                         <TextBlock Text="{Binding MistriaLocation}" />
                     </WrapPanel>
-                    <TextBlock>Installing will install the following mods:</TextBlock>
-                    <ScrollViewer Grid.Row="1" Margin="15 5 0 0">
+                    <TextBlock Text="{x:Static lang:Resources.ModsWillBeInstalled}"/>
+                    <ScrollViewer Grid.Row="1" Margin="15 5 0 0" MaxHeight="200">
                         <ItemsRepeater ItemsSource="{Binding Mods}">
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate>
@@ -72,7 +72,7 @@
         </StackPanel>
         <WrapPanel Grid.Row="1" Margin="0 0 30 0" HorizontalAlignment="Right">
             <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
-            <Button Command="{Binding InstallModsCommand}">Install</Button>
+            <Button Command="{Binding InstallModsCommand}" Content="{x:Static lang:Resources.InstallButtonText}" />
         </WrapPanel>
     </Grid>
 </Window>

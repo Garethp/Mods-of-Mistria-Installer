@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 
 public class Standalone
 {
@@ -11,7 +12,7 @@ public class Standalone
         var mistriaLocation = MistriaLocator.GetMistriaLocation();
         if (mistriaLocation == null)
         {
-            Console.WriteLine("Could not find Fields of Mistria location.");
+            Console.WriteLine(Resources.MistriaNotFound);
             return;
         }
 
@@ -19,11 +20,11 @@ public class Standalone
 
         if (modsLocation is null || !Directory.Exists(modsLocation))
         {
-            Console.WriteLine($"Could not find a mods folder at {Path.Combine(mistriaLocation, "mods")}.");
+            Console.WriteLine(Resources.CouldNotGuessModsAt, Path.Combine(mistriaLocation, "mods"));
             return;
         }
 
-        Console.WriteLine($"Guessed Location: {mistriaLocation}");
+        Console.WriteLine(Resources.GuessedMistriaAt, mistriaLocation);
 
         var totalTime = new Stopwatch();
         totalTime.Start();
@@ -43,12 +44,12 @@ public class Standalone
             {
                 if (mod.CanInstall() != "")
                 {
-                    Console.WriteLine($"Skipping {mod.Id} as it requires a newer version of the installer.");
+                    Console.WriteLine(Resources.SkippingModBecauseInstallerOld, mod.Id);
                 }
 
                 if (mod.validation.Status == ValidationStatus.Invalid)
                 {
-                    Console.WriteLine($"Skipping {mod.Id} for the following Errors:");
+                    Console.WriteLine(Resources.SkippingModBecauseErrors, mod.Id);
                     foreach (var error in mod.validation.Errors)
                     {
                         Console.WriteLine($"  {error.Message}");
@@ -59,7 +60,7 @@ public class Standalone
 
                 if (mod.validation.Status == ValidationStatus.Warning)
                 {
-                    Console.WriteLine($"{mod.Id} has the following warnings, but will still install:");
+                    Console.WriteLine(Resources.ModHasWarnings, mod.Id);
                     foreach (var warning in mod.validation.Warnings)
                     {
                         Console.WriteLine($"  {warning.Message}");
@@ -72,10 +73,10 @@ public class Standalone
         
         installer.InstallMods(mods, (message, timeTaken) =>
         {
-            Console.WriteLine($"{message} installed in {timeTaken}");
+            Console.WriteLine(Resources.InstalledInReporter, message, timeTaken);
         });
         
         totalTime.Stop();
-        Console.WriteLine($"Mods installed in {totalTime}");
+        Console.WriteLine(Resources.ModsInstalledInTime, totalTime);
     }
 }
