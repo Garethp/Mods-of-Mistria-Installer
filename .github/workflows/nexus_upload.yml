@@ -55,7 +55,7 @@ jobs:
       - name: Run Nexus uploader
         shell: bash
         run: |
-          UNEX_FILENAME="Mods Of Mistria Installer Windows Command Line" unex upload ./Release/ModsOfMistriaInstaller-cli.exe -v ${{ steps.vars.outputs.tag }}
+          unex upload --file-name "Mods Of Mistria Installer Windows Command Line" -v ${{ steps.vars.outputs.tag }} --game fieldsofmistria --no-version-update 78 ./Release/ModsOfMistriaInstaller-cli.exe 
         env:
           UNEX_APIKEY: ${{ secrets.NEXUS_TOKEN }}
           UNEX_COOKIES: ${{ secrets.NEXUS_COOKIES }}
