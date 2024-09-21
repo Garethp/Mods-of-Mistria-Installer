@@ -16,6 +16,13 @@ release up until now, each mod will need to be updated to work with this install
 5. Next time the game updates, run the installer again to re-install your mods
 
 ## Troubleshooting
+**I installed a new cosmetic, but it's not appearing in existing games**
+First try downloading the latest version of MOMI and re-installing. Many cosmetic mods will add that cosmetic will also
+add that cosmetic to be sold in a shop however installers older than `0.1.3` aren't able to add items to the shop. If
+updating the MOMI installer doesn't work, check the description of the mod to see if it talks about how to acquire the
+cosmetic. For example, some mods may choose to only add the item to the Saturday Markets. If you're still having issues,
+feel free to come to the Discord Server to ask for help.
+
 **The installer says it cannot find the Fields of Mistria Location**
 Try placing the installer in your Fields of Mistria folder, next to `data.win`, this should allow the installer to find
 the game.
