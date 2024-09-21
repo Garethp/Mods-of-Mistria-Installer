@@ -32,7 +32,7 @@ jobs:
       - name: Restore Tools
         shell: bash
         run: |
-          dotnet tool install -g NexusUploader
+          dotnet tool install -g BUTR.NexusUploader
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
