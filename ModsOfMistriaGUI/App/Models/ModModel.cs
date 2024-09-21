@@ -29,5 +29,5 @@ public partial class ModModel: ObservableObject
     
     public string Errors => String.Join("\r\n", mod.validation.Errors.Select(warning => warning.Message).ToList());
     
-    public string Full => string.Format(Resources.ModByAuthor, mod.Author, mod.Name);
+    public string Full => string.Format(Resources.ModByAuthor, mod.Name, mod.Author);
 }

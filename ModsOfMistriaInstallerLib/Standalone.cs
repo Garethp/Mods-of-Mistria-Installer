@@ -33,8 +33,8 @@ public class Standalone
 
         var mods = Directory
             .GetDirectories(modsLocation)
-            .Where(folder => File.Exists(Path.Combine(folder, "manifest.json")))
-            .Select(location => Mod.FromManifest(Path.Combine(location, "manifest.json")))
+            .Where(folder => Mod.GetModLocation(folder) is not null)
+            .Select(location => Mod.FromManifest(Path.Combine(Mod.GetModLocation(location)!, "manifest.json")))
             .ToList();
 
         installer.ValidateMods(mods);

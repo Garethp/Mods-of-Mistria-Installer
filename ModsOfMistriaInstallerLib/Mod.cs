@@ -87,4 +87,20 @@ public class Mod
         
         return null;
     }
+
+    public static string? GetModLocation(string pathCandidate)
+    {
+        if (!Directory.Exists(pathCandidate)) return null;
+        if (File.Exists(Path.Combine(pathCandidate, "manifest.json"))) return pathCandidate;
+
+        var childFiles = Directory.GetFiles(pathCandidate);
+        if (childFiles.Length > 0) return null;
+        
+        var children = Directory.GetDirectories(pathCandidate);
+        if (children.Length != 1) return null;
+        
+        if (File.Exists(Path.Combine(pathCandidate, children[0], "manifest.json"))) return Path.Combine(pathCandidate, children[0]);
+
+        return null;
+    }
 }
