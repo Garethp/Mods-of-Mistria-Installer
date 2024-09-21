@@ -4,6 +4,7 @@
 * [x] Allow for installing either one mod or multiple
 * [ ] Add a way to install mods from a zip file
 * [x] Allow random stock for the Store Generator
+* [x] Support nested mod folders
 * [x] Generate correct checksums
 * [x] Allow installers/generators to self-register
 * [x] Rewrite to C#
@@ -12,7 +13,7 @@
   * [x] Implement the Simple Conversations Generator
   * [x] Implement the Checksum Installer
   * [x] Implement the Uninstaller
-* [ ] Implement a shadow manifest generator
+* [x] Implement a shadow manifest generator
 * [x] Add UMT integration
   * [x] Implement Sprite Installers
   * [x] Implement Tileset Generators/Installers
@@ -46,7 +47,7 @@
 * [ ] Allow mods to declare dependencies on other mods
 * [ ] New installers:
   * [ ] `animation/generated/player_tools.json`
-  * [ ] `animation/generated/shadow_manifest.json`
+  * [x] `animation/generated/shadow_manifest.json`
   * [ ] `starting_farms/farms.json`
   * [ ] `room_data/hyper_points.json`
   * [ ] `t2_input.json`
