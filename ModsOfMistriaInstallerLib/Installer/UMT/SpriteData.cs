@@ -47,12 +47,12 @@ public class SpriteData
     {
         if (IsAnimated && ValidationTools.CheckSpriteDirectoryExists(mod, Name, Location) is { } singleSpriteError)
         {
-            validation.AddError(mod, file, singleSpriteError);
+            validation.AddWarning(mod, file, singleSpriteError);
         }
         
         if (!IsAnimated && ValidationTools.CheckSpriteFileExists(mod, Name, Location) is { } animatedSpriteError)
         {
-            validation.AddError(mod, file, animatedSpriteError);
+            validation.AddWarning(mod, file, animatedSpriteError);
         }
         
         return validation;

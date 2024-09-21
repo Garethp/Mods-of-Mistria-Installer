@@ -1,11 +1,10 @@
 # Roadmap
 
-## 0.1.5
+## 0.2.0
+* [ ] Add Aurie Integration
 * [ ] Enable installing from `.zip` files
-* [ ] Create a mods folder if one is not found
 * [ ] Select the Mistria/Mods folders in a setup screen if not found
 * [ ] Allow creating a mods folder automatically
-* [ ] Add Aurie Integration
 * [ ] Add converting old sprite mods
 
 ## Future/Unknown
