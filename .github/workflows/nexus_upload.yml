@@ -1,0 +1,56 @@
+﻿name: Upload To Nexus
+
+on:
+  #push:
+  #  branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  compile:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [ModsOfMistriaCommandLine]
+        arch: [win-x64]
+        os: [windows]
+        configuration: [Release]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build
+      - name: Publish ${{ matrix.arch }} CLI
+        run: dotnet publish ${{ matrix.project }} -c ${{ matrix.configuration }} -r ${{ matrix.arch }} -o Release
+      - name: Set version output
+        id: vars
+        run: echo ::set-output name=tag::0.1.4
+      - name: Validate unex config
+        continue-on-error: true
+        shell: bash
+        run: |
+          unex check -c
+        env:
+          UNEX_APIKEY: ${{ secrets.NEXUS_TOKEN }}
+          UNEX_COOKIES: ${{ secrets.NEXUS_COOKIES }}
+          UNEX_DEBUG: true
+          UNEX_FILENAME: Mods Of Mistria Installer Windows Command Line
+      - name: Run Nexus uploader
+        shell: bash
+        run: |
+          unex upload ./Release/ModsOfMistriaInstaller-cli.exe -v ${{ steps.vars.outputs.tag }}
+        env:
+          UNEX_APIKEY: ${{ secrets.NEXUS_TOKEN }}
+          UNEX_COOKIES: ${{ secrets.NEXUS_COOKIES }}
+          UNEX_DEBUG: true
+          UNEX_FILENAME: Mods Of Mistria Installer Windows Command Line
