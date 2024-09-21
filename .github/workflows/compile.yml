@@ -1,9 +1,9 @@
-﻿name: Compile Project
+﻿name: Publish To Release
 
 on:
-  #push:
-  #  branches: [ master ]
-  workflow_dispatch:
+  push:
+    tags:
+      - '*'
 
 jobs:
   compile:
@@ -32,7 +32,11 @@ jobs:
         run: dotnet build
       - name: Publish ${{ matrix.arch }} CLI
         run: dotnet publish ${{ matrix.project }} -c ${{ matrix.configuration }} -r ${{ matrix.arch }} -o Release
-      - name: Upload ${{ matrix.arch }} CLI
-        uses: kittaakos/upload-artifact-as-is@v0
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          path: Release
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: Release/*
+          file_glob: true
+          tag: ${{ github.ref }}
+          overwrite: true
