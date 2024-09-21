@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  compile:
+  nexus_upload:
 
     strategy:
       fail-fast: false
