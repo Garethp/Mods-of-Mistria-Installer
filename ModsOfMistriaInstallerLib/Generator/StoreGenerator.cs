@@ -12,18 +12,18 @@ public class StoreGenerator: IGenerator
     {
         var information = new GeneratedInformation();
 
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "stores")).Order())
+        foreach (var file in mod.GetFilesInFolder("stores"))
         {
-            var storeFile = JsonConvert.DeserializeObject<StoreFile>(File.ReadAllText(file));
+            var storeFile = JsonConvert.DeserializeObject<StoreFile>(mod.ReadFile(file));
             if (storeFile is null) throw new Exception($"Attempted to read file {file} but it did not match expected format.");
             
             storeFile.Categories.ForEach(category =>
             {
-                if (!information.Sprites.ContainsKey(mod.Id)) information.Sprites[mod.Id] = new();
-                information.Sprites[mod.Id].Add(new SpriteData()
+                if (!information.Sprites.ContainsKey(mod.GetId())) information.Sprites[mod.GetId()] = new();
+                information.Sprites[mod.GetId()].Add(new SpriteData()
                 {
                     Name = category.IconName,
-                    BaseLocation = mod.Location,
+                    Mod = mod,
                     Location = category.Sprite,
                     IsUiSprite = true,
                 });

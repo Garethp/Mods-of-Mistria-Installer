@@ -13,21 +13,21 @@ public class ShadowGenerator : IGenerator
     {
         var information = new GeneratedInformation();
         
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "shadows")).Order())
+        foreach (var file in mod.GetFilesInFolder("shadows"))
         {
-            var shadowFile = JsonConvert.DeserializeObject<Dictionary<string, ShadowSprite>>(File.ReadAllText(file));
+            var shadowFile = JsonConvert.DeserializeObject<Dictionary<string, ShadowSprite>>(mod.ReadFile(file));
             if (shadowFile is null) throw new Exception($"Attempted to read file {file} but it did not match expected format.");
 
             foreach (var shadowName in shadowFile.Keys)
             {
                 var shadowSprite = shadowFile[shadowName];
                 shadowSprite.Name = shadowName;
-                if (!information.Sprites.ContainsKey(mod.Id)) information.Sprites[mod.Id] = new();
+                if (!information.Sprites.ContainsKey(mod.GetId())) information.Sprites[mod.GetId()] = new();
 
-                information.Sprites[mod.Id].Add(new SpriteData()
+                information.Sprites[mod.GetId()].Add(new SpriteData()
                 {
                     Name = shadowSprite.Name,
-                    BaseLocation = mod.Location,
+                    Mod = mod,
                     Location = shadowSprite.Sprite,
                     IsAnimated = shadowSprite.IsAnimated,
                 });

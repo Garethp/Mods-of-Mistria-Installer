@@ -10,15 +10,13 @@ public class TilesetGenerator: IGenerator
 {
     public GeneratedInformation Generate(IMod mod)
     {
-        var modLocation = mod.Location;
-        var modId = mod.Id;
+        var modId = mod.GetId();
 
         var information = new GeneratedInformation();
-        var directory = Path.Combine(mod.Location, "tilesets");
 
-        foreach (var file in Directory.GetFiles(directory).Order())
+        foreach (var file in mod.GetFilesInFolder("tilesets"))
         {
-            var info = JObject.Parse(File.ReadAllText(file));
+            var info = JObject.Parse(mod.ReadFile(file));
 
             foreach (var jsonData in info.Properties())
             {
@@ -27,7 +25,7 @@ public class TilesetGenerator: IGenerator
                     continue;
                 }
 
-                if (!File.Exists(Path.Combine(mod.Location, location.ToString()))) continue;
+                if (!mod.FileExists(location.ToString())) continue;
                 
                 var name = jsonData.Name;
 
@@ -35,7 +33,7 @@ public class TilesetGenerator: IGenerator
                 information.Tilesets[modId].Add(new TilesetData
                 {
                     Name = name,
-                    BaseLocation = modLocation,
+                    Mod = mod,
                     Location = location.ToString()
                 });
             }

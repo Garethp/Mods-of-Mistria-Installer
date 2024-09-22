@@ -11,7 +11,7 @@ public class SpriteData
 
     public string Location;
 
-    public string BaseLocation;
+    public IMod Mod;
     
     public bool IsAnimated = false;
 
@@ -65,5 +65,5 @@ public class TilesetData
 
     public string Location;
 
-    public string BaseLocation;
+    public IMod Mod;
 }

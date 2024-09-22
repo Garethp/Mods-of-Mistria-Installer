@@ -10,16 +10,13 @@ public class SpriteGenerator : IGenerator
 {
     public GeneratedInformation Generate(IMod mod)
     {
-        var modLocation = mod.Location;
-        var modId = mod.Id;
+        var modId = mod.GetId();
 
         var information = new GeneratedInformation();
-        var spritesDirectory = Path.Combine(mod.Location, "sprites");
-        var newSprites = new List<SpriteData>();
 
-        foreach (var file in Directory.GetFiles(spritesDirectory).Order())
+        foreach (var file in mod.GetFilesInFolder("sprites"))
         {
-            var spriteInfo = JObject.Parse(File.ReadAllText(file));
+            var spriteInfo = JObject.Parse(mod.ReadFile(file));
 
             foreach (var spriteJson in spriteInfo.Properties())
             {
@@ -31,8 +28,8 @@ public class SpriteGenerator : IGenerator
                 var isAnimated = spriteData["IsAnimated"]?.Value<bool>() ?? false;
                 var location = spriteData["Location"]?.Value<string>();
                 if (location is null) continue;
-                if (isAnimated && !Directory.Exists(Path.Combine(mod.Location, location))) continue;
-                if (!isAnimated && !File.Exists(Path.Combine(mod.Location, location))) continue;
+                if (isAnimated && !mod.FolderExists(location)) continue;
+                if (!isAnimated && !mod.FileExists(location)) continue;
                 
                 var spriteName = spriteJson.Name;
 
@@ -40,7 +37,7 @@ public class SpriteGenerator : IGenerator
                 information.Sprites[modId].Add(new SpriteData
                 {
                     Name = spriteName,
-                    BaseLocation = modLocation,
+                    Mod = mod,
                     Location = location,
                     IsAnimated = isAnimated,
                     OriginX =  spriteData["OriginX"]?.Value<int>(),
