@@ -25,7 +25,6 @@ public class AurieInstaller : IModuleInstaller
         Action<string, string> reportStatus
     )
     {
-        // @TODO: Make this Steam Deck Friendly
         if (information.AurieMods.Count == 0)
         {
             TearDownRegistry();
