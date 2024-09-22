@@ -14,7 +14,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Gameloop.Vdf" Version="0.6.2" />
       <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.10.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
       <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
