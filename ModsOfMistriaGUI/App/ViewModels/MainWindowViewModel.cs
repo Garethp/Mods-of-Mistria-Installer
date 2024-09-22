@@ -24,6 +24,12 @@ public partial class MainWindowViewModel: ViewModelBase
                 .Select(location => Mod.FromManifest(Path.Combine(Mod.GetModLocation(location)!, "manifest.json")))
                 .ToList<IMod>();
             
+            var zipMods = Directory.GetFiles(ModsLocation, "*.zip")
+                .Select(path => ZipMod.FromZipFile(path))
+                .ToList();
+            
+            mods.AddRange(zipMods);
+            
             new ModInstaller(MistriaLocation, ModsLocation).ValidateMods(mods);
             
             mods.ForEach(mod => Mods.Add(new ModModel()

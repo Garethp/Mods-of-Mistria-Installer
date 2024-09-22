@@ -9,44 +9,44 @@ namespace Garethp.ModsOfMistriaInstallerLib;
 
 public class Mod : IMod
 {
-    public string Author;
+    private string _author;
 
-    public string Name;
+    private string _name;
 
-    public string Version;
+    private string _version;
 
-    public string Location;
+    private string _location;
 
-    public string MinimunInstallerVersion;
+    private string _minimunInstallerVersion;
 
-    public string ManifestVersion;
+    private string _manifestVersion;
 
-    public Validation validation = new();
+    private Validation _validation = new();
     
     public string Id
     {
         get
         {
-            var initialId = $"{Author.ToLower()}.{Name.ToLower()}".Replace(" ", "_");
+            var initialId = $"{_author.ToLower()}.{_name.ToLower()}".Replace(" ", "_");
             return Regex.Replace(initialId, "[^a-zA-Z0-9_\\.]", "");
         }
     }
 
-    public string GetAuthor() => Author;
+    public string GetAuthor() => _author;
 
-    public string GetName() => Name;
+    public string GetName() => _name;
 
-    public string GetVersion() => Version;
+    public string GetVersion() => _version;
 
-    public string GetLocation() => Location;
+    public string GetLocation() => _location;
 
-    public string GetMinimunInstallerVersion() => MinimunInstallerVersion;
+    public string GetMinimunInstallerVersion() => _minimunInstallerVersion;
 
-    public string GetManifestVersion() => ManifestVersion;
+    public string GetManifestVersion() => _manifestVersion;
 
-    public Validation GetValidation() => validation;
+    public Validation GetValidation() => _validation;
 
-    public string GetBasePath() => Location;
+    public string GetBasePath() => _location;
 
     public string GetId() => Id;
 
@@ -66,12 +66,12 @@ public class Mod : IMod
 
         var mod = new Mod
         {
-            Name = manifest["name"]?.ToString() ?? "",
-            Author = manifest["author"]?.ToString() ?? "",
-            Version = manifest["version"]?.ToString() ?? "",
-            Location = Path.GetDirectoryName(manifestLocation) ?? "",
-            MinimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0",
-            ManifestVersion = manifest["manifestVersion"]?.ToString() ?? "1",
+            _name = manifest["name"]?.ToString() ?? "",
+            _author = manifest["author"]?.ToString() ?? "",
+            _version = manifest["version"]?.ToString() ?? "",
+            _location = Path.GetDirectoryName(manifestLocation) ?? "",
+            _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0",
+            _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1",
         };
 
         mod.Validate();
@@ -81,25 +81,25 @@ public class Mod : IMod
 
     public Validation Validate()
     {
-        if (string.IsNullOrEmpty(Author))
+        if (string.IsNullOrEmpty(_author))
         {
-            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"),
+            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
                 Resources.ManifestHasNoAuthor));
         }
 
-        if (string.IsNullOrEmpty(Name))
+        if (string.IsNullOrEmpty(_name))
         {
-            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"),
+            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
                 Resources.ManifestHasNoName));
         }
 
-        if (string.IsNullOrEmpty(Version))
+        if (string.IsNullOrEmpty(_version))
         {
-            validation.Errors.Add(new ValidationMessage(this, Path.Combine(Location, "manifest.json"),
+            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
                 Resources.ManifestHasNoVersion));
         }
 
-        return validation;
+        return _validation;
     }
 
     public string? CanInstall()
@@ -108,7 +108,7 @@ public class Mod : IMod
         var currentVersionString =
             currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
         var currentVersion = new Version(currentVersionString);
-        var requiredVersion = new Version(MinimunInstallerVersion);
+        var requiredVersion = new Version(_minimunInstallerVersion);
 
         if (requiredVersion.CompareTo(currentVersion) > 0)
         {
@@ -137,34 +137,34 @@ public class Mod : IMod
 
     public bool HasFilesInFolder(string folder, string extension)
     {
-        if (!Directory.Exists(Path.Combine(Location, folder))) return false;
+        if (!Directory.Exists(Path.Combine(_location, folder))) return false;
 
         if (!string.IsNullOrEmpty(extension))
-            return Directory.GetFiles(Path.Combine(Location, folder), $"*{extension}").Length > 0;
+            return Directory.GetFiles(Path.Combine(_location, folder), $"*{extension}").Length > 0;
        
-        return Directory.GetFiles(Path.Combine(Location, folder)).Length > 0;
+        return Directory.GetFiles(Path.Combine(_location, folder)).Length > 0;
     }
 
     public bool HasFilesInFolder(string folder) => HasFilesInFolder(folder, "");
 
-    public bool FileExists(string path) => File.Exists(Path.Combine(Location, path));
+    public bool FileExists(string path) => File.Exists(Path.Combine(_location, path));
 
-    public bool FolderExists(string path) => Directory.Exists(Path.Combine(Location, path));
+    public bool FolderExists(string path) => Directory.Exists(Path.Combine(_location, path));
 
     public List<string> GetFilesInFolder(string folder) => GetFilesInFolder(folder, "");
 
     public List<string> GetFilesInFolder(string folder, string extension)
     {
-        if (!Directory.Exists(Path.Combine(Location, folder))) return new List<string>();
+        if (!Directory.Exists(Path.Combine(_location, folder))) return new List<string>();
         if (!string.IsNullOrEmpty(extension))
-            return Directory.GetFiles(Path.Combine(Location, folder), $"*{extension}").ToList();
+            return Directory.GetFiles(Path.Combine(_location, folder), $"*{extension}").ToList();
         
-        return Directory.GetFiles(Path.Combine(Location, folder)).ToList();
+        return Directory.GetFiles(Path.Combine(_location, folder)).ToList();
     }
 
     public List<string> GetAllFiles(string extension)
     {
-        var di = new DirectoryInfo(Location);
+        var di = new DirectoryInfo(_location);
         var files = di.GetFiles($"*{extension}", SearchOption.AllDirectories);
 
         return files.Select(file => file.FullName).ToList();
@@ -177,6 +177,6 @@ public class Mod : IMod
 
     public Stream ReadFileAsStream(string path)
     {
-        return File.OpenRead(Path.Combine(Location, path));
+        return File.OpenRead(Path.Combine(_location, path));
     }
 }

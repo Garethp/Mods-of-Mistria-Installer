@@ -48,19 +48,19 @@ public class Standalone
 
         installer.ValidateMods(allMods);
         
-        mods = mods
+        allMods = allMods
             .Where(mod =>
             {
                 if (mod.CanInstall() is not null)
                 {
-                    Console.WriteLine(Resources.SkippingModBecauseInstallerOld, mod.Id);
+                    Console.WriteLine(Resources.SkippingModBecauseInstallerOld, mod.GetId());
                     return false;
                 }
 
-                if (mod.validation.Status == ValidationStatus.Invalid)
+                if (mod.GetValidation().Status == ValidationStatus.Invalid)
                 {
-                    Console.WriteLine(Resources.SkippingModBecauseErrors, mod.Id);
-                    foreach (var error in mod.validation.Errors)
+                    Console.WriteLine(Resources.SkippingModBecauseErrors, mod.GetId());
+                    foreach (var error in mod.GetValidation().Errors)
                     {
                         Console.WriteLine($"  {error.Message}");
                     }
@@ -68,10 +68,10 @@ public class Standalone
                     return false;
                 }
 
-                if (mod.validation.Status == ValidationStatus.Warning)
+                if (mod.GetValidation().Status == ValidationStatus.Warning)
                 {
-                    Console.WriteLine(Resources.ModHasWarnings, mod.Id);
-                    foreach (var warning in mod.validation.Warnings)
+                    Console.WriteLine(Resources.ModHasWarnings, mod.GetId());
+                    foreach (var warning in mod.GetValidation().Warnings)
                     {
                         Console.WriteLine($"  {warning.Message}");
                     }

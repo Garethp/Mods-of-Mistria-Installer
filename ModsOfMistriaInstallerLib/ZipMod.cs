@@ -35,8 +35,8 @@ public class ZipMod() : IMod
         _name = manifest["name"]?.ToString() ?? "";
         _author = manifest["author"]?.ToString() ?? "";
         _version = manifest["version"]?.ToString() ?? "";
-        _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "";
-        _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "";
+        _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0";
+        _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1";
         _zipFile = zipFile;
         _basePath = basePath;
     }
