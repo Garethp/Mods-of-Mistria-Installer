@@ -43,24 +43,21 @@ public class AurieInstaller : IModuleInstaller
             Directory.CreateDirectory(Path.Combine(modsLocation, "Native"));
         }
 
-        var owner = "AurieFramework";
-        string[] repos = ["Aurie", "YYToolkit"];
-
         List<FileToEnsure> filesToEnsure =
         [
-            new FileToEnsure()
+            new ()
             {
                 Path = Path.Combine(modsLocation, "Aurie", "YYToolkit.dll"),
                 Repository = "AurieFramework/YYToolkit",
                 Artifact = "YYToolkit.dll"
             },
-            new FileToEnsure()
+            new ()
             {
                 Path = Path.Combine(modsLocation, "Native", "AurieCore.dll"),
                 Repository = "AurieFramework/Aurie",
                 Artifact = "AurieCore.dll"
             },
-            new FileToEnsure()
+            new ()
             {
                 Path = Path.Combine(modsLocation, "AurieLoader.exe"),
                 Repository = "AurieFramework/Aurie",
@@ -91,14 +88,13 @@ public class AurieInstaller : IModuleInstaller
                 await using var newFile = new FileStream(ensure.Path, FileMode.CreateNew);
 
                 await fileDownload.Content.CopyToAsync(newFile);
+                
+                newFile.Close();
             });
 
             task.Wait();
         });
-
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("Aurie");
-        client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
-
+        
         foreach (var file in Directory.GetFiles(Path.Combine(modsLocation, "Aurie", "MOMI")))
         {
             File.Delete(file);
