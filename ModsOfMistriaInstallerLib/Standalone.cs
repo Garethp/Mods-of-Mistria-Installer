@@ -45,8 +45,13 @@ public class Standalone
         var mod = zipMods.First();
         var generator = new OutfitGenerator();
         var zipCanGenerate = generator.Validate(mod);
+        
+        List<IMod> allMods = new List<IMod>();
+        allMods.AddRange(mods);
+        
+        allMods.Add(mod);
 
-        installer.ValidateMods(mods);
+        installer.ValidateMods(allMods);
         
         mods = mods
             .Where(mod =>
@@ -81,7 +86,7 @@ public class Standalone
             })
             .ToList();
         
-        installer.InstallMods(mods, (message, timeTaken) =>
+        installer.InstallMods(allMods, (message, timeTaken) =>
         {
             Console.WriteLine(Resources.InstalledInReporter, message, timeTaken);
         });

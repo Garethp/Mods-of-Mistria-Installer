@@ -49,6 +49,20 @@ public class GraphicsImporter
             groupInfo.Sprites.Remove(sprite);
         }
     }
+    
+    public static MagickImage ReadBGRAImageFromStream(Stream fileStream)
+    {
+        MagickReadSettings magickReadSettings = new MagickReadSettings();
+        magickReadSettings.ColorSpace = ColorSpace.sRGB;
+        MagickReadSettings readSettings = magickReadSettings;
+        MagickImage magickImage = new MagickImage(fileStream, (IMagickReadSettings<byte>) readSettings);
+        fileStream.Close();
+        magickImage.Alpha(AlphaOption.Set);
+        magickImage.Format = MagickFormat.Bgra;
+        magickImage.SetCompression(CompressionMethod.NoCompression);
+        return magickImage;
+    }
+
 
     public void ImportTilesetData(
         string fieldsOfMistriaPath,
@@ -61,7 +75,7 @@ public class GraphicsImporter
             var tileset = gameData.Backgrounds.ByName(tilesetData.Name);
             if (tileset is null) continue;
             
-            using MagickImage newImage = TextureWorker.ReadBGRAImageFromFile(Path.Combine(tilesetData.BaseLocation, tilesetData.Location));
+            using MagickImage newImage = ReadBGRAImageFromStream(tilesetData.Mod.ReadFileAsStream(tilesetData.Location));
             tileset.Texture.ReplaceTexture(newImage);
         }
     }
@@ -72,8 +86,10 @@ public class GraphicsImporter
         List<SpriteData> sprites,
         string modName)
     {
+        return;
         // @TODO: Either support multiple base paths or group sprites by base path
-        var sourcePath = sprites[0].BaseLocation;
+        // var sourcePath = sprites[0].BaseLocation;
+        var sourcePath = "";
 
         // ClearTextureData(gameData, modName);
 

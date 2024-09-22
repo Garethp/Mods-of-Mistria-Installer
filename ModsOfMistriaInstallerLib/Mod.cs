@@ -147,4 +147,9 @@ public class Mod : IMod
     {
         return !FileExists(path) ? "" : File.ReadAllText(path);
     }
+
+    public Stream ReadFileAsStream(string path)
+    {
+        return File.OpenRead(Path.Combine(Location, path));
+    }
 }

@@ -33,4 +33,6 @@ public interface IMod
     public bool FolderExists(string path);
     
     public string ReadFile(string path);
+    
+    public Stream ReadFileAsStream(string path);
 }
