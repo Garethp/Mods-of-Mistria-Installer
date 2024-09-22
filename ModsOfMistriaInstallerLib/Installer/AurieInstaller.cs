@@ -122,7 +122,7 @@ public class AurieInstaller : IModuleInstaller
         });
     }
 
-    public void Uninstall(string fieldsOfMistriaLocation)
+    public void Uninstall()
     {
         TearDownRegistry();
     }
