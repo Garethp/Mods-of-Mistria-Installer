@@ -7,8 +7,12 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 [InformationInstaller(1)]
 public class GraphicsInstaller : IModuleInstaller
 {
-    public void Install(string fieldsOfMistriaLocation, GeneratedInformation information, Action<string, string> reportStatus)
-    {
+    public void Install(
+        string fieldsOfMistriaLocation,
+        string modsLocation,
+        GeneratedInformation information,
+        Action<string, string> reportStatus
+    ) {
         if (information.Sprites.Count == 0 && information.Tilesets.Count == 0) return;
         
         if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "data.bak.win")))

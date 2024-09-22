@@ -2,7 +2,7 @@
 
 public interface IModuleInstaller
 {
-    public void Install(string fieldsOfMistriaLocation, GeneratedInformation information, Action<string, string> reportStatus);
+    public void Install(string fieldsOfMistriaLocation, string modsLocation, GeneratedInformation information, Action<string, string> reportStatus);
 }
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]

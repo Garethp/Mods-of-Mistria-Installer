@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
-public class ModInstaller(string fieldsOfMistriaLocation)
+public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
 {
     private List<List<string>> filesToBackup =
     [
@@ -84,12 +84,12 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         foreach (var installer in desiredInstallers)
         {
             timer.Restart();
-            installer.Install(fieldsOfMistriaLocation, generatedInformation, reportStatus);
+            installer.Install(fieldsOfMistriaLocation, modsLocation, generatedInformation, reportStatus);
             timer.Stop();
             reportStatus(installer.GetType().Name, timer.ToString());
         }
         
-        new ChecksumInstaller().Install(fieldsOfMistriaLocation, generatedInformation, reportStatus);
+        new ChecksumInstaller().Install(fieldsOfMistriaLocation, modsLocation, generatedInformation, reportStatus);
         totalTime.Stop();
         
         reportStatus(Resources.InstallCompleted, totalTime.ToString());
@@ -149,5 +149,6 @@ public class ModInstaller(string fieldsOfMistriaLocation)
         });
         
         new ChecksumInstaller().Uninstall(fieldsOfMistriaLocation);
+        new AurieInstaller().Uninstall(fieldsOfMistriaLocation);
     }
 }

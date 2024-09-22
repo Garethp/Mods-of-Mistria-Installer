@@ -29,7 +29,7 @@ public class Standalone
         var totalTime = new Stopwatch();
         totalTime.Start();
         
-        var installer = new ModInstaller(mistriaLocation);
+        var installer = new ModInstaller(mistriaLocation, modsLocation);
 
         var mods = Directory
             .GetDirectories(modsLocation)

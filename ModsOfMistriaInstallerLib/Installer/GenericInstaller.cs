@@ -5,8 +5,12 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 [InformationInstaller(1)]
 public abstract class GenericInstaller(List<string> fileNamePaths) : IModuleInstaller
 {
-    public void Install(string fieldsOfMistriaLocation, GeneratedInformation information, Action<string, string> reportStatus)
-    {
+    public void Install(
+        string fieldsOfMistriaLocation,
+        string modsLocation,
+        GeneratedInformation information,
+        Action<string, string> reportStatus
+    ) {
         var fileName = fileNamePaths.Last();
         List<string> locationPath = [fieldsOfMistriaLocation];
         locationPath.AddRange(fileNamePaths[..^1]);
