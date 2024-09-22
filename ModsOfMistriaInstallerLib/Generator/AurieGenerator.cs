@@ -1,4 +1,6 @@
-﻿using Garethp.ModsOfMistriaInstallerLib.Models;
+﻿using System.Runtime.InteropServices;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Models;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
@@ -26,5 +28,16 @@ public class AurieGenerator: IGenerator
 
     public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "Aurie"));
 
-    public Validation Validate(Mod mod) => new Validation();
+    public Validation Validate(Mod mod)
+    {
+        var validation = new Validation();
+        if (!CanGenerate(mod)) return validation;
+
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            validation.AddError(mod, "", Resources.ErrorModRequiresWindows);
+        }
+        
+        return validation;
+    }
 }
