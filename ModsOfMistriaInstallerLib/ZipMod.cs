@@ -88,6 +88,8 @@ public class ZipMod() : IMod
 
     public Validation GetValidation() => _validation;
 
+    public string GetBasePath() => _basePath;
+
     public string GetId()
     {
         var initialId = $"{GetAuthor().ToLower()}.{GetName().ToLower()}".Replace(" ", "_");
@@ -135,9 +137,11 @@ public class ZipMod() : IMod
 
     public bool HasFilesInFolder(string folder) => HasFilesInFolder(folder, "");
 
-    public bool HasFilesInFolder(string folder, string extension) => _zipFile is not null && _zipFile.Entries.Any(entry =>
-        entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') && entry.FullName.EndsWith(extension ?? ""));
-    
+    public bool HasFilesInFolder(string folder, string extension) => _zipFile is not null && _zipFile.Entries.Any(
+        entry =>
+            entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') &&
+            entry.FullName.EndsWith(extension ?? ""));
+
     public bool FileExists(string path) => _zipFile is not null &&
                                            _zipFile.Entries.Any(entry =>
                                                entry.FullName == $"{_basePath}{path}" && !entry.FullName.EndsWith('/'));
@@ -145,10 +149,21 @@ public class ZipMod() : IMod
     public bool FolderExists(string path) => _zipFile?.GetEntry($"{_basePath}{path}/") != null;
 
     public List<string> GetFilesInFolder(string folder) => GetFilesInFolder(folder, "");
-    
+
+    public List<string> GetAllFiles(string extension)
+    {
+        if (_zipFile is null) return new List<string>();
+
+        return _zipFile.Entries
+            .Where(entry => !entry.FullName.EndsWith('/') && entry.FullName.EndsWith(extension ?? ""))
+            .Select(entry => entry.FullName)
+            .ToList();
+    }
+
     public List<string> GetFilesInFolder(string folder, string? extension) =>
         _zipFile?.Entries
-            .Where(entry => entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') && entry.FullName.EndsWith(extension ?? ""))
+            .Where(entry => entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') &&
+                            entry.FullName.EndsWith(extension ?? ""))
             .Select(entry => entry.FullName).ToList() ?? new List<string>();
 
     public string ReadFile(string path)
@@ -161,7 +176,7 @@ public class ZipMod() : IMod
     public Stream ReadFileAsStream(string path)
     {
         if (!path.StartsWith(_basePath)) path = $"{_basePath}{path}";
-        
+
         if (_zipFile is null) throw new Exception("Cannot read file from zip file");
         var entry = _zipFile.GetEntry($"{path}");
         if (entry is null) throw new Exception("Cannot read file from zip file");

@@ -13,43 +13,6 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
  */
 public class GraphicsImporter
 {
-    void ClearTextureData(UndertaleData gameData, string modName)
-    {
-        var groupInfo = gameData.TextureGroupInfo.ByName($"mod_{modName}");
-        var playerInfo = gameData.TextureGroupInfo.ByName("player");
-        var uiInfo = gameData.TextureGroupInfo.ByName("ui");
-
-        if (groupInfo is null) return;
-
-        foreach (var texturePage in groupInfo.TexturePages.ToList())
-        {
-            groupInfo.TexturePages.Remove(texturePage);
-            gameData.EmbeddedTextures.Remove(texturePage.Resource);
-
-            playerInfo.TexturePages.Where(resource =>
-                    resource.Resource.Name.ToString() == texturePage.Resource.Name.ToString())
-                .ToList()
-                .ForEach(resource => playerInfo.TexturePages.Remove(resource));
-
-            uiInfo.TexturePages.Where(resource =>
-                    resource.Resource.Name.ToString() == texturePage.Resource.Name.ToString())
-                .ToList()
-                .ForEach(resource => uiInfo.TexturePages.Remove(resource));
-        }
-        
-        foreach (var sprite in groupInfo.Sprites.ToList())
-        {
-            var pageItems = sprite.Resource.Textures.ToList();
-            foreach (var pageItem in pageItems)
-            {
-                sprite.Resource.Textures.Remove(pageItem);
-                gameData.TexturePageItems.Remove(pageItem.Texture);
-            }
-
-            groupInfo.Sprites.Remove(sprite);
-        }
-    }
-    
     public static MagickImage ReadBGRAImageFromStream(Stream fileStream)
     {
         MagickReadSettings magickReadSettings = new MagickReadSettings();
@@ -86,24 +49,18 @@ public class GraphicsImporter
         List<SpriteData> sprites,
         string modName)
     {
-        return;
-        // @TODO: Either support multiple base paths or group sprites by base path
-        // var sourcePath = sprites[0].BaseLocation;
-        var sourcePath = "";
-
-        // ClearTextureData(gameData, modName);
-
+        if (sprites.Count == 0) return;
+        
         var packDir = Path.Combine(fieldsOfMistriaPath, "Packager");
         Directory.CreateDirectory(packDir);
 
-        var searchPattern = "*.png";
         var outName = Path.Combine(packDir, "atlas.txt");
         var textureSize = 2048;
         var PaddingValue = 2;
         var debug = false;
         var packer = new Packer();
-        packer.Process(sourcePath, searchPattern, textureSize, PaddingValue, debug);
-        packer.SaveAtlasses(outName);
+        packer.Process(sprites[0].Mod, textureSize, PaddingValue, debug);
+        packer.SaveAtlasses(sprites[0].Mod, outName);
 
         var prefix = outName.Replace(Path.GetExtension(outName), "");
         var atlasCount = 0;
@@ -148,14 +105,8 @@ public class GraphicsImporter
 
                 SetTextureTargetBounds(texturePageItem, stripped, node);
 
-                var spriteData =
-                    sprites.FindAll(sprite =>
-                        (sprite.IsAnimated && Path.GetFullPath(Path.Combine(sourcePath, sprite.Location)) ==
-                            Path.GetFullPath(Path.GetDirectoryName(node.Texture.Source)))
-                        || Path.GetFullPath(Path.Combine(sourcePath, sprite.Location)) ==
-                        Path.GetFullPath(node.Texture.Source)
-                    );
-
+                var spriteData = sprites.FindAll(sprite => sprite.MatchesPath(node.Texture.Source));
+                
                 if (spriteData.Count == 0) continue;
 
                 gameData.TexturePageItems.Add(texturePageItem);

@@ -46,6 +46,8 @@ public class Mod : IMod
 
     public Validation GetValidation() => validation;
 
+    public string GetBasePath() => Location;
+
     public string GetId() => Id;
 
     public static Mod FromManifest(string manifestLocation)
@@ -158,6 +160,14 @@ public class Mod : IMod
             return Directory.GetFiles(Path.Combine(Location, folder), $"*{extension}").ToList();
         
         return Directory.GetFiles(Path.Combine(Location, folder)).ToList();
+    }
+
+    public List<string> GetAllFiles(string extension)
+    {
+        var di = new DirectoryInfo(Location);
+        var files = di.GetFiles($"*{extension}", SearchOption.AllDirectories);
+
+        return files.Select(file => file.FullName).ToList();
     }
 
     public string? ReadFile(string path)

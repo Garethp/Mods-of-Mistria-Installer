@@ -22,6 +22,8 @@ public interface IMod
 
     public Validation Validate();
 
+    public string GetBasePath();
+
     public string? CanInstall();
     
     public bool HasFilesInFolder(string folder, string extension);
@@ -32,6 +34,8 @@ public interface IMod
     public List<string> GetFilesInFolder(string folder, string extension);
     
     public List<string> GetFilesInFolder(string folder);
+    
+    public List<string> GetAllFiles(string extension);
     
     public bool FileExists(string path);
     
