@@ -133,15 +133,32 @@ public class Mod : IMod
         return null;
     }
 
-    public bool HasFilesInFolder(string folder) => Directory.Exists(Path.Combine(Location, folder)) &&
-                                                   Directory.GetFiles(Path.Combine(Location, folder)).Length > 0;
+    public bool HasFilesInFolder(string folder, string extension)
+    {
+        if (!Directory.Exists(Path.Combine(Location, folder))) return false;
+
+        if (!string.IsNullOrEmpty(extension))
+            return Directory.GetFiles(Path.Combine(Location, folder), $"*{extension}").Length > 0;
+       
+        return Directory.GetFiles(Path.Combine(Location, folder)).Length > 0;
+    }
+
+    public bool HasFilesInFolder(string folder) => HasFilesInFolder(folder, "");
 
     public bool FileExists(string path) => File.Exists(Path.Combine(Location, path));
 
     public bool FolderExists(string path) => Directory.Exists(Path.Combine(Location, path));
 
-    public List<string> GetFilesInFolder(string folder) =>
-        !Directory.Exists(Path.Combine(Location, folder)) ? new List<string>(): Directory.GetFiles(Path.Combine(Location, folder)).ToList();
+    public List<string> GetFilesInFolder(string folder) => GetFilesInFolder(folder, "");
+
+    public List<string> GetFilesInFolder(string folder, string extension)
+    {
+        if (!Directory.Exists(Path.Combine(Location, folder))) return new List<string>();
+        if (!string.IsNullOrEmpty(extension))
+            return Directory.GetFiles(Path.Combine(Location, folder), $"*{extension}").ToList();
+        
+        return Directory.GetFiles(Path.Combine(Location, folder)).ToList();
+    }
 
     public string? ReadFile(string path)
     {

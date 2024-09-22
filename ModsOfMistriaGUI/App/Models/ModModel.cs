@@ -7,7 +7,7 @@ namespace Garethp.ModsOfMistriaGUI.App.Models;
 
 public partial class ModModel: ObservableObject
 {
-    public Mod mod;
+    public IMod mod;
 
     public string? CanInstall;
     private bool _enabled = true;
@@ -18,16 +18,16 @@ public partial class ModModel: ObservableObject
         set => _enabled = value;
     }
 
-    public Validation validation => mod.validation;
+    public Validation validation => mod.GetValidation();
     
-    public bool InWarning => mod.validation.Status == ValidationStatus.Warning;
-    public bool InError => mod.validation.Status == ValidationStatus.Invalid;
+    public bool InWarning => mod.GetValidation().Status == ValidationStatus.Warning;
+    public bool InError => mod.GetValidation().Status == ValidationStatus.Invalid;
     
-    public bool IsValid => mod.validation.Status == ValidationStatus.Valid;
+    public bool IsValid => mod.GetValidation().Status == ValidationStatus.Valid;
     
-    public string Warnings => String.Join("\r\n", mod.validation.Warnings.Select(warning => warning.Message).ToList());
+    public string Warnings => String.Join("\r\n", mod.GetValidation().Warnings.Select(warning => warning.Message).ToList());
     
-    public string Errors => String.Join("\r\n", mod.validation.Errors.Select(warning => warning.Message).ToList());
+    public string Errors => String.Join("\r\n", mod.GetValidation().Errors.Select(warning => warning.Message).ToList());
     
-    public string Full => string.Format(Resources.ModByAuthor, mod.Name, mod.Author);
+    public string Full => string.Format(Resources.ModByAuthor, mod.GetName(), mod.GetAuthor());
 }

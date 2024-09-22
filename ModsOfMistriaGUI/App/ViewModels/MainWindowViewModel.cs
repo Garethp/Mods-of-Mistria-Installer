@@ -22,7 +22,7 @@ public partial class MainWindowViewModel: ViewModelBase
                 .GetDirectories(ModsLocation)
                 .Where(folder => Mod.GetModLocation(folder) is not null)
                 .Select(location => Mod.FromManifest(Path.Combine(Mod.GetModLocation(location)!, "manifest.json")))
-                .ToList();
+                .ToList<IMod>();
             
             new ModInstaller(MistriaLocation, ModsLocation).ValidateMods(mods);
             
@@ -58,7 +58,7 @@ public partial class MainWindowViewModel: ViewModelBase
 
     private string? _modOverride;
 
-    private List<Mod> mods;
+    private List<IMod> mods;
 
     private bool _isInstalling;
     

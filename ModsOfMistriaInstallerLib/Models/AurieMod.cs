@@ -2,7 +2,7 @@
 
 public class AurieMod
 {
-    public Mod Mod;
+    public IMod Mod;
     
     public string FileName;
 

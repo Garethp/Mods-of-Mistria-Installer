@@ -133,26 +133,37 @@ public class ZipMod() : IMod
         return null;
     }
 
-    public bool HasFilesInFolder(string folder) => _zipFile is not null && _zipFile.Entries.Any(entry =>
-        entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/'));
+    public bool HasFilesInFolder(string folder) => HasFilesInFolder(folder, "");
 
+    public bool HasFilesInFolder(string folder, string extension) => _zipFile is not null && _zipFile.Entries.Any(entry =>
+        entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') && entry.FullName.EndsWith(extension ?? ""));
+    
     public bool FileExists(string path) => _zipFile is not null &&
                                            _zipFile.Entries.Any(entry =>
                                                entry.FullName == $"{_basePath}{path}" && !entry.FullName.EndsWith('/'));
 
     public bool FolderExists(string path) => _zipFile?.GetEntry($"{_basePath}{path}/") != null;
 
-    public List<string> GetFilesInFolder(string folder) =>
+    public List<string> GetFilesInFolder(string folder) => GetFilesInFolder(folder, "");
+    
+    public List<string> GetFilesInFolder(string folder, string? extension) =>
         _zipFile?.Entries
-            .Where(entry => entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/'))
+            .Where(entry => entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') && entry.FullName.EndsWith(extension ?? ""))
             .Select(entry => entry.FullName).ToList() ?? new List<string>();
 
-    public string ReadFile(string path) => readEntry(_zipFile, path);
+    public string ReadFile(string path)
+    {
+        if (!path.StartsWith(_basePath)) path = $"{_basePath}{path}";
+
+        return readEntry(_zipFile, path);
+    }
 
     public Stream ReadFileAsStream(string path)
     {
+        if (!path.StartsWith(_basePath)) path = $"{_basePath}{path}";
+        
         if (_zipFile is null) throw new Exception("Cannot read file from zip file");
-        var entry = _zipFile.GetEntry($"{_basePath}{path}");
+        var entry = _zipFile.GetEntry($"{path}");
         if (entry is null) throw new Exception("Cannot read file from zip file");
 
         return entry.Open();

@@ -24,8 +24,13 @@ public interface IMod
 
     public string? CanInstall();
     
+    public bool HasFilesInFolder(string folder, string extension);
+    
     public bool HasFilesInFolder(string folder);
 
+
+    public List<string> GetFilesInFolder(string folder, string extension);
+    
     public List<string> GetFilesInFolder(string folder);
     
     public bool FileExists(string path);

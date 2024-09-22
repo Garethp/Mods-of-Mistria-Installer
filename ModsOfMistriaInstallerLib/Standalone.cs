@@ -41,15 +41,10 @@ public class Standalone
         var zipMods = Directory.GetFiles(modsLocation, "*.zip")
             .Select(path => ZipMod.FromZipFile(path))
             .ToList();
-
-        var mod = zipMods.First();
-        var generator = new OutfitGenerator();
-        var zipCanGenerate = generator.Validate(mod);
         
         List<IMod> allMods = new List<IMod>();
         allMods.AddRange(mods);
-        
-        allMods.Add(mod);
+        allMods.AddRange(zipMods);
 
         installer.ValidateMods(allMods);
         
