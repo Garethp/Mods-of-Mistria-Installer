@@ -35,6 +35,8 @@ public class GeneratedInformation
     public List<JObject> Cutscenes = [];
 
     public List<JObject> ShadowManifests = [];
+
+    public List<AurieMod> AurieMods = [];
     
     public void Merge(GeneratedInformation other)
     {
@@ -50,6 +52,7 @@ public class GeneratedInformation
         StoreItems.AddRange(other.StoreItems);
         Cutscenes.AddRange(other.Cutscenes);
         ShadowManifests.AddRange(other.ShadowManifests);
+        AurieMods.AddRange(other.AurieMods);
         
         foreach (var modName in other.Sprites.Keys)
         {

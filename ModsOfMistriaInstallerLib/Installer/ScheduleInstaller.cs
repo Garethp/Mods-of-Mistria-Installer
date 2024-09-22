@@ -5,8 +5,12 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 [InformationInstaller(1)]
 public class ScheduleInstaller : IModuleInstaller
 {
-    public void Install(string fieldsOfMistriaLocation, GeneratedInformation information, Action<string, string> reportStatus)
-    {
+    public void Install(
+        string fieldsOfMistriaLocation,
+        string modsLocation,
+        GeneratedInformation information,
+        Action<string, string> reportStatus
+    ) {
         if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "t2_output.json")))
         {
             throw new FileNotFoundException("Could not find t2_output.json in Fields of Mistria folder");

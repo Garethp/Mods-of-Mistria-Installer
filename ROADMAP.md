@@ -1,7 +1,9 @@
 # Roadmap
 
 ## 0.2.0
-* [ ] Add Aurie Integration
+* [x] Add Aurie Integration
+
+## 0.3.0
 * [ ] Enable installing from `.zip` files
 * [ ] Select the Mistria/Mods folders in a setup screen if not found
 * [ ] Allow creating a mods folder automatically

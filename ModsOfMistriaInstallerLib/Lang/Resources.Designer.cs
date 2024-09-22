@@ -87,6 +87,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This mod cannot run on Linux and will not install.
+        /// </summary>
+        public static string ErrorModRequiresWindows {
+            get {
+                return ResourceManager.GetString("ErrorModRequiresWindows", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Outfit {0} has no animation files..
         /// </summary>
         public static string ErrorOutfitNoAnimation {

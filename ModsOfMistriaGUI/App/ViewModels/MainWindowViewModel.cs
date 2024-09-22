@@ -24,7 +24,7 @@ public partial class MainWindowViewModel: ViewModelBase
                 .Select(location => Mod.FromManifest(Path.Combine(Mod.GetModLocation(location)!, "manifest.json")))
                 .ToList();
             
-            new ModInstaller(MistriaLocation).ValidateMods(mods);
+            new ModInstaller(MistriaLocation, ModsLocation).ValidateMods(mods);
             
             mods.ForEach(mod => Mods.Add(new ModModel()
             {
@@ -73,7 +73,7 @@ public partial class MainWindowViewModel: ViewModelBase
 
     private async void backgroundInstall()
     {
-        var installer = new ModInstaller(_mistriaLocation);
+        var installer = new ModInstaller(_mistriaLocation, ModsLocation);
 
         installer.InstallMods(Mods.Where(model => model.Enabled).Select(model => model.mod).ToList(), (message, timeTaken) =>
         {
