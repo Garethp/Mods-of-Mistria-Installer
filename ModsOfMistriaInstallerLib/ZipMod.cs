@@ -1,5 +1,6 @@
 ﻿using System.IO.Compression;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
@@ -87,7 +88,11 @@ public class ZipMod() : IMod
 
     public Validation GetValidation() => _validation;
 
-    public string GetId() => $"{GetAuthor().ToLower()}.{GetName().ToLower()}".Replace(" ", "_");
+    public string GetId()
+    {
+        var initialId = $"{GetAuthor().ToLower()}.{GetName().ToLower()}".Replace(" ", "_");
+        return Regex.Replace(initialId, "[^a-zA-Z0-9_\\.]", "");
+    }
 
     public Validation Validate()
     {
@@ -131,12 +136,16 @@ public class ZipMod() : IMod
     public bool HasFilesInFolder(string folder) => _zipFile is not null && _zipFile.Entries.Any(entry =>
         entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/'));
 
-    public bool FileExists(string path) => _zipFile is not null && _zipFile.Entries.Any(entry => entry.FullName == $"{_basePath}{path}" && !entry.FullName.EndsWith('/'));
-    
+    public bool FileExists(string path) => _zipFile is not null &&
+                                           _zipFile.Entries.Any(entry =>
+                                               entry.FullName == $"{_basePath}{path}" && !entry.FullName.EndsWith('/'));
+
     public bool FolderExists(string path) => _zipFile?.GetEntry($"{_basePath}{path}/") != null;
-    
+
     public List<string> GetFilesInFolder(string folder) =>
-        _zipFile?.Entries.Where(entry => entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/')).Select(entry => entry.FullName).ToList() ?? new List<string>();
+        _zipFile?.Entries
+            .Where(entry => entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/'))
+            .Select(entry => entry.FullName).ToList() ?? new List<string>();
 
     public string ReadFile(string path) => readEntry(_zipFile, path);
 
