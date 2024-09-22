@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
@@ -21,7 +22,14 @@ public class Mod
 
     public Validation validation = new();
     
-    public string Id => $"{Author.ToLower()}.{Name.ToLower()}".Replace(" ", "_");
+    public string Id
+    {
+        get
+        {
+            var initialId = $"{Author.ToLower()}.{Name.ToLower()}".Replace(" ", "_");
+            return Regex.Replace(initialId, "[^a-zA-Z0-9_\\.]", "");
+        }
+    }
 
     public static Mod FromManifest(string manifestLocation)
     {
