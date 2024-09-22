@@ -11,7 +11,7 @@ public class AurieGenerator: IGenerator
     {
         var information = new GeneratedInformation();
         
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "Aurie"), "*.dll"))
+        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "aurie"), "*.dll"))
         {
             var fileName = Path.GetFileName(file);
             
@@ -26,7 +26,7 @@ public class AurieGenerator: IGenerator
         return information;
     }
 
-    public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "Aurie"));
+    public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "aurie"));
 
     public Validation Validate(Mod mod)
     {
