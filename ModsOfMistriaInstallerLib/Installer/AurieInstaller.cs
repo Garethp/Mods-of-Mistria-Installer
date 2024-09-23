@@ -17,7 +17,7 @@ public class AurieInstaller : IModuleInstaller
 {
     private static readonly string IFEORegistryKey =
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options";
-
+    
     public void Install(
         string fieldsOfMistriaLocation,
         string modsLocation,
@@ -30,9 +30,7 @@ public class AurieInstaller : IModuleInstaller
             TearDownRegistry();
             return;
         }
-
-        SetupRegistry(fieldsOfMistriaLocation, modsLocation);
-
+        
         if (!Directory.Exists(Path.Combine(modsLocation, "Aurie", "MOMI")))
         {
             Directory.CreateDirectory(Path.Combine(modsLocation, "Aurie", "MOMI"));
@@ -42,6 +40,8 @@ public class AurieInstaller : IModuleInstaller
         {
             Directory.CreateDirectory(Path.Combine(modsLocation, "Native"));
         }
+        
+        SetupRegistry(fieldsOfMistriaLocation, modsLocation);
 
         List<FileToEnsure> filesToEnsure =
         [

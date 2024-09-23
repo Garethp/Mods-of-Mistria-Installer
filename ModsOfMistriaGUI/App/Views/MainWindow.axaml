@@ -25,7 +25,11 @@
             <Image Source="/App/Assets/header.jpg"></Image>
 
             <Panel Margin="50 20 50 0">
-                <StackPanel>
+                <StackPanel IsVisible="{Binding Exception.Length}">
+                    <SelectableTextBlock Text="{Binding Exception}" />
+                </StackPanel>
+                
+                <StackPanel IsVisible="{Binding !Exception.Length}">
                     <TextBlock Text="{x:Static lang:Resources.GreetingText}" />
                     <TextBlock></TextBlock>
                     <WrapPanel>

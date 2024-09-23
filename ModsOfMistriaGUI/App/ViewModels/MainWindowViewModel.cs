@@ -47,12 +47,14 @@ public partial class MainWindowViewModel: ViewModelBase
             InstallStatus = Resources.ModsRequireNewerVersion;
         }
     }
-
+    
     [ObservableProperty] string _installStatus = "";
 
     [ObservableProperty] private string _modsLocation = "";
     
     [ObservableProperty] string _mistriaLocation = "";
+
+    [ObservableProperty] private string _exception = "";
 
     private string? _modOverride;
 
@@ -73,15 +75,23 @@ public partial class MainWindowViewModel: ViewModelBase
 
     private async void backgroundInstall()
     {
-        var installer = new ModInstaller(_mistriaLocation, ModsLocation);
-
-        installer.InstallMods(Mods.Where(model => model.Enabled).Select(model => model.mod).ToList(), (message, timeTaken) =>
+        try
         {
-            Console.WriteLine($"Ran {message} in {timeTaken}");
-            InstallStatus = message;
-        });
+            var installer = new ModInstaller(_mistriaLocation, ModsLocation);
 
-        _isInstalling = false;
+            installer.InstallMods(Mods.Where(model => model.Enabled).Select(model => model.mod).ToList(),
+                (message, timeTaken) =>
+                {
+                    Console.WriteLine($"Ran {message} in {timeTaken}");
+                    InstallStatus = message;
+                });
+
+            _isInstalling = false;
+        }
+        catch (Exception e)
+        {
+            Exception = e.Message;
+        }
     }
     
     private bool CanInstall() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !_isInstalling && Mods.All(mod => mod.CanInstall is null);
