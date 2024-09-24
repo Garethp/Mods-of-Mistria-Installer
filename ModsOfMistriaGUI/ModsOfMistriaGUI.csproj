@@ -8,8 +8,8 @@
         <Nullable>enable</Nullable>
         <PublishSingleFile>true</PublishSingleFile>
         <ApplicationIcon>App\Assets\icon.ico</ApplicationIcon>
-        <AssemblyVersion>0.2.1</AssemblyVersion>
-        <FileVersion>0.2.1</FileVersion>
+        <AssemblyVersion>0.2.2</AssemblyVersion>
+        <FileVersion>0.2.2</FileVersion>
         <AssemblyName>ModsOfMistriaInstaller</AssemblyName>
     </PropertyGroup>
     
@@ -30,6 +30,10 @@
     
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
         <AssemblyName>ModsOfMistriaInstaller-linux</AssemblyName>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
+        <AssemblyName>ModsOfMistriaInstaller-osx</AssemblyName>
     </PropertyGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

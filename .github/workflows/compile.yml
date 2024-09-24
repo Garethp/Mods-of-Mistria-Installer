@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         project: [ModsOfMistriaCommandLine, ModsOfMistriaGUI]
-        arch: [linux-x64, win-x64, win-x86]
+        arch: [linux-x64, win-x64, win-x86, osx-x64]
         os: [windows]
         configuration: [Release]
 

@@ -145,6 +145,6 @@
         <value>Shadow {0} does not have a regular_sprite_name</value>
     </data>
     <data name="ErrorModRequiresWindows" xml:space="preserve">
-        <value>This mod cannot run on Linux and will not install</value>
+        <value>This mod will only run on Windows and will not install.</value>
     </data>
 </root>
