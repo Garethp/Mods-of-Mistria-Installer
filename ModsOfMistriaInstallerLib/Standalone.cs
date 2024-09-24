@@ -32,20 +32,7 @@ public class Standalone
         
         var installer = new ModInstaller(mistriaLocation, modsLocation);
 
-        var mods = Directory
-            .GetDirectories(modsLocation)
-            .Where(folder => Mod.GetModLocation(folder) is not null)
-            .Select(location => Mod.FromManifest(Path.Combine(Mod.GetModLocation(location)!, "manifest.json")))
-            .ToList();
-
-        var zipMods = Directory.GetFiles(modsLocation, "*.zip")
-            .Select(path => ZipMod.FromZipFile(path))
-            .ToList();
-        
-        List<IMod> allMods = new List<IMod>();
-        allMods.AddRange(mods);
-        allMods.AddRange(zipMods);
-
+        var allMods = MistriaLocator.GetMods(modsLocation);
         installer.ValidateMods(allMods);
         
         allMods = allMods
@@ -88,5 +75,18 @@ public class Standalone
         
         totalTime.Stop();
         Console.WriteLine(Resources.ModsInstalledInTime, totalTime);
+    }
+
+    public static void UnInstall()
+    {
+        var mistriaLocation = MistriaLocator.GetMistriaLocation();
+        if (mistriaLocation == null)
+        {
+            Console.WriteLine(Resources.MistriaNotFound);
+            return;
+        }
+        
+        var installer = new ModInstaller(mistriaLocation, "");
+        installer.Uninstall();
     }
 }

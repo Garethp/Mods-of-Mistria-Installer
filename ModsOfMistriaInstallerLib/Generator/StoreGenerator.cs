@@ -1,6 +1,7 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;

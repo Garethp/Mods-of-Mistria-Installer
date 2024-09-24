@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;

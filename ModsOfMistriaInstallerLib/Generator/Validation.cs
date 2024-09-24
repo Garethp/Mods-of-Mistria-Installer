@@ -1,4 +1,6 @@
-﻿namespace Garethp.ModsOfMistriaInstallerLib.Generator;
+﻿using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+
+namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
 public enum ValidationStatus
 {

@@ -1,4 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 using UndertaleModLib.Models;
 

@@ -1,6 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 
-namespace Garethp.ModsOfMistriaInstallerLib;
+namespace Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
 public interface IMod
 {

@@ -116,7 +116,8 @@
         </StackPanel>
         <WrapPanel Grid.Row="1" Margin="0 0 30 0" HorizontalAlignment="Right">
             <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
-            <Button Command="{Binding InstallModsCommand}" Content="{x:Static lang:Resources.InstallButtonText}" />
+            <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}" Content="{x:Static lang:Resources.InstallButtonText}" />
+            <Button Command="{Binding UnInstallModsCommand}" Content="{x:Static lang:Resources.UninstallButtonText}" />
         </WrapPanel>
     </Grid>
 </Window>

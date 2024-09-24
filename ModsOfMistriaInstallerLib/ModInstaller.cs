@@ -2,6 +2,7 @@
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib;

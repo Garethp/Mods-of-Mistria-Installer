@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using ModsOfMistriaGUI.App.Lang;
 
 namespace Garethp.ModsOfMistriaGUI.App.Models;

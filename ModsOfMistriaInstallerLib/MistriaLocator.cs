@@ -1,4 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
@@ -84,5 +85,26 @@ public class MistriaLocator
         
         return locations
             .ToList();
+    }
+
+    public static List<IMod> GetMods(string modsLocation)
+    {
+        var folderMods = Directory
+            .GetDirectories(modsLocation)
+            .Where(folder => FolderMod.GetModLocation(folder) is not null)
+            .Select(location => FolderMod.FromManifest(Path.Combine(FolderMod.GetModLocation(location)!, "manifest.json")));
+
+        var zipMods = Directory.GetFiles(modsLocation, "*.zip")
+            .Select(ZipMod.FromZipFile);
+
+        var rarMods = Directory.GetFiles(modsLocation, "*.rar")
+            .Select(RarMod.FromRarFile);
+
+        var mods = new List<IMod>();
+        mods.AddRange(folderMods);
+        mods.AddRange(zipMods);
+        mods.AddRange(rarMods);
+        
+        return mods;
     }
 }

@@ -1,13 +1,12 @@
 ﻿using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
 
-namespace Garethp.ModsOfMistriaInstallerLib;
+namespace Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
-public class Mod : IMod
+public class FolderMod : IMod
 {
     private string _author;
 
@@ -50,7 +49,7 @@ public class Mod : IMod
 
     public string GetId() => Id;
 
-    public static Mod FromManifest(string manifestLocation)
+    public static FolderMod FromManifest(string manifestLocation)
     {
         if (!File.Exists(manifestLocation))
         {
@@ -64,7 +63,7 @@ public class Mod : IMod
 
         var manifest = JObject.Parse(File.ReadAllText(manifestLocation));
 
-        var mod = new Mod
+        var mod = new FolderMod
         {
             _name = manifest["name"]?.ToString() ?? "",
             _author = manifest["author"]?.ToString() ?? "",

@@ -1,5 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

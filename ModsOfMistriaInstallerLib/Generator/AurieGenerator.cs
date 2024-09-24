@@ -1,6 +1,7 @@
 ﻿using System.Runtime.InteropServices;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 

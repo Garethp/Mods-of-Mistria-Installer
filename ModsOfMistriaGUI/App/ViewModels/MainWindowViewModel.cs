@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Garethp.ModsOfMistriaGUI.App.Models;
 using Garethp.ModsOfMistriaInstallerLib;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using ModsOfMistriaGUI.App.Lang;
 
 namespace Garethp.ModsOfMistriaGUI.App.ViewModels;
@@ -18,17 +19,7 @@ public partial class MainWindowViewModel: ViewModelBase
         {
             Mods.Clear();
 
-            mods = Directory
-                .GetDirectories(ModsLocation)
-                .Where(folder => Mod.GetModLocation(folder) is not null)
-                .Select(location => Mod.FromManifest(Path.Combine(Mod.GetModLocation(location)!, "manifest.json")))
-                .ToList<IMod>();
-            
-            var zipMods = Directory.GetFiles(ModsLocation, "*.zip")
-                .Select(path => ZipMod.FromZipFile(path))
-                .ToList();
-            
-            mods.AddRange(zipMods);
+            mods = MistriaLocator.GetMods(ModsLocation);
             
             new ModInstaller(MistriaLocation, ModsLocation).ValidateMods(mods);
             
@@ -79,6 +70,32 @@ public partial class MainWindowViewModel: ViewModelBase
         Task.Run(backgroundInstall);
     }
 
+    [RelayCommand(CanExecute = nameof(CanRemove))]
+    private void UnInstallMods()
+    {
+        _isInstalling = false;
+
+        InstallStatus = "Uninstalling";
+        
+        Task.Run(() =>
+        {
+            try
+            {
+                var installer = new ModInstaller(MistriaLocation, ModsLocation);
+
+                installer.Uninstall();
+
+                _isInstalling = false;
+                InstallStatus = "Uninstall Complete";
+            }
+            catch (Exception e)
+            {
+                Exception = e.Message;
+            }
+
+        });
+    }
+
     private async void backgroundInstall()
     {
         try
@@ -100,5 +117,7 @@ public partial class MainWindowViewModel: ViewModelBase
         }
     }
     
+    private bool CanRemove() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && !_isInstalling;
+
     private bool CanInstall() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !_isInstalling && Mods.All(mod => mod.CanInstall is null);
 }

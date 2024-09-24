@@ -1,14 +1,13 @@
-﻿using System.IO.Compression;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
-using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json.Linq;
+using SharpCompress.Archives.Rar;
 
-namespace Garethp.ModsOfMistriaInstallerLib;
+namespace Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
-public class ZipMod() : IMod
+public class RarMod() : IMod
 {
     private string _name = "";
 
@@ -16,63 +15,78 @@ public class ZipMod() : IMod
 
     private string _version = "";
 
-    private string _minimunInstallerVersion = "";
+    private string _minimunInstallerVersion = "0.1.0";
 
-    private string _manifestVersion = "";
+    private string _manifestVersion = "1";
 
     private Validation _validation = new Validation();
 
-    private ZipArchive? _zipFile;
+    private RarArchive? _rarFile;
 
     private string _basePath = "";
-
-    public ZipMod(ZipArchive zipFile, string basePath) : this()
+    
+    private RarArchiveEntry? GetEntry(RarArchive rarFile, string path)
     {
-        var manifestFile = zipFile.GetEntry(basePath + "manifest.json");
+        var isDirectory = path.EndsWith('/');
+        if (isDirectory)
+        {
+            path = path[..^1];
+        }
+
+        path = path.Replace('/', Path.DirectorySeparatorChar);
+        
+        return rarFile.Entries.FirstOrDefault(entry => entry.Key == path && entry.IsDirectory == isDirectory);
+    }
+    
+    private RarArchiveEntry? GetEntry(string path) => GetEntry(_rarFile, path);
+
+    private RarMod(RarArchive rarFile, string basePath) : this()
+    {
+        var manifestFile = GetEntry(rarFile, basePath + "manifest.json");
         if (manifestFile is null) return;
 
-        var manifest = JObject.Parse(readEntry(manifestFile));
+        var manifest = JObject.Parse(ReadEntry(manifestFile));
 
         _name = manifest["name"]?.ToString() ?? "";
         _author = manifest["author"]?.ToString() ?? "";
-        _version = manifest["version"]?.ToString() ?? "";
+        _version = manifest["version"]?.ToString() ?? "1.0.0";
         _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0";
         _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1";
-        _zipFile = zipFile;
+        _rarFile = rarFile;
         _basePath = basePath;
     }
 
-    private string readEntry(ZipArchive? zipFile, string entryName)
+    private string ReadEntry(RarArchive? rarFile, string entryName)
     {
-        if (zipFile is null) return "";
-        var entry = zipFile.GetEntry(entryName);
-        return entry is null ? "" : readEntry(entry);
+        if (rarFile is null) return "";
+        var entry = GetEntry(entryName);
+        return entry is null ? "" : ReadEntry(entry);
     }
 
-    private string readEntry(ZipArchiveEntry entry)
+    private string ReadEntry(RarArchiveEntry entry)
     {
-        Stream entryStream = entry.Open();
+        Stream entryStream = entry.OpenEntryStream();
         using var reader = new StreamReader(entryStream);
         var contents = reader.ReadToEnd();
 
         return contents;
     }
 
-    public static ZipMod FromZipFile(string ZipPath)
+    public static RarMod FromRarFile(string rarPath)
     {
-        var zipMod = new ZipMod();
+        var rarMod = new RarMod();
 
-        if (!File.Exists(ZipPath)) return zipMod;
+        if (!File.Exists(rarPath)) return rarMod;
 
-        var zipFile = ZipFile.OpenRead(ZipPath);
+        var rarFile = RarArchive.Open(rarPath);
 
-        var manifestFiles = zipFile.Entries.Where(entry => entry.Name == "manifest.json");
+        var manifestFiles = rarFile.Entries.Where(entry => entry.Key.EndsWith("manifest.json"));
 
-        if (manifestFiles.Count() != 1) return zipMod;
+        if (manifestFiles.Count() != 1) return rarMod;
 
-        var internalLocation = manifestFiles.First().FullName.Replace("manifest.json", "");
+        var internalLocation = manifestFiles.First().Key.Replace("manifest.json", "");
 
-        return new ZipMod(zipFile, internalLocation);
+        return new RarMod(rarFile, internalLocation);
     }
 
     public string GetAuthor() => _author;
@@ -138,50 +152,50 @@ public class ZipMod() : IMod
 
     public bool HasFilesInFolder(string folder) => HasFilesInFolder(folder, "");
 
-    public bool HasFilesInFolder(string folder, string extension) => _zipFile is not null && _zipFile.Entries.Any(
+    public bool HasFilesInFolder(string folder, string extension) => _rarFile is not null && _rarFile.Entries.Any(
         entry =>
-            entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') &&
-            entry.FullName.EndsWith(extension ?? ""));
+            entry.Key.StartsWith($"{_basePath}{folder}".Replace('/', Path.DirectorySeparatorChar)) &&
+            !entry.IsDirectory);
 
-    public bool FileExists(string path) => _zipFile is not null &&
-                                           _zipFile.Entries.Any(entry =>
-                                               entry.FullName == $"{_basePath}{path}" && !entry.FullName.EndsWith('/'));
+    public bool FileExists(string path) => _rarFile is not null &&
+                                           _rarFile.Entries.Any(entry =>
+                                               entry.Key == $"{_basePath}{path}".Replace('/', Path.DirectorySeparatorChar) && !entry.IsDirectory);
 
-    public bool FolderExists(string path) => _zipFile?.GetEntry($"{_basePath}{path}/") != null;
+    public bool FolderExists(string path) => GetEntry($"{_basePath}{path}/") != null;
 
     public List<string> GetFilesInFolder(string folder) => GetFilesInFolder(folder, "");
 
     public List<string> GetAllFiles(string extension)
     {
-        if (_zipFile is null) return new List<string>();
+        if (_rarFile is null) return new List<string>();
 
-        return _zipFile.Entries
-            .Where(entry => !entry.FullName.EndsWith('/') && entry.FullName.EndsWith(extension ?? ""))
-            .Select(entry => entry.FullName)
+        return _rarFile.Entries
+            .Where(entry => !entry.IsDirectory && entry.Key.EndsWith(extension ?? ""))
+            .Select(entry => entry.Key)
             .ToList();
     }
 
     public List<string> GetFilesInFolder(string folder, string? extension) =>
-        _zipFile?.Entries
-            .Where(entry => entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') &&
-                            entry.FullName.EndsWith(extension ?? ""))
-            .Select(entry => entry.FullName).ToList() ?? new List<string>();
+        _rarFile?.Entries
+            .Where(entry => entry.Key.StartsWith($"{_basePath}{folder}".Replace('/', Path.DirectorySeparatorChar)) && !entry.IsDirectory &&
+                            entry.Key.EndsWith(extension ?? ""))
+            .Select(entry => entry.Key).ToList() ?? new List<string>();
 
     public string ReadFile(string path)
     {
         if (!path.StartsWith(_basePath)) path = $"{_basePath}{path}";
 
-        return readEntry(_zipFile, path);
+        return ReadEntry(_rarFile, path.Replace('/', Path.DirectorySeparatorChar));
     }
 
     public Stream ReadFileAsStream(string path)
     {
         if (!path.StartsWith(_basePath)) path = $"{_basePath}{path}";
 
-        if (_zipFile is null) throw new Exception("Cannot read file from zip file");
-        var entry = _zipFile.GetEntry($"{path}");
-        if (entry is null) throw new Exception("Cannot read file from zip file");
+        if (_rarFile is null) throw new Exception("Cannot read file from rar file");
+        var entry = GetEntry($"{path}");
+        if (entry is null) throw new Exception("Cannot read file from rar file");
 
-        return entry.Open();
+        return entry.OpenEntryStream();
     }
 }

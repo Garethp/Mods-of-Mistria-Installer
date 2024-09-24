@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 

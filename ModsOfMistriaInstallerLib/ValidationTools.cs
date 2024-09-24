@@ -1,5 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Lang;
-using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 

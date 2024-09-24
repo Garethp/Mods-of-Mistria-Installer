@@ -9,7 +9,16 @@ var currentVersionString =
 
 Console.WriteLine(Resources.RunningBuild, currentVersionString);
 
-Standalone.Run();
+if (args.Contains("--uninstall"))
+{
+    Standalone.UnInstall();
+    Console.WriteLine(Resources.UninstallComplete);
+    Console.ReadKey();
+}
+else
+{
+    Standalone.Run();
 
-Console.WriteLine(Resources.Completed);
-Console.ReadKey();
+    Console.WriteLine(Resources.Completed);
+    Console.ReadKey();
+}
