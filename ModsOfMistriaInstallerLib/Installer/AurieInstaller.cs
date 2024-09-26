@@ -112,13 +112,16 @@ public class AurieInstaller : IModuleInstaller
 
         information.AurieMods.ForEach(aurieMod =>
         {
-            if (!Directory.Exists(Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.Id)))
+            if (!Directory.Exists(Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.GetId())))
             {
-                Directory.CreateDirectory(Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.Id));
+                Directory.CreateDirectory(Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.GetId()));
             }
+
+            using var newFile = new FileStream(Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.GetId(), Path.GetFileName(aurieMod.Location)), FileMode.CreateNew);
+
+            aurieMod.Mod.ReadFileAsStream(aurieMod.Location).CopyTo(newFile);
             
-            File.Copy(aurieMod.Location,
-                Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.Id, Path.GetFileName(aurieMod.Location)));
+            newFile.Close();
         });
     }
 

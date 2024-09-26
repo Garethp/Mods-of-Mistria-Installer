@@ -24,4 +24,7 @@
     <data name="Completed" xml:space="preserve">
         <value>Completed. Press any key to exit.</value>
     </data>
+    <data name="UninstallComplete" xml:space="preserve">
+        <value>All mods uninstalled. Press any key to exit.</value>
+    </data>
 </root>

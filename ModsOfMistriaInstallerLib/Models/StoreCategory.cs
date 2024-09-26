@@ -1,5 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -16,7 +17,7 @@ public class StoreCategory
 
     public int? RandomSelections;
 
-    public Validation Validate(Validation validation, Mod mod, string file)
+    public Validation Validate(Validation validation, IMod mod, string file)
     {
         if (string.IsNullOrWhiteSpace(IconName))
         {

@@ -1,4 +1,5 @@
-﻿using ImageMagick;
+﻿using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using ImageMagick;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -68,13 +69,13 @@ public class Packer
         Error = new StringWriter();
     }
 
-    public void Process(string _SourceDir, string _Pattern, int _AtlasSize, int _Padding, bool _DebugMode)
+    public void Process(IMod mod, int _AtlasSize, int _Padding, bool _DebugMode)
     {
         Padding = _Padding;
         AtlasSize = _AtlasSize;
         DebugMode = _DebugMode;
         //1: scan for all the textures we need to pack
-        ScanForTextures(_SourceDir, _Pattern);
+        ScanForTextures(mod);
         List<TextureInfo> textures = new List<TextureInfo>();
         textures = SourceTextures.ToList();
         //2: generate as many atlasses as needed (with the latest one as small as possible)
@@ -105,7 +106,7 @@ public class Packer
     }
 
 
-    public void SaveAtlasses(string _Destination)
+    public void SaveAtlasses(IMod mod, string _Destination)
     {
         int atlasCount = 0;
         string prefix = _Destination.Replace(Path.GetExtension(_Destination), "");
@@ -118,7 +119,7 @@ public class Packer
             string atlasName = $"{prefix}{atlasCount:000}.png";
 
             // 1: Save images
-            using (MagickImage img = CreateAtlasImage(atlas))
+            using (MagickImage img = CreateAtlasImage(mod, atlas))
                 TextureWorker.SaveImageToFile(img, atlasName);
 
             // 2: save description in file
@@ -145,31 +146,29 @@ public class Packer
         tw.Close();
     }
 
-    private void ScanForTextures(string _Path, string _Wildcard)
+    private void ScanForTextures(IMod mod)
     {
-        DirectoryInfo di = new DirectoryInfo(_Path);
-        FileInfo[] files = di.GetFiles(_Wildcard, SearchOption.AllDirectories);
-        foreach (FileInfo fi in files)
+        var allFiles = mod.GetAllFiles(".png");
+        foreach (var file in allFiles)
         {
-            Image img = Image.Load<Rgba32>(fi.FullName);
-            if (img != null)
+            Image img = Image.Load<Rgba32>(mod.ReadFileAsStream(file));
+            if (img is null) continue;
+
+            if (img.Width > AtlasSize || img.Height > AtlasSize)
             {
-                if (img.Width <= AtlasSize && img.Height <= AtlasSize)
-                {
-                    TextureInfo ti = new TextureInfo();
+                Error.WriteLine(file + " is too large to fix in the atlas. Skipping!");
+            }
+            else
+            {
+                var ti = new TextureInfo();
 
-                    ti.Source = fi.FullName;
-                    ti.Width = img.Width;
-                    ti.Height = img.Height;
+                ti.Source = file;
+                ti.Width = img.Width;
+                ti.Height = img.Height;
 
-                    SourceTextures.Add(ti);
+                SourceTextures.Add(ti);
 
-                    Log.WriteLine("Added " + fi.FullName);
-                }
-                else
-                {
-                    Error.WriteLine(fi.FullName + " is too large to fix in the atlas. Skipping!");
-                }
+                Log.WriteLine("Added " + file);
             }
         }
     }
@@ -293,7 +292,7 @@ public class Packer
     }
 
 
-    private MagickImage CreateAtlasImage(Atlas _Atlas)
+    private MagickImage CreateAtlasImage(IMod mod, Atlas _Atlas)
     {
         MagickImage img = new(MagickColors.Transparent, _Atlas.Width, _Atlas.Height);
 
@@ -301,7 +300,7 @@ public class Packer
         {
             if (n.Texture is not null)
             {
-                using MagickImage sourceImg = TextureWorker.ReadBGRAImageFromFile(n.Texture.Source);
+                using MagickImage sourceImg = GraphicsImporter.ReadBGRAImageFromStream(mod.ReadFileAsStream(n.Texture.Source));
                 using IMagickImage<byte> resizedSourceImg = TextureWorker.ResizeImage(sourceImg, n.Bounds.Width, n.Bounds.Height);
                 img.Composite(resizedSourceImg, n.Bounds.X, n.Bounds.Y, CompositeOperator.Copy);
             }

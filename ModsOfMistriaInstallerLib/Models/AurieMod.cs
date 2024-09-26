@@ -1,8 +1,10 @@
-﻿namespace Garethp.ModsOfMistriaInstallerLib.Models;
+﻿using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+
+namespace Garethp.ModsOfMistriaInstallerLib.Models;
 
 public class AurieMod
 {
-    public Mod Mod;
+    public IMod Mod;
     
     public string FileName;
 

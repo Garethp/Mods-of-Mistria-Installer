@@ -28,7 +28,7 @@ namespace ModsOfMistriaGUI.App.Lang {
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources() {
+        public Resources() {
         }
         
         /// <summary>
@@ -173,6 +173,15 @@ namespace ModsOfMistriaGUI.App.Lang {
         public static string NoModsToInstall {
             get {
                 return ResourceManager.GetString("NoModsToInstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall All.
+        /// </summary>
+        public static string UninstallButtonText {
+            get {
+                return ResourceManager.GetString("UninstallButtonText", resourceCulture);
             }
         }
         

@@ -76,5 +76,14 @@ namespace ModsOfMistriaCommandLine.Lang {
                 return ResourceManager.GetString("RunningBuild", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All mods uninstalled. Press any key to exit..
+        /// </summary>
+        public static string UninstallComplete {
+            get {
+                return ResourceManager.GetString("UninstallComplete", resourceCulture);
+            }
+        }
     }
 }

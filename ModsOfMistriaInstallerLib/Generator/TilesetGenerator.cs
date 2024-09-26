@@ -1,5 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -8,17 +9,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class TilesetGenerator: IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
-        var modLocation = mod.Location;
-        var modId = mod.Id;
+        var modId = mod.GetId();
 
         var information = new GeneratedInformation();
-        var directory = Path.Combine(mod.Location, "tilesets");
 
-        foreach (var file in Directory.GetFiles(directory).Order())
+        foreach (var file in mod.GetFilesInFolder("tilesets"))
         {
-            var info = JObject.Parse(File.ReadAllText(file));
+            var info = JObject.Parse(mod.ReadFile(file));
 
             foreach (var jsonData in info.Properties())
             {
@@ -27,7 +26,7 @@ public class TilesetGenerator: IGenerator
                     continue;
                 }
 
-                if (!File.Exists(Path.Combine(mod.Location, location.ToString()))) continue;
+                if (!mod.FileExists(location.ToString())) continue;
                 
                 var name = jsonData.Name;
 
@@ -35,7 +34,7 @@ public class TilesetGenerator: IGenerator
                 information.Tilesets[modId].Add(new TilesetData
                 {
                     Name = name,
-                    BaseLocation = modLocation,
+                    Mod = mod,
                     Location = location.ToString()
                 });
             }
@@ -44,23 +43,20 @@ public class TilesetGenerator: IGenerator
         return information;
     }
 
-    public bool CanGenerate(Mod mod)
-    {
-        return Directory.Exists(Path.Combine(mod.Location, "tilesets"));
-    }
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("tilesets");
     
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
         if (!CanGenerate(mod)) return validation;
 
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "tilesets")))
+        foreach (var file in mod.GetFilesInFolder("tilesets"))
         {
             Dictionary<string, string> tilesets;
             
             try
             {
-                tilesets = JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(file));
+                tilesets = JsonConvert.DeserializeObject<Dictionary<string, string>>(mod.ReadFile(file));
             } 
             catch (Exception e)
             {

@@ -4,7 +4,11 @@
 * [x] Add Aurie Integration
 
 ## 0.3.0
-* [ ] Enable installing from `.zip` files
+* [x] Enable installing from `.zip` files
+* [x] Enable installing from `.rar` files
+* [x] Add an uninstall button
+
+## 0.4.0
 * [ ] Select the Mistria/Mods folders in a setup screen if not found
 * [ ] Allow creating a mods folder automatically
 * [ ] Add converting old sprite mods

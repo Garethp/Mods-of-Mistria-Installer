@@ -1,5 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -8,18 +9,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class SpriteGenerator : IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
-        var modLocation = mod.Location;
-        var modId = mod.Id;
+        var modId = mod.GetId();
 
         var information = new GeneratedInformation();
-        var spritesDirectory = Path.Combine(mod.Location, "sprites");
-        var newSprites = new List<SpriteData>();
 
-        foreach (var file in Directory.GetFiles(spritesDirectory).Order())
+        foreach (var file in mod.GetFilesInFolder("sprites"))
         {
-            var spriteInfo = JObject.Parse(File.ReadAllText(file));
+            var spriteInfo = JObject.Parse(mod.ReadFile(file));
 
             foreach (var spriteJson in spriteInfo.Properties())
             {
@@ -31,8 +29,8 @@ public class SpriteGenerator : IGenerator
                 var isAnimated = spriteData["IsAnimated"]?.Value<bool>() ?? false;
                 var location = spriteData["Location"]?.Value<string>();
                 if (location is null) continue;
-                if (isAnimated && !Directory.Exists(Path.Combine(mod.Location, location))) continue;
-                if (!isAnimated && !File.Exists(Path.Combine(mod.Location, location))) continue;
+                if (isAnimated && !mod.FolderExists(location)) continue;
+                if (!isAnimated && !mod.FileExists(location)) continue;
                 
                 var spriteName = spriteJson.Name;
 
@@ -40,7 +38,7 @@ public class SpriteGenerator : IGenerator
                 information.Sprites[modId].Add(new SpriteData
                 {
                     Name = spriteName,
-                    BaseLocation = modLocation,
+                    Mod = mod,
                     Location = location,
                     IsAnimated = isAnimated,
                     OriginX =  spriteData["OriginX"]?.Value<int>(),
@@ -59,22 +57,19 @@ public class SpriteGenerator : IGenerator
         return information;
     }
 
-    public bool CanGenerate(Mod mod)
-    {
-        return Directory.Exists(Path.Combine(mod.Location, "sprites"));
-    }
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("sprites");
     
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
         if (!CanGenerate(mod)) return validation;
         
         Dictionary<string, SpriteData> sprites;
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "sprites")))
+        foreach (var file in mod.GetFilesInFolder("sprites"))
         {
             try
             {
-                sprites = JsonConvert.DeserializeObject<Dictionary<string, SpriteData>>(File.ReadAllText(file));
+                sprites = JsonConvert.DeserializeObject<Dictionary<string, SpriteData>>(mod.ReadFile(file));
             } 
             catch (Exception e)
             {

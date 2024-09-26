@@ -68,4 +68,7 @@
     <data name="UpdateNagMessage" xml:space="preserve">
         <value>A new version of the Mods Of Mistria Installer is available, please update</value>
     </data>
+    <data name="UninstallButtonText" xml:space="preserve">
+        <value>Uninstall All</value>
+    </data>
 </root>

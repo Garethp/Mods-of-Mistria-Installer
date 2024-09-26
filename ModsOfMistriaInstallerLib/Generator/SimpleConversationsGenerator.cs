@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
@@ -69,15 +70,14 @@ class ConversationOutput
 [InformationGenerator(1)]
 public class SimpleConversationsGenerator : IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
-        var modLocation = mod.Location;
-        var files = Directory.GetFiles(Path.Combine(modLocation, "conversations"));
+        var files = mod.GetFilesInFolder("conversations");
         var generatedInformation = new GeneratedInformation();
 
         foreach (var file in files.Order().Where(file => file.EndsWith(".simple.json")))
         {
-            var simpleConversation = JObject.Parse(File.ReadAllText(file));
+            var simpleConversation = JObject.Parse(mod.ReadFile(file));
             var name = simpleConversation["name"].ToString();
             var speakers = simpleConversation["lines"].Select(line => line["speaker"].ToString()).Distinct().ToArray();
 
@@ -184,10 +184,7 @@ public class SimpleConversationsGenerator : IGenerator
         return generatedInformation;
     }
 
-    public bool CanGenerate(Mod mod)
-    {
-        return Directory.Exists(Path.Combine(mod.Location, "conversations"));
-    }
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("conversations");
     
-    public Validation Validate(Mod mod) => new Validation();
+    public Validation Validate(IMod mod) => new Validation();
 }

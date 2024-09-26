@@ -1,4 +1,6 @@
-﻿namespace Garethp.ModsOfMistriaInstallerLib.Generator;
+﻿using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+
+namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
 public enum ValidationStatus
 {
@@ -24,12 +26,12 @@ public class Validation
 
     public List<ValidationMessage> Warnings { get; } = [];
     
-    public void AddError(Mod mod, string fileName, string message)
+    public void AddError(IMod mod, string fileName, string message)
     {
         Errors.Add(new ValidationMessage(mod, fileName, message));
     }
     
-    public void AddWarning(Mod mod, string fileName, string message)
+    public void AddWarning(IMod mod, string fileName, string message)
     {
         Warnings.Add(new ValidationMessage(mod, fileName, message));
     }
@@ -41,9 +43,9 @@ public class Validation
     }
 }
 
-public class ValidationMessage(Mod mod, string fileName, string message)
+public class ValidationMessage(IMod mod, string fileName, string message)
 {
-    public Mod Mod = mod;
+    public IMod Mod = mod;
 
     public string FileName = fileName;
     

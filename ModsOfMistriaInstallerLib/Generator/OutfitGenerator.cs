@@ -2,6 +2,7 @@
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -10,20 +11,16 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class OutfitGenerator : IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
-        var modLocation = mod.Location;
-        var modId = mod.Id;
+        var modId = mod.GetId();
 
         // @TODO: Remove the images here so that we can store them in whatever folders we want
-        var basePath = modLocation;
-
         var information = new GeneratedInformation();
-        var outfitsDirectory = Path.Combine(modLocation, "outfits");
 
-        foreach (var outfitFile in Directory.GetFiles(outfitsDirectory).Order())
+        foreach (var outfitFile in mod.GetFilesInFolder("outfits").Order())
         {
-            var outfitJson = JObject.Parse(File.ReadAllText(outfitFile));
+            var outfitJson = JObject.Parse(mod.ReadFile(outfitFile));
 
             foreach (var outfit in outfitJson.Properties())
             {
@@ -61,7 +58,7 @@ public class OutfitGenerator : IGenerator
                     newSprites.Add(new()
                     {
                         Name = $"spr_player_{name}_{animationName}",
-                        BaseLocation = basePath,
+                        Mod = mod,
                         Location = animationData.ToString(),
                         IsAnimated = true,
                         BoundingBoxMode = 1,
@@ -109,7 +106,7 @@ public class OutfitGenerator : IGenerator
                     new()
                     {
                         Name = $"spr_player_{name}_lut",
-                        BaseLocation = basePath,
+                        Mod = mod,
                         Location = outfitData["lutFile"].ToString(),
                         IsAnimated = false,
                         IsPlayerSprite = true,
@@ -117,7 +114,7 @@ public class OutfitGenerator : IGenerator
                     new()
                     {
                         Name = $"spr_ui_item_wearable_{name}",
-                        BaseLocation = basePath,
+                        Mod = mod,
                         Location = outfitData["uiItem"].ToString(),
                         IsAnimated = false,
                         IsUiSprite = true,
@@ -125,7 +122,7 @@ public class OutfitGenerator : IGenerator
                     new()
                     {
                         Name = $"spr_ui_item_wearable_{name}_outline",
-                        BaseLocation = basePath,
+                        Mod = mod,
                         Location = outfitData["outlineFile"].ToString(),
                         IsAnimated = false,
                         IsUiSprite = true,
@@ -148,19 +145,19 @@ public class OutfitGenerator : IGenerator
         return information;
     }
 
-    public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "outfits"));
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("outfits");
     
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
         if (!CanGenerate(mod)) return validation;
 
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "outfits")))
+        foreach (var file in mod.GetFilesInFolder("outfits"))
         {
             Dictionary<string, Outfit>? outfits;
             try
             {
-                outfits = JsonConvert.DeserializeObject<Dictionary<string, Outfit>>(File.ReadAllText(file));
+                outfits = JsonConvert.DeserializeObject<Dictionary<string, Outfit>>(mod.ReadFile(file));
             }
             catch (Exception e)
             {

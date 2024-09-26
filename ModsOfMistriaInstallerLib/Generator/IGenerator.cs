@@ -1,12 +1,14 @@
-﻿namespace Garethp.ModsOfMistriaInstallerLib.Generator;
+﻿using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+
+namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
 public interface IGenerator
 {
-    public GeneratedInformation Generate(Mod mod);
+    public GeneratedInformation Generate(IMod mod);
     
-    public bool CanGenerate(Mod mod);
+    public bool CanGenerate(IMod mod);
     
-    public Validation Validate(Mod mod);
+    public Validation Validate(IMod mod);
 }
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]

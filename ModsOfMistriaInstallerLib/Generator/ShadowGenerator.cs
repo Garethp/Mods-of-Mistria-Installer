@@ -1,6 +1,7 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -9,25 +10,25 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class ShadowGenerator : IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
         var information = new GeneratedInformation();
         
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "shadows")).Order())
+        foreach (var file in mod.GetFilesInFolder("shadows"))
         {
-            var shadowFile = JsonConvert.DeserializeObject<Dictionary<string, ShadowSprite>>(File.ReadAllText(file));
+            var shadowFile = JsonConvert.DeserializeObject<Dictionary<string, ShadowSprite>>(mod.ReadFile(file));
             if (shadowFile is null) throw new Exception($"Attempted to read file {file} but it did not match expected format.");
 
             foreach (var shadowName in shadowFile.Keys)
             {
                 var shadowSprite = shadowFile[shadowName];
                 shadowSprite.Name = shadowName;
-                if (!information.Sprites.ContainsKey(mod.Id)) information.Sprites[mod.Id] = new();
+                if (!information.Sprites.ContainsKey(mod.GetId())) information.Sprites[mod.GetId()] = new();
 
-                information.Sprites[mod.Id].Add(new SpriteData()
+                information.Sprites[mod.GetId()].Add(new SpriteData()
                 {
                     Name = shadowSprite.Name,
-                    BaseLocation = mod.Location,
+                    Mod = mod,
                     Location = shadowSprite.Sprite,
                     IsAnimated = shadowSprite.IsAnimated,
                 });
@@ -43,20 +44,20 @@ public class ShadowGenerator : IGenerator
 
     }
 
-    public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "shadows"));
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("shadows");
 
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
 
         if (!CanGenerate(mod)) return validation;
         
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "shadows")))
+        foreach (var file in mod.GetFilesInFolder("shadows"))
         {
             Dictionary<string, ShadowSprite>? shadowSprites;
             try
             {
-                shadowSprites = JsonConvert.DeserializeObject<Dictionary<string, ShadowSprite>>(File.ReadAllText(file));
+                shadowSprites = JsonConvert.DeserializeObject<Dictionary<string, ShadowSprite>>(mod.ReadFile(file));
             }
             catch (Exception e)
             {

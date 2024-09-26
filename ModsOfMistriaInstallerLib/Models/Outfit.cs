@@ -1,5 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -30,7 +31,7 @@ public class Outfit
     [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public Dictionary<string, string> AnimationFiles;
 
-    public Validation Validate(Validation validation, Mod mod, string file, string id)
+    public Validation Validate(Validation validation, IMod mod, string file, string id)
     {
         if (string.IsNullOrWhiteSpace(Name))
         {

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Models;
 
 public class Standalone
 {
@@ -31,27 +32,22 @@ public class Standalone
         
         var installer = new ModInstaller(mistriaLocation, modsLocation);
 
-        var mods = Directory
-            .GetDirectories(modsLocation)
-            .Where(folder => Mod.GetModLocation(folder) is not null)
-            .Select(location => Mod.FromManifest(Path.Combine(Mod.GetModLocation(location)!, "manifest.json")))
-            .ToList();
-
-        installer.ValidateMods(mods);
+        var allMods = MistriaLocator.GetMods(modsLocation);
+        installer.ValidateMods(allMods);
         
-        mods = mods
+        allMods = allMods
             .Where(mod =>
             {
                 if (mod.CanInstall() is not null)
                 {
-                    Console.WriteLine(Resources.SkippingModBecauseInstallerOld, mod.Id);
+                    Console.WriteLine(Resources.SkippingModBecauseInstallerOld, mod.GetId());
                     return false;
                 }
 
-                if (mod.validation.Status == ValidationStatus.Invalid)
+                if (mod.GetValidation().Status == ValidationStatus.Invalid)
                 {
-                    Console.WriteLine(Resources.SkippingModBecauseErrors, mod.Id);
-                    foreach (var error in mod.validation.Errors)
+                    Console.WriteLine(Resources.SkippingModBecauseErrors, mod.GetId());
+                    foreach (var error in mod.GetValidation().Errors)
                     {
                         Console.WriteLine($"  {error.Message}");
                     }
@@ -59,10 +55,10 @@ public class Standalone
                     return false;
                 }
 
-                if (mod.validation.Status == ValidationStatus.Warning)
+                if (mod.GetValidation().Status == ValidationStatus.Warning)
                 {
-                    Console.WriteLine(Resources.ModHasWarnings, mod.Id);
-                    foreach (var warning in mod.validation.Warnings)
+                    Console.WriteLine(Resources.ModHasWarnings, mod.GetId());
+                    foreach (var warning in mod.GetValidation().Warnings)
                     {
                         Console.WriteLine($"  {warning.Message}");
                     }
@@ -72,12 +68,25 @@ public class Standalone
             })
             .ToList();
         
-        installer.InstallMods(mods, (message, timeTaken) =>
+        installer.InstallMods(allMods, (message, timeTaken) =>
         {
             Console.WriteLine(Resources.InstalledInReporter, message, timeTaken);
         });
         
         totalTime.Stop();
         Console.WriteLine(Resources.ModsInstalledInTime, totalTime);
+    }
+
+    public static void UnInstall()
+    {
+        var mistriaLocation = MistriaLocator.GetMistriaLocation();
+        if (mistriaLocation == null)
+        {
+            Console.WriteLine(Resources.MistriaNotFound);
+            return;
+        }
+        
+        var installer = new ModInstaller(mistriaLocation, "");
+        installer.Uninstall();
     }
 }

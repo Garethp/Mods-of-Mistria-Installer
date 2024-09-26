@@ -2,6 +2,7 @@
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
@@ -22,19 +23,19 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         ["data.win"],
     ];
 
-    public void ValidateMods(List<Mod> mods)
+    public void ValidateMods(List<IMod> mods)
     { 
         var desiredGenerators = GetGenerators();
         mods.ForEach(mod =>
         {
             desiredGenerators.ForEach(generator =>
             {
-                mod.validation.Merge(generator.Validate(mod));
+                mod.GetValidation().Merge(generator.Validate(mod));
             });
         });
     }
     
-    public void InstallMods(List<Mod> mods, Action<string, string> reportStatus)
+    public void InstallMods(List<IMod> mods, Action<string, string> reportStatus)
     {
         var totalTime = new Stopwatch();
         totalTime.Start();
@@ -67,12 +68,12 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         
         foreach (var mod in mods)
         {
-            if (!Directory.Exists(mod.Location))
-            {
-                throw new DirectoryNotFoundException(Resources.ModDirectoryDoesNotExist);
-            }
+            // if (!Directory.Exists(mod.Location))
+            // {
+            //     throw new DirectoryNotFoundException(Resources.ModDirectoryDoesNotExist);
+            // }
             
-            reportStatus(string.Format(Resources.GeneratingInformationForMod, mod.Id), "");
+            reportStatus(string.Format(Resources.GeneratingInformationForMod, mod.GetId()), "");
             foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
             {
                 generatedInformation.Merge(generator.Generate(mod));

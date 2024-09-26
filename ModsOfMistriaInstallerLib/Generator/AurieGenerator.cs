@@ -1,17 +1,18 @@
 ﻿using System.Runtime.InteropServices;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
 [InformationGenerator(1)]
 public class AurieGenerator: IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
         var information = new GeneratedInformation();
         
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "aurie"), "*.dll"))
+        foreach (var file in mod.GetFilesInFolder("aurie", ".dll"))
         {
             var fileName = Path.GetFileName(file);
             
@@ -26,9 +27,9 @@ public class AurieGenerator: IGenerator
         return information;
     }
 
-    public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "aurie"));
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("aurie", ".dll");
 
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
         if (!CanGenerate(mod)) return validation;

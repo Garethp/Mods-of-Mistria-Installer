@@ -1,6 +1,7 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
@@ -8,22 +9,22 @@ namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 [InformationGenerator(1)]
 public class StoreGenerator: IGenerator
 {
-    public GeneratedInformation Generate(Mod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
         var information = new GeneratedInformation();
 
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "stores")).Order())
+        foreach (var file in mod.GetFilesInFolder("stores"))
         {
-            var storeFile = JsonConvert.DeserializeObject<StoreFile>(File.ReadAllText(file));
+            var storeFile = JsonConvert.DeserializeObject<StoreFile>(mod.ReadFile(file));
             if (storeFile is null) throw new Exception($"Attempted to read file {file} but it did not match expected format.");
             
             storeFile.Categories.ForEach(category =>
             {
-                if (!information.Sprites.ContainsKey(mod.Id)) information.Sprites[mod.Id] = new();
-                information.Sprites[mod.Id].Add(new SpriteData()
+                if (!information.Sprites.ContainsKey(mod.GetId())) information.Sprites[mod.GetId()] = new();
+                information.Sprites[mod.GetId()].Add(new SpriteData()
                 {
                     Name = category.IconName,
-                    BaseLocation = mod.Location,
+                    Mod = mod,
                     Location = category.Sprite,
                     IsUiSprite = true,
                 });
@@ -35,19 +36,19 @@ public class StoreGenerator: IGenerator
         return information;
     }
 
-    public bool CanGenerate(Mod mod) => Directory.Exists(Path.Combine(mod.Location, "stores"));
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("stores");
     
-    public Validation Validate(Mod mod)
+    public Validation Validate(IMod mod)
     {
         var validation = new Validation();
         if (!CanGenerate(mod)) return validation;
         
-        foreach (var file in Directory.GetFiles(Path.Combine(mod.Location, "stores")).Order())
+        foreach (var file in mod.GetFilesInFolder("stores").Order())
         {
             StoreFile? storeData;
             try
             {
-                storeData = JsonConvert.DeserializeObject<StoreFile>(File.ReadAllText(file));
+                storeData = JsonConvert.DeserializeObject<StoreFile>(mod.ReadFile(file));
             }
             catch (Exception e)
             {

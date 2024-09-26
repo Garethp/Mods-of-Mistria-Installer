@@ -1,4 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 using UndertaleModLib.Models;
 
@@ -11,7 +12,7 @@ public class SpriteData
 
     public string Location;
 
-    public string BaseLocation;
+    public IMod Mod;
     
     public bool IsAnimated = false;
 
@@ -41,9 +42,25 @@ public class SpriteData
 
     public int? MarginBottom;
 
+    public bool MatchesPath(string path)
+    {
+        var ourPath = Path.Combine(Mod.GetBasePath(), Location).Replace('\\', '/');
+        
+        path = path.Replace('\\', '/');
+        if (IsAnimated)
+        {
+            var directory = Path.GetDirectoryName(path)?.Replace('\\', '/');
+            if (directory is null) return false;
+
+            return ourPath == directory;
+        }
+        
+        return ourPath == path;
+    }
+
     public Dictionary<string, UndertaleTexturePageItem> PageItems = [];
 
-    public Validation Validate(Validation validation, Mod mod, string file)
+    public Validation Validate(Validation validation, IMod mod, string file)
     {
         if (IsAnimated && ValidationTools.CheckSpriteDirectoryExists(mod, Name, Location) is { } singleSpriteError)
         {
@@ -65,5 +82,5 @@ public class TilesetData
 
     public string Location;
 
-    public string BaseLocation;
+    public IMod Mod;
 }
