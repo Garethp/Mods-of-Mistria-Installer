@@ -5,6 +5,7 @@
 
 ## 0.3.0
 * [x] Enable installing from `.zip` files
+* [x] Enable installing from `.rar` files
 * [x] Add an uninstall button
 
 ## 0.4.0
