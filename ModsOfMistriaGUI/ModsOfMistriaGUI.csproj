@@ -8,8 +8,8 @@
         <Nullable>enable</Nullable>
         <PublishSingleFile>true</PublishSingleFile>
         <ApplicationIcon>App\Assets\icon.ico</ApplicationIcon>
-        <AssemblyVersion>0.2.2</AssemblyVersion>
-        <FileVersion>0.2.2</FileVersion>
+        <AssemblyVersion>0.3.0</AssemblyVersion>
+        <FileVersion>0.3.0</FileVersion>
         <AssemblyName>ModsOfMistriaInstaller</AssemblyName>
     </PropertyGroup>
     

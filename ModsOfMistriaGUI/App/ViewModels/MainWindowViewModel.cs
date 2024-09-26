@@ -117,7 +117,7 @@ public partial class MainWindowViewModel: ViewModelBase
         }
     }
     
-    private bool CanRemove() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && !_isInstalling;
+    private bool CanRemove() => !MistriaLocation.Equals("") && !_isInstalling;
 
     private bool CanInstall() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !_isInstalling && Mods.All(mod => mod.CanInstall is null);
 }
