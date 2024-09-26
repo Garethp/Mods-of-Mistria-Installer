@@ -73,7 +73,7 @@ public partial class MainWindowViewModel: ViewModelBase
     [RelayCommand(CanExecute = nameof(CanRemove))]
     private void UnInstallMods()
     {
-        _isInstalling = false;
+        _isInstalling = true;
 
         InstallStatus = "Uninstalling";
         

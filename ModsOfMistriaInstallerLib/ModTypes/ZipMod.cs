@@ -3,10 +3,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
-using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json.Linq;
 
-namespace Garethp.ModsOfMistriaInstallerLib;
+namespace Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
 public class ZipMod() : IMod
 {
