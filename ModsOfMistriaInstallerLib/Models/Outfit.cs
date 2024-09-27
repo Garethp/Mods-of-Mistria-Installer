@@ -69,7 +69,7 @@ public class Outfit
         {
             validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoSubCategory, id));
         } else if (!string.IsNullOrEmpty(UiSlot) && _validSlots.ContainsKey(UiSlot) &&
-                   !_validSlots[UiSlot].Contains(id))
+                   !_validSlots[UiSlot].Contains(UiSubCategory))
         {
             validation.AddError(mod, file, string.Format(Resources.ErrorOutfitUiSubCategoryWrong, id, string.Join(", ", _validSlots[UiSlot])));
         }
