@@ -141,6 +141,24 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Outfit {0} has incorrect ui_slot. Must be one of: {1}..
+        /// </summary>
+        public static string ErrorOutfitUiSlotWrong {
+            get {
+                return ResourceManager.GetString("ErrorOutfitUiSlotWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Outfit {0} has incorrect ui_sub_category. Must be one of: {1}..
+        /// </summary>
+        public static string ErrorOutfitUiSubCategoryWrong {
+            get {
+                return ResourceManager.GetString("ErrorOutfitUiSubCategoryWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shadow {0} has no Location set.
         /// </summary>
         public static string ErrorShadowHasNoLocation {

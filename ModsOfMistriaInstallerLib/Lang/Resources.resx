@@ -147,4 +147,10 @@
     <data name="ErrorModRequiresWindows" xml:space="preserve">
         <value>This mod will only run on Windows and will not install.</value>
     </data>
+    <data name="ErrorOutfitUiSlotWrong" xml:space="preserve">
+        <value>Outfit {0} has incorrect ui_slot. Must be one of: {1}.</value>
+    </data>
+    <data name="ErrorOutfitUiSubCategoryWrong" xml:space="preserve">
+        <value>Outfit {0} has incorrect ui_sub_category. Must be one of: {1}.</value>
+    </data>
 </root>

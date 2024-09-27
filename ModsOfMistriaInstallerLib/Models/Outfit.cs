@@ -9,6 +9,19 @@ namespace Garethp.ModsOfMistriaInstallerLib.Models;
 [JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
 public class Outfit
 {
+    private static Dictionary<string, List<string>> _validSlots = new()
+    {
+        { "back", ["back"] },
+        { "facial_hair", ["facial_hair"] },
+        { "top", ["dress", "robe", "top_misc", "suit", "long_sleeve", "sleeveless", "short_sleeve"] },
+        { "eyes", ["eyes" ] },
+        { "face_gear", ["face_accessory", "ear_accessory", "glasses"] },
+        { "hair", ["medium_hair", "short_hair", "long_hair"] },
+        { "head_gear", ["crown", "head_gear_misc", "hair_accessory", "hat", "helmet"] },
+        { "bottom", ["pants", "bottom_misc", "shorts", "skirt"] },
+        { "feet", ["boots", "feet_misc", "sandals", "shoes"] }
+    };
+    
     public string Name;
 
     public string Description;
@@ -47,10 +60,18 @@ public class Outfit
         {
             validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoUiSlot, id));
         }
+        else if (!_validSlots.ContainsKey(UiSlot))
+        {
+            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitUiSlotWrong, id, string.Join(", ", _validSlots.Keys)));
+        }
 
         if (string.IsNullOrWhiteSpace(UiSubCategory))
         {
             validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoSubCategory, id));
+        } else if (!string.IsNullOrEmpty(UiSlot) && _validSlots.ContainsKey(UiSlot) &&
+                   !_validSlots[UiSlot].Contains(id))
+        {
+            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitUiSubCategoryWrong, id, string.Join(", ", _validSlots[UiSlot])));
         }
 
         if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s lutFile", LutFile) is { } lutError)
