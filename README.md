@@ -225,7 +225,7 @@ This will create new sprites in the `data.win` folder with the name `shadow_spri
 If you use this, please set `minInstallerVersion` in your `manifest.json` to no lower than `0.1.4`
 
 ### `aurie/`
-**Note: At the moment, Aurie mods will install on the Steam Deck/Linux**
+**Note: At the moment, Aurie mods will not install on the Steam Deck/Linux**
 
 If you have Aurie DLLs as part of your mod, put them in the `aurie/` folder of your mod. MOMI will then automatically
 install Aurie onto the players setup, register the keys necessary and copy your DLL into the correct Aurie folder. If
