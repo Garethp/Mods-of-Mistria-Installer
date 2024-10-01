@@ -28,7 +28,7 @@ public class Outfit
 
     public string UiSlot;
 
-    public bool DefaultUnlocked = false;
+    public bool DefaultUnlocked;
 
     public string UiSubCategory;
 

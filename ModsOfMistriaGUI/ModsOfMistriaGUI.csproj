@@ -11,6 +11,7 @@
         <AssemblyVersion>0.3.2</AssemblyVersion>
         <FileVersion>0.3.2</FileVersion>
         <AssemblyName>ModsOfMistriaInstaller</AssemblyName>
+        <RootNamespace>Garethp.ModsOfMistriaGUI</RootNamespace>
     </PropertyGroup>
     
     <PropertyGroup>
@@ -82,6 +83,11 @@
         <AutoGen>True</AutoGen>
         <DependentUpon>Resources.resx</DependentUpon>
       </Compile>
+      <Compile Update="App\Lang\Resources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Resources.resx</DependentUpon>
+      </Compile>
     </ItemGroup>
     
     <ItemGroup>
@@ -112,6 +118,10 @@
     <ItemGroup>
       <EmbeddedResource Update="App\Lang\Resources.resx">
         <Generator>PublicResXFileCodeGenerator</Generator>
+        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="App\Lang\Resources.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
         <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       </EmbeddedResource>
     </ItemGroup>

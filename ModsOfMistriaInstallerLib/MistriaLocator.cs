@@ -68,14 +68,14 @@ public class MistriaLocator
             $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/Library/Application Support/CrossOver/Bottles/Steam/drive_c/Program Files (x86)/Steam/steamapps"
         };
 
-        var drivePotentialLocations = new List<string>()
+        var drivePotentialLocations = new List<string>
         {
             "SteamLibrary/steamapps/",
             "Steam/steamapps/",
             "Program Files/Steam/steamapps/",
             "Program Files (x86)/Steam/steamapps/",
             "Program Files/SteamLibrary/steamapps/",
-            "Program Files (x86)/SteamLibrary/steamapps/",
+            "Program Files (x86)/SteamLibrary/steamapps/"
         };
         
         DriveInfo.GetDrives().ToList().ForEach(drive =>

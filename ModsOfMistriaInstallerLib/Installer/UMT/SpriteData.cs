@@ -14,7 +14,7 @@ public class SpriteData
 
     public IMod Mod;
     
-    public bool IsAnimated = false;
+    public bool IsAnimated;
 
     public uint? BoundingBoxMode;
     
@@ -26,9 +26,9 @@ public class SpriteData
     
     public int SpecialPlaybackSpeed = 40;
 
-    public bool IsPlayerSprite = false;
+    public bool IsPlayerSprite;
 
-    public bool IsUiSprite = false;
+    public bool IsUiSprite;
 
     public int? OriginX;
 

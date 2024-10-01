@@ -20,13 +20,13 @@ public class StoreGenerator: IGenerator
             
             storeFile.Categories.ForEach(category =>
             {
-                if (!information.Sprites.ContainsKey(mod.GetId())) information.Sprites[mod.GetId()] = new();
-                information.Sprites[mod.GetId()].Add(new SpriteData()
+                if (!information.Sprites.ContainsKey(mod.GetId())) information.Sprites[mod.GetId()] = [];
+                information.Sprites[mod.GetId()].Add(new SpriteData
                 {
                     Name = category.IconName,
                     Mod = mod,
                     Location = category.Sprite,
-                    IsUiSprite = true,
+                    IsUiSprite = true
                 });
             });
             information.StoreCategories.AddRange(storeFile.Categories);

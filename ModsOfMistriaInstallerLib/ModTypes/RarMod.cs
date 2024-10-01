@@ -65,7 +65,7 @@ public class RarMod() : IMod
 
     private string ReadEntry(RarArchiveEntry entry)
     {
-        Stream entryStream = entry.OpenEntryStream();
+        var entryStream = entry.OpenEntryStream();
         using var reader = new StreamReader(entryStream);
         var contents = reader.ReadToEnd();
 
@@ -167,10 +167,10 @@ public class RarMod() : IMod
 
     public List<string> GetAllFiles(string extension)
     {
-        if (_rarFile is null) return new List<string>();
+        if (_rarFile is null) return [];
 
         return _rarFile.Entries
-            .Where(entry => !entry.IsDirectory && entry.Key.EndsWith(extension ?? ""))
+            .Where(entry => !entry.IsDirectory && entry.Key.EndsWith(extension))
             .Select(entry => entry.Key)
             .ToList();
     }

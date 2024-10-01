@@ -50,7 +50,7 @@ public class ZipMod() : IMod
 
     private string readEntry(ZipArchiveEntry entry)
     {
-        Stream entryStream = entry.Open();
+        var entryStream = entry.Open();
         using var reader = new StreamReader(entryStream);
         var contents = reader.ReadToEnd();
 
@@ -140,7 +140,7 @@ public class ZipMod() : IMod
     public bool HasFilesInFolder(string folder, string extension) => _zipFile is not null && _zipFile.Entries.Any(
         entry =>
             entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') &&
-            entry.FullName.EndsWith(extension ?? ""));
+            entry.FullName.EndsWith(extension));
 
     public bool FileExists(string path) => _zipFile is not null &&
                                            _zipFile.Entries.Any(entry =>
@@ -152,10 +152,10 @@ public class ZipMod() : IMod
 
     public List<string> GetAllFiles(string extension)
     {
-        if (_zipFile is null) return new List<string>();
+        if (_zipFile is null) return [];
 
         return _zipFile.Entries
-            .Where(entry => !entry.FullName.EndsWith('/') && entry.FullName.EndsWith(extension ?? ""))
+            .Where(entry => !entry.FullName.EndsWith('/') && entry.FullName.EndsWith(extension))
             .Select(entry => entry.FullName)
             .ToList();
     }
@@ -164,7 +164,7 @@ public class ZipMod() : IMod
         _zipFile?.Entries
             .Where(entry => entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') &&
                             entry.FullName.EndsWith(extension ?? ""))
-            .Select(entry => entry.FullName).ToList() ?? new List<string>();
+            .Select(entry => entry.FullName).ToList() ?? [];
 
     public string ReadFile(string path)
     {

@@ -61,7 +61,7 @@ class ConversationOutput
     public string[] writes = [];
     public string[] actions = [];
     public Dictionary<string, Line> lines = new ();
-    public bool multiple_speakers_in_conversation = false;
+    public bool multiple_speakers_in_conversation;
     public string[] speakers_in_conversation = [];
     public bool can_talk_after = true;
     public string priority = "Normal";
@@ -92,7 +92,7 @@ public class SimpleConversationsGenerator : IGenerator
             localisation["eng"].Add($"{name}/init", initLine["text"].ToString());
             initLine["text"] = $"{name}/init";
 
-            var conversationOutput = new ConversationOutput()
+            var conversationOutput = new ConversationOutput
             {
                 kind = "GameplayTriggered",
                 multiple_speakers_in_conversation = speakers.Length > 1,
@@ -103,23 +103,23 @@ public class SimpleConversationsGenerator : IGenerator
                     {
                         local = initLine["text"].ToString(),
                         actions = [
-                            new LineActionSpeaker()
+                            new LineActionSpeaker
                             {
                                 content = initLine["speaker"].ToString()
                             },
-                            new LineActionPortrait()
+                            new LineActionPortrait
                             {
                                 content = initLine["portrait"].ToString()
                             }
                         ],
-                        next_line_behavior = new NextLineBehaviorNextLine()
+                        next_line_behavior = new NextLineBehaviorNextLine
                         {
                             content = "1"
                         }
                     }}
                 },
                 can_talk_after = true,
-                priority = "Normal",
+                priority = "Normal"
             };
             
             for (var lineIndex = 0; lineIndex < lines.Count; lineIndex++)
@@ -131,7 +131,7 @@ public class SimpleConversationsGenerator : IGenerator
 
                 NextLineBehavior nextLine = index == lines.Count
                     ? new NextLineBehaviorFinish()
-                    : new NextLineBehaviorNextLine()
+                    : new NextLineBehaviorNextLine
                     {
                         content = $"{index + 1}"
                     };
@@ -149,7 +149,7 @@ public class SimpleConversationsGenerator : IGenerator
                         prompt["text"] = $"{name}/{index}/prompt/{promptIndexString}";
                         
                         
-                        (nextLine as NextLineBehaviorPrompts).content.Add(new Prompt()
+                        (nextLine as NextLineBehaviorPrompts).content.Add(new Prompt
                         {
                             local = prompt["text"].ToString(),
                             next_line = prompt["nextLine"].ToString()
@@ -161,11 +161,11 @@ public class SimpleConversationsGenerator : IGenerator
                 {
                     local = line["text"].ToString(),
                     actions = [
-                        new LineActionSpeaker()
+                        new LineActionSpeaker
                         {
                             content = line["speaker"].ToString()
                         },
-                        new LineActionPortrait()
+                        new LineActionPortrait
                         {
                             content = line["portrait"].ToString()
                         }

@@ -1,9 +1,7 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using ImageMagick;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 using UndertaleModLib.Util;
 using Rectangle = System.Drawing.Rectangle;
 
@@ -28,13 +26,13 @@ public enum SpriteType
 public enum SplitType
 {
     Horizontal,
-    Vertical,
+    Vertical
 }
 
 public enum BestFitHeuristic
 {
     Area,
-    MaxOneAxis,
+    MaxOneAxis
 }
 
 public class Node
@@ -64,7 +62,7 @@ public class Packer
 
     public Packer()
     {
-        SourceTextures = new List<TextureInfo>();
+        SourceTextures = [];
         Log = new StringWriter();
         Error = new StringWriter();
     }
@@ -76,13 +74,12 @@ public class Packer
         DebugMode = _DebugMode;
         //1: scan for all the textures we need to pack
         ScanForTextures(mod);
-        List<TextureInfo> textures = new List<TextureInfo>();
-        textures = SourceTextures.ToList();
+        List<TextureInfo> textures = SourceTextures.ToList();
         //2: generate as many atlasses as needed (with the latest one as small as possible)
-        Atlasses = new List<Atlas>();
+        Atlasses = [];
         while (textures.Count > 0)
         {
-            Atlas atlas = new Atlas();
+            var atlas = new Atlas();
             atlas.Width = _AtlasSize;
             atlas.Height = _AtlasSize;
             List<TextureInfo> leftovers = LayoutAtlas(textures, atlas);
@@ -108,31 +105,30 @@ public class Packer
 
     public void SaveAtlasses(IMod mod, string _Destination)
     {
-        int atlasCount = 0;
-        string prefix = _Destination.Replace(Path.GetExtension(_Destination), "");
-        string descFile = _Destination;
+        var atlasCount = 0;
+        var prefix = _Destination.Replace(Path.GetExtension(_Destination), "");
 
-        StreamWriter tw = new StreamWriter(_Destination);
+        var tw = new StreamWriter(_Destination);
         tw.WriteLine("source_tex, atlas_tex, x, y, width, height");
-        foreach (Atlas atlas in Atlasses)
+        foreach (var atlas in Atlasses)
         {
-            string atlasName = $"{prefix}{atlasCount:000}.png";
+            var atlasName = $"{prefix}{atlasCount:000}.png";
 
             // 1: Save images
-            using (MagickImage img = CreateAtlasImage(mod, atlas))
+            using (var img = CreateAtlasImage(mod, atlas))
                 TextureWorker.SaveImageToFile(img, atlasName);
 
             // 2: save description in file
-            foreach (Node n in atlas.Nodes)
+            foreach (var n in atlas.Nodes)
             {
                 if (n.Texture != null)
                 {
                     tw.Write(n.Texture.Source + ", ");
                     tw.Write(atlasName + ", ");
-                    tw.Write((n.Bounds.X).ToString() + ", ");
-                    tw.Write((n.Bounds.Y).ToString() + ", ");
-                    tw.Write((n.Bounds.Width).ToString() + ", ");
-                    tw.WriteLine((n.Bounds.Height).ToString());
+                    tw.Write(n.Bounds.X + ", ");
+                    tw.Write(n.Bounds.Y + ", ");
+                    tw.Write(n.Bounds.Width + ", ");
+                    tw.WriteLine(n.Bounds.Height.ToString());
                 }
             }
             ++atlasCount;
@@ -175,13 +171,13 @@ public class Packer
 
     private void HorizontalSplit(Node _ToSplit, int _Width, int _Height, List<Node> _List)
     {
-        Node n1 = new Node();
+        var n1 = new Node();
         n1.Bounds.X = _ToSplit.Bounds.X + _Width + Padding;
         n1.Bounds.Y = _ToSplit.Bounds.Y;
         n1.Bounds.Width = _ToSplit.Bounds.Width - _Width - Padding;
         n1.Bounds.Height = _Height;
         n1.SplitType = SplitType.Vertical;
-        Node n2 = new Node();
+        var n2 = new Node();
         n2.Bounds.X = _ToSplit.Bounds.X;
         n2.Bounds.Y = _ToSplit.Bounds.Y + _Height + Padding;
         n2.Bounds.Width = _ToSplit.Bounds.Width;
@@ -195,13 +191,13 @@ public class Packer
 
     private void VerticalSplit(Node _ToSplit, int _Width, int _Height, List<Node> _List)
     {
-        Node n1 = new Node();
+        var n1 = new Node();
         n1.Bounds.X = _ToSplit.Bounds.X + _Width + Padding;
         n1.Bounds.Y = _ToSplit.Bounds.Y;
         n1.Bounds.Width = _ToSplit.Bounds.Width - _Width - Padding;
         n1.Bounds.Height = _ToSplit.Bounds.Height;
         n1.SplitType = SplitType.Vertical;
-        Node n2 = new Node();
+        var n2 = new Node();
         n2.Bounds.X = _ToSplit.Bounds.X;
         n2.Bounds.Y = _ToSplit.Bounds.Y + _Height + Padding;
         n2.Bounds.Width = _Width;
@@ -217,8 +213,8 @@ public class Packer
     {
         TextureInfo bestFit = null;
         float nodeArea = _Node.Bounds.Width * _Node.Bounds.Height;
-        float maxCriteria = 0.0f;
-        foreach (TextureInfo ti in _Textures)
+        var maxCriteria = 0.0f;
+        foreach (var ti in _Textures)
         {
             switch (FitHeuristic)
             {
@@ -226,9 +222,9 @@ public class Packer
                 case BestFitHeuristic.MaxOneAxis:
                     if (ti.Width <= _Node.Bounds.Width && ti.Height <= _Node.Bounds.Height)
                     {
-                        float wRatio = (float)ti.Width / (float)_Node.Bounds.Width;
-                        float hRatio = (float)ti.Height / (float)_Node.Bounds.Height;
-                        float ratio = wRatio > hRatio ? wRatio : hRatio;
+                        var wRatio = ti.Width / (float)_Node.Bounds.Width;
+                        var hRatio = ti.Height / (float)_Node.Bounds.Height;
+                        var ratio = wRatio > hRatio ? wRatio : hRatio;
                         if (ratio > maxCriteria)
                         {
                             maxCriteria = ratio;
@@ -241,7 +237,7 @@ public class Packer
                     if (ti.Width <= _Node.Bounds.Width && ti.Height <= _Node.Bounds.Height)
                     {
                         float textureArea = ti.Width * ti.Height;
-                        float coverage = textureArea / nodeArea;
+                        var coverage = textureArea / nodeArea;
                         if (coverage > maxCriteria)
                         {
                             maxCriteria = coverage;
@@ -256,11 +252,10 @@ public class Packer
 
     private List<TextureInfo> LayoutAtlas(List<TextureInfo> _Textures, Atlas _Atlas)
     {
-        List<Node> freeList = new List<Node>();
-        List<TextureInfo> textures = new List<TextureInfo>();
-        _Atlas.Nodes = new List<Node>();
-        textures = _Textures.ToList();
-        Node root = new Node();
+        List<Node> freeList = [];
+        _Atlas.Nodes = [];
+        var textures = _Textures.ToList();
+        var root = new Node();
         root.Bounds.Width = _Atlas.Width;
         root.Bounds.Height = _Atlas.Height;
             
@@ -268,9 +263,9 @@ public class Packer
         freeList.Add(root);
         while (freeList.Count > 0 && textures.Count > 0)
         {
-            Node node = freeList[0];
+            var node = freeList[0];
             freeList.RemoveAt(0);
-            TextureInfo bestFit = FindBestFitForNode(node, textures);
+            var bestFit = FindBestFitForNode(node, textures);
             if (bestFit != null)
             {
                 if (node.SplitType == SplitType.Horizontal)
@@ -296,12 +291,12 @@ public class Packer
     {
         MagickImage img = new(MagickColors.Transparent, _Atlas.Width, _Atlas.Height);
 
-        foreach (Node n in _Atlas.Nodes)
+        foreach (var n in _Atlas.Nodes)
         {
             if (n.Texture is not null)
             {
-                using MagickImage sourceImg = GraphicsImporter.ReadBGRAImageFromStream(mod.ReadFileAsStream(n.Texture.Source));
-                using IMagickImage<byte> resizedSourceImg = TextureWorker.ResizeImage(sourceImg, n.Bounds.Width, n.Bounds.Height);
+                using var sourceImg = GraphicsImporter.ReadBGRAImageFromStream(mod.ReadFileAsStream(n.Texture.Source));
+                using var resizedSourceImg = TextureWorker.ResizeImage(sourceImg, n.Bounds.Width, n.Bounds.Height);
                 img.Composite(resizedSourceImg, n.Bounds.X, n.Bounds.Y, CompositeOperator.Copy);
             }
         }

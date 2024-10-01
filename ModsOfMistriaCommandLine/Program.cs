@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Reflection;
+using Garethp.ModsOfMistriaInstallerLib;
 using ModsOfMistriaCommandLine.Lang;
 
 var currentExe = Assembly.GetEntryAssembly();
@@ -13,12 +14,11 @@ if (args.Contains("--uninstall"))
 {
     Standalone.UnInstall();
     Console.WriteLine(Resources.UninstallComplete);
-    Console.ReadKey();
 }
 else
 {
     Standalone.Run();
-
     Console.WriteLine(Resources.Completed);
-    Console.ReadKey();
 }
+
+Console.ReadKey();

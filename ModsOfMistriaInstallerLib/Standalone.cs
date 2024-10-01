@@ -1,12 +1,12 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Diagnostics;
-using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
-using Garethp.ModsOfMistriaInstallerLib.Models;
 
-public class Standalone
+namespace Garethp.ModsOfMistriaInstallerLib;
+
+public static class Standalone
 {
     public static void Run()
     {

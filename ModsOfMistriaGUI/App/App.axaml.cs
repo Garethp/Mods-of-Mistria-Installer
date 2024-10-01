@@ -10,9 +10,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaGUI.App;
 
-public partial class App : Application
+public class App : Application
 {
-    private readonly MainWindowViewModel _mainViewModel = new MainWindowViewModel();
+    private readonly MainWindowViewModel _mainViewModel = new ();
     
     public override void Initialize()
     {
@@ -23,13 +23,13 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow()
+            desktop.MainWindow = new MainWindow
             {
                 DataContext = _mainViewModel
             };
             
-            var upgradeMessage = MessageBoxManager.GetMessageBoxStandard(global::ModsOfMistriaGUI.App.Lang.Resources.UpdateNagTitle,
-                global::ModsOfMistriaGUI.App.Lang.Resources.UpdateNagMessage);
+            var upgradeMessage = MessageBoxManager.GetMessageBoxStandard(Lang.Resources.UpdateNagTitle,
+                Lang.Resources.UpdateNagMessage);
         
             Task.Run(async () =>
             {
@@ -55,7 +55,7 @@ public partial class App : Application
                         Dispatcher.UIThread.InvokeAsync(() => { upgradeMessage.ShowAsync(); });
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     // ignored
                 }

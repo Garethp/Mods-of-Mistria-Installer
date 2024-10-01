@@ -6,7 +6,7 @@ public enum ValidationStatus
 {
     Valid,
     Warning,
-    Invalid,
+    Invalid
 }
 
 public class Validation

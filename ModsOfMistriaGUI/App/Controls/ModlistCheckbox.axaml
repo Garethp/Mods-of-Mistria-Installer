@@ -1,0 +1,77 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:i="https://github.com/projektanker/icons.avalonia"
+             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.App.Lang"
+             xmlns:models="using:Garethp.ModsOfMistriaGUI.App.Models"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Garethp.ModsOfMistriaGUI.App.Controls.ModlistCheckbox">
+    <Design.DataContext>
+        <models:ModModel />
+    </Design.DataContext>
+    <WrapPanel>
+        <WrapPanel IsVisible="{Binding IsValid}">
+            <CheckBox IsEnabled="{Binding !InError}"
+                      IsChecked="{Binding Enabled}">
+                <TextBlock Text="{Binding Full}" />
+            </CheckBox>
+        </WrapPanel>
+
+        <Expander IsVisible="{Binding !IsValid}" Foreground="Black">
+            <Expander.Styles>
+                <Style Selector="Expander ToggleButton">
+                    <Style
+                        Selector="^:pointerover /template/ Border#ToggleButtonBackground">
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                    </Style>
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                </Style>
+
+                <Style Selector="Expander">
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="Background" Value="LightGray" />
+                </Style>
+            </Expander.Styles>
+            <Expander.Header>
+                <WrapPanel>
+                    <CheckBox IsEnabled="{Binding !InError}"
+                              IsChecked="{Binding Enabled}">
+                        <TextBlock Text="{Binding Full}" />
+                    </CheckBox>
+
+                    <Image Height="16" Margin="5 0 0 0"
+                           IsVisible="{Binding InWarning}">
+                        <ToolTip.Tip>
+                            <TextBlock Text="{x:Static lang:Resources.ModHasWarnings}" />
+                        </ToolTip.Tip>
+                        <Image.Source>
+                            <i:IconImage Value="fa-exclamation-triangle"
+                                         Brush="Orange" />
+                        </Image.Source>
+                    </Image>
+
+                    <Image Height="16" Margin="5 0 0 0"
+                           IsVisible="{Binding InError}">
+                        <ToolTip.Tip>
+                            <TextBlock Text="{x:Static lang:Resources.ModHasErrors}"></TextBlock>
+                        </ToolTip.Tip>
+                        <Image.Source>
+                            <i:IconImage Value="fa-exclamation-triangle"
+                                         Brush="OrangeRed" />
+                        </Image.Source>
+                    </Image>
+                </WrapPanel>
+            </Expander.Header>
+
+            <StackPanel>
+                <SelectableTextBlock TextWrapping="WrapWithOverflow" IsVisible="{Binding InError}"
+                                     Text="{Binding Errors}" />
+                <SelectableTextBlock IsVisible="{Binding InWarning}" Text="{Binding Warnings}" />
+            </StackPanel>
+        </Expander>
+    </WrapPanel>
+</UserControl>

@@ -1,34 +1,43 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
-using ModsOfMistriaGUI.App.Lang;
+using Garethp.ModsOfMistriaGUI.App.Lang;
 
 namespace Garethp.ModsOfMistriaGUI.App.Models;
 
-public partial class ModModel: ObservableObject
+public class ModModel: ObservableObject
 {
-    public IMod mod;
+    public readonly IMod Mod;
 
-    public string? CanInstall;
+    public readonly string? CanInstall;
     private bool _enabled = true;
+
+    public ModModel(IMod mod)
+    {
+        Mod = mod;
+        CanInstall = mod.CanInstall();
+    }
+
+    public ModModel()
+    {
+        Mod = new FolderMod();
+        CanInstall = Mod.CanInstall();
+    }
 
     public bool Enabled
     {
         get => !InError && _enabled;
         set => _enabled = value;
     }
-
-    public Validation validation => mod.GetValidation();
     
-    public bool InWarning => mod.GetValidation().Status == ValidationStatus.Warning;
-    public bool InError => mod.GetValidation().Status == ValidationStatus.Invalid;
+    public bool InWarning => Mod.GetValidation().Status == ValidationStatus.Warning;
+    public bool InError => Mod.GetValidation().Status == ValidationStatus.Invalid;
     
-    public bool IsValid => mod.GetValidation().Status == ValidationStatus.Valid;
+    public bool IsValid => Mod.GetValidation().Status == ValidationStatus.Valid;
     
-    public string Warnings => String.Join("\r\n", mod.GetValidation().Warnings.Select(warning => warning.Message).ToList());
+    public string Warnings => string.Join("\r\n", Mod.GetValidation().Warnings.Select(warning => warning.Message).ToList());
     
-    public string Errors => String.Join("\r\n", mod.GetValidation().Errors.Select(warning => warning.Message).ToList());
+    public string Errors => string.Join("\r\n", Mod.GetValidation().Errors.Select(warning => warning.Message).ToList());
     
-    public string Full => string.Format(Resources.ModByAuthor, mod.GetName(), mod.GetAuthor());
+    public string Full => string.Format(Resources.ModByAuthor, Mod.GetName(), Mod.GetAuthor());
 }

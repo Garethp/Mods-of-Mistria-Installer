@@ -1,73 +1,69 @@
 ﻿using System.Collections.ObjectModel;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Garethp.ModsOfMistriaGUI.App.Models;
 using Garethp.ModsOfMistriaInstallerLib;
-using Garethp.ModsOfMistriaInstallerLib.ModTypes;
-using ModsOfMistriaGUI.App.Lang;
+using Garethp.ModsOfMistriaGUI.App.Lang;
+using MsBox.Avalonia;
 
 namespace Garethp.ModsOfMistriaGUI.App.ViewModels;
 
-public partial class MainWindowViewModel: ViewModelBase
+public partial class MainWindowViewModel : ViewModelBase
 {
     public MainWindowViewModel()
     {
         MistriaLocation = MistriaLocator.GetMistriaLocation() ?? "";
         ModsLocation = MistriaLocator.GetModsLocation(_mistriaLocation) ?? "";
-        
+
         if (Directory.Exists(ModsLocation))
         {
             Mods.Clear();
 
-            mods = MistriaLocator.GetMods(ModsLocation);
-            
+            var mods = MistriaLocator.GetMods(ModsLocation);
+
             new ModInstaller(MistriaLocation, ModsLocation).ValidateMods(mods);
-            
-            mods.ForEach(mod => Mods.Add(new ModModel()
-            {
-                mod = mod,
-                CanInstall = mod.CanInstall()
-            }));
+
+            mods.ForEach(mod => Mods.Add(new ModModel(mod)));
         }
-        
+
         if (MistriaLocation.Equals(""))
         {
             InstallStatus = Resources.CouldNotFindMistria;
-        } else if (ModsLocation.Equals(""))
+        }
+        else if (ModsLocation.Equals(""))
         {
             InstallStatus = Resources.CouldNotFindMods;
-        } else if (Mods.Count == 0)
+        }
+        else if (Mods.Count == 0)
         {
             InstallStatus = Resources.NoModsToInstall;
-        } else if (Mods.Any(mod => mod.CanInstall is not null))
+        }
+        else if (Mods.Any(mod => mod.CanInstall is not null))
         {
             InstallStatus = Resources.ModsRequireNewerVersion;
         }
     }
-    
-    [ObservableProperty] string _installStatus = "";
+
+    [ObservableProperty] private string _installStatus = "";
 
     [ObservableProperty] private string _modsLocation = "";
-    
-    [ObservableProperty] string _mistriaLocation = "";
+
+    [ObservableProperty] private string _mistriaLocation = "";
 
     [ObservableProperty] private string _exception = "";
-
-    private string? _modOverride;
-
-    private List<IMod> mods;
-
-    private bool _isInstalling;
     
-    public ObservableCollection<ModModel> Mods { get; } = new ();
+    private bool _isInstalling;
+
+    public ObservableCollection<ModModel> Mods { get; } = [];
 
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private void InstallMods()
     {
         InstallStatus = Resources.InstallInProgress;
         _isInstalling = true;
-        
-        Task.Run(backgroundInstall);
+
+        Task.Run(BackgroundInstall);
     }
 
     [RelayCommand(CanExecute = nameof(CanRemove))]
@@ -76,12 +72,18 @@ public partial class MainWindowViewModel: ViewModelBase
         _isInstalling = true;
 
         InstallStatus = "Uninstalling";
-        
-        Task.Run(() =>
+
+        Task.Run(async () =>
         {
             try
             {
                 var installer = new ModInstaller(MistriaLocation, ModsLocation);
+                
+                var information = installer.PreUninstallInformation();
+                if (information.Count > 0)
+                {
+                    await Dispatcher.UIThread.InvokeAsync(() => MessageBoxManager.GetMessageBoxStandard(Resources.UninstallInformationTitle, string.Join('\n', information)).ShowAsync());
+                }
 
                 installer.Uninstall();
 
@@ -92,22 +94,27 @@ public partial class MainWindowViewModel: ViewModelBase
             {
                 Exception = e.Message;
             }
-
         });
     }
 
-    private async void backgroundInstall()
+    private async void BackgroundInstall()
     {
         try
         {
-            var installer = new ModInstaller(_mistriaLocation, ModsLocation);
+            var installer = new ModInstaller(MistriaLocation, ModsLocation);
 
-            installer.InstallMods(Mods.Where(model => model.Enabled).Select(model => model.mod).ToList(),
-                (message, timeTaken) =>
-                {
-                    Console.WriteLine($"Ran {message} in {timeTaken}");
-                    InstallStatus = message;
-                });
+            var modsToInstall = Mods.Where(model => model.Enabled).Select(model => model.Mod).ToList();
+
+            var information = installer.PreinstallInformation(modsToInstall);
+            if (information.Count > 0)
+            {
+                await Dispatcher.UIThread.InvokeAsync(() => MessageBoxManager.GetMessageBoxStandard(Resources.PreinstallInformationTitle, string.Join('\n', information)).ShowAsync());
+            }
+            
+            installer.InstallMods(modsToInstall, (message, _) =>
+            {
+                InstallStatus = message;
+            });
 
             _isInstalling = false;
         }
@@ -116,8 +123,9 @@ public partial class MainWindowViewModel: ViewModelBase
             Exception = e.Message;
         }
     }
-    
+
     private bool CanRemove() => !MistriaLocation.Equals("") && !_isInstalling;
 
-    private bool CanInstall() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !_isInstalling && Mods.All(mod => mod.CanInstall is null);
+    private bool CanInstall() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 &&
+                                 !_isInstalling && Mods.All(mod => mod.CanInstall is null);
 }

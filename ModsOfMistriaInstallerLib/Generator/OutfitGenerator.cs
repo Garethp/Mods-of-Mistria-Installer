@@ -1,6 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
-using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
@@ -66,7 +65,7 @@ public class OutfitGenerator : IGenerator
                         SpecialType = true,
                         SpecialTypeVersion = 3,
                         SpecialPlaybackSpeed = 40,
-                        IsPlayerSprite = true,
+                        IsPlayerSprite = true
                     });
                     assetParts.Add(animationName, $"spr_player_{name}_{animationName}");
                 }
@@ -109,7 +108,7 @@ public class OutfitGenerator : IGenerator
                         Mod = mod,
                         Location = outfitData["lutFile"].ToString(),
                         IsAnimated = false,
-                        IsPlayerSprite = true,
+                        IsPlayerSprite = true
                     },
                     new()
                     {
@@ -117,7 +116,7 @@ public class OutfitGenerator : IGenerator
                         Mod = mod,
                         Location = outfitData["uiItem"].ToString(),
                         IsAnimated = false,
-                        IsUiSprite = true,
+                        IsUiSprite = true
                     },
                     new()
                     {
@@ -125,7 +124,7 @@ public class OutfitGenerator : IGenerator
                         Mod = mod,
                         Location = outfitData["outlineFile"].ToString(),
                         IsAnimated = false,
-                        IsUiSprite = true,
+                        IsUiSprite = true
                     }
                 ]);
 

@@ -15,7 +15,7 @@ public class ShadowSprite
 
     public string RegularSpriteName;
 
-    public bool IsAnimated = false;
+    public bool IsAnimated;
 
     public Validation Validate(Validation validation, IMod mod, string file, string id)
     {

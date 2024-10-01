@@ -4,9 +4,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         xmlns:vm="using:Garethp.ModsOfMistriaGUI.App.ViewModels"
-        xmlns:i="https://github.com/projektanker/icons.avalonia"
         x:Class="Garethp.ModsOfMistriaGUI.App.Views.MainWindow"
-        xmlns:lang="clr-namespace:ModsOfMistriaGUI.App.Lang"
+        xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.App.Lang"
+        xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.App.Controls"
         x:DataType="vm:MainWindowViewModel"
         Title="{x:Static lang:Resources.ApplicationTitle}"
         Icon="/App/Assets/small_icon.png"
@@ -15,20 +15,14 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
-            <RowDefinition Height="50"></RowDefinition>
-        </Grid.RowDefinitions>
-
+    <Grid RowDefinitions="*,50">
         <StackPanel Grid.Row="0">
             <Image Source="/App/Assets/header.jpg"></Image>
-
             <Panel Margin="50 20 50 0">
                 <StackPanel IsVisible="{Binding Exception.Length}">
                     <SelectableTextBlock Text="{Binding Exception}" />
                 </StackPanel>
-                
+
                 <StackPanel IsVisible="{Binding !Exception.Length}">
                     <TextBlock Text="{x:Static lang:Resources.GreetingText}" />
                     <TextBlock></TextBlock>
@@ -38,77 +32,17 @@
                         <TextBlock Text="{Binding MistriaLocation}" />
                     </WrapPanel>
                     <TextBlock Text="{x:Static lang:Resources.ModsWillBeInstalled}" />
-                    <ScrollViewer Grid.Row="1" Margin="15 5 0 0" MaxHeight="330">
+
+                    <ScrollViewer Margin="15 5 0 0" MaxHeight="330">
                         <ItemsRepeater ItemsSource="{Binding Mods}">
                             <ItemsRepeater.ItemTemplate>
                                 <DataTemplate>
                                     <WrapPanel>
-                                        <WrapPanel IsVisible="{Binding IsValid}">
-                                            <CheckBox IsEnabled="{Binding !InError}"
-                                                      IsChecked="{Binding Enabled}">
-                                                <TextBlock Text="{Binding Full}" />
-                                            </CheckBox>
-                                        </WrapPanel>
-
-                                        <Expander IsVisible="{Binding !IsValid}" Foreground="Black">
-                                            <Expander.Styles>
-                                                <Style Selector="Expander ToggleButton">
-                                                    <Style
-                                                        Selector="^:pointerover /template/ Border#ToggleButtonBackground">
-                                                        <Setter Property="BorderBrush" Value="Transparent" />
-                                                    </Style>
-                                                    <Setter Property="BorderBrush" Value="Transparent" />
-                                                    <Setter Property="Background" Value="Transparent" />
-                                                    <Setter Property="Padding" Value="0" />
-                                                    <Setter Property="Margin" Value="0" />
-                                                </Style>
-
-                                                <Style Selector="Expander">
-                                                    <Setter Property="BorderBrush" Value="Transparent" />
-                                                    <Setter Property="Background" Value="LightGray" />
-                                                </Style>
-                                            </Expander.Styles>
-                                            <Expander.Header>
-                                                <WrapPanel>
-                                                    <CheckBox IsEnabled="{Binding !InError}"
-                                                              IsChecked="{Binding Enabled}">
-                                                        <TextBlock Text="{Binding Full}" />
-                                                    </CheckBox>
-
-                                                    <Image Height="16" Margin="5 0 0 0"
-                                                           IsVisible="{Binding InWarning}">
-                                                        <ToolTip.Tip>
-                                                            <TextBlock Text="{x:Static lang:Resources.ModHasWarnings}"></TextBlock>
-                                                        </ToolTip.Tip>
-                                                        <Image.Source>
-                                                            <i:IconImage Value="fa-exclamation-triangle"
-                                                                         Brush="Orange" />
-                                                        </Image.Source>
-                                                    </Image>
-
-                                                    <Image Height="16" Margin="5 0 0 0"
-                                                           IsVisible="{Binding InError}">
-                                                        <ToolTip.Tip>
-                                                            <TextBlock Text="{x:Static lang:Resources.ModHasErrors}"></TextBlock>
-                                                        </ToolTip.Tip>
-                                                        <Image.Source>
-                                                            <i:IconImage Value="fa-exclamation-triangle"
-                                                                         Brush="OrangeRed" />
-                                                        </Image.Source>
-                                                    </Image>
-                                                </WrapPanel>
-                                            </Expander.Header>
-
-                                            <StackPanel>
-                                                <SelectableTextBlock TextWrapping="WrapWithOverflow" IsVisible="{Binding InError}" Text="{Binding Errors}" />
-                                                <SelectableTextBlock IsVisible="{Binding InWarning}" Text="{Binding Warnings}" />
-                                            </StackPanel>
-                                        </Expander>
+                                        <controls:ModlistCheckbox DataContext="{Binding }" />
                                     </WrapPanel>
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>
                         </ItemsRepeater>
-                        <!-- <ItemsControl ItemsSource="{Binding Mods}" /> -->
                     </ScrollViewer>
                     <TextBlock></TextBlock>
                 </StackPanel>
@@ -116,7 +50,8 @@
         </StackPanel>
         <WrapPanel Grid.Row="1" Margin="0 0 30 0" HorizontalAlignment="Right">
             <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
-            <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}" Content="{x:Static lang:Resources.InstallButtonText}" />
+            <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}"
+                    Content="{x:Static lang:Resources.InstallButtonText}" />
             <Button Command="{Binding UnInstallModsCommand}" Content="{x:Static lang:Resources.UninstallButtonText}" />
         </WrapPanel>
     </Grid>

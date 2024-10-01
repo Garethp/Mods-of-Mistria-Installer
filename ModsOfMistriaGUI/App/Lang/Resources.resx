@@ -71,4 +71,10 @@
     <data name="UninstallButtonText" xml:space="preserve">
         <value>Uninstall All</value>
     </data>
+    <data name="PreinstallInformationTitle" xml:space="preserve">
+        <value>Install Information</value>
+    </data>
+    <data name="UninstallInformationTitle" xml:space="preserve">
+        <value>Uninstall Information</value>
+    </data>
 </root>

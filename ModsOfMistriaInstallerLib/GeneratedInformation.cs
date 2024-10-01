@@ -57,13 +57,13 @@ public class GeneratedInformation
         foreach (var modName in other.Sprites.Keys)
         {
             if (!Sprites.ContainsKey(modName)) Sprites[modName] = [];
-            Sprites[modName].AddRange(other.Sprites[modName]);;
+            Sprites[modName].AddRange(other.Sprites[modName]);
         }
         
         foreach (var modName in other.Tilesets.Keys)
         {
             if (!Tilesets.ContainsKey(modName)) Tilesets[modName] = [];
-            Tilesets[modName].AddRange(other.Tilesets[modName]);;
+            Tilesets[modName].AddRange(other.Tilesets[modName]);
         }
     }
 }

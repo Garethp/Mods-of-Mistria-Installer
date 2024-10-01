@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ModsOfMistriaGUI.App.Lang {
+namespace Garethp.ModsOfMistriaGUI.App.Lang {
     using System;
     
     
@@ -28,7 +28,7 @@ namespace ModsOfMistriaGUI.App.Lang {
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public Resources() {
+        internal Resources() {
         }
         
         /// <summary>
@@ -38,7 +38,7 @@ namespace ModsOfMistriaGUI.App.Lang {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ModsOfMistriaGUI.App.Lang.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Garethp.ModsOfMistriaGUI.App.Lang.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -177,11 +177,29 @@ namespace ModsOfMistriaGUI.App.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Install Information.
+        /// </summary>
+        public static string PreinstallInformationTitle {
+            get {
+                return ResourceManager.GetString("PreinstallInformationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uninstall All.
         /// </summary>
         public static string UninstallButtonText {
             get {
                 return ResourceManager.GetString("UninstallButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall Information.
+        /// </summary>
+        public static string UninstallInformationTitle {
+            get {
+                return ResourceManager.GetString("UninstallInformationTitle", resourceCulture);
             }
         }
         

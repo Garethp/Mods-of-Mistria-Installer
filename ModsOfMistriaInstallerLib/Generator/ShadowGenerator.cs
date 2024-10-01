@@ -23,19 +23,19 @@ public class ShadowGenerator : IGenerator
             {
                 var shadowSprite = shadowFile[shadowName];
                 shadowSprite.Name = shadowName;
-                if (!information.Sprites.ContainsKey(mod.GetId())) information.Sprites[mod.GetId()] = new();
+                if (!information.Sprites.ContainsKey(mod.GetId())) information.Sprites[mod.GetId()] = [];
 
-                information.Sprites[mod.GetId()].Add(new SpriteData()
+                information.Sprites[mod.GetId()].Add(new SpriteData
                 {
                     Name = shadowSprite.Name,
                     Mod = mod,
                     Location = shadowSprite.Sprite,
-                    IsAnimated = shadowSprite.IsAnimated,
+                    IsAnimated = shadowSprite.IsAnimated
                 });
 
                 information.ShadowManifests.Add(new JObject
                 {
-                    { shadowSprite.RegularSpriteName, shadowSprite.Name },
+                    { shadowSprite.RegularSpriteName, shadowSprite.Name }
                 });
             }
         }

@@ -366,6 +366,24 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to During install, MOMI will attempt to add an entry to your computers registry. For this, you&apos;ll be asked to give admin access to &quot;Registry Editor&quot; and to continue with an edit to the registry..
+        /// </summary>
+        public static string PreinstallWillInstallAurie {
+            get {
+                return ResourceManager.GetString("PreinstallWillInstallAurie", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to During install, MOMI will attempt to remove an entry from the computers Registry. As part of this, you&apos;ll be asked to grant admin access to the &quot;Registry Console Tool&quot;..
+        /// </summary>
+        public static string PreinstallWillRemoveAurie {
+            get {
+                return ResourceManager.GetString("PreinstallWillRemoveAurie", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Reading Textures/Sprites.
         /// </summary>
         public static string ReadingSprites {

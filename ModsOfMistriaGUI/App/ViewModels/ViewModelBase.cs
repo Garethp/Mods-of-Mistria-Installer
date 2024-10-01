@@ -2,7 +2,4 @@
 
 namespace Garethp.ModsOfMistriaGUI.App.ViewModels;
 
-public class ViewModelBase: ObservableObject
-{
-    
-}
+public class ViewModelBase: ObservableObject;

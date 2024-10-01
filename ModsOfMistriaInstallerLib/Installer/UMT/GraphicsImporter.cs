@@ -15,10 +15,9 @@ public class GraphicsImporter
 {
     public static MagickImage ReadBGRAImageFromStream(Stream fileStream)
     {
-        MagickReadSettings magickReadSettings = new MagickReadSettings();
+        var magickReadSettings = new MagickReadSettings();
         magickReadSettings.ColorSpace = ColorSpace.sRGB;
-        MagickReadSettings readSettings = magickReadSettings;
-        MagickImage magickImage = new MagickImage(fileStream, (IMagickReadSettings<byte>) readSettings);
+        var magickImage = new MagickImage(fileStream, magickReadSettings);
         fileStream.Close();
         magickImage.Alpha(AlphaOption.Set);
         magickImage.Format = MagickFormat.Bgra;
@@ -38,7 +37,7 @@ public class GraphicsImporter
             var tileset = gameData.Backgrounds.ByName(tilesetData.Name);
             if (tileset is null) continue;
             
-            using MagickImage newImage = ReadBGRAImageFromStream(tilesetData.Mod.ReadFileAsStream(tilesetData.Location));
+            using var newImage = ReadBGRAImageFromStream(tilesetData.Mod.ReadFileAsStream(tilesetData.Location));
             tileset.Texture.ReplaceTexture(newImage);
         }
     }
@@ -55,11 +54,11 @@ public class GraphicsImporter
         Directory.CreateDirectory(packDir);
 
         var outName = Path.Combine(packDir, "atlas.txt");
-        var textureSize = 2048;
-        var PaddingValue = 2;
-        var debug = false;
+        const int textureSize = 2048;
+        const int paddingValue = 2;
+        const bool debug = false;
         var packer = new Packer();
-        packer.Process(sprites[0].Mod, textureSize, PaddingValue, debug);
+        packer.Process(sprites[0].Mod, textureSize, paddingValue, debug);
         packer.SaveAtlasses(sprites[0].Mod, outName);
 
         var prefix = outName.Replace(Path.GetExtension(outName), "");
@@ -67,8 +66,8 @@ public class GraphicsImporter
 
         foreach (var atlas in packer.Atlasses)
         {
-            var atlasName = Path.Combine(packDir, String.Format(prefix + "{0:000}" + ".png", atlasCount));
-            using MagickImage atlasImage = TextureWorker.ReadBGRAImageFromFile(atlasName);
+            var atlasName = Path.Combine(packDir, string.Format(prefix + "{0:000}" + ".png", atlasCount));
+            using var atlasImage = TextureWorker.ReadBGRAImageFromFile(atlasName);
 
             var texture = new UndertaleEmbeddedTexture();
             texture.Name = new UndertaleString(GetNextTextureName(gameData));
@@ -100,10 +99,8 @@ public class GraphicsImporter
 
                 // String processing
                 var stripped = Path.GetFileNameWithoutExtension(node.Texture.Source);
-
-                var spriteType = SpriteType.Sprite;
-
-                SetTextureTargetBounds(texturePageItem, stripped, node);
+                
+                SetTextureTargetBounds(texturePageItem, node);
 
                 var spriteData = sprites.FindAll(sprite => sprite.MatchesPath(node.Texture.Source));
                 
@@ -146,13 +143,9 @@ public class GraphicsImporter
         return $"PageItem {lastPageItemNumber + 1}";
     }
 
-    void ImportSprite(UndertaleData gameData, SpriteData spriteData, string modName)
+    private void ImportSprite(UndertaleData gameData, SpriteData spriteData, string modName)
     {
         var count = spriteData.PageItems.Count;
-        if (spriteData.Location.Contains("stone_arch"))
-        {
-            var a = 1 + 1;
-        }
         
         if (count == 0) return;
 
@@ -177,10 +170,10 @@ public class GraphicsImporter
 
         if (sprite is null)
         {
-            sprite = new UndertaleSprite()
+            sprite = new UndertaleSprite
             {
                 Name = gameData.Strings.MakeString(spriteData.Name),
-                BBoxMode = 1,
+                BBoxMode = 1
             };
 
             gameData.Sprites.Add(sprite);
@@ -223,7 +216,7 @@ public class GraphicsImporter
         {
             allTextures[texturePageItem.TexturePage.Name.ToString()] = texturePageItem.TexturePage;
 
-            var textureEntry = new UndertaleSprite.TextureEntry()
+            var textureEntry = new UndertaleSprite.TextureEntry
             {
                 Texture = texturePageItem
             };
@@ -251,7 +244,7 @@ public class GraphicsImporter
         var resourceInfo = gameData.TextureGroupInfo.ByName(name);
         if (resourceInfo is not null) return resourceInfo;
 
-        resourceInfo = new UndertaleTextureGroupInfo()
+        resourceInfo = new UndertaleTextureGroupInfo
         {
             Name = gameData.Strings.MakeString(name)
         };
@@ -260,7 +253,7 @@ public class GraphicsImporter
         return resourceInfo;
     }
 
-    void EnsureSpriteInformation(UndertaleData gameData, string name, UndertaleSprite resource)
+    private void EnsureSpriteInformation(UndertaleData gameData, string name, UndertaleSprite resource)
     {
         var resourceInfo = AddOrGetGroupInfo(gameData, name);
 
@@ -268,7 +261,7 @@ public class GraphicsImporter
             resourceInfo.Sprites.Add(new UndertaleResourceById<UndertaleSprite, UndertaleChunkSPRT>(resource));
     }
 
-    void EnsureEmbeddedTextureInformation(UndertaleData gameData, string name, UndertaleEmbeddedTexture resource)
+    private void EnsureEmbeddedTextureInformation(UndertaleData gameData, string name, UndertaleEmbeddedTexture resource)
     {
         var resourceInfo = AddOrGetGroupInfo(gameData, name);
 
@@ -277,7 +270,7 @@ public class GraphicsImporter
                 new UndertaleResourceById<UndertaleEmbeddedTexture, UndertaleChunkTXTR>(resource));
     }
 
-    void SetTextureTargetBounds(UndertaleTexturePageItem tex, string textureName, Node n)
+    private void SetTextureTargetBounds(UndertaleTexturePageItem tex, Node n)
     {
         tex.TargetX = 0;
         tex.TargetY = 0;

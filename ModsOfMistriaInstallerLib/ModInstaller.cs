@@ -9,7 +9,7 @@ namespace Garethp.ModsOfMistriaInstallerLib;
 
 public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
 {
-    private List<List<string>> filesToBackup =
+    private readonly List<List<string>> _filesToBackup =
     [
         ["__fiddle__.json"],
         ["__mist__.json"],
@@ -20,11 +20,11 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         ["animation", "generated", "player_asset_parts.json"],
         ["animation", "generated", "shadow_manifest.json"],
         ["room_data", "points.json"],
-        ["data.win"],
+        ["data.win"]
     ];
 
     public void ValidateMods(List<IMod> mods)
-    { 
+    {
         var desiredGenerators = GetGenerators();
         mods.ForEach(mod =>
         {
@@ -33,6 +33,49 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
                 mod.GetValidation().Merge(generator.Validate(mod));
             });
         });
+    }
+
+    public List<string> PreinstallInformation(List<IMod> mods)
+    {
+        var information = new List<string>();
+
+        var generatedInformation = new GeneratedInformation();
+
+        var desiredGenerators = GetGenerators();
+        var desiredInstallers = GetInstallers();
+        
+        foreach (var mod in mods)
+        {
+            foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
+            {
+                generatedInformation.Merge(generator.Generate(mod));
+            }
+        }
+        
+        foreach (var installer in desiredInstallers)
+        {
+            if (installer is not IPreinstallInfo preinstallChecker) continue;
+            
+            information.AddRange(preinstallChecker.GetPreinstallInformation(generatedInformation));
+        }
+        
+        return information;
+    }
+    
+    public List<string> PreUninstallInformation()
+    {
+        var information = new List<string>();
+        
+        var desiredInstallers = GetInstallers();
+        
+        foreach (var installer in desiredInstallers)
+        {
+            if (installer is not IPreUninstallInfo preUninstallInfo) continue;
+            
+            information.AddRange(preUninstallInfo.GetPreUninstallInformation());
+        }
+        
+        return information;
     }
     
     public void InstallMods(List<IMod> mods, Action<string, string> reportStatus)
@@ -46,7 +89,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         
         if (IsFreshInstall())
         {
-            filesToBackup.ForEach(filePath =>
+            _filesToBackup.ForEach(filePath =>
             {
                 var path = Path.Combine(new List<string> {fieldsOfMistriaLocation}.Concat(filePath).ToArray());
                 if (!File.Exists(path)) return;
@@ -68,11 +111,6 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         
         foreach (var mod in mods)
         {
-            // if (!Directory.Exists(mod.Location))
-            // {
-            //     throw new DirectoryNotFoundException(Resources.ModDirectoryDoesNotExist);
-            // }
-            
             reportStatus(string.Format(Resources.GeneratingInformationForMod, mod.GetId()), "");
             foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
             {
@@ -96,22 +134,14 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         reportStatus(Resources.InstallCompleted, totalTime.ToString());
     }
 
-    bool IsFreshInstall()
+    private bool IsFreshInstall()
     {
         var checksums = JObject.Parse(File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "checksums.json")));
 
         return checksums["mods_installed"]?.Value<bool>() != true;
     }
-    
-    void DeleteIfExists(string[] paths)
-    {
-        if (File.Exists(Path.Combine(paths)))
-        {
-            File.Delete(Path.Combine(paths));
-        }
-    }
 
-    List<IGenerator> GetGenerators()
+    private List<IGenerator> GetGenerators()
     {
         return (from app in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
             from type in app.GetTypes()
@@ -121,7 +151,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
             select Activator.CreateInstance(type) as IGenerator).ToList();
     }
 
-    List<IModuleInstaller> GetInstallers()
+    private List<IModuleInstaller> GetInstallers()
     {
         return (from app in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
             from type in app.GetTypes()
@@ -133,7 +163,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
 
     public void Uninstall()
     {
-        filesToBackup.ForEach(filePath =>
+        _filesToBackup.ForEach(filePath =>
         {
             var path = Path.Combine(new List<string> {fieldsOfMistriaLocation}.Concat(filePath).ToArray());
             if (!File.Exists(path)) return;

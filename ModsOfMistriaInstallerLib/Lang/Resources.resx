@@ -153,4 +153,10 @@
     <data name="ErrorOutfitUiSubCategoryWrong" xml:space="preserve">
         <value>Outfit {0} has incorrect ui_sub_category. Must be one of: {1}.</value>
     </data>
+    <data name="PreinstallWillInstallAurie" xml:space="preserve">
+        <value>During install, MOMI will attempt to add an entry to your computers registry. For this, you'll be asked to give admin access to "Registry Editor" and to continue with an edit to the registry.</value>
+    </data>
+    <data name="PreinstallWillRemoveAurie" xml:space="preserve">
+        <value>During install, MOMI will attempt to remove an entry from the computers Registry. As part of this, you'll be asked to grant admin access to the "Registry Console Tool".</value>
+    </data>
 </root>

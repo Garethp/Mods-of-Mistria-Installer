@@ -4,7 +4,7 @@ using Projektanker.Icons.Avalonia.FontAwesome;
 
 namespace Garethp.ModsOfMistriaGUI;
 
-public class Program
+public static class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -17,7 +17,7 @@ public class Program
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
-    public static AppBuilder BuildAvaloniaApp()
+    private static AppBuilder BuildAvaloniaApp()
     {
         IconProvider.Current.Register<FontAwesomeIconProvider>();
         

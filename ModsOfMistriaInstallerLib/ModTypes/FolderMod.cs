@@ -70,7 +70,7 @@ public class FolderMod : IMod
             _version = manifest["version"]?.ToString() ?? "",
             _location = Path.GetDirectoryName(manifestLocation) ?? "",
             _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0",
-            _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1",
+            _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1"
         };
 
         mod.Validate();
@@ -154,7 +154,7 @@ public class FolderMod : IMod
 
     public List<string> GetFilesInFolder(string folder, string extension)
     {
-        if (!Directory.Exists(Path.Combine(_location, folder))) return new List<string>();
+        if (!Directory.Exists(Path.Combine(_location, folder))) return [];
         if (!string.IsNullOrEmpty(extension))
             return Directory.GetFiles(Path.Combine(_location, folder), $"*{extension}").ToList();
         

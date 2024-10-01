@@ -9,6 +9,8 @@
 * [x] Add an uninstall button
 
 ## 0.4.0
+* [x] Add some user-information when installing/uninstalling Aurie mods
+* [ ] Automatically update Aurie
 * [ ] Select the Mistria/Mods folders in a setup screen if not found
 * [ ] Allow creating a mods folder automatically
 * [ ] Add converting old sprite mods

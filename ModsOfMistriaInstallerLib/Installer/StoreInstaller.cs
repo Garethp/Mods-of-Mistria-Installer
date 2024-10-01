@@ -55,7 +55,7 @@ public class StoreInstaller : ISubModuleInstaller
             var category = categories.FirstOrDefault(existingCategory => existingCategory["icon"]?.ToString() == categoryName);
             if (category is null) throw new Exception($"Failed adding item to the {store} {categoryName} category because {categoryName} does not exist");
 
-            JArray? arrayToAddTo = null;
+            JArray? arrayToAddTo;
             
             if (item.RandomStock)
             {
@@ -102,7 +102,6 @@ public class StoreInstaller : ISubModuleInstaller
                     break;
                 default:
                     throw new Exception("Unknown item type");
-                    break;
             }
         });
 

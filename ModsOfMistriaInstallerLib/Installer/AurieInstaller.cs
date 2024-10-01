@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 
@@ -13,7 +14,7 @@ class FileToEnsure
 }
 
 [InformationInstaller(1)]
-public class AurieInstaller : IModuleInstaller
+public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallInfo
 {
     private static readonly string IFEORegistryKey =
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options";
@@ -71,7 +72,10 @@ public class AurieInstaller : IModuleInstaller
 
         filesToEnsure.ForEach(ensure =>
         {
-            if (File.Exists(ensure.Path)) return;
+            if (File.Exists(ensure.Path))
+            {
+                return;
+            }
 
             var task = Task.Run(async () =>
             {
@@ -130,6 +134,27 @@ public class AurieInstaller : IModuleInstaller
         TearDownRegistry();
     }
 
+    private bool IsInstalled()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return false;
+        return Registry.LocalMachine.OpenSubKey(IFEORegistryKey)?.OpenSubKey("FieldsOfMistria.exe") is not null;
+    }
+
+    public List<string> GetPreinstallInformation(GeneratedInformation information)
+    {
+        if (information.AurieMods.Count > 0 && !IsInstalled()) return [Resources.PreinstallWillInstallAurie];
+        if (information.AurieMods.Count == 0 && IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
+
+        return [];
+    }
+
+    public List<string> GetPreUninstallInformation()
+    {
+        if (IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
+
+        return [];
+    }
+    
     private void SetupRegistry(string fieldsOfMistriaLocation, string modsLocation)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
@@ -154,7 +179,7 @@ public class AurieInstaller : IModuleInstaller
 
         File.WriteAllText(Path.Combine(modsLocation, "Aurie", "install.reg"), installFile);
 
-        Process proc = new Process();
+        var proc = new Process();
         proc.StartInfo.FileName = "regedit.exe";
         proc.StartInfo.ArgumentList.Add(Path.Combine(modsLocation, "Aurie", "install.reg"));
         proc.StartInfo.UseShellExecute = true;
@@ -174,7 +199,7 @@ public class AurieInstaller : IModuleInstaller
 
         if (mistriaSubKey is null) return;
 
-        Process proc = new Process();
+        var proc = new Process();
         proc.StartInfo.FileName = "reg";
         proc.StartInfo.ArgumentList.Add("delete");
         proc.StartInfo.ArgumentList.Add(mistriaSubKey.Name);
