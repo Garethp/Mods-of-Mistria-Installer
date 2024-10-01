@@ -1,9 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
-using Garethp.ModsOfMistriaGUI.App.Lang;
+using Garethp.ModsOfMistriaGUI.Lang;
 
-namespace Garethp.ModsOfMistriaGUI.App.Models;
+namespace Garethp.ModsOfMistriaGUI.Models;
 
 public class ModModel: ObservableObject
 {

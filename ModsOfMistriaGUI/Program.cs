@@ -21,7 +21,7 @@ public static class Program
     {
         IconProvider.Current.Register<FontAwesomeIconProvider>();
         
-        return AppBuilder.Configure<App.App>()
+        return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace();

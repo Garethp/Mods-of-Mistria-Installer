@@ -7,7 +7,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PublishSingleFile>true</PublishSingleFile>
-        <ApplicationIcon>App\Assets\icon.ico</ApplicationIcon>
+        <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
         <AssemblyVersion>0.3.2</AssemblyVersion>
         <FileVersion>0.3.2</FileVersion>
         <AssemblyName>ModsOfMistriaInstaller</AssemblyName>
@@ -62,28 +62,15 @@
     </ItemGroup>
     
     <ItemGroup>
-      <Compile Update="App\Views\MainWindow.axaml.cs">
+      <Compile Update="Views\MainWindow.axaml.cs">
         <DependentUpon>MainWindow.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
-      <Compile Update="App\Views\MainWindow.axaml.cs">
-        <DependentUpon>MainWindow.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="App\App.axaml.cs">
+      <Compile Update="App.axaml.cs">
         <DependentUpon>App.axaml</DependentUpon>
         <SubType>Code</SubType>
       </Compile>
-      <Compile Update="App\App.axaml.cs">
-        <DependentUpon>App.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="App\Lang\Resources.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.resx</DependentUpon>
-      </Compile>
-      <Compile Update="App\Lang\Resources.Designer.cs">
+      <Compile Update="Lang\Resources.Designer.cs">
         <DesignTime>True</DesignTime>
         <AutoGen>True</AutoGen>
         <DependentUpon>Resources.resx</DependentUpon>
@@ -91,8 +78,7 @@
     </ItemGroup>
     
     <ItemGroup>
-      <AdditionalFiles Include="App\App.axaml" />
-      <AdditionalFiles Include="App\Views\MainWindow.axaml" />
+      <AdditionalFiles Include="Controls\ModlistCheckbox.axaml" />
     </ItemGroup>
     
     <ItemGroup>
@@ -100,15 +86,15 @@
     </ItemGroup>
     
     <ItemGroup>
-        <AvaloniaResource Include="App\Assets\**" />
+        <AvaloniaResource Include="Assets\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="App\Lang\**" />
+        <AvaloniaResource Include="Lang\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Update="App\Lang\Resources.Designer.cs">
+        <Compile Update="Lang\Resources.Designer.cs">
             <DesignTime>True</DesignTime>
             <AutoGen>True</AutoGen>
             <DependentUpon>Resources.resx</DependentUpon>
@@ -116,14 +102,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="App\Lang\Resources.resx">
+      <EmbeddedResource Update="Lang\Resources.resx">
         <Generator>PublicResXFileCodeGenerator</Generator>
         <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       </EmbeddedResource>
-      <EmbeddedResource Update="App\Lang\Resources.resx">
-        <Generator>ResXFileCodeGenerator</Generator>
-        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Assets\icon.ico" />
+      <UpToDateCheckInput Remove="Assets\icon.ico" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using Avalonia.Controls;
 
-namespace Garethp.ModsOfMistriaGUI.App.Views;
+namespace Garethp.ModsOfMistriaGUI.Views;
 
 public partial class MainWindow : Window
 {

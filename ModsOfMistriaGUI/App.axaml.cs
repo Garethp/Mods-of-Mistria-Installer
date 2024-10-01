@@ -3,12 +3,12 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using Garethp.ModsOfMistriaGUI.App.ViewModels;
-using Garethp.ModsOfMistriaGUI.App.Views;
+using Garethp.ModsOfMistriaGUI.ViewModels;
+using Garethp.ModsOfMistriaGUI.Views;
 using MsBox.Avalonia;
 using Newtonsoft.Json.Linq;
 
-namespace Garethp.ModsOfMistriaGUI.App;
+namespace Garethp.ModsOfMistriaGUI;
 
 public class App : Application
 {

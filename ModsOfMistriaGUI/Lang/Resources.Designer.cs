@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Garethp.ModsOfMistriaGUI.App.Lang {
+namespace Garethp.ModsOfMistriaGUI.Lang {
     using System;
     
     
@@ -38,7 +38,7 @@ namespace Garethp.ModsOfMistriaGUI.App.Lang {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Garethp.ModsOfMistriaGUI.App.Lang.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Garethp.ModsOfMistriaGUI.Lang.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

@@ -2,12 +2,12 @@
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Garethp.ModsOfMistriaGUI.App.Models;
+using Garethp.ModsOfMistriaGUI.Models;
 using Garethp.ModsOfMistriaInstallerLib;
-using Garethp.ModsOfMistriaGUI.App.Lang;
+using Garethp.ModsOfMistriaGUI.Lang;
 using MsBox.Avalonia;
 
-namespace Garethp.ModsOfMistriaGUI.App.ViewModels;
+namespace Garethp.ModsOfMistriaGUI.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {

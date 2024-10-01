@@ -3,13 +3,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        xmlns:vm="using:Garethp.ModsOfMistriaGUI.App.ViewModels"
-        x:Class="Garethp.ModsOfMistriaGUI.App.Views.MainWindow"
-        xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.App.Lang"
-        xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.App.Controls"
+        xmlns:vm="using:Garethp.ModsOfMistriaGUI.ViewModels"
+        x:Class="Garethp.ModsOfMistriaGUI.Views.MainWindow"
+        xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.Lang"
+        xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
         x:DataType="vm:MainWindowViewModel"
         Title="{x:Static lang:Resources.ApplicationTitle}"
-        Icon="/App/Assets/small_icon.png"
+        Icon="/Assets/small_icon.png"
         Width="1000" Height="800">
     <Design.DataContext>
         <vm:MainWindowViewModel />
@@ -17,7 +17,7 @@
 
     <Grid RowDefinitions="*,50">
         <StackPanel Grid.Row="0">
-            <Image Source="/App/Assets/header.jpg"></Image>
+            <Image Source="/Assets/header.jpg"></Image>
             <Panel Margin="50 20 50 0">
                 <StackPanel IsVisible="{Binding Exception.Length}">
                     <SelectableTextBlock Text="{Binding Exception}" />

@@ -3,10 +3,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:i="https://github.com/projektanker/icons.avalonia"
-             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.App.Lang"
-             xmlns:models="using:Garethp.ModsOfMistriaGUI.App.Models"
+             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.Lang"
+             xmlns:models="using:Garethp.ModsOfMistriaGUI.Models"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Garethp.ModsOfMistriaGUI.App.Controls.ModlistCheckbox">
+             x:Class="Garethp.ModsOfMistriaGUI.Controls.ModlistCheckbox">
     <Design.DataContext>
         <models:ModModel />
     </Design.DataContext>
