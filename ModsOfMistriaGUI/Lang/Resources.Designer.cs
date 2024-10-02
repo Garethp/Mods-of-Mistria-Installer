@@ -186,6 +186,24 @@ namespace Garethp.ModsOfMistriaGUI.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fields Of Mistria Location:.
+        /// </summary>
+        public static string SetupMistriaLocation {
+            get {
+                return ResourceManager.GetString("SetupMistriaLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mods Folder:.
+        /// </summary>
+        public static string SetupModsLocation {
+            get {
+                return ResourceManager.GetString("SetupModsLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uninstall All.
         /// </summary>
         public static string UninstallButtonText {
@@ -218,6 +236,24 @@ namespace Garethp.ModsOfMistriaGUI.Lang {
         public static string UpdateNagTitle {
             get {
                 return ResourceManager.GetString("UpdateNagTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re running a 64-bit operating system, but have accidently downloaded the 32-bit version of MOMI. Please download the version of MOMI that does not include &quot;-x86&quot;..
+        /// </summary>
+        public static string Warning32Bit {
+            get {
+                return ResourceManager.GetString("Warning32Bit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 32-Bit Version Detected.
+        /// </summary>
+        public static string Warning32BitTitle {
+            get {
+                return ResourceManager.GetString("Warning32BitTitle", resourceCulture);
             }
         }
     }

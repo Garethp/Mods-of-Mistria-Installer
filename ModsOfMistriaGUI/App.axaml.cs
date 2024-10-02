@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -12,6 +13,8 @@ namespace Garethp.ModsOfMistriaGUI;
 
 public class App : Application
 {
+    public static TopLevel? TopLevel { get; private set; }
+    
     private readonly MainWindowViewModel _mainViewModel = new ();
     
     public override void Initialize()
@@ -27,6 +30,19 @@ public class App : Application
             {
                 DataContext = _mainViewModel
             };
+            
+            TopLevel = TopLevel.GetTopLevel(desktop.MainWindow);
+
+            if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
+            {
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    MessageBoxManager.GetMessageBoxStandard(
+                        Lang.Resources.Warning32BitTitle,
+                        Lang.Resources.Warning32Bit
+                    ).ShowAsync();
+                });
+            }
             
             var upgradeMessage = MessageBoxManager.GetMessageBoxStandard(Lang.Resources.UpdateNagTitle,
                 Lang.Resources.UpdateNagMessage);
@@ -60,8 +76,6 @@ public class App : Application
                     // ignored
                 }
             });
-
-            
         }
 
         base.OnFrameworkInitializationCompleted();

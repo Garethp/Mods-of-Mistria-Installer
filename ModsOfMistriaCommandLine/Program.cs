@@ -10,6 +10,11 @@ var currentVersionString =
 
 Console.WriteLine(Resources.RunningBuild, currentVersionString);
 
+if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
+{
+    Console.WriteLine(Resources.Warning32Bit);
+}
+
 if (args.Contains("--uninstall"))
 {
     Standalone.UnInstall();

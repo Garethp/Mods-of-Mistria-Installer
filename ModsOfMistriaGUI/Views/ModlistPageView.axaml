@@ -1,0 +1,46 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="using:Garethp.ModsOfMistriaGUI.Models"
+             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.Lang"
+             xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Garethp.ModsOfMistriaGUI.Views.ModlistPageView"
+             d:DataContext="{x:Static models:DesignData.ModlistPageViewModel}">
+    <Grid RowDefinitions="*,50">
+            <StackPanel IsVisible="{Binding Exception.Length}">
+                <SelectableTextBlock Text="{Binding Exception}" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="0" IsVisible="{Binding !Exception.Length}">
+                <TextBlock Text="{x:Static lang:Resources.GreetingText}" />
+                <TextBlock></TextBlock>
+                <WrapPanel>
+                    <TextBlock Margin="0 0 5 0"
+                               Text="{x:Static lang:Resources.FieldsOfMistriaDetectedLocation}" />
+                    <TextBlock Text="{Binding MistriaLocation}" />
+                </WrapPanel>
+                <TextBlock Text="{x:Static lang:Resources.ModsWillBeInstalled}" />
+
+                <ScrollViewer Margin="15 5 0 0" MaxHeight="330">
+                    <ItemsRepeater ItemsSource="{Binding Mods}">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate>
+                                <WrapPanel>
+                                    <controls:ModlistCheckbox DataContext="{Binding }" />
+                                </WrapPanel>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
+                <TextBlock></TextBlock>
+            </StackPanel>
+        <WrapPanel Grid.Row="1" Margin="0 0 0 0" HorizontalAlignment="Right">
+            <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
+            <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}"
+                    Content="{x:Static lang:Resources.InstallButtonText}" />
+            <Button Command="{Binding UnInstallModsCommand}" Content="{x:Static lang:Resources.UninstallButtonText}" />
+        </WrapPanel>
+    </Grid>
+</UserControl>

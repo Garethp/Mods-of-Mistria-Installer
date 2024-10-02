@@ -6,7 +6,6 @@
         xmlns:vm="using:Garethp.ModsOfMistriaGUI.ViewModels"
         x:Class="Garethp.ModsOfMistriaGUI.Views.MainWindow"
         xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.Lang"
-        xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
         x:DataType="vm:MainWindowViewModel"
         Title="{x:Static lang:Resources.ApplicationTitle}"
         Icon="/Assets/small_icon.png"
@@ -15,44 +14,11 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="*,50">
-        <StackPanel Grid.Row="0">
-            <Image Source="/Assets/header.jpg"></Image>
-            <Panel Margin="50 20 50 0">
-                <StackPanel IsVisible="{Binding Exception.Length}">
-                    <SelectableTextBlock Text="{Binding Exception}" />
-                </StackPanel>
+    <Grid RowDefinitions="Auto,*">
+        <Image Source="/Assets/header.jpg" />
 
-                <StackPanel IsVisible="{Binding !Exception.Length}">
-                    <TextBlock Text="{x:Static lang:Resources.GreetingText}" />
-                    <TextBlock></TextBlock>
-                    <WrapPanel>
-                        <TextBlock Margin="0 0 5 0"
-                                   Text="{x:Static lang:Resources.FieldsOfMistriaDetectedLocation}" />
-                        <TextBlock Text="{Binding MistriaLocation}" />
-                    </WrapPanel>
-                    <TextBlock Text="{x:Static lang:Resources.ModsWillBeInstalled}" />
-
-                    <ScrollViewer Margin="15 5 0 0" MaxHeight="330">
-                        <ItemsRepeater ItemsSource="{Binding Mods}">
-                            <ItemsRepeater.ItemTemplate>
-                                <DataTemplate>
-                                    <WrapPanel>
-                                        <controls:ModlistCheckbox DataContext="{Binding }" />
-                                    </WrapPanel>
-                                </DataTemplate>
-                            </ItemsRepeater.ItemTemplate>
-                        </ItemsRepeater>
-                    </ScrollViewer>
-                    <TextBlock></TextBlock>
-                </StackPanel>
-            </Panel>
-        </StackPanel>
-        <WrapPanel Grid.Row="1" Margin="0 0 30 0" HorizontalAlignment="Right">
-            <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
-            <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}"
-                    Content="{x:Static lang:Resources.InstallButtonText}" />
-            <Button Command="{Binding UnInstallModsCommand}" Content="{x:Static lang:Resources.UninstallButtonText}" />
-        </WrapPanel>
+        <Panel Grid.Row="1" Margin="50 20 50 0">
+            <TransitioningContentControl Content="{Binding CurrentPage}" />
+        </Panel>
     </Grid>
 </Window>

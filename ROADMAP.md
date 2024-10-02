@@ -10,6 +10,7 @@
 
 ## 0.4.0
 * [x] Add some user-information when installing/uninstalling Aurie mods
+* [x] Warn people when they are running the 32-bit version
 * [ ] Automatically update Aurie
 * [ ] Select the Mistria/Mods folders in a setup screen if not found
 * [ ] Allow creating a mods folder automatically

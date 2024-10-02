@@ -38,7 +38,7 @@ namespace ModsOfMistriaCommandLine.Lang {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("ModsOfMistriaCommandLine.Lang.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Garethp.ModsOfMistriaCommandLine.Lang.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -83,6 +83,15 @@ namespace ModsOfMistriaCommandLine.Lang {
         public static string UninstallComplete {
             get {
                 return ResourceManager.GetString("UninstallComplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re running a 64-bit operating system, but have accidently downloaded the 32-bit version of MOMI. Please download the version of MOMI that does not include &quot;-x86&quot;..
+        /// </summary>
+        public static string Warning32Bit {
+            get {
+                return ResourceManager.GetString("Warning32Bit", resourceCulture);
             }
         }
     }

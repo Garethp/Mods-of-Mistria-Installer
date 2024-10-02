@@ -77,4 +77,16 @@
     <data name="UninstallInformationTitle" xml:space="preserve">
         <value>Uninstall Information</value>
     </data>
+    <data name="Warning32Bit" xml:space="preserve">
+        <value>You're running a 64-bit operating system, but have accidently downloaded the 32-bit version of MOMI. Please download the version of MOMI that does not include "-x86".</value>
+    </data>
+    <data name="Warning32BitTitle" xml:space="preserve">
+        <value>32-Bit Version Detected</value>
+    </data>
+    <data name="SetupMistriaLocation" xml:space="preserve">
+        <value>Fields Of Mistria Location:</value>
+    </data>
+    <data name="SetupModsLocation" xml:space="preserve">
+        <value>Mods Folder:</value>
+    </data>
 </root>

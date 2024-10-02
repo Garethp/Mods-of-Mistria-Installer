@@ -8,8 +8,6 @@ namespace Garethp.ModsOfMistriaInstallerLib;
 
 public class GeneratedInformation
 {
-    public List<JObject> Scripts = [];
-
     public List<JObject> Localisations = [];
     
     public List<JObject> Fiddles = [];
@@ -40,7 +38,6 @@ public class GeneratedInformation
     
     public void Merge(GeneratedInformation other)
     {
-        Scripts.AddRange(other.Scripts);
         Localisations.AddRange(other.Localisations);
         Fiddles.AddRange(other.Fiddles);
         Conversations.AddRange(other.Conversations);
