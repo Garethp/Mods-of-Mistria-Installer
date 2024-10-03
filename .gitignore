@@ -6,3 +6,4 @@ riderModule.iml
 .idea
 Release/
 ModsOfMistriaInstaller.sln.DotSettings.user
+**/*.DotSettings.user

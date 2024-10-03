@@ -136,15 +136,22 @@ public class RarMod() : IMod
 
     public string? CanInstall()
     {
-        var currentExe = Assembly.GetEntryAssembly();
-        var currentVersionString =
-            currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
-        var currentVersion = new Version(currentVersionString);
-        var requiredVersion = new Version(GetMinimunInstallerVersion());
-
-        if (requiredVersion.CompareTo(currentVersion) > 0)
+        try
         {
-            return Resources.ModRequiresNewerInstaller;
+            var currentExe = Assembly.GetEntryAssembly();
+            var currentVersionString =
+                currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
+            var currentVersion = new Version(currentVersionString);
+            var requiredVersion = new Version(GetMinimunInstallerVersion());
+
+            if (requiredVersion.CompareTo(currentVersion) > 0)
+            {
+                return Resources.ModRequiresNewerInstaller;
+            }
+        }
+        catch (Exception)
+        {
+            return string.Format(Resources.ErrorReadingVersionForMod, GetId());
         }
 
         return null;

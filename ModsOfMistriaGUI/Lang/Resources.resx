@@ -89,4 +89,7 @@
     <data name="SetupModsLocation" xml:space="preserve">
         <value>Mods Folder:</value>
     </data>
+    <data name="CanCreateModsFolder" xml:space="preserve">
+        <value>No mods folder has been detected, but one can be created automatically for you.</value>
+    </data>
 </root>

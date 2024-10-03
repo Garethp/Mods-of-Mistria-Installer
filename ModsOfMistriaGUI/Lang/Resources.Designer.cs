@@ -69,6 +69,15 @@ namespace Garethp.ModsOfMistriaGUI.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No mods folder has been detected, but one can be created automatically for you..
+        /// </summary>
+        public static string CanCreateModsFolder {
+            get {
+                return ResourceManager.GetString("CanCreateModsFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find Fields of Mistria location. Try placing this in the same folder as Fields of Mistria..
         /// </summary>
         public static string CouldNotFindMistria {

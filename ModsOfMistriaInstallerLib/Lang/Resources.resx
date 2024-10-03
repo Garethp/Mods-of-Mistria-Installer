@@ -159,4 +159,7 @@
     <data name="PreinstallWillRemoveAurie" xml:space="preserve">
         <value>During install, MOMI will attempt to remove an entry from the computers Registry. As part of this, you'll be asked to grant admin access to the "Registry Console Tool".</value>
     </data>
+    <data name="ErrorReadingVersionForMod" xml:space="preserve">
+        <value>An error occured when reading the version for the mod: (0)</value>
+    </data>
 </root>

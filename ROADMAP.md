@@ -12,8 +12,8 @@
 * [x] Add some user-information when installing/uninstalling Aurie mods
 * [x] Warn people when they are running the 32-bit version
 * [ ] Automatically update Aurie
-* [ ] Select the Mistria/Mods folders in a setup screen if not found
-* [ ] Allow creating a mods folder automatically
+* [x] Select the Mistria/Mods folders in a setup screen if not found
+* [x] Allow creating a mods folder automatically
 * [ ] Add converting old sprite mods
 
 ## Future/Unknown
@@ -36,3 +36,4 @@
 * [ ] Scramble JSON automatically on install
 * [ ] Cutscene generator
 * [ ] Automatically refresh mods when a change has been made
+* [ ] In the GUI, skip mods that fail `CanInstall` instead of disabling install

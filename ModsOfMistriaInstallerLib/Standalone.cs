@@ -38,9 +38,9 @@ public static class Standalone
         allMods = allMods
             .Where(mod =>
             {
-                if (mod.CanInstall() is not null)
+                if (mod.CanInstall() is {} cannotInstall)
                 {
-                    Console.WriteLine(Resources.SkippingModBecauseInstallerOld, mod.GetId());
+                    Console.WriteLine(cannotInstall);
                     return false;
                 }
 

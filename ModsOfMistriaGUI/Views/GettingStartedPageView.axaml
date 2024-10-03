@@ -33,6 +33,15 @@
             </Button>
         </WrapPanel>
 
-        <Button Content="Setup" Command="{Binding SetupCommand}" />
+        <WrapPanel IsVisible="{Binding CanCreateModsFolder}">
+            <TextBlock Text="{x:Static lang:Resources.CanCreateModsFolder}" />
+            <Button Command="{Binding CreateModsFolderCommand}">
+                <Image Height="14">
+                    <Image.Source>
+                        <i:IconImage Value="fa-folder-plus" />
+                    </Image.Source>
+                </Image>
+            </Button>
+        </WrapPanel>
     </StackPanel>
 </UserControl>

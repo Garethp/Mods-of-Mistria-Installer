@@ -159,6 +159,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An error occured when reading the version for the mod: (0).
+        /// </summary>
+        public static string ErrorReadingVersionForMod {
+            get {
+                return ResourceManager.GetString("ErrorReadingVersionForMod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Shadow {0} has no Location set.
         /// </summary>
         public static string ErrorShadowHasNoLocation {

@@ -1,4 +1,5 @@
-﻿using Avalonia.Platform.Storage;
+﻿using System.Runtime.InteropServices;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Garethp.ModsOfMistriaGUI.Models;
@@ -10,12 +11,7 @@ public partial class GettingStartedPageViewModel(Settings settings) : PageViewBa
 {
     [ObservableProperty] private Settings _settings = settings;
 
-    [RelayCommand]
-    private void Setup()
-    {
-        Settings.MistriaLocation = MistriaLocator.GetMistriaLocation() ?? "";
-        Settings.ModsLocation = MistriaLocator.GetModsLocation(Settings.MistriaLocation) ?? "";
-    }
+    public bool CanCreateModsFolder =>  Settings.ValidMistriaLocation() && !Settings.ValidModsLocation();
 
     [RelayCommand]
     private async Task SelectMistriaLocation()
@@ -69,5 +65,26 @@ public partial class GettingStartedPageViewModel(Settings settings) : PageViewBa
             
             Settings.ModsLocation = Path.GetFullPath(path);
         }
+    }
+
+    [RelayCommand]
+    private void CreateModsFolder()
+    {
+        if (Settings.ValidModsLocation()) return;
+
+        string path;
+        
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "mistria-mods");
+        }
+        else
+        {
+            if (!Settings.ValidMistriaLocation()) return;
+            path = Path.Combine(Settings.MistriaLocation, "mods");
+        }
+        
+        Directory.CreateDirectory(path);
+        Settings.ModsLocation = path;
     }
 }

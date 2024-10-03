@@ -9,7 +9,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Models;
 [JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
 public class Outfit
 {
-    private static Dictionary<string, List<string>> _validSlots = new()
+    public static Dictionary<string, List<string>> ValidSlots = new()
     {
         { "back", ["back"] },
         { "facial_hair", ["facial_hair"] },
@@ -42,7 +42,7 @@ public class Outfit
     public string OutlineFile;
 
     [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public Dictionary<string, string> AnimationFiles;
+    public Dictionary<string, string> AnimationFiles = new ();
 
     public Validation Validate(Validation validation, IMod mod, string file, string id)
     {
@@ -50,7 +50,7 @@ public class Outfit
         {
             validation.AddError(mod, file, Resources.ErrorOutfitNoName);
         }
-
+        
         if (string.IsNullOrWhiteSpace(Description))
         {
             validation.AddError(mod, file, Resources.ErrorOutfitNoDescription);
@@ -60,18 +60,18 @@ public class Outfit
         {
             validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoUiSlot, id));
         }
-        else if (!_validSlots.ContainsKey(UiSlot))
+        else if (!ValidSlots.ContainsKey(UiSlot))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitUiSlotWrong, id, string.Join(", ", _validSlots.Keys)));
+            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitUiSlotWrong, id, string.Join(", ", ValidSlots.Keys)));
         }
 
         if (string.IsNullOrWhiteSpace(UiSubCategory))
         {
             validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoSubCategory, id));
-        } else if (!string.IsNullOrEmpty(UiSlot) && _validSlots.ContainsKey(UiSlot) &&
-                   !_validSlots[UiSlot].Contains(UiSubCategory))
+        } else if (!string.IsNullOrEmpty(UiSlot) && ValidSlots.ContainsKey(UiSlot) &&
+                   !ValidSlots[UiSlot].Contains(UiSubCategory))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitUiSubCategoryWrong, id, string.Join(", ", _validSlots[UiSlot])));
+            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitUiSubCategoryWrong, id, string.Join(", ", ValidSlots[UiSlot])));
         }
 
         if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s lutFile", LutFile) is { } lutError)
