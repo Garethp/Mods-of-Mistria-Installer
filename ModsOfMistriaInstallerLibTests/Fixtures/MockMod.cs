@@ -18,6 +18,9 @@ public class MockMod : IMod
             "images/animation", [
                 "1.png", "2.png"
             ]
+        },
+        {
+            "images/empty", []
         }
     };
 

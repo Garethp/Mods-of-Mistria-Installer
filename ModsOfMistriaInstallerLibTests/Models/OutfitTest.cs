@@ -124,68 +124,250 @@ public class OutfitTest
     }
 
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidateLutFileIsNotEmpty()
     {
+        var outfit = GetMockOutfit();
+        outfit.LutFile = "";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.ItemDoesNotHaveValue,
+                "Outfit outfit's lutFile"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
     
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidateLutFileExists()
     {
+        var outfit = GetMockOutfit();
+        outfit.LutFile = "images/not-found.png";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.SpriteFileDoesNotExist,
+                "Outfit outfit's lutFile",
+                "images/not-found.png"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
     
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidateLutFileIsNotDirectory()
     {
+        var outfit = GetMockOutfit();
+        outfit.LutFile = "images/animation";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.SpriteFileDoesNotExist,
+                "Outfit outfit's lutFile",
+                "images/animation"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
     
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidateUiItemIsNotEmpty()
     {
+        var outfit = GetMockOutfit();
+        outfit.UiItem = "";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.ItemDoesNotHaveValue,
+                "Outfit outfit's uiItem"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
     
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidateUiItemExists()
     {
+        var outfit = GetMockOutfit();
+        outfit.UiItem = "images/not-found.png";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.SpriteFileDoesNotExist,
+                "Outfit outfit's uiItem",
+                "images/not-found.png"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
     
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidateUiItemIsNotDirectory()
     {
+        var outfit = GetMockOutfit();
+        outfit.UiItem = "images/animation";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.SpriteFileDoesNotExist,
+                "Outfit outfit's uiItem",
+                "images/animation"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
     
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidateOutlineIsNotEmpty()
     {
+        var outfit = GetMockOutfit();
+        outfit.OutlineFile = "";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.ItemDoesNotHaveValue,
+                "Outfit outfit's outlineFile"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
     
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidateOutlineExists()
     {
+        var outfit = GetMockOutfit();
+        outfit.OutlineFile = "images/not-found.png";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.SpriteFileDoesNotExist,
+                "Outfit outfit's outlineFile",
+                "images/not-found.png"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
     
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidateOutlineIsNotDirectory()
     {
+        var outfit = GetMockOutfit();
+        outfit.OutlineFile = "images/animation";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.SpriteFileDoesNotExist,
+                "Outfit outfit's outlineFile",
+                "images/animation"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
 
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidateAnimationFileIsNotEmpty()
     {
+        var outfit = GetMockOutfit();
+        outfit.AnimationFiles = new Dictionary<string, string>();
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.ErrorOutfitNoAnimation,
+                "outfit"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
 
     [Test]
-    [Ignore("@TODO")]
     public void ShouldValidationAnimationFileDirectoryExists()
     {
+        var outfit = GetMockOutfit();
+        outfit.AnimationFiles = new Dictionary<string, string> { { "back", "images/not-found" } };
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.SpriteFolderDoesNotExist,
+                "Outfit outfit's animation file back",
+                "images/not-found"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+    
+    [Test]
+    public void ShouldValidationAnimationFileDirectoryIsNotEmpty()
+    {
+        var outfit = GetMockOutfit();
+        outfit.AnimationFiles = new Dictionary<string, string> { { "back", "images/empty" } };
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.SpriteFolderIsEmpty,
+                "Outfit outfit's animation file back",
+                "images/empty"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
 }
