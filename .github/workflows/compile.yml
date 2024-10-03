@@ -35,6 +35,8 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build
+      - name: Test
+        run: dotnet test
       - name: Publish ${{ matrix.arch }} CLI
         run: dotnet publish ${{ matrix.project }} -c ${{ matrix.configuration }} -r ${{ matrix.arch }} -o Release
       - name: Upload binaries to release
