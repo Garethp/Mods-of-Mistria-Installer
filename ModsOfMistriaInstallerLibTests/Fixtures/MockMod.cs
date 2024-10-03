@@ -5,24 +5,25 @@ namespace ModsOfMistriaInstallerLibTests.Fixtures;
 
 public class MockMod : IMod
 {
-    private Dictionary<string, List<string>> _files = new()
+    private readonly Dictionary<string, List<string>> _files = new();
+
+    public MockMod(List<string> files)
     {
+        files.ForEach(file =>
         {
-            "images", [
-                "images/lut.png",
-                "images/ui.png",
-                "images/outline.png"
-            ]
-        },
-        {
-            "images/animation", [
-                "1.png", "2.png"
-            ]
-        },
-        {
-            "images/empty", []
-        }
-    };
+            if (Path.HasExtension(file))
+            {
+                var folderName = Path.GetDirectoryName(file)?.Replace('\\', '/');
+                
+                if (!_files.ContainsKey(folderName)) _files.Add(folderName, []);
+                _files[folderName].Add(file);
+            }
+            else
+            {
+                if (!_files.ContainsKey(file)) _files.Add(file, []);
+            }
+        });
+    }
 
     public string GetAuthor()
     {

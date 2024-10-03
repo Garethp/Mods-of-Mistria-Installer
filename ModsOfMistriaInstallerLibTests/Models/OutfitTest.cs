@@ -9,32 +9,54 @@ namespace ModsOfMistriaInstallerLibTests.Models;
 [TestFixture]
 public class OutfitTest
 {
-    private readonly IMod _mockMod = new MockMod();
+    private IMod _mockMod;
 
     [SetUp]
     public void SetUp()
     {
+        _mockMod = new MockMod([
+            "images/lut.png",
+            "images/ui.png",
+            "images/outline.png",
+            "images/animation/1.png",
+            "images/animation/2.png",
+            "images/empty"
+        ]);
     }
 
     private static Outfit GetMockOutfit()
     {
-        var outfit = new Outfit();
-        outfit.Name = "Outfit Name";
-        outfit.Description = "Outfit Description";
-        outfit.DefaultUnlocked = false;
-        outfit.UiSlot = "back";
-        outfit.UiSubCategory = "back";
-        outfit.LutFile = "images/lut.png";
-        outfit.UiItem = "images/ui.png";
-        outfit.OutlineFile = "images/outline.png";
-        outfit.AnimationFiles = new Dictionary<string, string>
+        var outfit = new Outfit
         {
-            { "back", "images/animation" },
+            Name = "Outfit Name",
+            Description = "Outfit Description",
+            DefaultUnlocked = false,
+            UiSlot = "back",
+            UiSubCategory = "back",
+            LutFile = "images/lut.png",
+            UiItem = "images/ui.png",
+            OutlineFile = "images/outline.png",
+            AnimationFiles = new Dictionary<string, string>
+            {
+                { "back", "images/animation" },
+            }
         };
 
         return outfit;
     }
 
+    [Test]
+    public void ShouldHaveNoErrorsForValidOutfit()
+    {
+        var outfit = GetMockOutfit();
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+
+    }
+    
     [Test]
     public void ShouldValidateNameIsNotEmpty()
     {

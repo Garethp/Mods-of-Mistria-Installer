@@ -8,7 +8,19 @@ namespace ModsOfMistriaInstallerLibTests;
 [TestFixture]
 public class ValidationToolsTest
 {
-    private IMod _mockMock = new MockMod();
+    private IMod _mockMock = new MockMod([
+        "images/image.png",
+        "images/animation/1.png",
+        "images/empty"
+    ]);
+
+    [Test]
+    public void ShouldReturnNullForCheckSpriteIfValid()
+    {
+        var error = ValidationTools.CheckSpriteFileExists(_mockMock, "outfit", "images/image.png");
+        
+        Assert.That(error, Is.Null);
+    }
     
     [Test]
     public void ShouldCheckIfSpriteFileIsNotNull()
@@ -43,6 +55,15 @@ public class ValidationToolsTest
     }
 
     [Test]
+    public void ShouldReturnNullForCheckSpriteDirectoryIfValid()
+    {
+        var error = ValidationTools.CheckSpriteDirectoryExists(_mockMock, "outfit", "images/animation");
+        
+        Assert.That(error, Is.Null);
+
+    }
+
+    [Test]
     public void ShouldCheckIfSpriteDirectoryIsNotNull()
     {
         var error = ValidationTools.CheckSpriteDirectoryExists(_mockMock, "outfit", null);
@@ -69,9 +90,9 @@ public class ValidationToolsTest
     [Test]
     public void ShouldCheckIfSpriteDirectoryExistsAsDirectory()
     {
-        var error = ValidationTools.CheckSpriteDirectoryExists(_mockMock, "outfit", "images/ui.png");
+        var error = ValidationTools.CheckSpriteDirectoryExists(_mockMock, "outfit", "images/image.png");
         
-        Assert.That(error, Is.EqualTo(string.Format(Resources.SpriteFolderDoesNotExist, "outfit", "images/ui.png")));
+        Assert.That(error, Is.EqualTo(string.Format(Resources.SpriteFolderDoesNotExist, "outfit", "images/image.png")));
     }
     
     [Test]
