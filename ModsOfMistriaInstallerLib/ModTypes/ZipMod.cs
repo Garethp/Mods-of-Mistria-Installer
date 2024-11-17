@@ -57,17 +57,15 @@ public class ZipMod() : IMod
         return contents;
     }
 
-    public static ZipMod FromZipFile(string ZipPath)
+    public static ZipMod? FromZipFile(string ZipPath)
     {
-        var zipMod = new ZipMod();
-
-        if (!File.Exists(ZipPath)) return zipMod;
+        if (!File.Exists(ZipPath)) return null;
 
         var zipFile = ZipFile.OpenRead(ZipPath);
 
-        var manifestFiles = zipFile.Entries.Where(entry => entry.Name == "manifest.json");
+        var manifestFiles = zipFile.Entries.Where(entry => entry.Name == "manifest.json").ToList();
 
-        if (manifestFiles.Count() != 1) return zipMod;
+        if (manifestFiles.Count() != 1) return null;
 
         var internalLocation = manifestFiles.First().FullName.Replace("manifest.json", "");
 

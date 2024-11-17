@@ -94,11 +94,13 @@ public class MistriaLocator
             .Where(folder => FolderMod.GetModLocation(folder) is not null)
             .Select(location => FolderMod.FromManifest(Path.Combine(FolderMod.GetModLocation(location)!, "manifest.json")));
 
-        var zipMods = Directory.GetFiles(modsLocation, "*.zip")
-            .Select(ZipMod.FromZipFile);
+        IEnumerable<IMod> zipMods = Directory.GetFiles(modsLocation, "*.zip")
+            .Select(ZipMod.FromZipFile)
+            .Where(zipMod => zipMod is not null)!;
 
-        var rarMods = Directory.GetFiles(modsLocation, "*.rar")
-            .Select(RarMod.FromRarFile);
+        IEnumerable<IMod> rarMods = Directory.GetFiles(modsLocation, "*.rar")
+            .Select(RarMod.FromRarFile)
+            .Where(mod => mod is not null)!;
 
         var mods = new List<IMod>();
         mods.AddRange(folderMods);

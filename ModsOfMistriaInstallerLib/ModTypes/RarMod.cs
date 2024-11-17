@@ -72,17 +72,15 @@ public class RarMod() : IMod
         return contents;
     }
 
-    public static RarMod FromRarFile(string rarPath)
+    public static RarMod? FromRarFile(string rarPath)
     {
-        var rarMod = new RarMod();
-
-        if (!File.Exists(rarPath)) return rarMod;
+        if (!File.Exists(rarPath)) return null;
 
         var rarFile = RarArchive.Open(rarPath);
 
-        var manifestFiles = rarFile.Entries.Where(entry => entry.Key.EndsWith("manifest.json"));
+        var manifestFiles = rarFile.Entries.Where(entry => entry.Key.EndsWith("manifest.json")).ToList();
 
-        if (manifestFiles.Count() != 1) return rarMod;
+        if (manifestFiles.Count != 1) return null;
 
         var internalLocation = manifestFiles.First().Key.Replace("manifest.json", "");
 

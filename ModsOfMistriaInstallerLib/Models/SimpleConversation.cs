@@ -14,7 +14,7 @@ public class SimpleConversation
 public class SimpleConversationLine
 {
     public string Speaker;
-    public string Portrait;
+    public string Portrait = "neutral";
     public string Text;
     public List<SimplerConversationChoice> Choices;
 }
