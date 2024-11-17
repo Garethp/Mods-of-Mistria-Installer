@@ -26,4 +26,7 @@ else
     Console.WriteLine(Resources.Completed);
 }
 
-Console.ReadKey();
+if (Environment.GetEnvironmentVariable("EXIT_ON_COMPLETE") != "true")
+{
+    Console.ReadKey();
+}
