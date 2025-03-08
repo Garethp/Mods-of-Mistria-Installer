@@ -104,18 +104,28 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
             });
         }
 
-        var generatedInformation = new GeneratedInformation();
+        var generatedInformation = new List<GeneratedInformationWithMod>();
 
         var desiredGenerators = GetGenerators();
         var desiredInstallers = GetInstallers();
         
         foreach (var mod in mods)
         {
+            var informationWithMod = new GeneratedInformationWithMod(mod);
+            
             reportStatus(string.Format(Resources.GeneratingInformationForMod, mod.GetId()), "");
             foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
             {
-                generatedInformation.Merge(generator.Generate(mod));
+                informationWithMod.Merge(generator.Generate(mod));
             }
+            
+            generatedInformation.Add(informationWithMod);
+        }
+
+        var finalizedInformation = new GeneratedInformation();
+        foreach (var information in generatedInformation)
+        {
+            finalizedInformation.Merge(information);
         }
 
         var timer = new Stopwatch();
@@ -123,7 +133,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         foreach (var installer in desiredInstallers)
         {
             timer.Restart();
-            installer.Install(fieldsOfMistriaLocation, modsLocation, generatedInformation, reportStatus);
+            installer.Install(fieldsOfMistriaLocation, modsLocation, finalizedInformation, reportStatus);
             timer.Stop();
             reportStatus(installer.GetType().Name, timer.ToString());
         }

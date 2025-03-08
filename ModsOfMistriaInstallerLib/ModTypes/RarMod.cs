@@ -25,6 +25,8 @@ public class RarMod() : IMod
 
     private string _basePath = "";
     
+    private bool _isInstalled = false;
+    
     private RarArchiveEntry? GetEntry(RarArchive rarFile, string path)
     {
         var isDirectory = path.EndsWith('/');
@@ -102,6 +104,10 @@ public class RarMod() : IMod
     public Validation GetValidation() => _validation;
 
     public string GetBasePath() => _basePath;
+    
+    public bool IsInstalled() => _isInstalled;
+    
+    public void SetInstalled(bool installed) => _isInstalled = installed;
 
     public string GetId()
     {

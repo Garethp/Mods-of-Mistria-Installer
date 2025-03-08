@@ -24,6 +24,8 @@ public class ZipMod() : IMod
     private ZipArchive? _zipFile;
 
     private string _basePath = "";
+    
+    private bool _isInstalled = false;
 
     public ZipMod(ZipArchive zipFile, string basePath) : this()
     {
@@ -87,6 +89,10 @@ public class ZipMod() : IMod
     public Validation GetValidation() => _validation;
 
     public string GetBasePath() => _basePath;
+    
+    public bool IsInstalled() => _isInstalled;
+    
+    public void SetInstalled(bool installed) => _isInstalled = installed;
 
     public string GetId()
     {

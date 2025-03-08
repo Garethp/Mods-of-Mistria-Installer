@@ -21,6 +21,8 @@ public class FolderMod : IMod
     private string _manifestVersion;
 
     private Validation _validation = new();
+
+    private bool _isInstalled = false;
     
     public string Id
     {
@@ -44,6 +46,10 @@ public class FolderMod : IMod
     public string GetManifestVersion() => _manifestVersion;
 
     public Validation GetValidation() => _validation;
+    
+    public bool IsInstalled() => _isInstalled;
+    
+    public void SetInstalled(bool installed) => _isInstalled = installed;
 
     public string GetBasePath() => _location;
 

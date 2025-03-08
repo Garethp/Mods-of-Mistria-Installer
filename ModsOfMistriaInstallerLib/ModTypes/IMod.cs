@@ -19,6 +19,10 @@ public interface IMod
     public Validation GetValidation();
 
     public string GetId();
+    
+    public bool IsInstalled();
+
+    public void SetInstalled(bool installed);
 
     public Validation Validate();
 
@@ -29,8 +33,7 @@ public interface IMod
     public bool HasFilesInFolder(string folder, string extension);
     
     public bool HasFilesInFolder(string folder);
-
-
+    
     public List<string> GetFilesInFolder(string folder, string extension);
     
     public List<string> GetFilesInFolder(string folder);

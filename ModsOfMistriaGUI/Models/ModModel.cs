@@ -16,6 +16,7 @@ public class ModModel: ObservableObject
     {
         Mod = mod;
         CanInstall = mod.CanInstall();
+        _enabled = mod.IsInstalled();
     }
 
     public ModModel()

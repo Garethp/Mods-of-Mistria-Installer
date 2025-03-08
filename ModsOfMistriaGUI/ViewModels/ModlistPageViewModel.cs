@@ -38,7 +38,7 @@ public partial class ModlistPageViewModel : PageViewBase
         
         if (Directory.Exists(ModsLocation))
         {
-            var mods = MistriaLocator.GetMods(ModsLocation);
+            var mods = MistriaLocator.GetMods(MistriaLocation, ModsLocation);
 
             new ModInstaller(MistriaLocation, ModsLocation).ValidateMods(mods);
 

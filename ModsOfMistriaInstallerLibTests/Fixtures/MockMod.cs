@@ -80,6 +80,16 @@ public class MockMod : IMod
         throw new NotImplementedException();
     }
 
+    public bool IsInstalled()
+    {
+        throw new NotImplementedException();
+    }
+    
+    public void SetInstalled(bool installed)
+    {
+        throw new NotImplementedException();
+    }
+
     public bool HasFilesInFolder(string folder, string extension)
     {
         throw new NotImplementedException();
