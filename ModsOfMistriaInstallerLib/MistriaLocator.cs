@@ -1,5 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
@@ -87,7 +88,7 @@ public class MistriaLocator
             .ToList();
     }
 
-    public static List<IMod> GetMods(string modsLocation)
+    public static List<IMod> GetMods(string mistriaLocation, string modsLocation)
     {
         var folderMods = Directory
             .GetDirectories(modsLocation)
@@ -106,7 +107,31 @@ public class MistriaLocator
         mods.AddRange(folderMods);
         mods.AddRange(zipMods);
         mods.AddRange(rarMods);
-        
+
+
+        try
+        {
+            var installedMods = new List<string>();
+
+            var checksums = JObject.Parse(File.ReadAllText(Path.Combine(mistriaLocation, "checksums.json")));
+            if (checksums["mods"] is null) return mods;
+            
+            foreach (var mod in checksums["mods"]!)
+            {
+                if (mod["id"] is null) continue;
+                installedMods.Add(mod["id"]!.Value<string>());
+            }
+
+            foreach (var mod in mods.Where(mod => installedMods.Contains(mod.GetId())))
+            {
+                mod.SetInstalled(true);
+            }
+        }
+        catch (Exception e)
+        {
+            // Ignored
+        }
+
         return mods;
     }
 }
