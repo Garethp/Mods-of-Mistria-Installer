@@ -31,7 +31,7 @@ public class Tests
                 .UsePlatformDetect()
                 .WithInterFont()
                 .LogToTrace()
-                .SetupWithClassicDesktopLifetime([]);
+                .SetupWithoutStarting();
         });
     }
 }
