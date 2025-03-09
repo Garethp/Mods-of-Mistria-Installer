@@ -135,7 +135,7 @@ public class FolderMod : IMod
         if (!Directory.Exists(pathCandidate)) return null;
         if (File.Exists(Path.Combine(pathCandidate, "manifest.json"))) return pathCandidate;
 
-        var childFiles = Directory.GetFiles(pathCandidate);
+        var childFiles = Directory.GetFiles(pathCandidate).Where(file => !file.EndsWith("__folder_managed_by_vortex")).ToArray();
         if (childFiles.Length > 0) return null;
 
         var children = Directory.GetDirectories(pathCandidate);
@@ -171,7 +171,7 @@ public class FolderMod : IMod
         if (!string.IsNullOrEmpty(extension))
             return Directory.GetFiles(Path.Combine(_location, folder), $"*{extension}").ToList();
         
-        return Directory.GetFiles(Path.Combine(_location, folder)).ToList();
+        return Directory.GetFiles(Path.Combine(_location, folder)).Where(file => !file.EndsWith("__folder_managed_by_vortex")).ToList();
     }
 
     public List<string> GetAllFiles(string extension)

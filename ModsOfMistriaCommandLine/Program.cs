@@ -8,6 +8,12 @@ var currentExe = Assembly.GetEntryAssembly();
 var currentVersionString =
     currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
 
+if (args.Contains("--version"))
+{
+    Console.WriteLine(currentVersionString);
+    Environment.Exit(0);
+}
+
 Console.WriteLine(Resources.RunningBuild, currentVersionString);
 
 if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
