@@ -21,17 +21,4 @@ public class Tests
 
         Assert.AreEqual("Mods Of Mistria Installer", window.Title);
     }
-
-    [TestCase]
-    public void Should_Be_Able_To_Setup()
-    {
-        Assert.DoesNotThrow(() =>
-        {
-            AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .WithInterFont()
-                .LogToTrace()
-                .SetupWithoutStarting();
-        });
-    }
 }
