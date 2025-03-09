@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModsOfMistriaGUI", "ModsOfM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModsOfMistriaInstallerLibTests", "ModsOfMistriaInstallerLibTests\ModsOfMistriaInstallerLibTests.csproj", "{626A8C4B-04C8-4E4F-9FA8-A6975E55948D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModsOfMistriaGUITests", "ModsOfMistriaGUITests\ModsOfMistriaGUITests.csproj", "{7A2E8718-3E95-4086-889B-FB118AF58BEB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{626A8C4B-04C8-4E4F-9FA8-A6975E55948D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{626A8C4B-04C8-4E4F-9FA8-A6975E55948D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{626A8C4B-04C8-4E4F-9FA8-A6975E55948D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A2E8718-3E95-4086-889B-FB118AF58BEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A2E8718-3E95-4086-889B-FB118AF58BEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A2E8718-3E95-4086-889B-FB118AF58BEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A2E8718-3E95-4086-889B-FB118AF58BEB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
