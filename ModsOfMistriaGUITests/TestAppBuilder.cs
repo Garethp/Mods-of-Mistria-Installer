@@ -4,9 +4,7 @@ using Garethp.ModsOfMistriaGUI;
 using Projektanker.Icons.Avalonia;
 using Projektanker.Icons.Avalonia.FontAwesome;
 
-namespace ModsOfMistriaGUITests;
-
-// [assembly: AvaloniaTestApplication(typeof(TestAppBuilder))]
+[assembly: AvaloniaTestApplication(typeof(TestAppBuilder))]
 public class TestAppBuilder
 {
     public static AppBuilder BuildAvaloniaApp()
@@ -16,6 +14,9 @@ public class TestAppBuilder
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .UseHeadless(new AvaloniaHeadlessPlatformOptions());
+            .UseHeadless(new AvaloniaHeadlessPlatformOptions()
+            {
+                UseHeadlessDrawing = true,
+            });
     }
 }

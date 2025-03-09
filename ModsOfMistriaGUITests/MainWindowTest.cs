@@ -1,6 +1,6 @@
-using Avalonia.Controls;
-using Avalonia.Headless;
+using Avalonia;
 using Avalonia.Headless.NUnit;
+using Garethp.ModsOfMistriaGUI;
 using Garethp.ModsOfMistriaGUI.ViewModels;
 using Garethp.ModsOfMistriaGUI.Views;
 
@@ -12,13 +12,26 @@ public class Tests
     public void Should_Type_Text_Into_TextBox()
     {
         var mainViewModel = new MainWindowViewModel();
-        
+
         // Setup controls:
-        var window = new MainWindow() { DataContext = mainViewModel };
+        var window = new MainWindow() {DataContext = mainViewModel};
 
         // Open window:
         window.Show();
-        
+
         Assert.AreEqual("Mods Of Mistria Installer", window.Title);
+    }
+
+    [TestCase]
+    public void Should_Be_Able_To_Setup()
+    {
+        Assert.DoesNotThrow(() =>
+        {
+            AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .WithInterFont()
+                .LogToTrace()
+                .SetupWithClassicDesktopLifetime([]);
+        });
     }
 }
