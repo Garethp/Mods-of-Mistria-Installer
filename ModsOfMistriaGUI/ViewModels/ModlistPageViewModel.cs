@@ -71,12 +71,19 @@ public partial class ModlistPageViewModel : PageViewBase
 
     [ObservableProperty] private string _installStatus = "";
 
+    [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))]
     [ObservableProperty] private string _modsLocation = "";
 
-    [ObservableProperty] private string _mistriaLocation = "";
+    [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))]
+    [NotifyCanExecuteChangedFor(nameof(UnInstallModsCommand))]
+    [ObservableProperty]
+    private string _mistriaLocation = "";
 
     [ObservableProperty] private string _exception = "";
 
+    [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))]
+    [NotifyCanExecuteChangedFor(nameof(UnInstallModsCommand))]
+    [ObservableProperty]
     private bool _isInstalling;
 
     public ObservableCollection<ModModel> Mods { get; } = [];
@@ -85,7 +92,7 @@ public partial class ModlistPageViewModel : PageViewBase
     private void InstallMods()
     {
         InstallStatus = Resources.InstallInProgress;
-        _isInstalling = true;
+        IsInstalling = true;
 
         Task.Run(BackgroundInstall);
     }
@@ -93,7 +100,7 @@ public partial class ModlistPageViewModel : PageViewBase
     [RelayCommand(CanExecute = nameof(CanRemove))]
     private void UnInstallMods()
     {
-        _isInstalling = true;
+        IsInstalling = true;
 
         InstallStatus = "Uninstalling";
 
@@ -114,8 +121,11 @@ public partial class ModlistPageViewModel : PageViewBase
 
                 installer.Uninstall();
 
-                _isInstalling = false;
-                InstallStatus = "Uninstall Complete";
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    IsInstalling = false;
+                    InstallStatus = "Uninstall Complete";
+                });
             }
             catch (Exception e)
             {
@@ -143,7 +153,10 @@ public partial class ModlistPageViewModel : PageViewBase
 
             installer.InstallMods(modsToInstall, (message, _) => { InstallStatus = message; });
 
-            _isInstalling = false;
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                IsInstalling = false;
+            });
         }
         catch (Exception e)
         {
@@ -151,8 +164,8 @@ public partial class ModlistPageViewModel : PageViewBase
         }
     }
 
-    private bool CanRemove() => !MistriaLocation.Equals("") && !_isInstalling;
+    private bool CanRemove() => !MistriaLocation.Equals("") && !IsInstalling;
 
     private bool CanInstall() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 &&
-                                 !_isInstalling && Mods.All(mod => mod.CanInstall is null);
+                                 !IsInstalling && Mods.All(mod => mod.CanInstall is null);
 }

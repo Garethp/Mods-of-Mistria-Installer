@@ -15,7 +15,7 @@
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto,*">
-        <Image Source="/Assets/header.jpg" />
+        <Image Source="/Assets/header.jpg" MaxHeight="350"/>
 
         <Panel Grid.Row="1" Margin="50 20 50 0">
             <TransitioningContentControl Content="{Binding CurrentPage}" />
