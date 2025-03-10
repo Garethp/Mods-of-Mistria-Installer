@@ -21,7 +21,7 @@ public partial class ModlistPageViewModel : PageViewBase
         {
             Task.Run(UpdateModlist);
         };
-        
+
         Task.Run(UpdateModlist);
     }
 
@@ -48,23 +48,28 @@ public partial class ModlistPageViewModel : PageViewBase
             });
         }
 
-        InstallStatus = "";
-        if (MistriaLocation.Equals(""))
+        Dispatcher.UIThread.InvokeAsync(() =>
         {
-            InstallStatus = Resources.CouldNotFindMistria;
-        }
-        else if (ModsLocation.Equals(""))
-        {
-            InstallStatus = Resources.CouldNotFindMods;
-        }
-        else if (Mods.Count == 0)
-        {
-            InstallStatus = Resources.NoModsToInstall;
-        }
-        else if (Mods.Any(mod => mod.CanInstall is not null))
-        {
-            InstallStatus = Resources.ModsRequireNewerVersion;
-        }
+            InstallStatus = "";
+            InstallModsCommand.NotifyCanExecuteChanged();
+
+            if (MistriaLocation.Equals(""))
+            {
+                InstallStatus = Resources.CouldNotFindMistria;
+            }
+            else if (ModsLocation.Equals(""))
+            {
+                InstallStatus = Resources.CouldNotFindMods;
+            }
+            else if (Mods.Count == 0)
+            {
+                InstallStatus = Resources.NoModsToInstall;
+            }
+            else if (Mods.Any(mod => mod.CanInstall is not null))
+            {
+                InstallStatus = Resources.ModsRequireNewerVersion;
+            }
+        });
 
         _updating = false;
     }
@@ -166,6 +171,7 @@ public partial class ModlistPageViewModel : PageViewBase
 
     private bool CanRemove() => !MistriaLocation.Equals("") && !IsInstalling;
 
-    private bool CanInstall() => !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 &&
-                                 !IsInstalling && Mods.All(mod => mod.CanInstall is null);
+    private bool CanInstall() =>
+        !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 &&
+        !IsInstalling && Mods.All(mod => mod.CanInstall is null);
 }
