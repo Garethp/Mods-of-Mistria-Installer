@@ -5,22 +5,42 @@
              xmlns:models="using:Garethp.ModsOfMistriaGUI.Models"
              xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.Lang"
              xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
+             xmlns:i="https://github.com/projektanker/icons.avalonia"
+
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Garethp.ModsOfMistriaGUI.Views.ModlistPageView"
              d:DataContext="{x:Static models:DesignData.ModlistPageViewModel}">
     <DockPanel LastChildFill="True">
-        <WrapPanel DockPanel.Dock="Bottom" Height="50" Margin="0 10 0 0" HorizontalAlignment="Right">
-            <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
-            <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}"
-                    Content="{x:Static lang:Resources.InstallButtonText}" />
-            <Button Command="{Binding UnInstallModsCommand}" Content="{x:Static lang:Resources.UninstallButtonText}" />
-        </WrapPanel>
+        <DockPanel DockPanel.Dock="Bottom" Height="50" Margin="0 10 0 0">
+            <Menu>
+                <MenuItem>
+                    <MenuItem.Header>
+                        <Image Height="16" Margin="5 0 0 0">
+                            <Image.Source>
+                                <i:IconImage Value="fa-gear" />
+                            </Image.Source>
+                        </Image>
+                    </MenuItem.Header>
+                    <MenuItem Header="{x:Static lang:Resources.SaveLogFile}" Command="{Binding SaveLogFileCommand}" />
+                    <MenuItem Header="{x:Static lang:Resources.EnableAllMods}" Command="{Binding EnableAllModsCommand}" />
+                    <MenuItem Header="{x:Static lang:Resources.DisableAllMods}" Command="{Binding DisableAllModsCommand}" />
+                </MenuItem>
+            </Menu>
+
+            <WrapPanel DockPanel.Dock="Right" Height="50" Margin="0 10 0 0" HorizontalAlignment="Right">
+                <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
+                <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}"
+                        Content="{x:Static lang:Resources.InstallButtonText}" />
+                <Button Command="{Binding UnInstallModsCommand}"
+                        Content="{x:Static lang:Resources.UninstallButtonText}" />
+            </WrapPanel>
+        </DockPanel>
 
         <DockPanel LastChildFill="True">
             <StackPanel IsVisible="{Binding Exception.Length}" DockPanel.Dock="Top">
                 <SelectableTextBlock Text="{Binding Exception}" />
             </StackPanel>
-            
+
             <StackPanel IsVisible="{Binding !Exception.Length}" DockPanel.Dock="Top">
                 <TextBlock Text="{x:Static lang:Resources.GreetingText}" />
                 <TextBlock></TextBlock>
@@ -32,17 +52,17 @@
                 <TextBlock Text="{x:Static lang:Resources.ModsWillBeInstalled}" />
             </StackPanel>
 
-                <ScrollViewer Margin="15 5 0 0" IsVisible="{Binding !Exception.Length}">
-                    <ItemsRepeater ItemsSource="{Binding Mods}">
-                        <ItemsRepeater.ItemTemplate>
-                            <DataTemplate>
-                                <WrapPanel>
-                                    <controls:ModlistCheckbox DataContext="{Binding }" />
-                                </WrapPanel>
-                            </DataTemplate>
-                        </ItemsRepeater.ItemTemplate>
-                    </ItemsRepeater>
-                </ScrollViewer>
+            <ScrollViewer Margin="15 5 0 0" IsVisible="{Binding !Exception.Length}">
+                <ItemsRepeater ItemsSource="{Binding Mods}">
+                    <ItemsRepeater.ItemTemplate>
+                        <DataTemplate>
+                            <WrapPanel>
+                                <controls:ModlistCheckbox DataContext="{Binding }" />
+                            </WrapPanel>
+                        </DataTemplate>
+                    </ItemsRepeater.ItemTemplate>
+                </ItemsRepeater>
+            </ScrollViewer>
         </DockPanel>
     </DockPanel>
 </UserControl>

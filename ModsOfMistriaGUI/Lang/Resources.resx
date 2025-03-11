@@ -36,7 +36,7 @@
     </data>
     
     <data name="ModsWillBeInstalled" xml:space="preserve">
-        <value>Installing will install the following mods:</value>
+        <value>Check the boxes for all the mods you want to install:</value>
     </data>
     <data name="ModByAuthor" xml:space="preserve">
         <value>{0} by {1}</value>
@@ -91,5 +91,17 @@
     </data>
     <data name="CanCreateModsFolder" xml:space="preserve">
         <value>No mods folder has been detected, but one can be created automatically for you.</value>
+    </data>
+    <data name="SaveLogFile" xml:space="preserve">
+        <value>Save Log File</value>
+    </data>
+    <data name="PickLogFile" xml:space="preserve">
+        <value>Pick a location for the log file</value>
+    </data>
+    <data name="EnableAllMods" xml:space="preserve">
+        <value>Enable All Mods</value>
+    </data>
+    <data name="DisableAllMods" xml:space="preserve">
+        <value>Disable All Mods</value>
     </data>
 </root>
