@@ -96,6 +96,24 @@ namespace Garethp.ModsOfMistriaGUI.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disable All Mods.
+        /// </summary>
+        public static string DisableAllMods {
+            get {
+                return ResourceManager.GetString("DisableAllMods", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable All Mods.
+        /// </summary>
+        public static string EnableAllMods {
+            get {
+                return ResourceManager.GetString("EnableAllMods", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fields of Mistria has been detected at: .
         /// </summary>
         public static string FieldsOfMistriaDetectedLocation {
@@ -186,11 +204,29 @@ namespace Garethp.ModsOfMistriaGUI.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Pick a location for the log file.
+        /// </summary>
+        public static string PickLogFile {
+            get {
+                return ResourceManager.GetString("PickLogFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Install Information.
         /// </summary>
         public static string PreinstallInformationTitle {
             get {
                 return ResourceManager.GetString("PreinstallInformationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save Log File.
+        /// </summary>
+        public static string SaveLogFile {
+            get {
+                return ResourceManager.GetString("SaveLogFile", resourceCulture);
             }
         }
         

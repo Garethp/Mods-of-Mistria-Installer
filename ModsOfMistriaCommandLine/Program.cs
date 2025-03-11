@@ -14,22 +14,24 @@ if (args.Contains("--version"))
     Environment.Exit(0);
 }
 
-Console.WriteLine(Resources.RunningBuild, currentVersionString);
+Logger.LogAdded += (_, e) => Console.WriteLine(e.Message);
+
+Logger.Log(Resources.RunningBuild, currentVersionString);
 
 if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
 {
-    Console.WriteLine(Resources.Warning32Bit);
+    Logger.Log(Resources.Warning32Bit);
 }
 
 if (args.Contains("--uninstall"))
 {
     Standalone.UnInstall();
-    Console.WriteLine(Resources.UninstallComplete);
+    Logger.Log(Resources.UninstallComplete);
 }
 else
 {
     Standalone.Run();
-    Console.WriteLine(Resources.Completed);
+    Logger.Log(Resources.Completed);
 }
 
 if (Environment.GetEnvironmentVariable("EXIT_ON_COMPLETE") != "true")

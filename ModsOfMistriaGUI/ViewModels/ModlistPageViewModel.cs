@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,14 +14,11 @@ public partial class ModlistPageViewModel : PageViewBase
 {
     private bool _updating;
     private readonly Settings _settings;
-    
+
     public ModlistPageViewModel(Settings settings)
     {
         _settings = settings;
-        _settings.PropertyChanged += (_, _) =>
-        {
-            Task.Run(UpdateModlist);
-        };
+        _settings.PropertyChanged += (_, _) => { Task.Run(UpdateModlist); };
 
         Task.Run(UpdateModlist);
     }
@@ -30,22 +28,25 @@ public partial class ModlistPageViewModel : PageViewBase
         if (_updating) return;
         if (MistriaLocation == _settings.MistriaLocation && ModsLocation == _settings.ModsLocation) return;
         _updating = true;
-        
+
         MistriaLocation = _settings.MistriaLocation;
         ModsLocation = _settings.ModsLocation;
-        
+
         Mods.Clear();
-        
+
         if (Directory.Exists(ModsLocation))
         {
             var mods = MistriaLocator.GetMods(MistriaLocation, ModsLocation);
 
             new ModInstaller(MistriaLocation, ModsLocation).ValidateMods(mods);
 
-            mods.ForEach(mod =>
+            var allModsDisabled = mods.All(mod => !mod.IsInstalled());
+            if (allModsDisabled)
             {
-                Mods.Add(new ModModel(mod));
-            });
+                mods.ForEach(mod => mod.SetInstalled(true));
+            }
+
+            mods.ForEach(mod => { Mods.Add(new ModModel(mod)); });
         }
 
         Dispatcher.UIThread.InvokeAsync(() =>
@@ -76,8 +77,8 @@ public partial class ModlistPageViewModel : PageViewBase
 
     [ObservableProperty] private string _installStatus = "";
 
-    [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))]
-    [ObservableProperty] private string _modsLocation = "";
+    [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))] [ObservableProperty]
+    private string _modsLocation = "";
 
     [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))]
     [NotifyCanExecuteChangedFor(nameof(UnInstallModsCommand))]
@@ -100,6 +101,53 @@ public partial class ModlistPageViewModel : PageViewBase
         IsInstalling = true;
 
         Task.Run(BackgroundInstall);
+    }
+
+    [RelayCommand]
+    private async Task SaveLogFile()
+    {
+        var topLevel = App.TopLevel;
+        if (topLevel is null) return;
+
+        var logs = Logger.GetLogs();
+
+        var files = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions()
+        {
+            Title = Resources.PickLogFile,
+            FileTypeChoices = [FilePickerFileTypes.TextPlain]
+        });
+
+        if (files is not null)
+        {
+            await File.WriteAllTextAsync(files.Path.AbsolutePath, string.Join("\r\n", logs));
+        }
+    }
+
+    [RelayCommand]
+    private void EnableAllMods()
+    {
+        var allMods = Mods.ToList();
+        Mods.Clear();
+        allMods.ForEach(mod =>
+        {
+            mod.Enabled = true;
+            Mods.Add(mod);
+        });
+        InstallModsCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private void DisableAllMods()
+    {
+        var allMods = Mods.ToList();
+        Mods.Clear();
+        allMods.ForEach(mod =>
+        {
+            mod.Enabled = false;
+            Mods.Add(mod);
+        });
+
+        InstallModsCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand(CanExecute = nameof(CanRemove))]
@@ -156,12 +204,13 @@ public partial class ModlistPageViewModel : PageViewBase
                         .ShowAsync());
             }
 
-            installer.InstallMods(modsToInstall, (message, _) => { InstallStatus = message; });
-
-            Dispatcher.UIThread.InvokeAsync(() =>
+            installer.InstallMods(modsToInstall, (message, _) =>
             {
-                IsInstalling = false;
+                Logger.Log(message);
+                InstallStatus = message;
             });
+
+            Dispatcher.UIThread.InvokeAsync(() => { IsInstalling = false; });
         }
         catch (Exception e)
         {

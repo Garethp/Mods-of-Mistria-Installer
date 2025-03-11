@@ -14,10 +14,10 @@ public class MistriaLocator
             .ToList()
             .ForEach(location =>
             {
-                Console.WriteLine(Resources.LookingForMistriaAt, Path.Combine(location, "data.win"));
+                Logger.Log(Resources.LookingForMistriaAt, Path.Combine(location, "data.win"));
             });
 
-        Console.WriteLine(Directory.GetCurrentDirectory());
+        Logger.Log(Directory.GetCurrentDirectory());
 
         var mistriaLocation = steamLocations
             .Where(Path.Exists)
@@ -29,7 +29,7 @@ public class MistriaLocator
             var currentDirectory = Directory.GetCurrentDirectory();
             if (File.Exists(Path.Combine(currentDirectory, "data.win")))
             {
-                Console.WriteLine(Resources.MistriaNotFoundFallback);
+                Logger.Log(Resources.MistriaNotFoundFallback);
                 return currentDirectory;
             }
             
