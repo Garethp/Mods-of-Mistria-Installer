@@ -3,7 +3,6 @@
 using System.Diagnostics;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
-using UndertaleModLib;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
