@@ -19,6 +19,11 @@ public class StoreCategory
 
     public Validation Validate(Validation validation, IMod mod, string file)
     {
+        if (string.IsNullOrWhiteSpace(Store))
+        {
+            validation.AddError(mod, file, Resources.ErrorStoreCategoryHasNoStore);
+        }
+        
         if (string.IsNullOrWhiteSpace(IconName))
         {
             validation.AddError(mod, file, Resources.ErrorStoreCategoryNoName);

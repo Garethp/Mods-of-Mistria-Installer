@@ -54,7 +54,6 @@ public class OutfitTest
         var expectedValidation = new Validation();
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
-
     }
     
     [Test]

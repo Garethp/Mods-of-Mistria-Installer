@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
@@ -47,16 +50,61 @@ public class StoreItem
     public string Category;
     public string? Season;
     public bool RandomStock = false;
+    
+    public Validation Validate(Validation validation, IMod mod, string file)
+    {
+        if (string.IsNullOrWhiteSpace(Store))
+        {
+            validation.AddError(mod, file, Resources.ErrorStoreItemHasNoStore);
+        }
+
+        if (string.IsNullOrWhiteSpace(Category))
+        {
+            validation.AddError(mod, file, string.Format(Resources.ErrorStoreItemHasNoCategory, Store));
+        }
+        
+        var validSeasons = new List<string> { "spring", "summer", "fall", "winter" };
+        if (!string.IsNullOrWhiteSpace(Season) && !validSeasons.Contains(Season))
+        {
+            validation.AddError(mod, file, string.Format(Resources.ErrorStoreItemHasInvalidSeason, Store, Category, Season));
+        }
+        
+        return validation;
+    }
 }
 
 [JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
 public class SimpleItem : StoreItem
 {
     public string Item;
+    
+    public new Validation Validate(Validation validation, IMod mod, string file)
+    {
+        validation = base.Validate(validation, mod, file);
+        
+        if (string.IsNullOrWhiteSpace(Item))
+        {
+            validation.AddError(mod, file, string.Format(Resources.ErrorStoreItemHasNoItem, Store, Category));
+        }
+        
+        return validation;
+    }
 }
 
 [JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
 public class CosmeticItem : StoreItem
 {
     public CosmeticDefinition Item;
+    
+    public new Validation Validate(Validation validation, IMod mod, string file)
+    {
+        validation = base.Validate(validation, mod, file);
+        
+        if (Item is null || string.IsNullOrWhiteSpace(Item.Cosmetic))
+        {
+            validation.AddError(mod, file, string.Format(Resources.ErrorStoreItemHasNoItem, Store, Category));
+        }
+        
+        return validation;
+    }
 }

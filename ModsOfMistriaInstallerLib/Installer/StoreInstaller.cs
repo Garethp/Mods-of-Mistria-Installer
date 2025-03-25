@@ -50,10 +50,10 @@ public class StoreInstaller : ISubModuleInstaller
             var store = stores[storeName];
             if (store?["categories"] is not JArray categories)
                 throw new Exception(
-                    $"Failed adding item to the {store} {categoryName} category because {store} does not exist");
+                    $"Failed adding item to the {storeName} {categoryName} category because {storeName} does not exist");
             
             var category = categories.FirstOrDefault(existingCategory => existingCategory["icon"]?.ToString() == categoryName);
-            if (category is null) throw new Exception($"Failed adding item to the {store} {categoryName} category because {categoryName} does not exist");
+            if (category is null) throw new Exception($"Failed adding item to the {storeName} {categoryName} category because {categoryName} does not exist");
 
             JArray? arrayToAddTo;
             
@@ -83,7 +83,7 @@ public class StoreInstaller : ISubModuleInstaller
                     };
                 }
                 
-                if (category["seasonal"][item.Season] is not JArray) throw new Exception($"Season {item.Season} does not exist in {store} {categoryName}");
+                if (category["seasonal"][item.Season] is not JArray) throw new Exception($"Season {item.Season} does not exist in {storeName} {categoryName}");
                 arrayToAddTo = category["seasonal"][item.Season] as JArray;
             }
 
