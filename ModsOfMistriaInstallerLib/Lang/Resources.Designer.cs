@@ -186,11 +186,56 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Category has no store..
+        /// </summary>
+        public static string ErrorStoreCategoryHasNoStore {
+            get {
+                return ResourceManager.GetString("ErrorStoreCategoryHasNoStore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Category has no icon name..
         /// </summary>
         public static string ErrorStoreCategoryNoName {
             get {
                 return ResourceManager.GetString("ErrorStoreCategoryNoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot add item to store {0} and category {1} because it has an invalid season {2}..
+        /// </summary>
+        public static string ErrorStoreItemHasInvalidSeason {
+            get {
+                return ResourceManager.GetString("ErrorStoreItemHasInvalidSeason", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item for store {0} has no category..
+        /// </summary>
+        public static string ErrorStoreItemHasNoCategory {
+            get {
+                return ResourceManager.GetString("ErrorStoreItemHasNoCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item for store {0}, category {1} has not specified an item..
+        /// </summary>
+        public static string ErrorStoreItemHasNoItem {
+            get {
+                return ResourceManager.GetString("ErrorStoreItemHasNoItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Item has not been assigned to a store..
+        /// </summary>
+        public static string ErrorStoreItemHasNoStore {
+            get {
+                return ResourceManager.GetString("ErrorStoreItemHasNoStore", resourceCulture);
             }
         }
         

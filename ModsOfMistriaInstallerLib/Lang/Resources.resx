@@ -162,4 +162,19 @@
     <data name="ErrorReadingVersionForMod" xml:space="preserve">
         <value>An error occured when reading the version for the mod: (0)</value>
     </data>
+    <data name="ErrorStoreItemHasNoStore" xml:space="preserve">
+        <value>Item has not been assigned to a store.</value>
+    </data>
+    <data name="ErrorStoreItemHasNoCategory" xml:space="preserve">
+        <value>Item for store {0} has no category.</value>
+    </data>
+    <data name="ErrorStoreItemHasInvalidSeason" xml:space="preserve">
+        <value>Cannot add item to store {0} and category {1} because it has an invalid season {2}.</value>
+    </data>
+    <data name="ErrorStoreItemHasNoItem" xml:space="preserve">
+        <value>Item for store {0}, category {1} has not specified an item.</value>
+    </data>
+    <data name="ErrorStoreCategoryHasNoStore" xml:space="preserve">
+        <value>Category has no store.</value>
+    </data>
 </root>

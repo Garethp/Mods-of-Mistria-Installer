@@ -71,6 +71,11 @@ public class StoreGenerator: IGenerator
             {
                 validation = category.Validate(validation, mod, file);
             });
+            
+            storeData.Items.ForEach(item =>
+            {
+                validation = item.Validate(validation, mod, file);
+            });
         }
         
         return validation;
