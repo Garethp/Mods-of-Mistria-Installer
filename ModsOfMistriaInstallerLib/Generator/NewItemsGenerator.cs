@@ -2,6 +2,7 @@
 using Garethp.ModsOfMistriaInstallerLib.Models;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
@@ -14,17 +15,27 @@ public class NewItemsGenerator: IGenerator
         
         foreach (var file in mod.GetFilesInFolder("items"))
         {
-            var newItems = JsonConvert.DeserializeObject<Dictionary<string, object>>(mod.ReadFile(file));
+            var newItems = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(mod.ReadFile(file));
             if (newItems is null) continue;
 
             foreach (var itemId in newItems.Keys)
             {
                 var newObject = newItems[itemId];
-                information.NewItems.Add(new NewItem
+
+                var newItem = new NewItem
                 {
                     Name = itemId,
+                    Prefix = mod.GetId(),
                     Data = newObject,
-                });
+                };
+                
+                if (newObject.ContainsKey("disable_prefix") && newObject.Value<bool>("disable_prefix") == true)
+                {
+                    newObject.Remove("disable_prefix");
+                    newItem.DisablePrefix = true;
+                }
+                
+                information.NewItems.Add(newItem);
             }
         }
 

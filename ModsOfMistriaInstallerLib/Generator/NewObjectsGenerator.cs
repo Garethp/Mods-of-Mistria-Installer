@@ -20,6 +20,7 @@ public class NewObjectsGenerator: IGenerator
             foreach (var objectId in newObjects.Keys)
             {
                 var newObject = newObjects[objectId];
+                newObject.Prefix = mod.GetId();
                 newObject.Name = objectId;
                 information.NewObjects.Add(newObject);
             }
