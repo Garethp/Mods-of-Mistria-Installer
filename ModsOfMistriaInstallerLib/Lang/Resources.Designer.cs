@@ -96,6 +96,42 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Object {0} has an invalid category {1}..
+        /// </summary>
+        public static string ErrorNewObjectInvalidCategory {
+            get {
+                return ResourceManager.GetString("ErrorNewObjectInvalidCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Object {0} has no category..
+        /// </summary>
+        public static string ErrorNewObjectNoCategory {
+            get {
+                return ResourceManager.GetString("ErrorNewObjectNoCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Object {0} has no data..
+        /// </summary>
+        public static string ErrorNewObjectNoData {
+            get {
+                return ResourceManager.GetString("ErrorNewObjectNoData", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New object has no name..
+        /// </summary>
+        public static string ErrorNewObjectNoName {
+            get {
+                return ResourceManager.GetString("ErrorNewObjectNoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Outfit {0} has no animation files..
         /// </summary>
         public static string ErrorOutfitNoAnimation {
@@ -515,6 +551,24 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string TilesetsFileEmpty {
             get {
                 return ResourceManager.GetString("TilesetsFileEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Items file has no items..
+        /// </summary>
+        public static string WarningItemFileHasNoItems {
+            get {
+                return ResourceManager.GetString("WarningItemFileHasNoItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Objects file has no objects in it..
+        /// </summary>
+        public static string WarningObjectFileHasNoObjects {
+            get {
+                return ResourceManager.GetString("WarningObjectFileHasNoObjects", resourceCulture);
             }
         }
         

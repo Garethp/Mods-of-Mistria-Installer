@@ -112,6 +112,108 @@ in their own folder, separate from other sprites. Here's an example file:
 
 For a full example, check out the [`dolphin_tail`](./mods/dolphin_tail) example.
 
+### `objects/`
+If you want to add new objects to the game, you can do so by placing a JSON definition for the object in the `objects/`
+folder. The format of the file should be
+
+```json
+{
+  "object_id": {
+    "category": "category",
+    "data": {
+      ...
+    }
+  }
+}
+```
+
+The category of the object must be one of the following: "breakable", "building", "bush", "crop", "dig_site", "furniture",
+"grass", "rock", "stump", "tree". Trying to add another value will result in MOMI having an error for the mod.
+
+Here's an example file:
+
+```json
+{
+  "my_new_object": {
+    "category": "furniture",
+    "data": {
+      "size": [
+        3,
+        2
+      ],
+      "collision_grid": "2",
+      "south": {
+        "sprite": "spr_decor_dragon_statue_v1_spring_south",
+        "offset": [
+          12,
+          8
+        ]
+      },
+      "north": {
+        "sprite": "spr_decor_dragon_statue_v1_spring_north",
+        "offset": [
+          12,
+          8
+        ]
+      }
+    }
+  }
+}
+```
+
+### `items/`
+If you want to add new items to the game, you can do so by placing a JSON definition for the item in the `items/`
+folder. The format of the file should be
+
+```json
+{
+  "item_id": {
+      ...
+  }
+}
+```
+
+An example of a full file is:
+
+```json
+{
+  "wheedle_statue":  {
+    "icon_sprite": "spr_ui_item_dragon_statue_replica_v1",
+    "name": "Wheedle Statue",
+    "description": "items/furniture/mistrian_history_set/dragon_statue_replica_v1/description",
+    "object": "dragon_statue_replica_v1",
+    "tags": [
+      "furniture",
+      "mistrian_history_set",
+      "misc_decor"
+    ],
+    "recipe_key": "dragon_statue_replica",
+    "crafting_level_requirement": 20,
+    "recipe": [
+      {
+        "count": 100,
+        "item": "ore_stone"
+      },
+      {
+        "count": 2,
+        "item": "monster_core"
+      },
+      {
+        "count": 2,
+        "item": "monster_horn"
+      },
+      {
+        "hours": 0,
+        "minutes": 30
+      }
+    ],
+    "value": { 
+      "bin": "self.recipe*1.1"
+    }
+  }
+}
+```
+
 ### `stores/`
 If you want to add categories to a store, or new items to a category in a store, you can do so by placing a JSON in the
 `stores/` folder of your mod. In your JSON, you can either define a list of new categories to add to a store, a list

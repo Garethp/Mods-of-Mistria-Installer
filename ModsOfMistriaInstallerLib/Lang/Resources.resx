@@ -177,4 +177,22 @@
     <data name="ErrorStoreCategoryHasNoStore" xml:space="preserve">
         <value>Category has no store.</value>
     </data>
+    <data name="ErrorNewObjectNoName" xml:space="preserve">
+        <value>New object has no name.</value>
+    </data>
+    <data name="ErrorNewObjectNoCategory" xml:space="preserve">
+        <value>Object {0} has no category.</value>
+    </data>
+    <data name="ErrorNewObjectInvalidCategory" xml:space="preserve">
+        <value>Object {0} has an invalid category {1}.</value>
+    </data>
+    <data name="ErrorNewObjectNoData" xml:space="preserve">
+        <value>Object {0} has no data.</value>
+    </data>
+    <data name="WarningObjectFileHasNoObjects" xml:space="preserve">
+        <value>New Objects file has no objects in it.</value>
+    </data>
+    <data name="WarningItemFileHasNoItems" xml:space="preserve">
+        <value>New Items file has no items.</value>
+    </data>
 </root>

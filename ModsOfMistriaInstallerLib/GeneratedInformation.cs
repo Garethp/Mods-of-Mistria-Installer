@@ -36,6 +36,10 @@ public class GeneratedInformation
 
     public List<AurieMod> AurieMods = [];
     
+    public List<NewObject> NewObjects = [];
+    
+    public List<NewItem> NewItems = [];
+    
     public void Merge(GeneratedInformation other)
     {
         Localisations.AddRange(other.Localisations);
@@ -50,6 +54,8 @@ public class GeneratedInformation
         Cutscenes.AddRange(other.Cutscenes);
         ShadowManifests.AddRange(other.ShadowManifests);
         AurieMods.AddRange(other.AurieMods);
+        NewObjects.AddRange(other.NewObjects);
+        NewItems.AddRange(other.NewItems);
         
         foreach (var modName in other.Sprites.Keys)
         {
