@@ -384,6 +384,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This mod requires a newer version of Aurie to install, which requires going online..
+        /// </summary>
+        public static string ModRequiresNewerAurie {
+            get {
+                return ResourceManager.GetString("ModRequiresNewerAurie", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This mod requires a newer version of the installer..
         /// </summary>
         public static string ModRequiresNewerInstaller {

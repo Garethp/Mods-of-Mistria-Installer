@@ -177,4 +177,7 @@
     <data name="ErrorStoreCategoryHasNoStore" xml:space="preserve">
         <value>Category has no store.</value>
     </data>
+    <data name="ModRequiresNewerAurie" xml:space="preserve">
+        <value>This mod requires a newer version of Aurie to install, which requires going online.</value>
+    </data>
 </root>

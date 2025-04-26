@@ -17,6 +17,8 @@ public class FolderMod : IMod
     private string _location;
 
     private string _minimunInstallerVersion;
+    
+    private string _minimumAurieVersion;
 
     private string _manifestVersion;
 
@@ -42,6 +44,8 @@ public class FolderMod : IMod
     public string GetLocation() => _location;
 
     public string GetMinimunInstallerVersion() => _minimunInstallerVersion;
+
+    public string GetMinimumAurieVersion() => _minimumAurieVersion;
 
     public string GetManifestVersion() => _manifestVersion;
 
@@ -76,6 +80,7 @@ public class FolderMod : IMod
             _version = manifest["version"]?.ToString() ?? "",
             _location = Path.GetDirectoryName(manifestLocation) ?? "",
             _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0",
+            _minimumAurieVersion = manifest["minAurieVersion"]?.ToString() ?? "0.0.0",
             _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1"
         };
 

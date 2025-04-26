@@ -16,6 +16,8 @@ public class RarMod() : IMod
     private string _version = "";
 
     private string _minimunInstallerVersion = "0.1.0";
+    
+    private string _minimumAurieVersion = "0.1.0";
 
     private string _manifestVersion = "1";
 
@@ -53,6 +55,7 @@ public class RarMod() : IMod
         _author = manifest["author"]?.ToString() ?? "";
         _version = manifest["version"]?.ToString() ?? "1.0.0";
         _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0";
+        _minimumAurieVersion = manifest["minAurieVersion"]?.ToString() ?? "0.0.0";
         _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1";
         _rarFile = rarFile;
         _basePath = basePath;
@@ -98,6 +101,8 @@ public class RarMod() : IMod
     public string GetLocation() => "";
 
     public string GetMinimunInstallerVersion() => _minimunInstallerVersion;
+    
+    public string GetMinimumAurieVersion() => _minimumAurieVersion;
 
     public string GetManifestVersion() => _manifestVersion;
 

@@ -14,6 +14,8 @@ public interface IMod
 
     public string GetMinimunInstallerVersion();
 
+    public string GetMinimumAurieVersion();
+
     public string GetManifestVersion();
     
     public Validation GetValidation();

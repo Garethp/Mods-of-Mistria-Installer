@@ -16,6 +16,8 @@ public class ZipMod() : IMod
     private string _version = "";
 
     private string _minimunInstallerVersion = "";
+    
+    private string _minimumAurieVersion = "";
 
     private string _manifestVersion = "";
 
@@ -38,6 +40,7 @@ public class ZipMod() : IMod
         _author = manifest["author"]?.ToString() ?? "";
         _version = manifest["version"]?.ToString() ?? "";
         _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0";
+        _minimumAurieVersion = manifest["minAurieVersion"]?.ToString() ?? "0.0.0";
         _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1";
         _zipFile = zipFile;
         _basePath = basePath;
@@ -83,6 +86,8 @@ public class ZipMod() : IMod
     public string GetLocation() => "";
 
     public string GetMinimunInstallerVersion() => _minimunInstallerVersion;
+    
+    public string GetMinimumAurieVersion() => _minimumAurieVersion;
 
     public string GetManifestVersion() => _manifestVersion;
 

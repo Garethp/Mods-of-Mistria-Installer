@@ -59,6 +59,7 @@ documentation will be added in the future.
   "name": "Mod Name",
   "version": "1.0.0",
   "minInstallerVersion": "0.1.3",
+  "minAurieVersion": "4.0.1",
   "manifestVersion": 1
 }
 ```
@@ -68,6 +69,11 @@ From version 0.1.3 onwards, the installer will check the `minInstallerVersion` f
 new enough to install the mod and tell the user if they're unable to install the mod without updating the installer.
 The `manifestVersion` field isn't used yet, but will allow for backwards compatibility in future versions of the installer
 if large changes are made to how mods are structured.
+
+While MOMI will keep Aurie up to date automatically in the background, if you define a `minAurieVersion` then MOMI will
+prevent users from installing the mod if they don't have that version of Aurie installed and if they are not online to
+download it. If the user is online, this will not have any effect, as MOMI will automatically download the latest
+version of Aurie on each install.
 
 ### `fiddle/`
 JSON files in the `fiddle/` folder will get merged into the game's `__fiddle__.json` file. You can name the files however

@@ -49,6 +49,11 @@ public class MockMod : IMod
     {
         throw new NotImplementedException();
     }
+    
+    public string GetMinimumAurieVersion()
+    {
+        throw new NotImplementedException();
+    }
 
     public string GetManifestVersion()
     {

@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.Installer;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
@@ -18,7 +19,7 @@ public static class Standalone
         }
         
         var modsLocation = MistriaLocator.GetModsLocation(mistriaLocation);
-
+        
         if (modsLocation is null || !Directory.Exists(modsLocation))
         {
             Logger.Log(Resources.CouldNotGuessModsAt, Path.Combine(mistriaLocation, "mods"));

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Microsoft.Win32;
@@ -31,6 +32,8 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
             TearDownRegistry();
             return;
         }
+        
+        var shouldUpgrade = ShouldUpgrade(modsLocation);
         
         if (!Directory.Exists(Path.Combine(modsLocation, "Aurie", "MOMI")))
         {
@@ -72,6 +75,11 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
 
         filesToEnsure.ForEach(ensure =>
         {
+            if (File.Exists(ensure.Path) && shouldUpgrade)
+            {
+                File.Delete(ensure.Path);
+            }
+            
             if (File.Exists(ensure.Path))
             {
                 return;
@@ -146,6 +154,96 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
         if (information.AurieMods.Count == 0 && IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
 
         return [];
+    }
+
+    public Version GetLatestVersion(string modsLocation)
+    {
+        List<FileToEnsure> filesToCheck =
+        [
+            new ()
+            {
+                Path = Path.Combine(modsLocation, "Aurie", "YYToolkit.dll"),
+                Repository = "AurieFramework/YYToolkit",
+                Artifact = "YYToolkit.dll"
+            },
+            new ()
+            {
+                Path = Path.Combine(modsLocation, "Native", "AurieCore.dll"),
+                Repository = "AurieFramework/Aurie",
+                Artifact = "AurieCore.dll"
+            },
+            new ()
+            {
+                Path = Path.Combine(modsLocation, "AurieLoader.exe"),
+                Repository = "AurieFramework/Aurie",
+                Artifact = "AurieLoader.exe"
+            }
+        ];
+        
+        var highestVersion = Version.Parse("0.0.0");
+
+        foreach (var file in filesToCheck)
+        {
+            if (!File.Exists(file.Path)) continue;
+            
+            var currentVersion = Version.Parse(FileVersionInfo.GetVersionInfo(file.Path).FileVersion ?? "0.0.0");
+            if (currentVersion.CompareTo(highestVersion) > 0)
+            {
+                highestVersion = currentVersion;
+            }
+        }
+
+        return highestVersion;
+    }
+
+    public bool ShouldUpgrade(string modsLocation)
+    {
+        List<FileToEnsure> filesToEnsure =
+        [
+            new ()
+            {
+                Path = Path.Combine(modsLocation, "Aurie", "YYToolkit.dll"),
+                Repository = "AurieFramework/YYToolkit",
+                Artifact = "YYToolkit.dll"
+            },
+            new ()
+            {
+                Path = Path.Combine(modsLocation, "Native", "AurieCore.dll"),
+                Repository = "AurieFramework/Aurie",
+                Artifact = "AurieCore.dll"
+            },
+            new ()
+            {
+                Path = Path.Combine(modsLocation, "AurieLoader.exe"),
+                Repository = "AurieFramework/Aurie",
+                Artifact = "AurieLoader.exe"
+            }
+        ];
+        
+        foreach (var file in filesToEnsure)
+        {
+            if (!File.Exists(file.Path)) return true;
+            var currentVersion = Version.Parse(FileVersionInfo.GetVersionInfo(file.Path).FileVersion ?? "0.0.0");
+            
+            var apiUrl = $"https://api.github.com/repos/{file.Repository}/releases/latest";
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Aurie");
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
+
+            var response = client.GetStringAsync(apiUrl).Result;
+            var json = JObject.Parse(response);
+            
+            var latestVersion = Version.Parse(json["tag_name"]?.ToString().Replace("v", "") ?? "0.0.0");
+
+            var asset = json["assets"]?.FirstOrDefault(asset => asset["name"]?.ToString() == file.Artifact);
+
+            if (asset is null) throw new Exception("Aurie Asset Not Found");
+            
+            if (latestVersion.CompareTo(currentVersion) > 0) return true;
+        }
+
+        return false;
     }
 
     public List<string> GetPreUninstallInformation()
