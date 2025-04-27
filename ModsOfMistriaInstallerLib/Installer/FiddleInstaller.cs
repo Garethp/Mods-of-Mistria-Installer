@@ -66,7 +66,7 @@ public class FiddleInstaller : IModuleInstaller
             extraObjects.Add(newObject);
         }
 
-        merged["extras/items"] = merged["extras"]!["items"];
+        merged["extras/objects"] = merged["extras"]!["objects"];
         
         var extraItems = (merged["extras"]!["items"] as JArray)!;
 
@@ -89,7 +89,6 @@ public class FiddleInstaller : IModuleInstaller
         }
 
         merged["extras/items"] = merged["extras"]!["items"];
-        
         
         File.WriteAllText(
             Path.Combine(fieldsOfMistriaLocation, "__fiddle__.json"),

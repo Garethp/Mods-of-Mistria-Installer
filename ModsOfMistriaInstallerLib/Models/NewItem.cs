@@ -8,6 +8,5 @@ public class NewItem
 {
     public string Name;
     
-    
     public object Data;
 }
