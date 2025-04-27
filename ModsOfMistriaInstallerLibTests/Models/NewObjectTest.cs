@@ -24,7 +24,6 @@ public class NewObjectTest
         var newObject = new NewObject
         {
             Name = "new_object",
-            Prefix = "mod_id",
             Category = "furniture",
             Data = new {
                 dummy = "data"
@@ -56,34 +55,6 @@ public class NewObjectTest
         expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.ErrorNewObjectNoName));
         
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
-    }
-
-    [Test]
-    public void ShouldAddThePrefixToNameByDefault()
-    {
-        var newObject = GetNewObject();
-        
-        Assert.That(newObject.Name, Is.EqualTo("mod_id_new_object"));
-    }
-    
-    [Test]
-    public void ShouldAllowDisablingThePrefix()
-    {
-        var newObject = GetNewObject();
-        newObject.DisablePrefix = true;
-        
-        Assert.That(newObject.Name, Is.EqualTo("new_object"));
-    }
-    
-    [TestCase]
-    public void ShouldNotSerializeUnneededProperties()
-    {
-        var newObject = GetNewObject();
-        newObject.DisablePrefix = true;
-        var json = JsonConvert.SerializeObject(newObject);
-        
-        Assert.That(json, Does.Not.Contain("prefix"));
-        Assert.That(json, Does.Not.Contain("disable_prefix"));
     }
     
     [Test]

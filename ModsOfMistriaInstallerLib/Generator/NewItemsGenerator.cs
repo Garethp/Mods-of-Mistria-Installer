@@ -25,16 +25,9 @@ public class NewItemsGenerator: IGenerator
                 var newItem = new NewItem
                 {
                     Name = itemId,
-                    Prefix = mod.GetId(),
                     Data = newObject,
                 };
-                
-                if (newObject.ContainsKey("disable_prefix") && newObject.Value<bool>("disable_prefix") == true)
-                {
-                    newObject.Remove("disable_prefix");
-                    newItem.DisablePrefix = true;
-                }
-                
+
                 information.NewItems.Add(newItem);
             }
         }
