@@ -25,6 +25,7 @@ public class NewObjectTest
         {
             Name = "new_object",
             Category = "furniture",
+            OverwritesOtherMod = false,
             Data = new {
                 dummy = "data"
             }
@@ -55,6 +56,26 @@ public class NewObjectTest
         expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.ErrorNewObjectNoName));
         
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+
+    [Test]
+    public void ShouldValidateOverwritesOtherModIsPresent()
+    {
+        var newObject = GetNewObject();
+        newObject.OverwritesOtherMod = null;
+        
+        var validation = newObject.Validate(new Validation(), _mockMod, "new_item.json", "id");
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.ErrorNewObjectHasNoOverwritesOtherMod, newObject.Name));
+        
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+    
+    [Test]
+    public void ShouldNotSerializeOverwritesOtherMod()
+    {
+        var newObject = GetNewObject();
+        Assert.That(newObject.ShouldSerializeOverwritesOtherMod(), Is.False);
     }
     
     [Test]

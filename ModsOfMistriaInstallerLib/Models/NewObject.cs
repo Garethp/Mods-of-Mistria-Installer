@@ -11,6 +11,7 @@ public class NewObject
 {
     public string Name;
 
+    public bool? OverwritesOtherMod;
 
     public string Category;
 
@@ -30,12 +31,19 @@ public class NewObject
         "tree"
     ];
 
+    public bool ShouldSerializeOverwritesOtherMod() => false;
+    
     public Validation Validate(Validation validation, IMod mod, string file, string id)
     {
         if (string.IsNullOrEmpty(Name))
         {
             validation.AddError(mod, file, Resources.ErrorNewObjectNoName);
             return validation;
+        }
+        
+        if (OverwritesOtherMod is null)
+        {
+            validation.AddError(mod, file, string.Format(Resources.ErrorNewObjectHasNoOverwritesOtherMod, Name));
         }
         
         if (string.IsNullOrEmpty(Category))

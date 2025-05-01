@@ -96,6 +96,24 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Item {0} does not state if it overwrites another mod..
+        /// </summary>
+        public static string ErrorNewItemHasNoOverwritesOtherMod {
+            get {
+                return ResourceManager.GetString("ErrorNewItemHasNoOverwritesOtherMod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Object {0} does not state if it overwrites another mod..
+        /// </summary>
+        public static string ErrorNewObjectHasNoOverwritesOtherMod {
+            get {
+                return ResourceManager.GetString("ErrorNewObjectHasNoOverwritesOtherMod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Object {0} has an invalid category {1}..
         /// </summary>
         public static string ErrorNewObjectInvalidCategory {

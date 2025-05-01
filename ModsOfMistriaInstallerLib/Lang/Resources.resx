@@ -195,4 +195,10 @@
     <data name="WarningItemFileHasNoItems" xml:space="preserve">
         <value>New Items file has no items.</value>
     </data>
+    <data name="ErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve">
+        <value>Object {0} does not state if it overwrites another mod.</value>
+    </data>
+    <data name="ErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve">
+        <value>Item {0} does not state if it overwrites another mod.</value>
+    </data>
 </root>

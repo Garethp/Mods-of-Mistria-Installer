@@ -120,6 +120,7 @@ folder. The format of the file should be
 {
   "object_id": {
     "category": "category",
+    "overwrites_other_mod": false,
     "data": {
       ...
     }
@@ -130,12 +131,18 @@ folder. The format of the file should be
 The category of the object must be one of the following: "breakable", "building", "bush", "crop", "dig_site", "furniture",
 "grass", "rock", "stump", "tree". Trying to add another value will result in MOMI having an error for the mod.
 
+`overwrites_other_mod` is required for all objects but doesn't change how MOMI works. In a future version of MOMI, this
+key will be used to automatically detect and warn users about conflicting mods. In that future update, if two mods add
+objects with the same ID and they both have `overwrites_other_mod` set to `false`, the installer will warn the user
+that these two mods probably conflict with each other.
+
 Here's an example file:
 
 ```json
 {
   "my_new_object": {
     "category": "furniture",
+    "overwrites_other_mod": false,
     "data": {
       "size": [
         3,
@@ -168,10 +175,16 @@ folder. The format of the file should be
 ```json
 {
   "item_id": {
+    "overwrites_other_mod": false,
       ...
   }
 }
 ```
+
+`overwrites_other_mod` is required for all items but doesn't change how MOMI works. In a future version of MOMI, this
+key will be used to automatically detect and warn users about conflicting mods. In that future update, if two mods add
+items with the same ID and they both have `overwrites_other_mod` set to `false`, the installer will warn the user
+that these two mods probably conflict with each other.
 
 An example of a full file is:
 
@@ -180,6 +193,7 @@ An example of a full file is:
   "wheedle_statue":  {
     "icon_sprite": "spr_ui_item_dragon_statue_replica_v1",
     "name": "Wheedle Statue",
+    "overwrites_other_mod": false,
     "description": "items/furniture/mistrian_history_set/dragon_statue_replica_v1/description",
     "object": "dragon_statue_replica_v1",
     "tags": [

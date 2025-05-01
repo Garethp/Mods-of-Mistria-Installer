@@ -25,8 +25,14 @@ public class NewItemsGenerator: IGenerator
                 var newItem = new NewItem
                 {
                     Name = itemId,
+                    OverwritesOtherMod = newObject["overwrites_other_mod"]?.ToObject<bool>(),
                     Data = newObject,
                 };
+                
+                if (newObject.ContainsKey("overwrites_other_mod"))
+                {
+                    newObject.Remove("overwrites_other_mod");
+                }
 
                 information.NewItems.Add(newItem);
             }
@@ -44,11 +50,11 @@ public class NewItemsGenerator: IGenerator
         
         foreach (var file in mod.GetFilesInFolder("items"))
         {
-            Dictionary<string, object>? newItems;
+            Dictionary<string, JObject>? newItems;
 
             try
             {
-                newItems = JsonConvert.DeserializeObject<Dictionary<string, object>>(mod.ReadFile(file));
+                newItems = JsonConvert.DeserializeObject<Dictionary<string, JObject>>(mod.ReadFile(file));
             }
             catch (Exception e)
             {
@@ -65,6 +71,20 @@ public class NewItemsGenerator: IGenerator
             if (newItems.Count == 0)
             {
                 validation.AddWarning(mod, file, Resources.WarningItemFileHasNoItems);
+            }
+
+            foreach (var itemName in newItems.Keys)
+            {
+                var item = newItems[itemName];
+                
+                var newItem = new NewItem
+                {
+                    Name = itemName,
+                    OverwritesOtherMod = item["overwrites_other_mod"]?.ToObject<bool>(),
+                    Data = item,
+                };
+                
+                validation = newItem.Validate(validation, mod, file, itemName);
             }
         }
 
