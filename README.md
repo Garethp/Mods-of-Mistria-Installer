@@ -136,6 +136,8 @@ key will be used to automatically detect and warn users about conflicting mods. 
 objects with the same ID and they both have `overwrites_other_mod` set to `false`, the installer will warn the user
 that these two mods probably conflict with each other.
 
+For more details on what goes inside the `data` key, take a look at the official documentation [here](https://github.com/NPC-Studio/fom-sdk/blob/main/CREATING_OBJECTS_AND_ITEMS.md#adding-a-new-object).
+
 Here's an example file:
 
 ```json
@@ -185,6 +187,8 @@ folder. The format of the file should be
 key will be used to automatically detect and warn users about conflicting mods. In that future update, if two mods add
 items with the same ID and they both have `overwrites_other_mod` set to `false`, the installer will warn the user
 that these two mods probably conflict with each other.
+
+For more details on what goes inside the item, take a look at the official documentation [here](https://github.com/NPC-Studio/fom-sdk/blob/main/CREATING_OBJECTS_AND_ITEMS.md#adding-a-new-item).
 
 An example of a full file is:
 
@@ -284,6 +288,7 @@ creating a definition JSON file in the `sprites/` folder. Here's an example file
   "spr_furniture_stone_storage_chest_spring_v1_bounce": {
     "IsAnimated": true,
     "Location": "images/v1/bounce",
+    "OutlineLocation": "images/v1/bounce_outline",
     "OriginX": 16,
     "OriginY": 56,
     "MarginLeft": 3,
@@ -346,3 +351,16 @@ If you use this, please set `minInstallerVersion` in your `manifest.json` to no 
 If you have Aurie DLLs as part of your mod, put them in the `aurie/` folder of your mod. MOMI will then automatically
 install Aurie onto the players setup, register the keys necessary and copy your DLL into the correct Aurie folder. If
 you do this, please set `minInstallerVersion` in your `manifest.json` to no lower than `0.2.0`.
+
+### `outlines/`
+You shouldn't need to do this, but if you find yourself having to manually modify the `animation/generated/outlines.json`
+file, you can define a JSON file in the `outlines/` directory. This uses the same format as the `outlines.json` file
+itself and will be merged into it. You'll need to already have a sprite created for the outline, since this is just a
+list of which sprite uses which outline. The sprites format also allows adding an outline in there, which will
+automatically create the sprite outline, so you're better off using that instead.
+
+```json
+{
+  "my_sprite": "my_sprite_outline"
+}
+```
