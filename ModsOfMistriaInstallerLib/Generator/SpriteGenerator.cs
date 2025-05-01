@@ -51,6 +51,32 @@ public class SpriteGenerator : IGenerator
                     IsPlayerSprite = spriteData["IsPlayerSprite"]?.Value<bool>() ?? false,
                     IsUiSprite = spriteData["IsUiSprite"]?.Value<bool>() ?? false
                 });
+                
+                var outline = spriteData["OutlineLocation"]?.Value<string>();
+                if (!string.IsNullOrEmpty(outline) && mod.FileExists(outline))
+                {
+                    information.Sprites[modId].Add(new SpriteData
+                    {
+                        Name = $"{spriteName}_outline",
+                        Mod = mod,
+                        Location = outline,
+                        IsAnimated = false,
+                        OriginX =  spriteData["OriginX"]?.Value<int>(),
+                        OriginY = spriteData["OriginY"]?.Value<int>(),
+                        MarginRight = spriteData["MarginRight"]?.Value<int>(),
+                        MarginLeft = spriteData["MarginLeft"]?.Value<int>(),
+                        MarginTop = spriteData["MarginTop"]?.Value<int>(),
+                        MarginBottom = spriteData["MarginBottom"]?.Value<int>(),
+                        BoundingBoxMode = spriteData["BoundingBoxMode"]?.Value<uint>(),
+                        IsPlayerSprite = false,
+                        IsUiSprite = true
+                    });
+                    
+                    information.Outlines.Add(new JObject
+                    {
+                        { spriteName, $"{spriteName}_outline" }
+                    });
+                }
             }
         }
 

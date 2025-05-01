@@ -45,6 +45,50 @@ public class FiddleInstaller : IModuleInstaller
                 MergeNullValueHandling = MergeNullValueHandling.Merge
             });
         }
+
+        var extraObjects = (merged["extras"]!["objects"] as JArray)!;
+
+        var mergedNewObjects = new Dictionary<string, JObject>();
+        foreach (var newObject in information.NewObjects)
+        {
+            if (!mergedNewObjects.ContainsKey(newObject.Name))
+            {
+                mergedNewObjects.Add(newObject.Name, JObject.FromObject(newObject));
+            }
+            else
+            {
+                mergedNewObjects[newObject.Name].Merge(JObject.FromObject(newObject));
+            }
+        }
+        
+        foreach (var newObject in mergedNewObjects.Values)
+        {
+            extraObjects.Add(newObject);
+        }
+
+        merged["extras/objects"] = merged["extras"]!["objects"];
+        
+        var extraItems = (merged["extras"]!["items"] as JArray)!;
+
+        var mergedNewItems = new Dictionary<string, JObject>();
+        foreach (var newItem in information.NewItems)
+        {
+            if (!mergedNewItems.ContainsKey(newItem.Name))
+            {
+                mergedNewItems.Add(newItem.Name, JObject.FromObject(newItem));
+            }
+            else
+            {
+                mergedNewItems[newItem.Name].Merge(JObject.FromObject(newItem));
+            }
+        }
+        
+        foreach (var newItem in mergedNewItems.Values)
+        {
+            extraItems.Add(newItem);
+        }
+
+        merged["extras/items"] = merged["extras"]!["items"];
         
         File.WriteAllText(
             Path.Combine(fieldsOfMistriaLocation, "__fiddle__.json"),
