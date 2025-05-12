@@ -18,7 +18,7 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
 {
     private static readonly string IFEORegistryKey =
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options";
-    
+
     public void Install(
         string fieldsOfMistriaLocation,
         string modsLocation,
@@ -28,10 +28,12 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
     {
         if (information.AurieMods.Count == 0)
         {
-            TearDownRegistry();
+            // TearDownRegistry();
             return;
         }
         
+        PatchAurie(fieldsOfMistriaLocation, modsLocation);
+
         if (!Directory.Exists(Path.Combine(modsLocation, "Aurie", "MOMI")))
         {
             Directory.CreateDirectory(Path.Combine(modsLocation, "Aurie", "MOMI"));
@@ -41,24 +43,24 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
         {
             Directory.CreateDirectory(Path.Combine(modsLocation, "Native"));
         }
-        
-        SetupRegistry(fieldsOfMistriaLocation, modsLocation);
+
+        // SetupRegistry(fieldsOfMistriaLocation, modsLocation);
 
         List<FileToEnsure> filesToEnsure =
         [
-            new ()
+            new()
             {
                 Path = Path.Combine(modsLocation, "Aurie", "YYToolkit.dll"),
                 Repository = "AurieFramework/YYToolkit",
                 Artifact = "YYToolkit.dll"
             },
-            new ()
+            new()
             {
                 Path = Path.Combine(modsLocation, "Native", "AurieCore.dll"),
                 Repository = "AurieFramework/Aurie",
                 Artifact = "AurieCore.dll"
             },
-            new ()
+            new()
             {
                 Path = Path.Combine(modsLocation, "AurieLoader.exe"),
                 Repository = "AurieFramework/Aurie",
@@ -92,25 +94,25 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
                 await using var newFile = new FileStream(ensure.Path, FileMode.CreateNew);
 
                 await fileDownload.Content.CopyToAsync(newFile);
-                
+
                 newFile.Close();
             });
 
             task.Wait();
         });
-        
+
         foreach (var file in Directory.GetFiles(Path.Combine(modsLocation, "Aurie", "MOMI")))
         {
             File.Delete(file);
         }
-        
+
         foreach (var directory in Directory.GetDirectories(Path.Combine(modsLocation, "Aurie", "MOMI")))
         {
             foreach (var file in Directory.GetFiles(directory))
             {
                 File.Delete(file);
             }
-            
+
             Directory.Delete(directory);
         }
 
@@ -121,12 +123,70 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
                 Directory.CreateDirectory(Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.GetId()));
             }
 
-            using var newFile = new FileStream(Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.GetId(), Path.GetFileName(aurieMod.Location)), FileMode.CreateNew);
+            using var newFile =
+                new FileStream(
+                    Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.GetId(),
+                        Path.GetFileName(aurieMod.Location)), FileMode.CreateNew);
 
             aurieMod.Mod.ReadFileAsStream(aurieMod.Location).CopyTo(newFile);
-            
+
             newFile.Close();
         });
+    }
+
+    private void PatchAurie(string fieldsOfMistriaLocation, string modsLocation)
+    {
+        var patcherLocation = Path.Combine(fieldsOfMistriaLocation, "AuriePatcher.exe");
+        var dllLocation = Path.Combine(modsLocation, "Native", "AurieCore.dll");
+        var exeLocation = Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe");
+
+        var wineLocation = MistriaLocator.GetWineLocation();
+        
+        if (!File.Exists(patcherLocation) || !File.Exists(dllLocation))
+        {
+            return;
+        }
+
+        var proc = new Process();
+        
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            proc.StartInfo.FileName = patcherLocation;
+
+        } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            if (!File.Exists(wineLocation))
+            {
+                throw new Exception("Wine not found");
+            }
+            
+            proc.StartInfo.FileName = wineLocation;
+            proc.StartInfo.ArgumentList.Add(patcherLocation);
+        }
+        else
+        {
+            throw new Exception("Aurie cannot install on this system");
+        }
+        
+        proc.StartInfo.ArgumentList.Add(exeLocation);
+        proc.StartInfo.ArgumentList.Add(dllLocation);
+        proc.StartInfo.ArgumentList.Add("install");
+        proc.StartInfo.UseShellExecute = false;
+        proc.StartInfo.WorkingDirectory = fieldsOfMistriaLocation;
+        proc.StartInfo.RedirectStandardOutput = true;
+        proc.StartInfo.Verb = "runas";
+        proc.Start();
+
+        proc.WaitForExit(TimeSpan.FromSeconds(10));
+        
+        var output = proc.StandardOutput.ReadToEnd();
+
+        if (proc.ExitCode != 0)
+        {
+            throw new Exception(output);
+        }
+        
+        return;
     }
 
     public void Uninstall()
@@ -154,7 +214,7 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
 
         return [];
     }
-    
+
     private void SetupRegistry(string fieldsOfMistriaLocation, string modsLocation)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
