@@ -248,6 +248,11 @@ of new items to add to categories or both. Below is an example of the options th
       "category": "modded_icon"
     },
     {
+      "item": { "recipe_scroll":  "custom_recipe" },
+      "store": "general",
+      "category": "modded_icon"
+    },
+    {
       "item": { "cosmetic":  "froggy_hat" },
       "store": "louis",
       "category": "modded_icon",

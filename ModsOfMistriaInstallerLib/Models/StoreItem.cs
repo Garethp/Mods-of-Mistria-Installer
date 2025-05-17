@@ -21,6 +21,7 @@ class StoreItemConverter : Newtonsoft.Json.Converters.CustomCreationConverter<St
         if (item is JValue) return new SimpleItem();
         if (item is not JObject) return new StoreItem();
         if (item["cosmetic"] is not null) return new CosmeticItem();
+        if (item["recipe_scroll"] is not null) return new RecipeScrollItem();
 
         return new StoreItem();
     }
@@ -37,11 +38,6 @@ class StoreItemConverter : Newtonsoft.Json.Converters.CustomCreationConverter<St
 
         return target;
     }
-}
-
-public class CosmeticDefinition
-{
-    public string Cosmetic;
 }
 
 public class StoreItem
@@ -91,6 +87,11 @@ public class SimpleItem : StoreItem
     }
 }
 
+public class CosmeticDefinition
+{
+    public string Cosmetic;
+}
+
 [JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
 public class CosmeticItem : StoreItem
 {
@@ -101,6 +102,30 @@ public class CosmeticItem : StoreItem
         validation = base.Validate(validation, mod, file);
         
         if (Item is null || string.IsNullOrWhiteSpace(Item.Cosmetic))
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorStoreItemHasNoItem, Store, Category));
+        }
+        
+        return validation;
+    }
+}
+
+[JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
+public class RecipeScrollDefinition
+{
+    public string RecipeScroll;
+}
+
+[JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
+public class RecipeScrollItem : StoreItem
+{
+    public RecipeScrollDefinition Item;
+    
+    public new Validation Validate(Validation validation, IMod mod, string file)
+    {
+        validation = base.Validate(validation, mod, file);
+        
+        if (Item is null || string.IsNullOrWhiteSpace(Item.RecipeScroll))
         {
             validation.AddError(mod, file, string.Format(Resources.CoreErrorStoreItemHasNoItem, Store, Category));
         }
