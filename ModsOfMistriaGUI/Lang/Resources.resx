@@ -104,4 +104,7 @@
     <data name="DisableAllMods" xml:space="preserve">
         <value>Disable All Mods</value>
     </data>
+    <data name="GUIReloadModlist" xml:space="preserve">
+        <value>Reload mod list.</value>
+    </data>
 </root>

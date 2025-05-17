@@ -21,6 +21,7 @@
                             </Image.Source>
                         </Image>
                     </MenuItem.Header>
+                    <MenuItem Header="{x:Static lang:Resources.GUIReloadModlist}" Command="{Binding ReloadModlistCommand}" />
                     <MenuItem Header="{x:Static lang:Resources.SaveLogFile}" Command="{Binding SaveLogFileCommand}" />
                     <MenuItem Header="{x:Static lang:Resources.EnableAllMods}" Command="{Binding EnableAllModsCommand}" />
                     <MenuItem Header="{x:Static lang:Resources.DisableAllMods}" Command="{Binding DisableAllModsCommand}" />

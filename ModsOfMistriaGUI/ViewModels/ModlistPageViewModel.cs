@@ -25,8 +25,13 @@ public partial class ModlistPageViewModel : PageViewBase
 
     private void UpdateModlist()
     {
+        UpdateModlist(false);
+    }
+    
+    private void UpdateModlist(bool force)
+    {
         if (_updating) return;
-        if (MistriaLocation == _settings.MistriaLocation && ModsLocation == _settings.ModsLocation) return;
+        if (MistriaLocation == _settings.MistriaLocation && ModsLocation == _settings.ModsLocation && !force) return;
         _updating = true;
 
         MistriaLocation = _settings.MistriaLocation;
@@ -121,6 +126,12 @@ public partial class ModlistPageViewModel : PageViewBase
         {
             await File.WriteAllTextAsync(files.Path.AbsolutePath, string.Join("\r\n", logs));
         }
+    }
+
+    [RelayCommand]
+    private void ReloadModlist()
+    {
+        UpdateModlist(true);
     }
 
     [RelayCommand]

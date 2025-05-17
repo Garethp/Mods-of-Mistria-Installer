@@ -132,6 +132,15 @@ namespace Garethp.ModsOfMistriaGUI.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Reload mod list..
+        /// </summary>
+        public static string GUIReloadModlist {
+            get {
+                return ResourceManager.GetString("GUIReloadModlist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Install.
         /// </summary>
         public static string InstallButtonText {
@@ -186,7 +195,7 @@ namespace Garethp.ModsOfMistriaGUI.Lang {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Installing will install the following mods:.
+        ///   Looks up a localized string similar to Check the boxes for all the mods you want to install:.
         /// </summary>
         public static string ModsWillBeInstalled {
             get {
