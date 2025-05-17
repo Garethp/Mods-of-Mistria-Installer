@@ -110,6 +110,7 @@ public class CosmeticItem : StoreItem
     }
 }
 
+[JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
 public class RecipeScrollDefinition
 {
     public string RecipeScroll;
