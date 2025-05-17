@@ -13,7 +13,7 @@
         <AssemblyName>ModsOfMistriaInstaller</AssemblyName>
         <RootNamespace>Garethp.ModsOfMistriaGUI</RootNamespace>
     </PropertyGroup>
-    
+
     <PropertyGroup>
         <PublishSingleFile>true</PublishSingleFile>
         <SelfContained>true</SelfContained>
@@ -28,7 +28,7 @@
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x86'">
         <AssemblyName>ModsOfMistriaInstaller-win-x86</AssemblyName>
     </PropertyGroup>
-    
+
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
         <AssemblyName>ModsOfMistriaInstaller-linux</AssemblyName>
     </PropertyGroup>
@@ -36,11 +36,11 @@
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
         <AssemblyName>ModsOfMistriaInstaller-osx</AssemblyName>
     </PropertyGroup>
-    
+
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-      <DebugType>none</DebugType>
+        <DebugType>none</DebugType>
     </PropertyGroup>
-    
+
     <ItemGroup>
         <PackageReference Include="Avalonia" Version="11.2.5" />
         <PackageReference Include="Avalonia.Controls.ItemsRepeater" Version="11.1.5" />
@@ -60,48 +60,47 @@
         <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.9" ExcludeAssets="all" />
         <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.9" />
     </ItemGroup>
-    
+
     <ItemGroup>
-      <Compile Update="Views\MainWindow.axaml.cs">
-        <DependentUpon>MainWindow.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="App.axaml.cs">
-        <DependentUpon>App.axaml</DependentUpon>
-        <SubType>Code</SubType>
-      </Compile>
-      <Compile Update="Lang\Resources.Designer.cs">
-        <DesignTime>True</DesignTime>
-        <AutoGen>True</AutoGen>
-        <DependentUpon>Resources.resx</DependentUpon>
-      </Compile>
+        <Compile Update="Views\MainWindow.axaml.cs">
+            <DependentUpon>MainWindow.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
+        <Compile Update="App.axaml.cs">
+            <DependentUpon>App.axaml</DependentUpon>
+            <SubType>Code</SubType>
+        </Compile>
     </ItemGroup>
-    
+
     <ItemGroup>
-      <AdditionalFiles Include="Controls\ModlistCheckbox.axaml" />
+        <AdditionalFiles Include="Controls\ModlistCheckbox.axaml" />
     </ItemGroup>
-    
+
     <ItemGroup>
-      <ProjectReference Include="..\ModsOfMistriaInstallerLib\ModsOfMistriaInstallerLib.csproj" />
+        <ProjectReference Include="..\ModsOfMistriaInstallerLib\ModsOfMistriaInstallerLib.csproj" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Lang\**" />
+        <UpToDateCheckInput Remove="Assets\icon.ico" />
     </ItemGroup>
 
     <ItemGroup>
-      <UpToDateCheckInput Remove="Assets\icon.ico" />
+        <EmbeddedResource Update="Lang\Resources.resx">
+            <Generator>PublicResXFileCodeGenerator</Generator>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Update="Lang\Resources.resx">
-        <Generator>PublicResXFileCodeGenerator</Generator>
-        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      </EmbeddedResource>
+        <Compile Update="Lang\Resources.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
     </ItemGroup>
 
 </Project>
