@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:i="https://github.com/projektanker/icons.avalonia"
-             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.Lang"
+             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaInstallerLib.Lang;assembly=ModsOfMistriaInstallerLib"
              xmlns:models="using:Garethp.ModsOfMistriaGUI.Models"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Garethp.ModsOfMistriaGUI.Controls.ModlistCheckbox">
@@ -46,7 +46,7 @@
                     <Image Height="16" Margin="5 0 0 0"
                            IsVisible="{Binding InWarning}">
                         <ToolTip.Tip>
-                            <TextBlock Text="{x:Static lang:Resources.ModHasWarnings}" />
+                            <TextBlock Text="{x:Static lang:Resources.GUIModHasWarnings}" />
                         </ToolTip.Tip>
                         <Image.Source>
                             <i:IconImage Value="fa-exclamation-triangle"
@@ -57,7 +57,7 @@
                     <Image Height="16" Margin="5 0 0 0"
                            IsVisible="{Binding InError}">
                         <ToolTip.Tip>
-                            <TextBlock Text="{x:Static lang:Resources.ModHasErrors}"></TextBlock>
+                            <TextBlock Text="{x:Static lang:Resources.GUIModHasErrors}"></TextBlock>
                         </ToolTip.Tip>
                         <Image.Source>
                             <i:IconImage Value="fa-exclamation-triangle"

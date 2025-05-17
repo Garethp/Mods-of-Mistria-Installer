@@ -3,9 +3,9 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Garethp.ModsOfMistriaGUI.Lang;
 using Garethp.ModsOfMistriaGUI.Models;
 using Garethp.ModsOfMistriaInstallerLib;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using MsBox.Avalonia;
 
 namespace Garethp.ModsOfMistriaGUI.ViewModels;
@@ -61,19 +61,19 @@ public partial class ModlistPageViewModel : PageViewBase
 
             if (MistriaLocation.Equals(""))
             {
-                InstallStatus = Resources.CouldNotFindMistria;
+                InstallStatus = Resources.GUICouldNotFindMistria;
             }
             else if (ModsLocation.Equals(""))
             {
-                InstallStatus = Resources.CouldNotFindMods;
+                InstallStatus = Resources.GUICouldNotFindMods;
             }
             else if (Mods.Count == 0)
             {
-                InstallStatus = Resources.NoModsToInstall;
+                InstallStatus = Resources.GUINoModsToInstall;
             }
             else if (Mods.Any(mod => mod.CanInstall is not null))
             {
-                InstallStatus = Resources.ModsRequireNewerVersion;
+                InstallStatus = Resources.GUIModsRequireNewerVersion;
             }
         });
 
@@ -102,7 +102,7 @@ public partial class ModlistPageViewModel : PageViewBase
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private void InstallMods()
     {
-        InstallStatus = Resources.InstallInProgress;
+        InstallStatus = Resources.GUIInstallInProgress;
         IsInstalling = true;
 
         Task.Run(BackgroundInstall);
@@ -118,7 +118,7 @@ public partial class ModlistPageViewModel : PageViewBase
 
         var files = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions()
         {
-            Title = Resources.PickLogFile,
+            Title = Resources.GUIPickLogFile,
             FileTypeChoices = [FilePickerFileTypes.TextPlain]
         });
 
@@ -179,7 +179,7 @@ public partial class ModlistPageViewModel : PageViewBase
                 {
                     await Dispatcher.UIThread.InvokeAsync(() =>
                         MessageBoxManager
-                            .GetMessageBoxStandard(Resources.UninstallInformationTitle, string.Join('\n', information))
+                            .GetMessageBoxStandard(Resources.GUIUninstallInformationTitle, string.Join('\n', information))
                             .ShowAsync());
                 }
 
@@ -211,7 +211,7 @@ public partial class ModlistPageViewModel : PageViewBase
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
                     MessageBoxManager
-                        .GetMessageBoxStandard(Resources.PreinstallInformationTitle, string.Join('\n', information))
+                        .GetMessageBoxStandard(Resources.GUIPreinstallInformationTitle, string.Join('\n', information))
                         .ShowAsync());
             }
 

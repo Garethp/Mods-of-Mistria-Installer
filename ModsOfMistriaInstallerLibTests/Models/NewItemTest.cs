@@ -47,7 +47,7 @@ public class NewItemTest
         
         var validation = newItem.Validate(new Validation(), _mockMod, "new_item.json", "id");
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.ErrorNewItemHasNoOverwritesOtherMod, newItem.Name));
+        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.CoreErrorNewItemHasNoOverwritesOtherMod, newItem.Name));
         
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }

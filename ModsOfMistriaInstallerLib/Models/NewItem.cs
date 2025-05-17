@@ -21,7 +21,7 @@ public class NewItem
     {
         if (OverwritesOtherMod is null)
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorNewItemHasNoOverwritesOtherMod, Name));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorNewItemHasNoOverwritesOtherMod, Name));
         }
         
         return validation;

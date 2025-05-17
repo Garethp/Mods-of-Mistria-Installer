@@ -59,12 +59,12 @@ public class FolderMod : IMod
     {
         if (!File.Exists(manifestLocation))
         {
-            throw new FileNotFoundException(Resources.CouldNotFindModManifest);
+            throw new FileNotFoundException(Resources.CoreCouldNotFindModManifest);
         }
 
         if (!manifestLocation.EndsWith("manifest.json"))
         {
-            throw new Exception(Resources.ManifestFileNamedIncorrectly);
+            throw new Exception(Resources.CoreManifestFileNamedIncorrectly);
         }
 
         var manifest = JObject.Parse(File.ReadAllText(manifestLocation));
@@ -89,19 +89,19 @@ public class FolderMod : IMod
         if (string.IsNullOrEmpty(_author))
         {
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
-                Resources.ManifestHasNoAuthor));
+                Resources.CoreManifestHasNoAuthor));
         }
 
         if (string.IsNullOrEmpty(_name))
         {
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
-                Resources.ManifestHasNoName));
+                Resources.CoreManifestHasNoName));
         }
 
         if (string.IsNullOrEmpty(_version))
         {
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
-                Resources.ManifestHasNoVersion));
+                Resources.CoreManifestHasNoVersion));
         }
 
         return _validation;
@@ -119,12 +119,12 @@ public class FolderMod : IMod
 
             if (requiredVersion.CompareTo(currentVersion) > 0)
             {
-                return Resources.ModRequiresNewerInstaller;
+                return Resources.CoreModRequiresNewerInstaller;
             }
         }
         catch (Exception)
         {
-            return string.Format(Resources.ErrorReadingVersionForMod, GetId());
+            return string.Format(Resources.CoreErrorReadingVersionForMod, GetId());
         }
 
         return null;

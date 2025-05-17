@@ -84,7 +84,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         totalTime.Start();
         if (!Directory.Exists(fieldsOfMistriaLocation))
         {
-            throw new DirectoryNotFoundException(Resources.MistriaLocationDoesNotExist);
+            throw new DirectoryNotFoundException(Resources.CoreMistriaLocationDoesNotExist);
         }
         
         if (IsFreshInstall())
@@ -113,7 +113,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         {
             var informationWithMod = new GeneratedInformationWithMod(mod);
             
-            reportStatus(string.Format(Resources.GeneratingInformationForMod, mod.GetId()), "");
+            reportStatus(string.Format(Resources.CoreGeneratingInformationForMod, mod.GetId()), "");
             foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
             {
                 informationWithMod.Merge(generator.Generate(mod));
@@ -141,7 +141,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         new ChecksumInstaller().Install(fieldsOfMistriaLocation, modsLocation, generatedInformation, reportStatus);
         totalTime.Stop();
         
-        reportStatus(Resources.InstallCompleted, totalTime.ToString());
+        reportStatus(Resources.CoreInstallCompleted, totalTime.ToString());
     }
 
     private bool IsFreshInstall()

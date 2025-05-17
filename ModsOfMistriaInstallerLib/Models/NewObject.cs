@@ -37,25 +37,25 @@ public class NewObject
     {
         if (string.IsNullOrEmpty(Name))
         {
-            validation.AddError(mod, file, Resources.ErrorNewObjectNoName);
+            validation.AddError(mod, file, Resources.CoreErrorNewObjectNoName);
             return validation;
         }
         
         if (OverwritesOtherMod is null)
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorNewObjectHasNoOverwritesOtherMod, Name));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorNewObjectHasNoOverwritesOtherMod, Name));
         }
         
         if (string.IsNullOrEmpty(Category))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorNewObjectNoCategory, Name));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorNewObjectNoCategory, Name));
         }  else if (!ValidCategories.Contains(Category)) {
-            validation.AddError(mod, file, string.Format(Resources.ErrorNewObjectInvalidCategory, Name, Category));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorNewObjectInvalidCategory, Name, Category));
         }
         
         if (Data.ToString()?.Replace(" ","") == "{}")
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorNewObjectNoData, Name));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorNewObjectNoData, Name));
         }
         
         return validation;

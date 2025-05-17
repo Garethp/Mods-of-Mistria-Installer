@@ -35,13 +35,13 @@ public class GraphicsInstaller : IModuleInstaller
         
         var readDataFile = new FileInfo(Path.Combine(fieldsOfMistriaLocation, "data.bak.win"));
         
-        reportStatus(Resources.ReadingSprites, "");
+        reportStatus(Resources.CoreReadingSprites, "");
         
         var fileRead = readDataFile.OpenRead();
         var gmData = UndertaleIO.Read(fileRead);
         fileRead.Close();
         
-        reportStatus(Resources.ImportingSprites, "");
+        reportStatus(Resources.CoreImportingSprites, "");
         var importer = new GraphicsImporter();
         
         foreach (var modName in information.Sprites.Keys)
@@ -54,7 +54,7 @@ public class GraphicsInstaller : IModuleInstaller
             importer.ImportTilesetData(fieldsOfMistriaLocation, gmData, information.Tilesets[modName], modName);
         }
         
-        reportStatus(Resources.WritingSprites, "");
+        reportStatus(Resources.CoreWritingSprites, "");
         
         var writeDataFile = new FileInfo(Path.Combine(fieldsOfMistriaLocation, "data.win"));
         var fileWrite = writeDataFile.OpenWrite();

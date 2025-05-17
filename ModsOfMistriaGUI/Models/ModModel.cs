@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
-using Garethp.ModsOfMistriaGUI.Lang;
 
 namespace Garethp.ModsOfMistriaGUI.Models;
 
@@ -40,5 +40,5 @@ public class ModModel: ObservableObject
     
     public string Errors => string.Join("\r\n", Mod.GetValidation().Errors.Select(warning => warning.Message).ToList());
     
-    public string Full => string.Format(Resources.ModByAuthor, Mod.GetName(), Mod.GetAuthor());
+    public string Full => string.Format(Resources.GUIModByAuthor, Mod.GetName(), Mod.GetAuthor());
 }

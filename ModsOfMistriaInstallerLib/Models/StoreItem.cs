@@ -55,18 +55,18 @@ public class StoreItem
     {
         if (string.IsNullOrWhiteSpace(Store))
         {
-            validation.AddError(mod, file, Resources.ErrorStoreItemHasNoStore);
+            validation.AddError(mod, file, Resources.CoreErrorStoreItemHasNoStore);
         }
 
         if (string.IsNullOrWhiteSpace(Category))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorStoreItemHasNoCategory, Store));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorStoreItemHasNoCategory, Store));
         }
         
         var validSeasons = new List<string> { "spring", "summer", "fall", "winter" };
         if (!string.IsNullOrWhiteSpace(Season) && !validSeasons.Contains(Season))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorStoreItemHasInvalidSeason, Store, Category, Season));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorStoreItemHasInvalidSeason, Store, Category, Season));
         }
         
         return validation;
@@ -84,7 +84,7 @@ public class SimpleItem : StoreItem
         
         if (string.IsNullOrWhiteSpace(Item))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorStoreItemHasNoItem, Store, Category));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorStoreItemHasNoItem, Store, Category));
         }
         
         return validation;
@@ -102,7 +102,7 @@ public class CosmeticItem : StoreItem
         
         if (Item is null || string.IsNullOrWhiteSpace(Item.Cosmetic))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorStoreItemHasNoItem, Store, Category));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorStoreItemHasNoItem, Store, Category));
         }
         
         return validation;

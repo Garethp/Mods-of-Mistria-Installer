@@ -352,8 +352,8 @@ you do this, please set `minInstallerVersion` in your `manifest.json` to no lowe
 If you're interested in contributing translations of MOMI into other languages, that would be super appreciated! Here's
 some steps on how to go about doing that!
 
-1. There are three different language files for MOMI. They're located at [`ModsOfMistriaInstallerLib/Lang/Resources.resx`](ModsOfMistriaInstallerLib/Lang/Resources.resx), [`ModsOfMistriaGUI/Lang/Resources.resx`](ModsOfMistriaGUI/Lang/Resources.resx) and [`ModsOfMistriaCommandLine/Lang/Resources.resx`](ModsOfMistriaCommandLine/Lang/Resources.resx). Download all three to translate them each.
-2. Go to [this page](https://catherinearnould.com/autres/resx/) to upload and edit the files one at a time.
+1. There's a main localisation file for English located at [`ModsOfMistriaInstallerLib/Lang/Resources.resx`](ModsOfMistriaInstallerLib/Lang/Resources.resx), go ahead and download it.
+2. Go to [this page](https://catherinearnould.com/autres/resx/) to upload and edit the file.
 3. If a string things like `{0}` and `{1}` in them, those are placeholders where MOMI will put other strings in at runtime, make sure that your translation keeps them.
 4. When you're done editing, click "Save and download .resx"
 5. Look up the "Language Culture Name" of your language from [this table](https://docwiki.embarcadero.com/RADStudio/Athens//en/Language_Culture_Names,_Codes,_and_ISO_Values). For example, Dutch in the Netherlands is "nl-NL".

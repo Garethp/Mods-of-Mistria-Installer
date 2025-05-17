@@ -60,19 +60,19 @@ public class TilesetGenerator: IGenerator
             } 
             catch (Exception e)
             {
-                validation.AddError(mod, file, string.Format(Resources.CouldNotParseJSON, e.Message));
+                validation.AddError(mod, file, string.Format(Resources.CoreCouldNotParseJSON, e.Message));
                 continue;
             }
             
             if (tilesets is null)
             {
-                validation.AddError(mod, file, Resources.NoDataInJSON);
+                validation.AddError(mod, file, Resources.CoreNoDataInJSON);
                 continue;
             }
             
             if (tilesets.Count == 0)
             {
-                validation.AddWarning(mod, file, Resources.TilesetsFileEmpty);
+                validation.AddWarning(mod, file, Resources.CoreTilesetsFileEmpty);
             }
             
             foreach (var tilesetName in tilesets.Keys)

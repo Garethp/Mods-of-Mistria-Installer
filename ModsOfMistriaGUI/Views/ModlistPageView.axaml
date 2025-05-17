@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="using:Garethp.ModsOfMistriaGUI.Models"
-             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.Lang"
+             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaInstallerLib.Lang;assembly=ModsOfMistriaInstallerLib"
              xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
              xmlns:i="https://github.com/projektanker/icons.avalonia"
 
@@ -22,18 +22,18 @@
                         </Image>
                     </MenuItem.Header>
                     <MenuItem Header="{x:Static lang:Resources.GUIReloadModlist}" Command="{Binding ReloadModlistCommand}" />
-                    <MenuItem Header="{x:Static lang:Resources.SaveLogFile}" Command="{Binding SaveLogFileCommand}" />
-                    <MenuItem Header="{x:Static lang:Resources.EnableAllMods}" Command="{Binding EnableAllModsCommand}" />
-                    <MenuItem Header="{x:Static lang:Resources.DisableAllMods}" Command="{Binding DisableAllModsCommand}" />
+                    <MenuItem Header="{x:Static lang:Resources.GUISaveLogFile}" Command="{Binding SaveLogFileCommand}" />
+                    <MenuItem Header="{x:Static lang:Resources.GUIEnableAllMods}" Command="{Binding EnableAllModsCommand}" />
+                    <MenuItem Header="{x:Static lang:Resources.GUIDisableAllMods}" Command="{Binding DisableAllModsCommand}" />
                 </MenuItem>
             </Menu>
 
             <WrapPanel DockPanel.Dock="Right" Height="50" Margin="0 10 0 0" HorizontalAlignment="Right">
                 <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
                 <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}"
-                        Content="{x:Static lang:Resources.InstallButtonText}" />
+                        Content="{x:Static lang:Resources.GUIInstallButtonText}" />
                 <Button Command="{Binding UnInstallModsCommand}"
-                        Content="{x:Static lang:Resources.UninstallButtonText}" />
+                        Content="{x:Static lang:Resources.GUIUninstallButtonText}" />
             </WrapPanel>
         </DockPanel>
 
@@ -43,14 +43,14 @@
             </StackPanel>
 
             <StackPanel IsVisible="{Binding !Exception.Length}" DockPanel.Dock="Top">
-                <TextBlock Text="{x:Static lang:Resources.GreetingText}" />
+                <TextBlock Text="{x:Static lang:Resources.GUIGreetingText}" />
                 <TextBlock></TextBlock>
                 <WrapPanel>
                     <TextBlock Margin="0 0 5 0"
-                               Text="{x:Static lang:Resources.FieldsOfMistriaDetectedLocation}" />
+                               Text="{x:Static lang:Resources.GUIFieldsOfMistriaDetectedLocation}" />
                     <TextBlock Text="{Binding MistriaLocation}" />
                 </WrapPanel>
-                <TextBlock Text="{x:Static lang:Resources.ModsWillBeInstalled}" />
+                <TextBlock Text="{x:Static lang:Resources.GUIModsWillBeInstalled}" />
             </StackPanel>
 
             <ScrollViewer Margin="15 5 0 0" IsVisible="{Binding !Exception.Length}">

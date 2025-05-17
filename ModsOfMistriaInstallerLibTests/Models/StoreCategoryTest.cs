@@ -50,7 +50,7 @@ public class StoreCategoryTest
         var validation = category.Validate(new Validation(), _mockMod, "storeCategory.json");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "storeCategory.json", Resources.ErrorStoreCategoryHasNoStore);
+        expectedValidation.AddError(_mockMod, "storeCategory.json", Resources.CoreErrorStoreCategoryHasNoStore);
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -63,7 +63,7 @@ public class StoreCategoryTest
         var validation = category.Validate(new Validation(), _mockMod, "storeCategory.json");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "storeCategory.json", Resources.ErrorStoreCategoryNoName);
+        expectedValidation.AddError(_mockMod, "storeCategory.json", Resources.CoreErrorStoreCategoryNoName);
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -76,7 +76,7 @@ public class StoreCategoryTest
         var validation = category.Validate(new Validation(), _mockMod, "storeCategory.json");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "storeCategory.json", string.Format(Resources.ItemDoesNotHaveValue, "Category's sprite"));
+        expectedValidation.AddError(_mockMod, "storeCategory.json", string.Format(Resources.CoreItemDoesNotHaveValue, "Category's sprite"));
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -89,7 +89,7 @@ public class StoreCategoryTest
         var validation = category.Validate(new Validation(), _mockMod, "storeCategory.json");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "storeCategory.json", string.Format(Resources.SpriteFileDoesNotExist, "Category's sprite", "image/not-found.png"));
+        expectedValidation.AddError(_mockMod, "storeCategory.json", string.Format(Resources.CoreSpriteFileDoesNotExist, "Category's sprite", "image/not-found.png"));
 
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
