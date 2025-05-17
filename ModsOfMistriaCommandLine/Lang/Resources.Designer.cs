@@ -62,36 +62,36 @@ namespace ModsOfMistriaCommandLine.Lang {
         /// <summary>
         ///   Looks up a localized string similar to Completed. Press any key to exit..
         /// </summary>
-        public static string Completed {
+        public static string CLICompleted {
             get {
-                return ResourceManager.GetString("Completed", resourceCulture);
+                return ResourceManager.GetString("CLICompleted", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Running Build {0}.
         /// </summary>
-        public static string RunningBuild {
+        public static string CLIRunningBuild {
             get {
-                return ResourceManager.GetString("RunningBuild", resourceCulture);
+                return ResourceManager.GetString("CLIRunningBuild", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to All mods uninstalled. Press any key to exit..
         /// </summary>
-        public static string UninstallComplete {
+        public static string CLIUninstallComplete {
             get {
-                return ResourceManager.GetString("UninstallComplete", resourceCulture);
+                return ResourceManager.GetString("CLIUninstallComplete", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to You&apos;re running a 64-bit operating system, but have accidently downloaded the 32-bit version of MOMI. Please download the version of MOMI that does not include &quot;-x86&quot;..
         /// </summary>
-        public static string Warning32Bit {
+        public static string CLIWarning32Bit {
             get {
-                return ResourceManager.GetString("Warning32Bit", resourceCulture);
+                return ResourceManager.GetString("CLIWarning32Bit", resourceCulture);
             }
         }
     }

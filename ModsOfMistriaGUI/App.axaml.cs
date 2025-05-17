@@ -38,14 +38,14 @@ public class App : Application
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     MessageBoxManager.GetMessageBoxStandard(
-                        Lang.Resources.Warning32BitTitle,
-                        Lang.Resources.Warning32Bit
+                        Lang.Resources.GUIWarning32BitTitle,
+                        Lang.Resources.GUIWarning32Bit
                     ).ShowAsync();
                 });
             }
             
-            var upgradeMessage = MessageBoxManager.GetMessageBoxStandard(Lang.Resources.UpdateNagTitle,
-                Lang.Resources.UpdateNagMessage);
+            var upgradeMessage = MessageBoxManager.GetMessageBoxStandard(Lang.Resources.GUIUpdateNagTitle,
+                Lang.Resources.GUIUpdateNagMessage);
         
             Task.Run(async () =>
             {

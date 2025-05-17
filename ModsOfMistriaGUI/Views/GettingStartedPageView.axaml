@@ -10,7 +10,7 @@
              d:DataContext="{x:Static models:DesignData.GettingStartedPage}">
     <StackPanel>
         <WrapPanel>
-            <TextBlock Text="{x:Static lang:Resources.SetupMistriaLocation}" />
+            <TextBlock Text="{x:Static lang:Resources.GUISetupMistriaLocation}" />
             <TextBlock Text="{Binding Settings.MistriaLocation}" />
             <Button Command="{Binding SelectMistriaLocationCommand}">
                 <Image Height="14">
@@ -22,7 +22,7 @@
         </WrapPanel>
 
         <WrapPanel>
-            <TextBlock Text="{x:Static lang:Resources.SetupModsLocation}" />
+            <TextBlock Text="{x:Static lang:Resources.GUISetupModsLocation}" />
             <TextBlock Text="{Binding Settings.ModsLocation}" />
             <Button Command="{Binding SelectModsLocationCommand}">
                 <Image Height="14">
@@ -34,7 +34,7 @@
         </WrapPanel>
 
         <WrapPanel IsVisible="{Binding CanCreateModsFolder}">
-            <TextBlock Text="{x:Static lang:Resources.CanCreateModsFolder}" />
+            <TextBlock Text="{x:Static lang:Resources.GUICanCreateModsFolder}" />
             <Button Command="{Binding CreateModsFolderCommand}">
                 <Image Height="14">
                     <Image.Source>

@@ -52,19 +52,19 @@ public class StoreGenerator: IGenerator
             }
             catch (Exception e)
             {
-                validation.AddError(mod, file, string.Format(Resources.CouldNotParseJSON, e.Message));
+                validation.AddError(mod, file, string.Format(Resources.CoreCouldNotParseJSON, e.Message));
                 continue;
             }
 
             if (storeData is null)
             {
-                validation.AddError(mod, file, Resources.NoDataInJSON);
+                validation.AddError(mod, file, Resources.CoreNoDataInJSON);
                 continue;
             }
             
             if (storeData.Categories.Count == 0 && storeData.Items.Count == 0)
             {
-                validation.AddWarning(mod, file, Resources.StoreFileHasNoData);
+                validation.AddWarning(mod, file, Resources.CoreStoreFileHasNoData);
             }
             
             storeData.Categories.ForEach(category =>

@@ -14,7 +14,7 @@ public class MistriaLocator
             .ToList()
             .ForEach(location =>
             {
-                Logger.Log(Resources.LookingForMistriaAt, Path.Combine(location, "data.win"));
+                Logger.Log(Resources.CoreLookingForMistriaAt, Path.Combine(location, "data.win"));
             });
 
         Logger.Log(Directory.GetCurrentDirectory());
@@ -29,7 +29,7 @@ public class MistriaLocator
             var currentDirectory = Directory.GetCurrentDirectory();
             if (File.Exists(Path.Combine(currentDirectory, "data.win")))
             {
-                Logger.Log(Resources.MistriaNotFoundFallback);
+                Logger.Log(Resources.CoreMistriaNotFoundFallback);
                 return currentDirectory;
             }
             

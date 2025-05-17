@@ -63,7 +63,7 @@ public class StoreItemTest
         var validation = item.Validate(new Validation(), _mockMod, "storeItem.json");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "storeItem.json", Resources.ErrorStoreItemHasNoStore);
+        expectedValidation.AddError(_mockMod, "storeItem.json", Resources.CoreErrorStoreItemHasNoStore);
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -76,7 +76,7 @@ public class StoreItemTest
         var validation = item.Validate(new Validation(), _mockMod, "storeItem.json");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "storeItem.json", string.Format(Resources.ErrorStoreItemHasNoCategory, "general store"));
+        expectedValidation.AddError(_mockMod, "storeItem.json", string.Format(Resources.CoreErrorStoreItemHasNoCategory, "general store"));
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -89,7 +89,7 @@ public class StoreItemTest
         var validation = item.Validate(new Validation(), _mockMod, "storeItem.json");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "storeItem.json", string.Format(Resources.ErrorStoreItemHasInvalidSeason, item.Store, item.Category, "invalid"));
+        expectedValidation.AddError(_mockMod, "storeItem.json", string.Format(Resources.CoreErrorStoreItemHasInvalidSeason, item.Store, item.Category, "invalid"));
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }

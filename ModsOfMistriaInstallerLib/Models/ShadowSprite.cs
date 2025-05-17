@@ -21,12 +21,12 @@ public class ShadowSprite
     {
         if (string.IsNullOrEmpty(RegularSpriteName))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorShadowHasNoSprite, id));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorShadowHasNoSprite, id));
         }
         
         if (string.IsNullOrEmpty(Sprite))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorShadowHasNoLocation, id));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorShadowHasNoLocation, id));
         }
 
         if (IsAnimated && ValidationTools.CheckSpriteDirectoryExists(mod, $"Shadow {id}", Sprite) is

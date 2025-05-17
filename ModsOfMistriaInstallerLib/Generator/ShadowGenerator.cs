@@ -61,19 +61,19 @@ public class ShadowGenerator : IGenerator
             }
             catch (Exception e)
             {
-                validation.AddError(mod, file, string.Format(Resources.CouldNotParseJSON, e.Message));
+                validation.AddError(mod, file, string.Format(Resources.CoreCouldNotParseJSON, e.Message));
                 continue;
             }
             
             if (shadowSprites is null)
             {
-                validation.AddError(mod, file, Resources.NoDataInJSON);
+                validation.AddError(mod, file, Resources.CoreNoDataInJSON);
                 continue;
             }
 
             if (shadowSprites.Count == 0)
             {
-                validation.AddWarning(mod, file, Resources.WarningShadowFileNoShadows);
+                validation.AddWarning(mod, file, Resources.CoreWarningShadowFileNoShadows);
             }
 
             foreach (var shadowName in shadowSprites.Keys)

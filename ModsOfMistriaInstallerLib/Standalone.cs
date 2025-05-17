@@ -13,7 +13,7 @@ public static class Standalone
         var mistriaLocation = MistriaLocator.GetMistriaLocation();
         if (mistriaLocation == null)
         {
-            Logger.Log(Resources.MistriaNotFound);
+            Logger.Log(Resources.CoreMistriaNotFound);
             return;
         }
         
@@ -21,11 +21,11 @@ public static class Standalone
 
         if (modsLocation is null || !Directory.Exists(modsLocation))
         {
-            Logger.Log(Resources.CouldNotGuessModsAt, Path.Combine(mistriaLocation, "mods"));
+            Logger.Log(Resources.CoreCouldNotGuessModsAt, Path.Combine(mistriaLocation, "mods"));
             return;
         }
 
-        Logger.Log(Resources.GuessedMistriaAt, mistriaLocation);
+        Logger.Log(Resources.CoreGuessedMistriaAt, mistriaLocation);
 
         var totalTime = new Stopwatch();
         totalTime.Start();
@@ -46,7 +46,7 @@ public static class Standalone
 
                 if (mod.GetValidation().Status == ValidationStatus.Invalid)
                 {
-                    Logger.Log(Resources.SkippingModBecauseErrors, mod.GetId());
+                    Logger.Log(Resources.CoreSkippingModBecauseErrors, mod.GetId());
                     foreach (var error in mod.GetValidation().Errors)
                     {
                         Logger.Log($"  {error.Message}");
@@ -57,7 +57,7 @@ public static class Standalone
 
                 if (mod.GetValidation().Status == ValidationStatus.Warning)
                 {
-                    Logger.Log(Resources.ModHasWarnings, mod.GetId());
+                    Logger.Log(Resources.CoreModHasWarnings, mod.GetId());
                     foreach (var warning in mod.GetValidation().Warnings)
                     {
                         Logger.Log($"  {warning.Message}");
@@ -70,11 +70,11 @@ public static class Standalone
         
         installer.InstallMods(allMods, (message, timeTaken) =>
         {
-            Logger.Log(Resources.InstalledInReporter, message, timeTaken);
+            Logger.Log(Resources.CoreInstalledInReporter, message, timeTaken);
         });
         
         totalTime.Stop();
-        Logger.Log(Resources.ModsInstalledInTime, totalTime);
+        Logger.Log(Resources.CoreModsInstalledInTime, totalTime);
     }
 
     public static void UnInstall()
@@ -82,7 +82,7 @@ public static class Standalone
         var mistriaLocation = MistriaLocator.GetMistriaLocation();
         if (mistriaLocation == null)
         {
-            Logger.Log(Resources.MistriaNotFound);
+            Logger.Log(Resources.CoreMistriaNotFound);
             return;
         }
         

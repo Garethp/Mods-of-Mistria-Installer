@@ -142,15 +142,15 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
 
     public List<string> GetPreinstallInformation(GeneratedInformation information)
     {
-        if (information.AurieMods.Count > 0 && !IsInstalled()) return [Resources.PreinstallWillInstallAurie];
-        if (information.AurieMods.Count == 0 && IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
+        if (information.AurieMods.Count > 0 && !IsInstalled()) return [Resources.CorePreinstallWillInstallAurie];
+        if (information.AurieMods.Count == 0 && IsInstalled()) return [Resources.CorePreinstallWillRemoveAurie];
 
         return [];
     }
 
     public List<string> GetPreUninstallInformation()
     {
-        if (IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
+        if (IsInstalled()) return [Resources.CorePreinstallWillRemoveAurie];
 
         return [];
     }

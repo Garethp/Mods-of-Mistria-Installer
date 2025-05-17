@@ -45,19 +45,19 @@ public class NewObjectsGenerator: IGenerator
             }
             catch (Exception e)
             {
-                validation.AddError(mod, file, string.Format(Resources.CouldNotParseJSON, e.Message));
+                validation.AddError(mod, file, string.Format(Resources.CoreCouldNotParseJSON, e.Message));
                 continue;
             }
             
             if (newObjects is null)
             {
-                validation.AddError(mod, file, Resources.NoDataInJSON);
+                validation.AddError(mod, file, Resources.CoreNoDataInJSON);
                 continue;
             }
 
             if (newObjects.Count == 0)
             {
-                validation.AddWarning(mod, file, Resources.WarningObjectFileHasNoObjects);
+                validation.AddWarning(mod, file, Resources.CoreWarningObjectFileHasNoObjects);
             }
             
             foreach (var objectId in newObjects.Keys)

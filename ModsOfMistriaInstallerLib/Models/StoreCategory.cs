@@ -21,12 +21,12 @@ public class StoreCategory
     {
         if (string.IsNullOrWhiteSpace(Store))
         {
-            validation.AddError(mod, file, Resources.ErrorStoreCategoryHasNoStore);
+            validation.AddError(mod, file, Resources.CoreErrorStoreCategoryHasNoStore);
         }
         
         if (string.IsNullOrWhiteSpace(IconName))
         {
-            validation.AddError(mod, file, Resources.ErrorStoreCategoryNoName);
+            validation.AddError(mod, file, Resources.CoreErrorStoreCategoryNoName);
         }
         
         if (ValidationTools.CheckSpriteFileExists(mod, $"Category's sprite", Sprite) is { } spriteError)

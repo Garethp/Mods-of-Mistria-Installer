@@ -36,7 +36,7 @@ public class AurieGenerator: IGenerator
 
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            validation.AddError(mod, "", Resources.ErrorModRequiresWindows);
+            validation.AddError(mod, "", Resources.CoreErrorModRequiresWindows);
         }
         
         return validation;

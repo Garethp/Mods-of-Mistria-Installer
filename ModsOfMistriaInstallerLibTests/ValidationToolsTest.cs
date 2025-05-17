@@ -27,7 +27,7 @@ public class ValidationToolsTest
     {
         var error = ValidationTools.CheckSpriteFileExists(_mockMock, "outfit", null);
         
-        Assert.That(error, Is.EqualTo(string.Format(Resources.ItemDoesNotHaveValue, "outfit")));
+        Assert.That(error, Is.EqualTo(string.Format(Resources.CoreItemDoesNotHaveValue, "outfit")));
     }
     
     [Test]
@@ -35,7 +35,7 @@ public class ValidationToolsTest
     {
         var error = ValidationTools.CheckSpriteFileExists(_mockMock, "outfit", "");
         
-        Assert.That(error, Is.EqualTo(string.Format(Resources.ItemDoesNotHaveValue, "outfit")));
+        Assert.That(error, Is.EqualTo(string.Format(Resources.CoreItemDoesNotHaveValue, "outfit")));
     }
     
     [Test]
@@ -43,7 +43,7 @@ public class ValidationToolsTest
     {
         var error = ValidationTools.CheckSpriteFileExists(_mockMock, "outfit", "images/not-found.png");
         
-        Assert.That(error, Is.EqualTo(string.Format(Resources.SpriteFileDoesNotExist, "outfit", "images/not-found.png")));
+        Assert.That(error, Is.EqualTo(string.Format(Resources.CoreSpriteFileDoesNotExist, "outfit", "images/not-found.png")));
     }
     
     [Test]
@@ -51,7 +51,7 @@ public class ValidationToolsTest
     {
         var error = ValidationTools.CheckSpriteFileExists(_mockMock, "outfit", "images/animation");
         
-        Assert.That(error, Is.EqualTo(string.Format(Resources.SpriteFileDoesNotExist, "outfit", "images/animation")));
+        Assert.That(error, Is.EqualTo(string.Format(Resources.CoreSpriteFileDoesNotExist, "outfit", "images/animation")));
     }
 
     [Test]
@@ -68,7 +68,7 @@ public class ValidationToolsTest
     {
         var error = ValidationTools.CheckSpriteDirectoryExists(_mockMock, "outfit", null);
         
-        Assert.That(error, Is.EqualTo(string.Format(Resources.ItemDoesNotHaveValue, "outfit")));
+        Assert.That(error, Is.EqualTo(string.Format(Resources.CoreItemDoesNotHaveValue, "outfit")));
     }
     
     [Test]
@@ -76,7 +76,7 @@ public class ValidationToolsTest
     {
         var error = ValidationTools.CheckSpriteDirectoryExists(_mockMock, "outfit", "");
         
-        Assert.That(error, Is.EqualTo(string.Format(Resources.ItemDoesNotHaveValue, "outfit")));
+        Assert.That(error, Is.EqualTo(string.Format(Resources.CoreItemDoesNotHaveValue, "outfit")));
     }
     
     [Test]
@@ -84,7 +84,7 @@ public class ValidationToolsTest
     {
         var error = ValidationTools.CheckSpriteDirectoryExists(_mockMock, "outfit", "images/not-found");
         
-        Assert.That(error, Is.EqualTo(string.Format(Resources.SpriteFolderDoesNotExist, "outfit", "images/not-found")));
+        Assert.That(error, Is.EqualTo(string.Format(Resources.CoreSpriteFolderDoesNotExist, "outfit", "images/not-found")));
     }
     
     [Test]
@@ -92,7 +92,7 @@ public class ValidationToolsTest
     {
         var error = ValidationTools.CheckSpriteDirectoryExists(_mockMock, "outfit", "images/image.png");
         
-        Assert.That(error, Is.EqualTo(string.Format(Resources.SpriteFolderDoesNotExist, "outfit", "images/image.png")));
+        Assert.That(error, Is.EqualTo(string.Format(Resources.CoreSpriteFolderDoesNotExist, "outfit", "images/image.png")));
     }
     
     [Test]
@@ -100,6 +100,6 @@ public class ValidationToolsTest
     {
         var error = ValidationTools.CheckSpriteDirectoryExists(_mockMock, "outfit", "images/empty");
         
-        Assert.That(error, Is.EqualTo(string.Format(Resources.SpriteFolderIsEmpty, "outfit", "images/empty")));
+        Assert.That(error, Is.EqualTo(string.Format(Resources.CoreSpriteFolderIsEmpty, "outfit", "images/empty")));
     }
 }

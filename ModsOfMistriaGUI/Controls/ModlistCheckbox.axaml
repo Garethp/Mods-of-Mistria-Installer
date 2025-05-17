@@ -46,7 +46,7 @@
                     <Image Height="16" Margin="5 0 0 0"
                            IsVisible="{Binding InWarning}">
                         <ToolTip.Tip>
-                            <TextBlock Text="{x:Static lang:Resources.ModHasWarnings}" />
+                            <TextBlock Text="{x:Static lang:Resources.GUIModHasWarnings}" />
                         </ToolTip.Tip>
                         <Image.Source>
                             <i:IconImage Value="fa-exclamation-triangle"
@@ -57,7 +57,7 @@
                     <Image Height="16" Margin="5 0 0 0"
                            IsVisible="{Binding InError}">
                         <ToolTip.Tip>
-                            <TextBlock Text="{x:Static lang:Resources.ModHasErrors}"></TextBlock>
+                            <TextBlock Text="{x:Static lang:Resources.GUIModHasErrors}"></TextBlock>
                         </ToolTip.Tip>
                         <Image.Source>
                             <i:IconImage Value="fa-exclamation-triangle"

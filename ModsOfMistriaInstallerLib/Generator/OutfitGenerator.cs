@@ -160,19 +160,19 @@ public class OutfitGenerator : IGenerator
             }
             catch (Exception e)
             {
-                validation.AddError(mod, file, string.Format(Resources.CouldNotParseJSON, e.Message));
+                validation.AddError(mod, file, string.Format(Resources.CoreCouldNotParseJSON, e.Message));
                 continue;
             }
             
             if (outfits is null)
             {
-                validation.AddError(mod, file, Resources.NoDataInJSON);
+                validation.AddError(mod, file, Resources.CoreNoDataInJSON);
                 continue;
             }
 
             if (outfits.Count == 0)
             {
-                validation.AddWarning(mod, file, Resources.OutfitFileHasNoOutfits);
+                validation.AddWarning(mod, file, Resources.CoreOutfitFileHasNoOutfits);
             }
 
             foreach (var outfitName in outfits.Keys)

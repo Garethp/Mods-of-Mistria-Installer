@@ -99,19 +99,19 @@ public class SpriteGenerator : IGenerator
             } 
             catch (Exception e)
             {
-                validation.AddError(mod, file, string.Format(Resources.CouldNotParseJSON, e.Message));
+                validation.AddError(mod, file, string.Format(Resources.CoreCouldNotParseJSON, e.Message));
                 continue;
             }
             
             if (sprites is null)
             {
-                validation.AddError(mod, file, Resources.NoDataInJSON);
+                validation.AddError(mod, file, Resources.CoreNoDataInJSON);
                 continue;
             }
 
             if (sprites.Count == 0)
             {
-                validation.AddWarning(mod, file, Resources.SpriteFileHasNoSprites);
+                validation.AddWarning(mod, file, Resources.CoreSpriteFileHasNoSprites);
             }
 
             foreach (var spriteName in sprites.Keys)

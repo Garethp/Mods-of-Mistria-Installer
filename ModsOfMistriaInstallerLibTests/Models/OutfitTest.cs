@@ -64,7 +64,7 @@ public class OutfitTest
         var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "outfit.json", Resources.ErrorOutfitNoName);
+        expectedValidation.AddError(_mockMod, "outfit.json", Resources.CoreErrorOutfitNoName);
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -77,7 +77,7 @@ public class OutfitTest
         var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "outfit.json", string.Format(Resources.ErrorOutfitNoUiSlot, "outfit"));
+        expectedValidation.AddError(_mockMod, "outfit.json", string.Format(Resources.CoreErrorOutfitNoUiSlot, "outfit"));
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -94,7 +94,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.ErrorOutfitUiSlotWrong,
+                Resources.CoreErrorOutfitUiSlotWrong,
                 "outfit",
                 string.Join(", ", Outfit.ValidSlots.Keys)
             )
@@ -115,7 +115,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.ErrorOutfitNoSubCategory,
+                Resources.CoreErrorOutfitNoSubCategory,
                 "outfit"
             )
         );
@@ -135,7 +135,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.ErrorOutfitUiSubCategoryWrong,
+                Resources.CoreErrorOutfitUiSubCategoryWrong,
                 "outfit",
                 string.Join(", ", Outfit.ValidSlots[outfit.UiSlot])
             )
@@ -156,7 +156,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.ItemDoesNotHaveValue,
+                Resources.CoreItemDoesNotHaveValue,
                 "Outfit outfit's lutFile"
             )
         );
@@ -176,7 +176,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.SpriteFileDoesNotExist,
+                Resources.CoreSpriteFileDoesNotExist,
                 "Outfit outfit's lutFile",
                 "images/not-found.png"
             )
@@ -197,7 +197,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.SpriteFileDoesNotExist,
+                Resources.CoreSpriteFileDoesNotExist,
                 "Outfit outfit's lutFile",
                 "images/animation"
             )
@@ -218,7 +218,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.ItemDoesNotHaveValue,
+                Resources.CoreItemDoesNotHaveValue,
                 "Outfit outfit's uiItem"
             )
         );
@@ -238,7 +238,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.SpriteFileDoesNotExist,
+                Resources.CoreSpriteFileDoesNotExist,
                 "Outfit outfit's uiItem",
                 "images/not-found.png"
             )
@@ -259,7 +259,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.SpriteFileDoesNotExist,
+                Resources.CoreSpriteFileDoesNotExist,
                 "Outfit outfit's uiItem",
                 "images/animation"
             )
@@ -280,7 +280,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.ItemDoesNotHaveValue,
+                Resources.CoreItemDoesNotHaveValue,
                 "Outfit outfit's outlineFile"
             )
         );
@@ -300,7 +300,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.SpriteFileDoesNotExist,
+                Resources.CoreSpriteFileDoesNotExist,
                 "Outfit outfit's outlineFile",
                 "images/not-found.png"
             )
@@ -321,7 +321,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.SpriteFileDoesNotExist,
+                Resources.CoreSpriteFileDoesNotExist,
                 "Outfit outfit's outlineFile",
                 "images/animation"
             )
@@ -342,7 +342,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.ErrorOutfitNoAnimation,
+                Resources.CoreErrorOutfitNoAnimation,
                 "outfit"
             )
         );
@@ -362,7 +362,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.SpriteFolderDoesNotExist,
+                Resources.CoreSpriteFolderDoesNotExist,
                 "Outfit outfit's animation file back",
                 "images/not-found"
             )
@@ -383,7 +383,7 @@ public class OutfitTest
             _mockMod,
             "outfit.json",
             string.Format(
-                Resources.SpriteFolderIsEmpty,
+                Resources.CoreSpriteFolderIsEmpty,
                 "Outfit outfit's animation file back",
                 "images/empty"
             )

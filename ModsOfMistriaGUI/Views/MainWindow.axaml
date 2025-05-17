@@ -7,7 +7,7 @@
         x:Class="Garethp.ModsOfMistriaGUI.Views.MainWindow"
         xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.Lang"
         x:DataType="vm:MainWindowViewModel"
-        Title="{x:Static lang:Resources.ApplicationTitle}"
+        Title="{x:Static lang:Resources.GUIApplicationTitle}"
         Icon="/Assets/small_icon.png"
         Width="1000" Height="800">
     <Design.DataContext>

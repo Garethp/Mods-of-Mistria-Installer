@@ -62,549 +62,549 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         /// <summary>
         ///   Looks up a localized string similar to Could not find the manifest file..
         /// </summary>
-        public static string CouldNotFindModManifest {
+        public static string CoreCouldNotFindModManifest {
             get {
-                return ResourceManager.GetString("CouldNotFindModManifest", resourceCulture);
+                return ResourceManager.GetString("CoreCouldNotFindModManifest", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Could not find a mods folder at {0}..
         /// </summary>
-        public static string CouldNotGuessModsAt {
+        public static string CoreCouldNotGuessModsAt {
             get {
-                return ResourceManager.GetString("CouldNotGuessModsAt", resourceCulture);
+                return ResourceManager.GetString("CoreCouldNotGuessModsAt", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Could not parse file with message: {0}.
         /// </summary>
-        public static string CouldNotParseJSON {
+        public static string CoreCouldNotParseJSON {
             get {
-                return ResourceManager.GetString("CouldNotParseJSON", resourceCulture);
+                return ResourceManager.GetString("CoreCouldNotParseJSON", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to This mod will only run on Windows and will not install..
         /// </summary>
-        public static string ErrorModRequiresWindows {
+        public static string CoreErrorModRequiresWindows {
             get {
-                return ResourceManager.GetString("ErrorModRequiresWindows", resourceCulture);
+                return ResourceManager.GetString("CoreErrorModRequiresWindows", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Item {0} does not state if it overwrites another mod..
         /// </summary>
-        public static string ErrorNewItemHasNoOverwritesOtherMod {
+        public static string CoreErrorNewItemHasNoOverwritesOtherMod {
             get {
-                return ResourceManager.GetString("ErrorNewItemHasNoOverwritesOtherMod", resourceCulture);
+                return ResourceManager.GetString("CoreErrorNewItemHasNoOverwritesOtherMod", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Object {0} does not state if it overwrites another mod..
         /// </summary>
-        public static string ErrorNewObjectHasNoOverwritesOtherMod {
+        public static string CoreErrorNewObjectHasNoOverwritesOtherMod {
             get {
-                return ResourceManager.GetString("ErrorNewObjectHasNoOverwritesOtherMod", resourceCulture);
+                return ResourceManager.GetString("CoreErrorNewObjectHasNoOverwritesOtherMod", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Object {0} has an invalid category {1}..
         /// </summary>
-        public static string ErrorNewObjectInvalidCategory {
+        public static string CoreErrorNewObjectInvalidCategory {
             get {
-                return ResourceManager.GetString("ErrorNewObjectInvalidCategory", resourceCulture);
+                return ResourceManager.GetString("CoreErrorNewObjectInvalidCategory", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Object {0} has no category..
         /// </summary>
-        public static string ErrorNewObjectNoCategory {
+        public static string CoreErrorNewObjectNoCategory {
             get {
-                return ResourceManager.GetString("ErrorNewObjectNoCategory", resourceCulture);
+                return ResourceManager.GetString("CoreErrorNewObjectNoCategory", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Object {0} has no data..
         /// </summary>
-        public static string ErrorNewObjectNoData {
+        public static string CoreErrorNewObjectNoData {
             get {
-                return ResourceManager.GetString("ErrorNewObjectNoData", resourceCulture);
+                return ResourceManager.GetString("CoreErrorNewObjectNoData", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to New object has no name..
         /// </summary>
-        public static string ErrorNewObjectNoName {
+        public static string CoreErrorNewObjectNoName {
             get {
-                return ResourceManager.GetString("ErrorNewObjectNoName", resourceCulture);
+                return ResourceManager.GetString("CoreErrorNewObjectNoName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Outfit {0} has no animation files..
         /// </summary>
-        public static string ErrorOutfitNoAnimation {
+        public static string CoreErrorOutfitNoAnimation {
             get {
-                return ResourceManager.GetString("ErrorOutfitNoAnimation", resourceCulture);
+                return ResourceManager.GetString("CoreErrorOutfitNoAnimation", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Outfit has no description..
         /// </summary>
-        public static string ErrorOutfitNoDescription {
+        public static string CoreErrorOutfitNoDescription {
             get {
-                return ResourceManager.GetString("ErrorOutfitNoDescription", resourceCulture);
+                return ResourceManager.GetString("CoreErrorOutfitNoDescription", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Outfit has no name..
         /// </summary>
-        public static string ErrorOutfitNoName {
+        public static string CoreErrorOutfitNoName {
             get {
-                return ResourceManager.GetString("ErrorOutfitNoName", resourceCulture);
+                return ResourceManager.GetString("CoreErrorOutfitNoName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Outfit {0} has not defined ui_sub_category..
         /// </summary>
-        public static string ErrorOutfitNoSubCategory {
+        public static string CoreErrorOutfitNoSubCategory {
             get {
-                return ResourceManager.GetString("ErrorOutfitNoSubCategory", resourceCulture);
+                return ResourceManager.GetString("CoreErrorOutfitNoSubCategory", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Outfit {0} has not defined ui_slot..
         /// </summary>
-        public static string ErrorOutfitNoUiSlot {
+        public static string CoreErrorOutfitNoUiSlot {
             get {
-                return ResourceManager.GetString("ErrorOutfitNoUiSlot", resourceCulture);
+                return ResourceManager.GetString("CoreErrorOutfitNoUiSlot", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Outfit {0} has incorrect ui_slot. Must be one of: {1}..
         /// </summary>
-        public static string ErrorOutfitUiSlotWrong {
+        public static string CoreErrorOutfitUiSlotWrong {
             get {
-                return ResourceManager.GetString("ErrorOutfitUiSlotWrong", resourceCulture);
+                return ResourceManager.GetString("CoreErrorOutfitUiSlotWrong", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Outfit {0} has incorrect ui_sub_category. Must be one of: {1}..
         /// </summary>
-        public static string ErrorOutfitUiSubCategoryWrong {
+        public static string CoreErrorOutfitUiSubCategoryWrong {
             get {
-                return ResourceManager.GetString("ErrorOutfitUiSubCategoryWrong", resourceCulture);
+                return ResourceManager.GetString("CoreErrorOutfitUiSubCategoryWrong", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to An error occured when reading the version for the mod: (0).
         /// </summary>
-        public static string ErrorReadingVersionForMod {
+        public static string CoreErrorReadingVersionForMod {
             get {
-                return ResourceManager.GetString("ErrorReadingVersionForMod", resourceCulture);
+                return ResourceManager.GetString("CoreErrorReadingVersionForMod", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Shadow {0} has no Location set.
         /// </summary>
-        public static string ErrorShadowHasNoLocation {
+        public static string CoreErrorShadowHasNoLocation {
             get {
-                return ResourceManager.GetString("ErrorShadowHasNoLocation", resourceCulture);
+                return ResourceManager.GetString("CoreErrorShadowHasNoLocation", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Shadow {0} does not have a regular_sprite_name.
         /// </summary>
-        public static string ErrorShadowHasNoSprite {
+        public static string CoreErrorShadowHasNoSprite {
             get {
-                return ResourceManager.GetString("ErrorShadowHasNoSprite", resourceCulture);
+                return ResourceManager.GetString("CoreErrorShadowHasNoSprite", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Category has no store..
         /// </summary>
-        public static string ErrorStoreCategoryHasNoStore {
+        public static string CoreErrorStoreCategoryHasNoStore {
             get {
-                return ResourceManager.GetString("ErrorStoreCategoryHasNoStore", resourceCulture);
+                return ResourceManager.GetString("CoreErrorStoreCategoryHasNoStore", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Category has no icon name..
         /// </summary>
-        public static string ErrorStoreCategoryNoName {
+        public static string CoreErrorStoreCategoryNoName {
             get {
-                return ResourceManager.GetString("ErrorStoreCategoryNoName", resourceCulture);
+                return ResourceManager.GetString("CoreErrorStoreCategoryNoName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Cannot add item to store {0} and category {1} because it has an invalid season {2}..
         /// </summary>
-        public static string ErrorStoreItemHasInvalidSeason {
+        public static string CoreErrorStoreItemHasInvalidSeason {
             get {
-                return ResourceManager.GetString("ErrorStoreItemHasInvalidSeason", resourceCulture);
+                return ResourceManager.GetString("CoreErrorStoreItemHasInvalidSeason", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Item for store {0} has no category..
         /// </summary>
-        public static string ErrorStoreItemHasNoCategory {
+        public static string CoreErrorStoreItemHasNoCategory {
             get {
-                return ResourceManager.GetString("ErrorStoreItemHasNoCategory", resourceCulture);
+                return ResourceManager.GetString("CoreErrorStoreItemHasNoCategory", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Item for store {0}, category {1} has not specified an item..
         /// </summary>
-        public static string ErrorStoreItemHasNoItem {
+        public static string CoreErrorStoreItemHasNoItem {
             get {
-                return ResourceManager.GetString("ErrorStoreItemHasNoItem", resourceCulture);
+                return ResourceManager.GetString("CoreErrorStoreItemHasNoItem", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Item has not been assigned to a store..
         /// </summary>
-        public static string ErrorStoreItemHasNoStore {
+        public static string CoreErrorStoreItemHasNoStore {
             get {
-                return ResourceManager.GetString("ErrorStoreItemHasNoStore", resourceCulture);
+                return ResourceManager.GetString("CoreErrorStoreItemHasNoStore", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Generating information for {0}.
         /// </summary>
-        public static string GeneratingInformationForMod {
+        public static string CoreGeneratingInformationForMod {
             get {
-                return ResourceManager.GetString("GeneratingInformationForMod", resourceCulture);
+                return ResourceManager.GetString("CoreGeneratingInformationForMod", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Guessed Location: {0}.
         /// </summary>
-        public static string GuessedMistriaAt {
+        public static string CoreGuessedMistriaAt {
             get {
-                return ResourceManager.GetString("GuessedMistriaAt", resourceCulture);
+                return ResourceManager.GetString("CoreGuessedMistriaAt", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Importing Textures/Sprites.
         /// </summary>
-        public static string ImportingSprites {
+        public static string CoreImportingSprites {
             get {
-                return ResourceManager.GetString("ImportingSprites", resourceCulture);
+                return ResourceManager.GetString("CoreImportingSprites", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Finished.
         /// </summary>
-        public static string InstallCompleted {
+        public static string CoreInstallCompleted {
             get {
-                return ResourceManager.GetString("InstallCompleted", resourceCulture);
+                return ResourceManager.GetString("CoreInstallCompleted", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} installed in {1}.
         /// </summary>
-        public static string InstalledInReporter {
+        public static string CoreInstalledInReporter {
             get {
-                return ResourceManager.GetString("InstalledInReporter", resourceCulture);
+                return ResourceManager.GetString("CoreInstalledInReporter", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} does not have a value.
         /// </summary>
-        public static string ItemDoesNotHaveValue {
+        public static string CoreItemDoesNotHaveValue {
             get {
-                return ResourceManager.GetString("ItemDoesNotHaveValue", resourceCulture);
+                return ResourceManager.GetString("CoreItemDoesNotHaveValue", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Looking for Mistria at {0}.
         /// </summary>
-        public static string LookingForMistriaAt {
+        public static string CoreLookingForMistriaAt {
             get {
-                return ResourceManager.GetString("LookingForMistriaAt", resourceCulture);
+                return ResourceManager.GetString("CoreLookingForMistriaAt", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The manifest file must be named manifest.json..
         /// </summary>
-        public static string ManifestFileNamedIncorrectly {
+        public static string CoreManifestFileNamedIncorrectly {
             get {
-                return ResourceManager.GetString("ManifestFileNamedIncorrectly", resourceCulture);
+                return ResourceManager.GetString("CoreManifestFileNamedIncorrectly", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The manifest must contain an author..
         /// </summary>
-        public static string ManifestHasNoAuthor {
+        public static string CoreManifestHasNoAuthor {
             get {
-                return ResourceManager.GetString("ManifestHasNoAuthor", resourceCulture);
+                return ResourceManager.GetString("CoreManifestHasNoAuthor", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The manifest must contain a name..
         /// </summary>
-        public static string ManifestHasNoName {
+        public static string CoreManifestHasNoName {
             get {
-                return ResourceManager.GetString("ManifestHasNoName", resourceCulture);
+                return ResourceManager.GetString("CoreManifestHasNoName", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The manifest must contain a version..
         /// </summary>
-        public static string ManifestHasNoVersion {
+        public static string CoreManifestHasNoVersion {
             get {
-                return ResourceManager.GetString("ManifestHasNoVersion", resourceCulture);
+                return ResourceManager.GetString("CoreManifestHasNoVersion", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The Fields of Mistria location does not exist..
         /// </summary>
-        public static string MistriaLocationDoesNotExist {
+        public static string CoreMistriaLocationDoesNotExist {
             get {
-                return ResourceManager.GetString("MistriaLocationDoesNotExist", resourceCulture);
+                return ResourceManager.GetString("CoreMistriaLocationDoesNotExist", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Could not find Fields of Mistria location..
         /// </summary>
-        public static string MistriaNotFound {
+        public static string CoreMistriaNotFound {
             get {
-                return ResourceManager.GetString("MistriaNotFound", resourceCulture);
+                return ResourceManager.GetString("CoreMistriaNotFound", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Fields of Mistria not found, falling back to current folder.
         /// </summary>
-        public static string MistriaNotFoundFallback {
+        public static string CoreMistriaNotFoundFallback {
             get {
-                return ResourceManager.GetString("MistriaNotFoundFallback", resourceCulture);
+                return ResourceManager.GetString("CoreMistriaNotFoundFallback", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The mod location does not exist..
         /// </summary>
-        public static string ModDirectoryDoesNotExist {
+        public static string CoreModDirectoryDoesNotExist {
             get {
-                return ResourceManager.GetString("ModDirectoryDoesNotExist", resourceCulture);
+                return ResourceManager.GetString("CoreModDirectoryDoesNotExist", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} has the following warnings, but will still install:.
         /// </summary>
-        public static string ModHasWarnings {
+        public static string CoreModHasWarnings {
             get {
-                return ResourceManager.GetString("ModHasWarnings", resourceCulture);
+                return ResourceManager.GetString("CoreModHasWarnings", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to This mod requires a newer version of the installer..
         /// </summary>
-        public static string ModRequiresNewerInstaller {
+        public static string CoreModRequiresNewerInstaller {
             get {
-                return ResourceManager.GetString("ModRequiresNewerInstaller", resourceCulture);
+                return ResourceManager.GetString("CoreModRequiresNewerInstaller", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Mods installed in {0}.
         /// </summary>
-        public static string ModsInstalledInTime {
+        public static string CoreModsInstalledInTime {
             get {
-                return ResourceManager.GetString("ModsInstalledInTime", resourceCulture);
+                return ResourceManager.GetString("CoreModsInstalledInTime", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to No data was found in file.
         /// </summary>
-        public static string NoDataInJSON {
+        public static string CoreNoDataInJSON {
             get {
-                return ResourceManager.GetString("NoDataInJSON", resourceCulture);
+                return ResourceManager.GetString("CoreNoDataInJSON", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Outfit file has no outfits..
         /// </summary>
-        public static string OutfitFileHasNoOutfits {
+        public static string CoreOutfitFileHasNoOutfits {
             get {
-                return ResourceManager.GetString("OutfitFileHasNoOutfits", resourceCulture);
+                return ResourceManager.GetString("CoreOutfitFileHasNoOutfits", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to During install, MOMI will attempt to add an entry to your computers registry. For this, you&apos;ll be asked to give admin access to &quot;Registry Editor&quot; and to continue with an edit to the registry..
         /// </summary>
-        public static string PreinstallWillInstallAurie {
+        public static string CorePreinstallWillInstallAurie {
             get {
-                return ResourceManager.GetString("PreinstallWillInstallAurie", resourceCulture);
+                return ResourceManager.GetString("CorePreinstallWillInstallAurie", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to During install, MOMI will attempt to remove an entry from the computers Registry. As part of this, you&apos;ll be asked to grant admin access to the &quot;Registry Console Tool&quot;..
         /// </summary>
-        public static string PreinstallWillRemoveAurie {
+        public static string CorePreinstallWillRemoveAurie {
             get {
-                return ResourceManager.GetString("PreinstallWillRemoveAurie", resourceCulture);
+                return ResourceManager.GetString("CorePreinstallWillRemoveAurie", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Reading Textures/Sprites.
         /// </summary>
-        public static string ReadingSprites {
+        public static string CoreReadingSprites {
             get {
-                return ResourceManager.GetString("ReadingSprites", resourceCulture);
+                return ResourceManager.GetString("CoreReadingSprites", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Skipping {0} for the following Errors:.
         /// </summary>
-        public static string SkippingModBecauseErrors {
+        public static string CoreSkippingModBecauseErrors {
             get {
-                return ResourceManager.GetString("SkippingModBecauseErrors", resourceCulture);
+                return ResourceManager.GetString("CoreSkippingModBecauseErrors", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Skipping {0} as it requires a newer version of the installer..
         /// </summary>
-        public static string SkippingModBecauseInstallerOld {
+        public static string CoreSkippingModBecauseInstallerOld {
             get {
-                return ResourceManager.GetString("SkippingModBecauseInstallerOld", resourceCulture);
+                return ResourceManager.GetString("CoreSkippingModBecauseInstallerOld", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} points to a sprite at {1} but that file does not exist.
         /// </summary>
-        public static string SpriteFileDoesNotExist {
+        public static string CoreSpriteFileDoesNotExist {
             get {
-                return ResourceManager.GetString("SpriteFileDoesNotExist", resourceCulture);
+                return ResourceManager.GetString("CoreSpriteFileDoesNotExist", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Sprite file has no sprites..
         /// </summary>
-        public static string SpriteFileHasNoSprites {
+        public static string CoreSpriteFileHasNoSprites {
             get {
-                return ResourceManager.GetString("SpriteFileHasNoSprites", resourceCulture);
+                return ResourceManager.GetString("CoreSpriteFileHasNoSprites", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} points to a sprite folder at {1} but that folder does not exist.
         /// </summary>
-        public static string SpriteFolderDoesNotExist {
+        public static string CoreSpriteFolderDoesNotExist {
             get {
-                return ResourceManager.GetString("SpriteFolderDoesNotExist", resourceCulture);
+                return ResourceManager.GetString("CoreSpriteFolderDoesNotExist", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} points to a sprite folder at {1} but that directory is empty.
         /// </summary>
-        public static string SpriteFolderIsEmpty {
+        public static string CoreSpriteFolderIsEmpty {
             get {
-                return ResourceManager.GetString("SpriteFolderIsEmpty", resourceCulture);
+                return ResourceManager.GetString("CoreSpriteFolderIsEmpty", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Store file has no categories or items..
         /// </summary>
-        public static string StoreFileHasNoData {
+        public static string CoreStoreFileHasNoData {
             get {
-                return ResourceManager.GetString("StoreFileHasNoData", resourceCulture);
+                return ResourceManager.GetString("CoreStoreFileHasNoData", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Tileset file has no tilesets..
         /// </summary>
-        public static string TilesetsFileEmpty {
+        public static string CoreTilesetsFileEmpty {
             get {
-                return ResourceManager.GetString("TilesetsFileEmpty", resourceCulture);
+                return ResourceManager.GetString("CoreTilesetsFileEmpty", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to New Items file has no items..
         /// </summary>
-        public static string WarningItemFileHasNoItems {
+        public static string CoreWarningItemFileHasNoItems {
             get {
-                return ResourceManager.GetString("WarningItemFileHasNoItems", resourceCulture);
+                return ResourceManager.GetString("CoreWarningItemFileHasNoItems", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to New Objects file has no objects in it..
         /// </summary>
-        public static string WarningObjectFileHasNoObjects {
+        public static string CoreWarningObjectFileHasNoObjects {
             get {
-                return ResourceManager.GetString("WarningObjectFileHasNoObjects", resourceCulture);
+                return ResourceManager.GetString("CoreWarningObjectFileHasNoObjects", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Shadow file has no shadows..
         /// </summary>
-        public static string WarningShadowFileNoShadows {
+        public static string CoreWarningShadowFileNoShadows {
             get {
-                return ResourceManager.GetString("WarningShadowFileNoShadows", resourceCulture);
+                return ResourceManager.GetString("CoreWarningShadowFileNoShadows", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Writing Textures/Sprites.
         /// </summary>
-        public static string WritingSprites {
+        public static string CoreWritingSprites {
             get {
-                return ResourceManager.GetString("WritingSprites", resourceCulture);
+                return ResourceManager.GetString("CoreWritingSprites", resourceCulture);
             }
         }
     }

@@ -18,187 +18,187 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-    <data name="LookingForMistriaAt" xml:space="preserve">
+    <data name="CoreLookingForMistriaAt" xml:space="preserve">
         <value>Looking for Mistria at {0}</value>
     </data>
-    <data name="MistriaNotFoundFallback" xml:space="preserve">
+    <data name="CoreMistriaNotFoundFallback" xml:space="preserve">
         <value>Fields of Mistria not found, falling back to current folder</value>
     </data>
-    <data name="CouldNotFindModManifest" xml:space="preserve">
+    <data name="CoreCouldNotFindModManifest" xml:space="preserve">
         <value>Could not find the manifest file.</value>
     </data>
-    <data name="ManifestFileNamedIncorrectly" xml:space="preserve">
+    <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve">
         <value>The manifest file must be named manifest.json.</value>
     </data>
-    <data name="ManifestHasNoAuthor" xml:space="preserve">
+    <data name="CoreManifestHasNoAuthor" xml:space="preserve">
         <value>The manifest must contain an author.</value>
     </data>
-    <data name="ManifestHasNoName" xml:space="preserve">
+    <data name="CoreManifestHasNoName" xml:space="preserve">
         <value>The manifest must contain a name.</value>
     </data>
-    <data name="ManifestHasNoVersion" xml:space="preserve">
+    <data name="CoreManifestHasNoVersion" xml:space="preserve">
         <value>The manifest must contain a version.</value>
     </data>
-    <data name="ModRequiresNewerInstaller" xml:space="preserve">
+    <data name="CoreModRequiresNewerInstaller" xml:space="preserve">
         <value>This mod requires a newer version of the installer.</value>
     </data>
-    <data name="MistriaLocationDoesNotExist" xml:space="preserve">
+    <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve">
         <value>The Fields of Mistria location does not exist.</value>
     </data>
-    <data name="ModDirectoryDoesNotExist" xml:space="preserve">
+    <data name="CoreModDirectoryDoesNotExist" xml:space="preserve">
         <value>The mod location does not exist.</value>
     </data>
-    <data name="GeneratingInformationForMod" xml:space="preserve">
+    <data name="CoreGeneratingInformationForMod" xml:space="preserve">
         <value>Generating information for {0}</value>
     </data>
-    <data name="InstallCompleted" xml:space="preserve">
+    <data name="CoreInstallCompleted" xml:space="preserve">
         <value>Finished</value>
     </data>
-    <data name="MistriaNotFound" xml:space="preserve">
+    <data name="CoreMistriaNotFound" xml:space="preserve">
         <value>Could not find Fields of Mistria location.</value>
     </data>
-    <data name="CouldNotGuessModsAt" xml:space="preserve">
+    <data name="CoreCouldNotGuessModsAt" xml:space="preserve">
         <value>Could not find a mods folder at {0}.</value>
     </data>
-    <data name="GuessedMistriaAt" xml:space="preserve">
+    <data name="CoreGuessedMistriaAt" xml:space="preserve">
         <value>Guessed Location: {0}</value>
     </data>
-    <data name="SkippingModBecauseInstallerOld" xml:space="preserve">
+    <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve">
         <value>Skipping {0} as it requires a newer version of the installer.</value>
     </data>
-    <data name="SkippingModBecauseErrors" xml:space="preserve">
+    <data name="CoreSkippingModBecauseErrors" xml:space="preserve">
         <value>Skipping {0} for the following Errors:</value>
     </data>
-    <data name="ModHasWarnings" xml:space="preserve">
+    <data name="CoreModHasWarnings" xml:space="preserve">
         <value>{0} has the following warnings, but will still install:</value>
     </data>
-    <data name="InstalledInReporter" xml:space="preserve">
+    <data name="CoreInstalledInReporter" xml:space="preserve">
         <value>{0} installed in {1}</value>
     </data>
-    <data name="ModsInstalledInTime" xml:space="preserve">
+    <data name="CoreModsInstalledInTime" xml:space="preserve">
         <value>Mods installed in {0}</value>
     </data>
-    <data name="ItemDoesNotHaveValue" xml:space="preserve">
+    <data name="CoreItemDoesNotHaveValue" xml:space="preserve">
         <value>{0} does not have a value</value>
     </data>
-    <data name="SpriteFileDoesNotExist" xml:space="preserve">
+    <data name="CoreSpriteFileDoesNotExist" xml:space="preserve">
         <value>{0} points to a sprite at {1} but that file does not exist</value>
     </data>
-    <data name="SpriteFolderDoesNotExist" xml:space="preserve">
+    <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve">
         <value>{0} points to a sprite folder at {1} but that folder does not exist</value>
     </data>
-    <data name="SpriteFolderIsEmpty" xml:space="preserve">
+    <data name="CoreSpriteFolderIsEmpty" xml:space="preserve">
         <value>{0} points to a sprite folder at {1} but that directory is empty</value>
     </data>
-    <data name="CouldNotParseJSON" xml:space="preserve">
+    <data name="CoreCouldNotParseJSON" xml:space="preserve">
         <value>Could not parse file with message: {0}</value>
     </data>
-    <data name="NoDataInJSON" xml:space="preserve">
+    <data name="CoreNoDataInJSON" xml:space="preserve">
         <value>No data was found in file</value>
     </data>
-    <data name="OutfitFileHasNoOutfits" xml:space="preserve">
+    <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve">
         <value>Outfit file has no outfits.</value>
     </data>
-    <data name="SpriteFileHasNoSprites" xml:space="preserve">
+    <data name="CoreSpriteFileHasNoSprites" xml:space="preserve">
         <value>Sprite file has no sprites.</value>
     </data>
-    <data name="StoreFileHasNoData" xml:space="preserve">
+    <data name="CoreStoreFileHasNoData" xml:space="preserve">
         <value>Store file has no categories or items.</value>
     </data>
-    <data name="TilesetsFileEmpty" xml:space="preserve">
+    <data name="CoreTilesetsFileEmpty" xml:space="preserve">
         <value>Tileset file has no tilesets.</value>
     </data>
-    <data name="ReadingSprites" xml:space="preserve">
+    <data name="CoreReadingSprites" xml:space="preserve">
         <value>Reading Textures/Sprites</value>
     </data>
-    <data name="ImportingSprites" xml:space="preserve">
+    <data name="CoreImportingSprites" xml:space="preserve">
         <value>Importing Textures/Sprites</value>
     </data>
-    <data name="WritingSprites" xml:space="preserve">
+    <data name="CoreWritingSprites" xml:space="preserve">
         <value>Writing Textures/Sprites</value>
     </data>
-    <data name="ErrorOutfitNoName" xml:space="preserve">
+    <data name="CoreErrorOutfitNoName" xml:space="preserve">
         <value>Outfit has no name.</value>
     </data>
-    <data name="ErrorOutfitNoDescription" xml:space="preserve">
+    <data name="CoreErrorOutfitNoDescription" xml:space="preserve">
         <value>Outfit has no description.</value>
     </data>
-    <data name="ErrorOutfitNoUiSlot" xml:space="preserve">
+    <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve">
         <value>Outfit {0} has not defined ui_slot.</value>
     </data>
-    <data name="ErrorOutfitNoSubCategory" xml:space="preserve">
+    <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve">
         <value>Outfit {0} has not defined ui_sub_category.</value>
     </data>
-    <data name="ErrorOutfitNoAnimation" xml:space="preserve">
+    <data name="CoreErrorOutfitNoAnimation" xml:space="preserve">
         <value>Outfit {0} has no animation files.</value>
     </data>
-    <data name="ErrorStoreCategoryNoName" xml:space="preserve">
+    <data name="CoreErrorStoreCategoryNoName" xml:space="preserve">
         <value>Category has no icon name.</value>
     </data>
-    <data name="ErrorShadowHasNoLocation" xml:space="preserve">
+    <data name="CoreErrorShadowHasNoLocation" xml:space="preserve">
         <value>Shadow {0} has no Location set</value>
     </data>
-    <data name="WarningShadowFileNoShadows" xml:space="preserve">
+    <data name="CoreWarningShadowFileNoShadows" xml:space="preserve">
         <value>Shadow file has no shadows.</value>
     </data>
-    <data name="ErrorShadowHasNoSprite" xml:space="preserve">
+    <data name="CoreErrorShadowHasNoSprite" xml:space="preserve">
         <value>Shadow {0} does not have a regular_sprite_name</value>
     </data>
-    <data name="ErrorModRequiresWindows" xml:space="preserve">
+    <data name="CoreErrorModRequiresWindows" xml:space="preserve">
         <value>This mod will only run on Windows and will not install.</value>
     </data>
-    <data name="ErrorOutfitUiSlotWrong" xml:space="preserve">
+    <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve">
         <value>Outfit {0} has incorrect ui_slot. Must be one of: {1}.</value>
     </data>
-    <data name="ErrorOutfitUiSubCategoryWrong" xml:space="preserve">
+    <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve">
         <value>Outfit {0} has incorrect ui_sub_category. Must be one of: {1}.</value>
     </data>
-    <data name="PreinstallWillInstallAurie" xml:space="preserve">
+    <data name="CorePreinstallWillInstallAurie" xml:space="preserve">
         <value>During install, MOMI will attempt to add an entry to your computers registry. For this, you'll be asked to give admin access to "Registry Editor" and to continue with an edit to the registry.</value>
     </data>
-    <data name="PreinstallWillRemoveAurie" xml:space="preserve">
+    <data name="CorePreinstallWillRemoveAurie" xml:space="preserve">
         <value>During install, MOMI will attempt to remove an entry from the computers Registry. As part of this, you'll be asked to grant admin access to the "Registry Console Tool".</value>
     </data>
-    <data name="ErrorReadingVersionForMod" xml:space="preserve">
+    <data name="CoreErrorReadingVersionForMod" xml:space="preserve">
         <value>An error occured when reading the version for the mod: (0)</value>
     </data>
-    <data name="ErrorStoreItemHasNoStore" xml:space="preserve">
+    <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve">
         <value>Item has not been assigned to a store.</value>
     </data>
-    <data name="ErrorStoreItemHasNoCategory" xml:space="preserve">
+    <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve">
         <value>Item for store {0} has no category.</value>
     </data>
-    <data name="ErrorStoreItemHasInvalidSeason" xml:space="preserve">
+    <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve">
         <value>Cannot add item to store {0} and category {1} because it has an invalid season {2}.</value>
     </data>
-    <data name="ErrorStoreItemHasNoItem" xml:space="preserve">
+    <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve">
         <value>Item for store {0}, category {1} has not specified an item.</value>
     </data>
-    <data name="ErrorStoreCategoryHasNoStore" xml:space="preserve">
+    <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve">
         <value>Category has no store.</value>
     </data>
-    <data name="ErrorNewObjectNoName" xml:space="preserve">
+    <data name="CoreErrorNewObjectNoName" xml:space="preserve">
         <value>New object has no name.</value>
     </data>
-    <data name="ErrorNewObjectNoCategory" xml:space="preserve">
+    <data name="CoreErrorNewObjectNoCategory" xml:space="preserve">
         <value>Object {0} has no category.</value>
     </data>
-    <data name="ErrorNewObjectInvalidCategory" xml:space="preserve">
+    <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve">
         <value>Object {0} has an invalid category {1}.</value>
     </data>
-    <data name="ErrorNewObjectNoData" xml:space="preserve">
+    <data name="CoreErrorNewObjectNoData" xml:space="preserve">
         <value>Object {0} has no data.</value>
     </data>
-    <data name="WarningObjectFileHasNoObjects" xml:space="preserve">
+    <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve">
         <value>New Objects file has no objects in it.</value>
     </data>
-    <data name="WarningItemFileHasNoItems" xml:space="preserve">
+    <data name="CoreWarningItemFileHasNoItems" xml:space="preserve">
         <value>New Items file has no items.</value>
     </data>
-    <data name="ErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve">
+    <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve">
         <value>Object {0} does not state if it overwrites another mod.</value>
     </data>
-    <data name="ErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve">
+    <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve">
         <value>Item {0} does not state if it overwrites another mod.</value>
     </data>
 </root>

@@ -53,7 +53,7 @@ public class NewObjectTest
         var validation = newObject.Validate(new Validation(), _mockMod, "new_item.json", "id");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.ErrorNewObjectNoName));
+        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.CoreErrorNewObjectNoName));
         
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -66,7 +66,7 @@ public class NewObjectTest
         
         var validation = newObject.Validate(new Validation(), _mockMod, "new_item.json", "id");
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.ErrorNewObjectHasNoOverwritesOtherMod, newObject.Name));
+        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.CoreErrorNewObjectHasNoOverwritesOtherMod, newObject.Name));
         
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -86,7 +86,7 @@ public class NewObjectTest
         var validation = newObject.Validate(new Validation(), _mockMod, "new_item.json", "id");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.ErrorNewObjectNoCategory, "new_object"));
+        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.CoreErrorNewObjectNoCategory, "new_object"));
         
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -120,7 +120,7 @@ public class NewObjectTest
         var validation = newObject.Validate(new Validation(), _mockMod, "new_item.json", "id");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.ErrorNewObjectInvalidCategory, "new_object", "invalid"));
+        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.CoreErrorNewObjectInvalidCategory, "new_object", "invalid"));
         
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -133,7 +133,7 @@ public class NewObjectTest
         var validation = newObject.Validate(new Validation(), _mockMod, "new_item.json", "id");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.ErrorNewObjectNoData, "new_object"));
+        expectedValidation.AddError(_mockMod, "new_item.json", string.Format(Resources.CoreErrorNewObjectNoData, "new_object"));
         
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }

@@ -18,16 +18,16 @@
     <resheader name="writer">
         <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
     </resheader>
-    <data name="RunningBuild" xml:space="preserve">
+    <data name="CLIRunningBuild" xml:space="preserve">
         <value>Running Build {0}</value>
     </data>
-    <data name="Completed" xml:space="preserve">
+    <data name="CLICompleted" xml:space="preserve">
         <value>Completed. Press any key to exit.</value>
     </data>
-    <data name="UninstallComplete" xml:space="preserve">
+    <data name="CLIUninstallComplete" xml:space="preserve">
         <value>All mods uninstalled. Press any key to exit.</value>
     </data>
-    <data name="Warning32Bit" xml:space="preserve">
+    <data name="CLIWarning32Bit" xml:space="preserve">
         <value>You're running a 64-bit operating system, but have accidently downloaded the 32-bit version of MOMI. Please download the version of MOMI that does not include "-x86".</value>
     </data>
 </root>

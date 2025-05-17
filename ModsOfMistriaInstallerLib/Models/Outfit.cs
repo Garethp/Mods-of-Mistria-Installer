@@ -48,30 +48,30 @@ public class Outfit
     {
         if (string.IsNullOrWhiteSpace(Name))
         {
-            validation.AddError(mod, file, Resources.ErrorOutfitNoName);
+            validation.AddError(mod, file, Resources.CoreErrorOutfitNoName);
         }
         
         if (string.IsNullOrWhiteSpace(Description))
         {
-            validation.AddError(mod, file, Resources.ErrorOutfitNoDescription);
+            validation.AddError(mod, file, Resources.CoreErrorOutfitNoDescription);
         }
 
         if (string.IsNullOrWhiteSpace(UiSlot))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoUiSlot, id));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitNoUiSlot, id));
         }
         else if (!ValidSlots.ContainsKey(UiSlot))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitUiSlotWrong, id, string.Join(", ", ValidSlots.Keys)));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitUiSlotWrong, id, string.Join(", ", ValidSlots.Keys)));
         }
 
         if (string.IsNullOrWhiteSpace(UiSubCategory))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoSubCategory, id));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitNoSubCategory, id));
         } else if (!string.IsNullOrEmpty(UiSlot) && ValidSlots.ContainsKey(UiSlot) &&
                    !ValidSlots[UiSlot].Contains(UiSubCategory))
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitUiSubCategoryWrong, id, string.Join(", ", ValidSlots[UiSlot])));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitUiSubCategoryWrong, id, string.Join(", ", ValidSlots[UiSlot])));
         }
 
         if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s lutFile", LutFile) is { } lutError)
@@ -91,7 +91,7 @@ public class Outfit
 
         if (AnimationFiles.Count == 0)
         {
-            validation.AddError(mod, file, string.Format(Resources.ErrorOutfitNoAnimation, id));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitNoAnimation, id));
         }
 
         foreach (var animationType in AnimationFiles.Keys)

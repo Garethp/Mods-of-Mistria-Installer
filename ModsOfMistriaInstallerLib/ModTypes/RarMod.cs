@@ -120,19 +120,19 @@ public class RarMod() : IMod
         if (string.IsNullOrEmpty(GetAuthor()))
         {
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"),
-                Resources.ManifestHasNoAuthor));
+                Resources.CoreManifestHasNoAuthor));
         }
 
         if (string.IsNullOrEmpty(GetName()))
         {
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"),
-                Resources.ManifestHasNoName));
+                Resources.CoreManifestHasNoName));
         }
 
         if (string.IsNullOrEmpty(GetVersion()))
         {
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"),
-                Resources.ManifestHasNoVersion));
+                Resources.CoreManifestHasNoVersion));
         }
 
         return _validation;
@@ -150,12 +150,12 @@ public class RarMod() : IMod
 
             if (requiredVersion.CompareTo(currentVersion) > 0)
             {
-                return Resources.ModRequiresNewerInstaller;
+                return Resources.CoreModRequiresNewerInstaller;
             }
         }
         catch (Exception)
         {
-            return string.Format(Resources.ErrorReadingVersionForMod, GetId());
+            return string.Format(Resources.CoreErrorReadingVersionForMod, GetId());
         }
 
         return null;
