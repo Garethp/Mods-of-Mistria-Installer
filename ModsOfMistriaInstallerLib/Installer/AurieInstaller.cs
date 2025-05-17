@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Garethp.ModsOfMistriaInstallerLib.Lang;
+using System.Security.Cryptography;
 using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 
@@ -18,7 +18,7 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
 {
     private static readonly string IFEORegistryKey =
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options";
-
+    
     public void Install(
         string fieldsOfMistriaLocation,
         string modsLocation,
@@ -28,20 +28,28 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
     {
         if (information.AurieMods.Count == 0)
         {
-            // TearDownRegistry();
+            Uninstall(fieldsOfMistriaLocation);
             return;
         }
-        
-        PatchAurie(fieldsOfMistriaLocation, modsLocation);
 
-        if (!Directory.Exists(Path.Combine(modsLocation, "Aurie", "MOMI")))
+        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.bak.exe")))
         {
-            Directory.CreateDirectory(Path.Combine(modsLocation, "Aurie", "MOMI"));
+            File.Copy(
+                Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe"), 
+                Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.bak.exe")
+            );
+        }
+        
+        // PatchAurie(fieldsOfMistriaLocation, modsLocation);
+
+        if (!Directory.Exists(Path.Combine(modsLocation, "aurie", "MOMI")))
+        {
+            Directory.CreateDirectory(Path.Combine(modsLocation, "aurie", "MOMI"));
         }
 
-        if (!Directory.Exists(Path.Combine(modsLocation, "Native")))
+        if (!Directory.Exists(Path.Combine(modsLocation, "native")))
         {
-            Directory.CreateDirectory(Path.Combine(modsLocation, "Native"));
+            Directory.CreateDirectory(Path.Combine(modsLocation, "native"));
         }
 
         // SetupRegistry(fieldsOfMistriaLocation, modsLocation);
@@ -50,13 +58,19 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
         [
             new()
             {
-                Path = Path.Combine(modsLocation, "Aurie", "YYToolkit.dll"),
+                Path = Path.Combine(fieldsOfMistriaLocation, "AuriePatcher.exe"),
+                Repository = "Garethp/AuriePatcher-Beta",
+                Artifact = "AuriePatcher.exe"
+            },
+            new()
+            {
+                Path = Path.Combine(modsLocation, "aurie", "YYToolkit.dll"),
                 Repository = "AurieFramework/YYToolkit",
                 Artifact = "YYToolkit.dll"
             },
             new()
             {
-                Path = Path.Combine(modsLocation, "Native", "AurieCore.dll"),
+                Path = Path.Combine(modsLocation, "native", "AurieCore.dll"),
                 Repository = "AurieFramework/Aurie",
                 Artifact = "AurieCore.dll"
             },
@@ -69,7 +83,7 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
         ];
 
         using var client = new HttpClient();
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("Aurie");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("aurie");
         client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github.v3+json");
 
         filesToEnsure.ForEach(ensure =>
@@ -100,13 +114,15 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
 
             task.Wait();
         });
+        
+        PatchAurie(fieldsOfMistriaLocation, modsLocation);
 
-        foreach (var file in Directory.GetFiles(Path.Combine(modsLocation, "Aurie", "MOMI")))
+        foreach (var file in Directory.GetFiles(Path.Combine(modsLocation, "aurie", "MOMI")))
         {
             File.Delete(file);
         }
 
-        foreach (var directory in Directory.GetDirectories(Path.Combine(modsLocation, "Aurie", "MOMI")))
+        foreach (var directory in Directory.GetDirectories(Path.Combine(modsLocation, "aurie", "MOMI")))
         {
             foreach (var file in Directory.GetFiles(directory))
             {
@@ -118,14 +134,14 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
 
         information.AurieMods.ForEach(aurieMod =>
         {
-            if (!Directory.Exists(Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.GetId())))
+            if (!Directory.Exists(Path.Combine(modsLocation, "aurie", "MOMI", aurieMod.Mod.GetId())))
             {
-                Directory.CreateDirectory(Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.GetId()));
+                Directory.CreateDirectory(Path.Combine(modsLocation, "aurie", "MOMI", aurieMod.Mod.GetId()));
             }
 
             using var newFile =
                 new FileStream(
-                    Path.Combine(modsLocation, "Aurie", "MOMI", aurieMod.Mod.GetId(),
+                    Path.Combine(modsLocation, "aurie", "MOMI", aurieMod.Mod.GetId(),
                         Path.GetFileName(aurieMod.Location)), FileMode.CreateNew);
 
             aurieMod.Mod.ReadFileAsStream(aurieMod.Location).CopyTo(newFile);
@@ -137,7 +153,7 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
     private void PatchAurie(string fieldsOfMistriaLocation, string modsLocation)
     {
         var patcherLocation = Path.Combine(fieldsOfMistriaLocation, "AuriePatcher.exe");
-        var dllLocation = Path.Combine(modsLocation, "Native", "AurieCore.dll");
+        var dllLocation = Path.Combine(modsLocation, "native", "AurieCore.dll");
         var exeLocation = Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe");
 
         var wineLocation = MistriaLocator.GetWineLocation();
@@ -189,28 +205,48 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
         return;
     }
 
-    public void Uninstall()
+    public void Uninstall(string fieldsOfMistriaLocation)
     {
-        TearDownRegistry();
+        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe"))) return;
+        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.bak.exe"))) return;
+
+        File.Delete(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe"));
+        File.Copy(
+            Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.bak.exe"), 
+            Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe")
+        );
+        
+        // TearDownRegistry();
     }
 
-    private bool IsInstalled()
+    private bool IsInstalled(string fieldsOfMistriaLocation)
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return false;
-        return Registry.LocalMachine.OpenSubKey(IFEORegistryKey)?.OpenSubKey("FieldsOfMistria.exe") is not null;
+        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe"))) return false;
+        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.bak.exe"))) return false;
+
+        using var md5 = MD5.Create();
+        using var currentStream = File.OpenRead(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe"));
+        var currentHash = md5.ComputeHash(currentStream);
+        
+        using var originalStream = File.OpenRead(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.bak.exe"));
+        var originalHash = md5.ComputeHash(originalStream);
+        
+        return currentHash.Equals(originalHash);
+        // if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return false;
+        // return Registry.LocalMachine.OpenSubKey(IFEORegistryKey)?.OpenSubKey("FieldsOfMistria.exe") is not null;
     }
 
     public List<string> GetPreinstallInformation(GeneratedInformation information)
     {
-        if (information.AurieMods.Count > 0 && !IsInstalled()) return [Resources.PreinstallWillInstallAurie];
-        if (information.AurieMods.Count == 0 && IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
+        // if (information.AurieMods.Count > 0 && !IsInstalled()) return [Resources.PreinstallWillInstallAurie];
+        // if (information.AurieMods.Count == 0 && IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
 
         return [];
     }
 
     public List<string> GetPreUninstallInformation()
     {
-        if (IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
+        // if (IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
 
         return [];
     }
@@ -237,7 +273,7 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
 ""FilterFullPath""=""{Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe").Replace("\\", "\\\\")}""
 ";
 
-        File.WriteAllText(Path.Combine(modsLocation, "Aurie", "install.reg"), installFile);
+        File.WriteAllText(Path.Combine(modsLocation, "aurie", "install.reg"), installFile);
 
         var proc = new Process();
         proc.StartInfo.FileName = "regedit.exe";
@@ -248,7 +284,7 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
 
         proc.WaitForExit();
 
-        File.Delete(Path.Combine(modsLocation, "Aurie", "install.reg"));
+        File.Delete(Path.Combine(modsLocation, "aurie", "install.reg"));
     }
 
     private void TearDownRegistry()
