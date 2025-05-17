@@ -60,6 +60,42 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Completed. Press any key to exit..
+        /// </summary>
+        public static string CLICompleted {
+            get {
+                return ResourceManager.GetString("CLICompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running Build {0}.
+        /// </summary>
+        public static string CLIRunningBuild {
+            get {
+                return ResourceManager.GetString("CLIRunningBuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All mods uninstalled. Press any key to exit..
+        /// </summary>
+        public static string CLIUninstallComplete {
+            get {
+                return ResourceManager.GetString("CLIUninstallComplete", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re running a 64-bit operating system, but have accidently downloaded the 32-bit version of MOMI. Please download the version of MOMI that does not include &quot;-x86&quot;..
+        /// </summary>
+        public static string CLIWarning32Bit {
+            get {
+                return ResourceManager.GetString("CLIWarning32Bit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find the manifest file..
         /// </summary>
         public static string CoreCouldNotFindModManifest {
@@ -605,6 +641,258 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string CoreWritingSprites {
             get {
                 return ResourceManager.GetString("CoreWritingSprites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mods Of Mistria Installer.
+        /// </summary>
+        public static string GUIApplicationTitle {
+            get {
+                return ResourceManager.GetString("GUIApplicationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No mods folder has been detected, but one can be created automatically for you..
+        /// </summary>
+        public static string GUICanCreateModsFolder {
+            get {
+                return ResourceManager.GetString("GUICanCreateModsFolder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find Fields of Mistria location. Try placing this in the same folder as Fields of Mistria..
+        /// </summary>
+        public static string GUICouldNotFindMistria {
+            get {
+                return ResourceManager.GetString("GUICouldNotFindMistria", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find a mods folder. Try creating a folder called &apos;mods&apos; in the Fields of Mistria folder..
+        /// </summary>
+        public static string GUICouldNotFindMods {
+            get {
+                return ResourceManager.GetString("GUICouldNotFindMods", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable All Mods.
+        /// </summary>
+        public static string GUIDisableAllMods {
+            get {
+                return ResourceManager.GetString("GUIDisableAllMods", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable All Mods.
+        /// </summary>
+        public static string GUIEnableAllMods {
+            get {
+                return ResourceManager.GetString("GUIEnableAllMods", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fields of Mistria has been detected at: .
+        /// </summary>
+        public static string GUIFieldsOfMistriaDetectedLocation {
+            get {
+                return ResourceManager.GetString("GUIFieldsOfMistriaDetectedLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Welcome to the Mods of Mistria Installer!.
+        /// </summary>
+        public static string GUIGreetingText {
+            get {
+                return ResourceManager.GetString("GUIGreetingText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install.
+        /// </summary>
+        public static string GUIInstallButtonText {
+            get {
+                return ResourceManager.GetString("GUIInstallButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Installing mods....
+        /// </summary>
+        public static string GUIInstallInProgress {
+            get {
+                return ResourceManager.GetString("GUIInstallInProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} by {1}.
+        /// </summary>
+        public static string GUIModByAuthor {
+            get {
+                return ResourceManager.GetString("GUIModByAuthor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This mod has errors and will not install.
+        /// </summary>
+        public static string GUIModHasErrors {
+            get {
+                return ResourceManager.GetString("GUIModHasErrors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This mod has warnings that can be ignored.
+        /// </summary>
+        public static string GUIModHasWarnings {
+            get {
+                return ResourceManager.GetString("GUIModHasWarnings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some mods require a newer version of the installer. Please update the installer..
+        /// </summary>
+        public static string GUIModsRequireNewerVersion {
+            get {
+                return ResourceManager.GetString("GUIModsRequireNewerVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Check the boxes for all the mods you want to install:.
+        /// </summary>
+        public static string GUIModsWillBeInstalled {
+            get {
+                return ResourceManager.GetString("GUIModsWillBeInstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No mods found to install.
+        /// </summary>
+        public static string GUINoModsToInstall {
+            get {
+                return ResourceManager.GetString("GUINoModsToInstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pick a location for the log file.
+        /// </summary>
+        public static string GUIPickLogFile {
+            get {
+                return ResourceManager.GetString("GUIPickLogFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Install Information.
+        /// </summary>
+        public static string GUIPreinstallInformationTitle {
+            get {
+                return ResourceManager.GetString("GUIPreinstallInformationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reload mod list..
+        /// </summary>
+        public static string GUIReloadModlist {
+            get {
+                return ResourceManager.GetString("GUIReloadModlist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save Log File.
+        /// </summary>
+        public static string GUISaveLogFile {
+            get {
+                return ResourceManager.GetString("GUISaveLogFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fields Of Mistria Location:.
+        /// </summary>
+        public static string GUISetupMistriaLocation {
+            get {
+                return ResourceManager.GetString("GUISetupMistriaLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mods Folder:.
+        /// </summary>
+        public static string GUISetupModsLocation {
+            get {
+                return ResourceManager.GetString("GUISetupModsLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall All.
+        /// </summary>
+        public static string GUIUninstallButtonText {
+            get {
+                return ResourceManager.GetString("GUIUninstallButtonText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstall Information.
+        /// </summary>
+        public static string GUIUninstallInformationTitle {
+            get {
+                return ResourceManager.GetString("GUIUninstallInformationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A new version of the Mods Of Mistria Installer is available, please update.
+        /// </summary>
+        public static string GUIUpdateNagMessage {
+            get {
+                return ResourceManager.GetString("GUIUpdateNagMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Version Available.
+        /// </summary>
+        public static string GUIUpdateNagTitle {
+            get {
+                return ResourceManager.GetString("GUIUpdateNagTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You&apos;re running a 64-bit operating system, but have accidently downloaded the 32-bit version of MOMI. Please download the version of MOMI that does not include &quot;-x86&quot;..
+        /// </summary>
+        public static string GUIWarning32Bit {
+            get {
+                return ResourceManager.GetString("GUIWarning32Bit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 32-Bit Version Detected.
+        /// </summary>
+        public static string GUIWarning32BitTitle {
+            get {
+                return ResourceManager.GetString("GUIWarning32BitTitle", resourceCulture);
             }
         }
     }

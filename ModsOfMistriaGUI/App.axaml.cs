@@ -38,14 +38,14 @@ public class App : Application
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     MessageBoxManager.GetMessageBoxStandard(
-                        Lang.Resources.GUIWarning32BitTitle,
-                        Lang.Resources.GUIWarning32Bit
+                        ModsOfMistriaInstallerLib.Lang.Resources.GUIWarning32BitTitle,
+                        ModsOfMistriaInstallerLib.Lang.Resources.GUIWarning32Bit
                     ).ShowAsync();
                 });
             }
             
-            var upgradeMessage = MessageBoxManager.GetMessageBoxStandard(Lang.Resources.GUIUpdateNagTitle,
-                Lang.Resources.GUIUpdateNagMessage);
+            var upgradeMessage = MessageBoxManager.GetMessageBoxStandard(ModsOfMistriaInstallerLib.Lang.Resources.GUIUpdateNagTitle,
+                ModsOfMistriaInstallerLib.Lang.Resources.GUIUpdateNagMessage);
         
             Task.Run(async () =>
             {

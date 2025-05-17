@@ -2,7 +2,7 @@
 
 using System.Reflection;
 using Garethp.ModsOfMistriaInstallerLib;
-using ModsOfMistriaCommandLine.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 
 var currentExe = Assembly.GetEntryAssembly();
 var currentVersionString =

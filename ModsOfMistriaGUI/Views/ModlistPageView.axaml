@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="using:Garethp.ModsOfMistriaGUI.Models"
-             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.Lang"
+             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaInstallerLib.Lang;assembly=ModsOfMistriaInstallerLib"
              xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
              xmlns:i="https://github.com/projektanker/icons.avalonia"
 

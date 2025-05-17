@@ -5,7 +5,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         xmlns:vm="using:Garethp.ModsOfMistriaGUI.ViewModels"
         x:Class="Garethp.ModsOfMistriaGUI.Views.MainWindow"
-        xmlns:lang="clr-namespace:Garethp.ModsOfMistriaGUI.Lang"
+        xmlns:lang="clr-namespace:Garethp.ModsOfMistriaInstallerLib.Lang;assembly=ModsOfMistriaInstallerLib"
         x:DataType="vm:MainWindowViewModel"
         Title="{x:Static lang:Resources.GUIApplicationTitle}"
         Icon="/Assets/small_icon.png"

@@ -3,15 +3,9 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Garethp.ModsOfMistriaGUI.Lang;
-using Garethp.ModsOfMistriaGUI.Lang;
-using Garethp.ModsOfMistriaGUI.Lang;
-using Garethp.ModsOfMistriaGUI.Lang;
-using Garethp.ModsOfMistriaGUI.Lang;
-using Garethp.ModsOfMistriaGUI.Lang;
-using Garethp.ModsOfMistriaGUI.Lang;
 using Garethp.ModsOfMistriaGUI.Models;
 using Garethp.ModsOfMistriaInstallerLib;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using MsBox.Avalonia;
 
 namespace Garethp.ModsOfMistriaGUI.ViewModels;
