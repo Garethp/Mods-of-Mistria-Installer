@@ -14,7 +14,7 @@ class FileToEnsure
 }
 
 [InformationInstaller(1)]
-public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallInfo
+public class AurieInstaller : IModuleInstaller
 {
     private static readonly string IFEORegistryKey =
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options";
@@ -26,6 +26,8 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
         Action<string, string> reportStatus
     )
     {
+        TearDownRegistry();
+        
         if (information.AurieMods.Count == 0)
         {
             Uninstall(fieldsOfMistriaLocation);
@@ -40,8 +42,6 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
             );
         }
         
-        // PatchAurie(fieldsOfMistriaLocation, modsLocation);
-
         if (!Directory.Exists(Path.Combine(modsLocation, "aurie", "MOMI")))
         {
             Directory.CreateDirectory(Path.Combine(modsLocation, "aurie", "MOMI"));
@@ -51,9 +51,7 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
         {
             Directory.CreateDirectory(Path.Combine(modsLocation, "native"));
         }
-
-        // SetupRegistry(fieldsOfMistriaLocation, modsLocation);
-
+        
         List<FileToEnsure> filesToEnsure =
         [
             new()
@@ -216,77 +214,9 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
             Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe")
         );
         
-        // TearDownRegistry();
+        TearDownRegistry();
     }
-
-    private bool IsInstalled(string fieldsOfMistriaLocation)
-    {
-        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe"))) return false;
-        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.bak.exe"))) return false;
-
-        using var md5 = MD5.Create();
-        using var currentStream = File.OpenRead(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe"));
-        var currentHash = md5.ComputeHash(currentStream);
-        
-        using var originalStream = File.OpenRead(Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.bak.exe"));
-        var originalHash = md5.ComputeHash(originalStream);
-        
-        return currentHash.Equals(originalHash);
-        // if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return false;
-        // return Registry.LocalMachine.OpenSubKey(IFEORegistryKey)?.OpenSubKey("FieldsOfMistria.exe") is not null;
-    }
-
-    public List<string> GetPreinstallInformation(GeneratedInformation information)
-    {
-        // if (information.AurieMods.Count > 0 && !IsInstalled()) return [Resources.PreinstallWillInstallAurie];
-        // if (information.AurieMods.Count == 0 && IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
-
-        return [];
-    }
-
-    public List<string> GetPreUninstallInformation()
-    {
-        // if (IsInstalled()) return [Resources.PreinstallWillRemoveAurie];
-
-        return [];
-    }
-
-    private void SetupRegistry(string fieldsOfMistriaLocation, string modsLocation)
-    {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
-
-        var ifeoKey = Registry.LocalMachine.OpenSubKey(IFEORegistryKey);
-        if (ifeoKey is null) throw new Exception("IFEO Registry Not Found");
-
-        var mistriaSubKey = Registry.LocalMachine.OpenSubKey(IFEORegistryKey)?.OpenSubKey("FieldsOfMistria.exe");
-
-        if (mistriaSubKey is not null) return;
-
-        var installFile = @$"Windows Registry Editor Version 5.00
-
-[{ifeoKey.Name}\FieldsOfMistria.exe]
-""IsAurieInstallerKey""=dword:00000001
-""UseFilter""=dword:00000001
-
-[{ifeoKey.Name}\FieldsOfMistria.exe\{Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe").Replace(Path.DirectorySeparatorChar, '_')}]
-""Debugger""=""{Path.Combine(modsLocation, "AurieLoader.exe").Replace("\\", "\\\\")}""
-""FilterFullPath""=""{Path.Combine(fieldsOfMistriaLocation, "FieldsOfMistria.exe").Replace("\\", "\\\\")}""
-";
-
-        File.WriteAllText(Path.Combine(modsLocation, "aurie", "install.reg"), installFile);
-
-        var proc = new Process();
-        proc.StartInfo.FileName = "regedit.exe";
-        proc.StartInfo.ArgumentList.Add(Path.Combine(modsLocation, "Aurie", "install.reg"));
-        proc.StartInfo.UseShellExecute = true;
-        proc.StartInfo.Verb = "runas";
-        proc.Start();
-
-        proc.WaitForExit();
-
-        File.Delete(Path.Combine(modsLocation, "aurie", "install.reg"));
-    }
-
+    
     private void TearDownRegistry()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
