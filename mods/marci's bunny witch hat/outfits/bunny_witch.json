@@ -1,0 +1,15 @@
+{
+  "bunny_witch": {
+    "name": "bunny witch hat",
+    "description": "A bunny witch hat.",
+    "ui_slot": "head_gear",
+    "default_unlocked": true,
+    "ui_sub_category": "head_gear_misc",
+    "lutFile": "images/lut.png",
+    "uiItem": "images/ui.png",
+    "outlineFile": "images/outline.png",
+    "animationFiles": {
+      "head_gear": "images/hat_animation"
+    }
+  }
+}

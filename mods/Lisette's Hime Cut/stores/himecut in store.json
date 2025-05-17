@@ -1,0 +1,16 @@
+{
+  "items": [
+    {
+      "item": { "cosmetic":  "himecut" },
+      "store": "general",
+      "category": "modded_icon"
+    }
+  ],
+  "categories": [
+    {
+      "store": "general",
+      "icon_name": "modded_icon",
+      "sprite": "images/icon_modded.png"
+    }
+  ]
+}

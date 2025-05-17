@@ -1,0 +1,16 @@
+{
+  "himecut": {
+    "name": "Hime Cut",
+    "description": "A princess hairstyle.",
+    "ui_slot": "hair",
+    "default_unlocked": true,
+    "ui_sub_category": "long_hair",
+    "lutFile": "images/himecut_lut.png",
+    "uiItem": "images/himecut_front_ui.png",
+    "outlineFile": "images/himecut_front_outline.png",
+    "animationFiles": {
+      "hair_front": "images/himecut_front",
+      "hair_back": "images/himecut_back"
+    }
+  }
+}
