@@ -305,6 +305,6 @@
         <value>Disable All Mods</value>
     </data>
     <data name="GUIReloadModlist" xml:space="preserve">
-        <value>Reload mod list.</value>
+        <value>Reload mod list</value>
     </data>
 </root>

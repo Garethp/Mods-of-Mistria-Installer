@@ -807,7 +807,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Reload mod list..
+        ///   Looks up a localized string similar to Reload mod list.
         /// </summary>
         public static string GUIReloadModlist {
             get {
