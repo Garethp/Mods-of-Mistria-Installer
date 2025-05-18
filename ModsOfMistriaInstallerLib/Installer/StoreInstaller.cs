@@ -100,6 +100,12 @@ public class StoreInstaller : ISubModuleInstaller
                         { "cosmetic", cosmeticItem.Item.Cosmetic }
                     });
                     break;
+                case RecipeScrollItem recipeScrollItem:
+                    arrayToAddTo.Add(new JObject
+                    {
+                        { "recipe_scroll", recipeScrollItem.Item.RecipeScroll }
+                    });
+                    break;
                 default:
                     throw new Exception("Unknown item type");
             }
