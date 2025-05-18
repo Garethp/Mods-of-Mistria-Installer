@@ -46,6 +46,18 @@ public class FiddleInstaller : IModuleInstaller
             });
         }
 
+        if (merged["extras"] is not JObject)
+        {
+            merged["extras"] = new JObject()
+            {
+                { "objects", new JArray() },
+                { "items", new JArray() }
+            };
+        }
+        
+        if (merged["extras"]!["objects"] is not JArray) merged["extras"]!["objects"] = new JArray();
+        if (merged["extras"]!["items"] is not JArray) merged["extras"]!["items"] = new JArray();
+
         var extraObjects = (merged["extras"]!["objects"] as JArray)!;
 
         var mergedNewObjects = new Dictionary<string, JObject>();
@@ -65,7 +77,7 @@ public class FiddleInstaller : IModuleInstaller
         {
             extraObjects.Add(newObject);
         }
-
+        
         merged["extras/objects"] = merged["extras"]!["objects"];
         
         var extraItems = (merged["extras"]!["items"] as JArray)!;
