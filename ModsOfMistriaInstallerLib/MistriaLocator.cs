@@ -108,7 +108,8 @@ public class MistriaLocator
         mods.AddRange(zipMods);
         mods.AddRange(rarMods);
 
-
+        mods = mods.OrderBy(mod => mod.GetName()).ToList();
+        
         try
         {
             var installedMods = new List<string>();
