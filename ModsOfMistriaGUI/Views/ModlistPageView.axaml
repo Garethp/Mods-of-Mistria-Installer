@@ -17,7 +17,7 @@
                     <MenuItem.Header>
                         <Image Height="16" Margin="5 0 0 0">
                             <Image.Source>
-                                <i:IconImage Value="fa-gear" />
+                                <i:IconImage Value="fa-gear" Brush="{DynamicResource IconColor}" />
                             </Image.Source>
                         </Image>
                     </MenuItem.Header>
