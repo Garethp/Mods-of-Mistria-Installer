@@ -32,13 +32,13 @@ public class OutfitTest
             Description = "Outfit Description",
             DefaultUnlocked = false,
             UiSlot = "back",
-            UiSubCategory = "back",
+            UiSubCategory = "backpacks",
             LutFile = "images/lut.png",
             UiItem = "images/ui.png",
             OutlineFile = "images/outline.png",
             AnimationFiles = new Dictionary<string, string>
             {
-                { "back", "images/animation" },
+                { "backpacks", "images/animation" },
             }
         };
 
