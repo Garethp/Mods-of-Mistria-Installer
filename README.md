@@ -99,7 +99,7 @@ in their own folder, separate from other sprites. Here's an example file:
     "description": "A dolphins tale.",
     "ui_slot": "back",
     "default_unlocked": true,
-    "ui_sub_category": "back",
+    "ui_sub_category": "capes",
     "lutFile": "images/lut.png",
     "uiItem": "images/ui.png",
     "outlineFile": "images/outline.png",

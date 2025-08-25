@@ -11,7 +11,7 @@ public class Outfit
 {
     public static Dictionary<string, List<string>> ValidSlots = new()
     {
-        { "back", ["back"] },
+        { "back", ["capes", "backpacks"] },
         { "facial_hair", ["facial_hair"] },
         { "top", ["dress", "robe", "top_misc", "suit", "long_sleeve", "sleeveless", "short_sleeve"] },
         { "eyes", ["eyes" ] },
