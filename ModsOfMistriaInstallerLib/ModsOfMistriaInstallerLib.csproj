@@ -13,6 +13,10 @@
       <DebugType>none</DebugType>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'" />
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'" />
+
     <ItemGroup>
       <PackageReference Include="Esprima" Version="3.0.5" />
       <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.10.0" />
