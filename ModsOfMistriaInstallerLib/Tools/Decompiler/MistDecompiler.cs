@@ -4,7 +4,6 @@ using Esprima.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Tools.Decompiler;
 
@@ -85,7 +84,8 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         }
         else if (stmt_type == "Expr")
         {
-            return null;
+            JObject expr = (JObject)obj.SelectToken("$.expr", true);
+            return new ExpressionStatement((Expression)this.ToExpression(expr));
         }
         else if (stmt_type == "Function")
         {
@@ -94,7 +94,7 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             BlockStatement body = (BlockStatement)this.ToStatement((JObject)obj.SelectToken("$.body", true));
 
             //var ret = new FunctionDeclaration(ident, NodeList.Create(parameters), body, false, false, false);
-            var ret = new FunctionDeclaration(ident, NodeList.Create(parameters), new BlockStatement(NodeList.Create(new List<Statement>())), false, false, false);
+            var ret = new FunctionDeclaration(ident, NodeList.Create(parameters), body, false, false, false);
 
             string tmp = ret.ToJavaScriptString();
 
@@ -111,19 +111,30 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         }
         else if (stmt_type == "Simultaneous")
         {
+            // Returns function `__async()`;
             return null;
         }
         else if (stmt_type == "Free")
         {
+            // Returns function `__free()`;
             return null;
         }
         else if (stmt_type == "If")
         {
-            return null;
+            JObject condition = (JObject)obj.SelectToken("$.condition");
+            JObject then_branch = (JObject)obj.SelectToken("$.then_branch");
+            JObject else_branch = (JObject)obj.SelectToken("$.else_branch");
+
+            var condition_expr = this.ToExpression(condition);
+            var then_branch_stmt = (Statement)this.ToStatement(then_branch);
+            var else_branch_stmt = (Statement)this.ToStatement(else_branch);
+
+            return new IfStatement(condition_expr, then_branch_stmt, else_branch_stmt);
         }
         else if (stmt_type == "Return")
         {
-            return null;
+            JObject expr = (JObject)obj.SelectToken("$.value");
+            return new ReturnStatement(this.ToExpression(expr));
         }
         return null;
     }
@@ -150,40 +161,79 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             return null;
         }
 
-        string token_type = obj["expr_type"].ToString();
-        if (token_type == "Literal")
+        string expr_type = obj["expr_type"].ToString();
+        if (expr_type == "Literal")
         {
-            return null;
+            string token_type = obj.SelectToken("$.value.token_type", true).ToString();
+
+            if (token_type == "True")
+            {
+                return new Literal(true, "true");
+            }
+            else if (token_type == "False")
+            {
+                return new Literal(false, "false");
+            }
+            else if (token_type == "Number")
+            {
+                var value = obj.SelectToken("$.value.Value", true);
+                return new Literal((double)value, value.ToString());
+            }
+            else if (token_type == "String")
+            {
+                var value = obj.SelectToken("$.value.value", true);
+                return new Literal(value.ToString(), value.ToString());
+            } else
+            {
+                throw new Exception($"unknown token type for a Literal Expression: {token_type}");
+            }
         }
-        else if (token_type == "Named")
+        else if (expr_type == "Named")
         {
             string ident = obj.SelectToken("$.name.value", true).ToString();
             return new Identifier(ident);
         }
-        else if (token_type == "Unary")
+        else if (expr_type == "Unary")
         {
             return null;
         }
-        else if (token_type == "Binary")
+        else if (expr_type == "Binary")
+        {
+            JObject left = (JObject)obj.SelectToken("$.left");
+            string operator_name = obj.SelectToken("$.operator.token_type", true).ToString();
+            JObject right = (JObject)obj.SelectToken("$.right");
+
+            BinaryOperator op;
+            switch (operator_name)
+            {
+                case "DoubleEqual":
+                    op = BinaryOperator.Equal; break;
+                case "Plus":
+                    op = BinaryOperator.Plus; break;
+                default:
+                    op = BinaryOperator.Greater; break;
+            }
+
+            var left_expr = this.ToExpression(left);
+            var right_expr = this.ToExpression(right);
+            return new BinaryExpression(op, left_expr, right_expr);
+        }
+        else if (expr_type == "Logical")
         {
             return null;
         }
-        else if (token_type == "Logical")
+        else if (expr_type == "Assign")
         {
             return null;
         }
-        else if (token_type == "Assign")
-        {
-            return null;
-        }
-        else if (token_type == "Call")
+        else if (expr_type == "Call")
         {
             Expression callee = this.ToExpression((JObject)obj.SelectToken("$.call", true));
             JArray args = (JArray)obj.SelectToken("$.args", true);
             List<Expression> args_list = args.Select(arg => this.ToExpression((JObject)arg)).ToList();
             return new CallExpression(callee, NodeList.Create(args_list), false);
         }
-        else if (token_type == "Grouping")
+        else if (expr_type == "Grouping")
         {
             return null;
         }
@@ -207,6 +257,7 @@ public class MistDecompiler
 
         MistContainer container = JsonConvert.DeserializeObject<MistContainer>(text, settings);
 
+        // FIXME: Output all programs.
         return container.Programs[0].ToJavaScriptString();
     }
 }
