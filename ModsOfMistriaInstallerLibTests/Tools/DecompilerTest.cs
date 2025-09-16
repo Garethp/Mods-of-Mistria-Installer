@@ -242,6 +242,52 @@ public class DecompilerTest
     }
 
     [Test]
+    public void ShouldDecompileBasicBinaryExpression()
+    {
+        string ast = """
+{
+    "expr_type": "Binary", 
+    "left": {
+        "expr_type": "Literal", 
+        "value": {"token_type": "True"}
+    }, 
+    "operator": {"token_type": "DoubleEqual"}, 
+    "right": {
+        "expr_type": "Literal", 
+        "value": {"token_type": "False"}
+    }
+}
+""";
+        string expected_js = "true==false";
+
+        MistContainerConverter mistContainerConverter = new MistContainerConverter();
+        JObject obj = (JObject)JToken.Parse(ast);
+        string decompiled_js = mistContainerConverter.ToExpression(obj).ToJavaScriptString();
+        Assert.That(decompiled_js, Is.EqualTo(expected_js));
+
+        ast = """
+{
+    "expr_type": "Logical", 
+    "left": {
+        "expr_type": "Literal", 
+        "value": {"token_type": "True"}
+    }, 
+    "operator": {"token_type": "And"},
+    "right": {
+        "expr_type": "Literal", 
+        "value": {"token_type": "False"}
+    }
+}
+""";
+        expected_js = "true&&false";
+
+        mistContainerConverter = new MistContainerConverter();
+        obj = (JObject)JToken.Parse(ast);
+        decompiled_js = mistContainerConverter.ToExpression(obj).ToJavaScriptString();
+        Assert.That(decompiled_js, Is.EqualTo(expected_js));
+    }
+
+    [Test]
     [Ignore("The file day_zero.json was not committed. The expected_js is shorter than the actual result. Not all decompilations are implemented.")]
     public void ShouldDecompileMistAst()
     {
