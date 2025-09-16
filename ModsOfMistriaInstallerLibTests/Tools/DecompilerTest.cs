@@ -1,7 +1,7 @@
 ﻿using Esprima.Utils;
 using Garethp.ModsOfMistriaInstallerLib.Tools.Decompiler;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace ModsOfMistriaInstallerLibTests.Tools;
 
@@ -29,13 +29,18 @@ public class DecompilerTest
     "resolve": "null"
 }
 """;
-        string expected_js = "function go_to_bed(){}";
+        string expected_js = "function go_to_bed() { }";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
         JObject obj = (JObject)JToken.Parse(ast);
-        string decompiled_js = mistContainerConverter.ToStatement(obj).ToJavaScriptString();
-
-        Assert.That(decompiled_js, Is.EqualTo(expected_js));
+        StringBuilder sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
+        {
+            // So we can run the test across OSes.
+            writer.NewLine = "\n";
+            mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
+        }
+        Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
     [Test]
@@ -68,13 +73,17 @@ public class DecompilerTest
     "resolve": "null"
 }
 """;
-        string expected_js = "function go_to_bed(){return __await_ari_animation()}";
+        string expected_js = "function go_to_bed() {\n  return __await_ari_animation();\n}";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
         JObject obj = (JObject)JToken.Parse(ast);
-        string decompiled_js = mistContainerConverter.ToStatement(obj).ToJavaScriptString();
-
-        Assert.That(decompiled_js, Is.EqualTo(expected_js));
+        StringBuilder sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
+        {
+            writer.NewLine = "\n";
+            mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
+        }
+        Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
     [Test]
@@ -105,8 +114,13 @@ public class DecompilerTest
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
         JObject obj = (JObject)JToken.Parse(ast);
-        string decompiled_js = mistContainerConverter.ToStatement(obj).ToJavaScriptString();
-        Assert.That(decompiled_js, Is.EqualTo(expected_js));
+        StringBuilder sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
+        {
+            writer.NewLine = "\n";
+            mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
+        }
+        Assert.That(sb.ToString(), Is.EqualTo(expected_js));
 
         ast = """
             
@@ -131,14 +145,16 @@ public class DecompilerTest
     }
 }
 """;
-        // FIXME: We may need our own Writer to add space after the comma.
-        expected_js = "face(ari,south)";
+        expected_js = "face(ari, south)";
 
         obj = (JObject)JToken.Parse(ast);
-        decompiled_js = mistContainerConverter.ToStatement(obj).ToJavaScriptString();
-
-
-        Assert.That(decompiled_js, Is.EqualTo(expected_js));
+        sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
+        {
+            writer.NewLine = "\n";
+            mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
+        }
+        Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
     [Test]
@@ -206,12 +222,17 @@ public class DecompilerTest
     }
 }
 """;
-        string expected_js = "if(get_response()==0){close_textbox()}else{close_textbox()}";
+        string expected_js = "if (get_response() == 0) {\n  close_textbox();\n} else {\n  close_textbox();\n}";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
         JObject obj = (JObject)JToken.Parse(ast);
-        string decompiled_js = mistContainerConverter.ToStatement(obj).ToJavaScriptString();
-        Assert.That(decompiled_js, Is.EqualTo(expected_js));
+        StringBuilder sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
+        {
+            writer.NewLine = "\n";
+            mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
+        }
+        Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
     [Test]
@@ -237,8 +258,13 @@ public class DecompilerTest
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
         JObject obj = (JObject)JToken.Parse(ast);
-        string decompiled_js = mistContainerConverter.ToStatement(obj).ToJavaScriptString();
-        Assert.That(decompiled_js, Is.EqualTo(expected_js));
+        StringBuilder sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
+        {
+            writer.NewLine = "\n";
+            mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
+        }
+        Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
     [Test]
@@ -258,12 +284,17 @@ public class DecompilerTest
     }
 }
 """;
-        string expected_js = "true==false";
+        string expected_js = "true == false";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
         JObject obj = (JObject)JToken.Parse(ast);
-        string decompiled_js = mistContainerConverter.ToExpression(obj).ToJavaScriptString();
-        Assert.That(decompiled_js, Is.EqualTo(expected_js));
+        StringBuilder sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
+        {
+            writer.NewLine = "\n";
+            mistContainerConverter.ToExpression(obj).WriteJavaScript(writer, true);
+        }
+        Assert.That(sb.ToString(), Is.EqualTo(expected_js));
 
         ast = """
 {
@@ -279,12 +310,17 @@ public class DecompilerTest
     }
 }
 """;
-        expected_js = "true&&false";
+        expected_js = "true && false";
 
         mistContainerConverter = new MistContainerConverter();
         obj = (JObject)JToken.Parse(ast);
-        decompiled_js = mistContainerConverter.ToExpression(obj).ToJavaScriptString();
-        Assert.That(decompiled_js, Is.EqualTo(expected_js));
+        sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
+        {
+            writer.NewLine = "\n";
+            mistContainerConverter.ToExpression(obj).WriteJavaScript(writer, true);
+        }
+        Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
     [Test]
