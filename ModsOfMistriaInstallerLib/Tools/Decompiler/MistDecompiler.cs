@@ -116,8 +116,16 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         }
         else if (stmt_type == "Free")
         {
-            // Returns function `__free()`;
-            return null;
+            // Returns function `__free(() => { statementN; })`;
+            // A function call to __free with an arrow function as argument.
+            JObject stmt = (JObject)obj.SelectToken("$.stmt");
+
+            var func_name = new Identifier("__free");
+            List<Node> arrow_args_list = new();
+            var arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list), (StatementListItem)this.ToStatement(stmt), false, false, false);
+            List<Expression> args = new();
+            args.Add(arrow_func);
+            return new CallExpression(func_name, NodeList.Create(args), false);
         }
         else if (stmt_type == "If")
         {
@@ -195,7 +203,22 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         }
         else if (expr_type == "Unary")
         {
-            return null;
+            string operator_name = obj.SelectToken("$.operator.token_type", true).ToString();
+            JObject right = (JObject)obj.SelectToken("$.right");
+
+            UnaryOperator op;
+            switch (operator_name)
+            {
+                case "Minus":
+                    op = UnaryOperator.Minus; break;
+                case "Bang":
+                    op = UnaryOperator.LogicalNot; break;
+                default:
+                    throw new Exception($"unknown binary operator: {operator_name}");
+            }
+
+            var right_expr = this.ToExpression(right);
+            return new UnaryExpression(op, right_expr);
         }
         else if (expr_type == "Binary")
         {
@@ -208,10 +231,26 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             {
                 case "DoubleEqual":
                     op = BinaryOperator.Equal; break;
+                case "BangEqual":
+                    op = BinaryOperator.NotEqual; break;
+                case "LessEqual":
+                    op = BinaryOperator.LessOrEqual; break;
+                case "Less":
+                    op = BinaryOperator.Less; break;
+                case "GreaterEqual":
+                    op = BinaryOperator.GreaterOrEqual; break;
+                case "Greater":
+                    op = BinaryOperator.Greater; break;
                 case "Plus":
                     op = BinaryOperator.Plus; break;
+                case "Minus":
+                    op = BinaryOperator.Minus; break;
+                case "Star":
+                    op = BinaryOperator.Times; break;
+                case "Slash":
+                    op = BinaryOperator.Divide; break;
                 default:
-                    op = BinaryOperator.Greater; break;
+                    throw new Exception($"unknown binary operator: {operator_name}");
             }
 
             var left_expr = this.ToExpression(left);
@@ -220,7 +259,24 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         }
         else if (expr_type == "Logical")
         {
-            return null;
+            JObject left = (JObject)obj.SelectToken("$.left");
+            string operator_name = obj.SelectToken("$.operator.token_type", true).ToString();
+            JObject right = (JObject)obj.SelectToken("$.right");
+
+            BinaryOperator op;
+            switch (operator_name)
+            {
+                case "And":
+                    op = BinaryOperator.LogicalAnd; break;
+                case "Or":
+                    op = BinaryOperator.LogicalOr; break;
+                default:
+                    throw new Exception($"unknown logical operator: {operator_name}");
+            }
+
+            var left_expr = this.ToExpression(left);
+            var right_expr = this.ToExpression(right);
+            return new LogicalExpression(op, left_expr, right_expr);
         }
         else if (expr_type == "Assign")
         {
