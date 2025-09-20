@@ -324,36 +324,123 @@ public class DecompilerTest
     }
 
     [Test]
-    [Ignore("The file day_zero.json was not committed. The expected_js is shorter than the actual result. Not all decompilations are implemented.")]
+    public void ShouldDecompileAssignExpression()
+    {
+        string ast = """
+{
+    "expr_type": "Assign", 
+    "name": {
+        "expr_type": "Named", 
+        "name": {"token_type": "Identifier", "value": "timer"}
+    }, 
+    "value": {
+        "expr_type": "Binary", 
+        "left": {
+            "expr_type": "Named", 
+            "name": {"token_type": "Identifier", "value": "timer"}
+        }, 
+        "operator": {"token_type": "Minus"}, 
+        "right": {
+            "expr_type": "Literal", 
+            "value": {"token_type": "Number", "Value": 1.0}
+        }
+    }
+}
+""";
+        string expected_js = "timer = timer - 1";
+
+        MistContainerConverter mistContainerConverter = new MistContainerConverter();
+        JObject obj = (JObject)JToken.Parse(ast);
+        StringBuilder sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
+        {
+            writer.NewLine = "\n";
+            mistContainerConverter.ToExpression(obj).WriteJavaScript(writer, true);
+        }
+        Assert.That(sb.ToString(), Is.EqualTo(expected_js));
+    }
+
+    // TODO: Add tests for Simultaneous.
+
+    [Test]
+    public void ShouldDecompileGrouping()
+    {
+        string ast = """
+{
+    "stmt_type": "Var", 
+    "name": {"token_type": "Identifier", "value": "increment"}, 
+    "initializer": {
+        "expr_type": "Binary", 
+        "left": {
+            "expr_type": "Grouping", 
+            "expr": {
+                "expr_type": "Binary", 
+                "left": {
+                    "expr_type": "Named", 
+                    "name": {
+                        "token_type": "Identifier", 
+                        "value": "target_time"
+                    }
+                }, 
+                "operator": {"token_type": "Minus"}, 
+                "right": {
+                    "expr_type": "Named", 
+                    "name": {"token_type": "Identifier", "value": "start"}
+                }
+            }
+        }, 
+        "operator": {"token_type": "Slash"}, 
+        "right": {
+            "expr_type": "Named", 
+            "name": {
+                "token_type": "Identifier", 
+                "value": "frame_length"
+            }
+        }
+    }
+}
+""";
+        string expected_js = "var increment = (target_time - start) / frame_length";
+
+        MistContainerConverter mistContainerConverter = new MistContainerConverter();
+        JObject obj = (JObject)JToken.Parse(ast);
+        StringBuilder sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
+        {
+            writer.NewLine = "\n";
+            mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
+        }
+        Assert.That(sb.ToString(), Is.EqualTo(expected_js));
+    }
+
+    [Test]
+    [Ignore("The file day_zero.json was not committed. The expected_js is shorter than the actual result. String still fail to render.")]
     public void ShouldDecompileMistAst()
     {
         var decompiler = new MistDecompiler();
         string decompiled_js = decompiler.Decompile("..\\..\\..\\..\\mists\\day_zero.json");
 
         string expected_js = """
-function go_to_bed()
-{
-    var x = __get_new_day_spawn_x();
-    var y = __get_new_day_spawn_y();
-    camera_follow(ari);
-    simultaneous
+function go_to_bed() {
+  var x = __get_new_day_spawn_x();
+  var y = __get_new_day_spawn_y();
+  camera_follow(ari);
+  __async(() => {
+    walk(ari, x, y);
+    set_move_speed(ari, 0.5);
+  });
+  face(ari, south);
+  wait(1);
+  request_music_stop(1);
+  __async(() => {
+    play_sound("Music/Jingles/GoToSleep");
     {
-        walk(ari, x, y);
-        set_move_speed(ari, 0.5);
+      animate(ari, blink);
+      wait(0.2);
+      freeze_ari();
     }
-    face(ari, south);
-    wait(1);
-    request_music_stop(1);
-    simultaneous
-    {
-        play_sound(""Music/Jingles/GoToSleep"");
-        {
-            animate(ari, blink);
-            wait(0.2);
-            freeze_ari();
-        }
-        fade_out(8);
-    }
+    fade_out(8);
+  });
 }
 """;
         

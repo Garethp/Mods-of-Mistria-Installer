@@ -1,12 +1,15 @@
-﻿using Esprima;
-using Esprima.Ast;
+﻿using Esprima.Ast;
 using Esprima.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
+using System.Text;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Tools.Decompiler;
 
+/// <summary>
+/// A container representing the top level JSON object in __mist__.json.
+/// </summary>
 public class MistContainer
 {
     public List<MistProgram> Programs;
@@ -15,19 +18,20 @@ public class MistContainer
 public class MistProgram
 {
     public string Name;
-    public NodeList<Node> Statements;
+    // Esprima's Program is an abstract partial class.
+    public Module Program;
 
     public string ToJavaScriptString()
     {
-        string result = "";
-        foreach (var stmt in Statements)
+        // We could directly use Program.ToJavaScriptString(true)
+        // if we want a writer to use OS dependent newline.
+        StringBuilder sb = new StringBuilder();
+        using (var writer = new StringWriter(sb))
         {
-            if (stmt != null)
-            {
-                result += AstToJavaScript.ToJavaScriptString(stmt);
-            }
+            //writer.NewLine = "\n";
+            Program.WriteJavaScript(writer, true);
         }
-        return result;
+        return sb.ToString();
     }
 }
 
@@ -35,6 +39,7 @@ public class MistContainerConverter : JsonConverter<MistContainer>
 {
     public override MistContainer? ReadJson(JsonReader reader, Type objectType, MistContainer? existingValue, bool hasExistingValue, JsonSerializer serializer)
     {
+        // This, to my understanding, load the entire JSON tree.
         JToken token = JToken.Load(reader);
 
         if (token.Type == JTokenType.Object)
@@ -54,7 +59,7 @@ public class MistContainerConverter : JsonConverter<MistContainer>
 
                 MistProgram mist = new MistProgram();
                 mist.Name = prop.Name.ToString();
-                mist.Statements = NodeList.Create(statements.Select(stmt => this.ToStatement((JObject)stmt)));
+                mist.Program = new Module(NodeList.Create(statements.Select(stmt => (Statement)this.ToStatement((JObject)stmt))));
 
                 container.Programs.Add(mist);
             }
@@ -72,7 +77,15 @@ public class MistContainerConverter : JsonConverter<MistContainer>
     {
         if (!obj.ContainsKey("stmt_type"))
         {
-            return null;
+            if (obj.ContainsKey("expr_type"))
+            {
+                throw new Exception("expected a statement but found an expression.");
+            }
+            else if (obj.ContainsKey("token_type"))
+            {
+                throw new Exception("expected a statement but found a token.");
+            }
+            throw new Exception("expected a statement but found JSON objectg without 'stmt_type' key");
         }
 
         string stmt_type = obj["stmt_type"].ToString();
@@ -92,13 +105,7 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             Identifier ident = new Identifier(obj.SelectToken("$.name.value", true).ToString());
             List<Node> parameters = new List<Node>();
             BlockStatement body = (BlockStatement)this.ToStatement((JObject)obj.SelectToken("$.body", true));
-
-            //var ret = new FunctionDeclaration(ident, NodeList.Create(parameters), body, false, false, false);
-            var ret = new FunctionDeclaration(ident, NodeList.Create(parameters), body, false, false, false);
-
-            string tmp = ret.ToJavaScriptString();
-
-            return ret;
+            return new FunctionDeclaration(ident, NodeList.Create(parameters), body, false, false, false);
         }
         else if (stmt_type == "Var")
         {
@@ -111,21 +118,53 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         }
         else if (stmt_type == "Simultaneous")
         {
-            // Returns function `__async()`;
-            return null;
+            // Returns function `__async(() => { statementN; })`.
+            JObject body = (JObject)obj.SelectToken("$.body");
+
+            var func_name = new Identifier("__async");
+            List<Node> arrow_args_list = new();
+            var arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list), (StatementListItem)this.ToStatement(body), false, false, false);
+            List<Expression> args = new();
+            args.Add(arrow_func);
+
+            // Wrap in ExpressionStatement because Simultaneous itself is a statement.
+            return new ExpressionStatement((Expression)new CallExpression(func_name, NodeList.Create(args), false));
         }
         else if (stmt_type == "Free")
         {
-            // Returns function `__free(() => { statementN; })`;
+            // Returns function `__free(() => { statementN; })`
             // A function call to __free with an arrow function as argument.
             JObject stmt = (JObject)obj.SelectToken("$.stmt");
 
             var func_name = new Identifier("__free");
             List<Node> arrow_args_list = new();
-            var arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list), (StatementListItem)this.ToStatement(stmt), false, false, false);
+
+            ArrowFunctionExpression arrow_func;
+            if (stmt.ContainsKey("stmt_type"))
+            {
+                var typ = stmt.Value<string>("stmt_type") ?? "";
+                if (typ == "Expr")
+                {
+                    var expr = (ExpressionStatement)this.ToStatement(stmt);
+                    arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list), expr.Expression, true, false, false);
+                } else
+                {
+                    Statement[] stmts = { (Statement)this.ToStatement(stmt) };
+                    NodeList<Statement> statements = NodeList.Create(stmts);
+                    arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list), new BlockStatement(statements), false, false, false);
+                }
+            }
+            else
+            {
+                throw new Exception("unexpected token type");
+            }
+
+
             List<Expression> args = new();
             args.Add(arrow_func);
-            return new CallExpression(func_name, NodeList.Create(args), false);
+
+            // Wrap in ExpressionStatement because Free itself is a statement.
+            return new ExpressionStatement((Expression)new CallExpression(func_name, NodeList.Create(args), false));
         }
         else if (stmt_type == "If")
         {
@@ -147,26 +186,19 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         return null;
     }
 
-    public Node? ToToken(JObject obj)
-    {
-        if (!obj.ContainsKey("token_type"))
-        {
-            return null;
-        }
-
-        string token_type = obj["token_type"].ToString();
-        if (token_type == "Identifier")
-        {
-            return null;
-        }
-        return null;
-    }
-
     public Expression ToExpression(JObject obj)
     {
         if (!obj.ContainsKey("expr_type"))
         {
-            return null;
+            if (obj.ContainsKey("stmt_type"))
+            {
+                throw new Exception("expected an expression but found a statement.");
+            }
+            else if (obj.ContainsKey("token_type"))
+            {
+                throw new Exception("expected an expression but found a token.");
+            }
+            throw new Exception("expected a statement but found JSON objectg without 'expr_type' key");
         }
 
         string expr_type = obj["expr_type"].ToString();
@@ -191,7 +223,8 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             {
                 var value = obj.SelectToken("$.value.value", true);
                 return new Literal(value.ToString(), value.ToString());
-            } else
+            }
+            else
             {
                 throw new Exception($"unknown token type for a Literal Expression: {token_type}");
             }
@@ -280,7 +313,11 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         }
         else if (expr_type == "Assign")
         {
-            return null;
+            JObject name = (JObject)obj.SelectToken("$.name");
+            JObject value = (JObject)obj.SelectToken("$.value");
+            var name_expr = this.ToExpression(name);
+            var value_expr = this.ToExpression(value);
+            return new AssignmentExpression(AssignmentOperator.Assign, name_expr, value_expr);
         }
         else if (expr_type == "Call")
         {
@@ -291,7 +328,9 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         }
         else if (expr_type == "Grouping")
         {
-            return null;
+            JObject expr = (JObject)obj.SelectToken("$.expr");
+            // Esprima does not have explicit grouping in its AST, however, it appears to render it out properly.
+            return this.ToExpression(expr);
         }
         return null;
     }
