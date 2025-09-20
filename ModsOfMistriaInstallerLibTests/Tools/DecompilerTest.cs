@@ -414,7 +414,7 @@ public class DecompilerTest
     }
 
     [Test]
-    [Ignore("The file day_zero.json was not committed. The expected_js is shorter than the actual result. String still fail to render.")]
+    [Ignore("The file day_zero.json was not committed. The expected_js is shorter than the actual result. Parameters of function declaraction still fail.")]
     public void ShouldDecompileMistAst()
     {
         var decompiler = new MistDecompiler();
@@ -440,6 +440,17 @@ function go_to_bed() {
       freeze_ari();
     }
     fade_out(8);
+  });
+}
+function balor_jump(dir = null, tp = null) {
+  play_sound("SoundEffects/Ari/Jump");
+  animate(balor, jump);
+  set_shadow_enabled(balor, false);
+  await_npc_animation(balor);
+  set_shadow_enabled(balor, true);
+  __async(() => {
+    place_actor(balor, dir, tp);
+    animate(balor, idle);
   });
 }
 """;
