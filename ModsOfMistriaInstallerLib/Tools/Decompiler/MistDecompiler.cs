@@ -103,9 +103,12 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         else if (stmt_type == "Function")
         {
             Identifier ident = new Identifier(obj.SelectToken("$.name.value", true).ToString());
-            List<Node> parameters = new List<Node>();
+
+            JArray params_ = (JArray)obj.SelectToken("$.params", true);
+            // FIXME: Parameters in JSON are token_type = Identifier
+            NodeList<Node> parameters = NodeList.Create(params_.Select(expr => (Node)this.ToExpression((JObject)expr)));
             BlockStatement body = (BlockStatement)this.ToStatement((JObject)obj.SelectToken("$.body", true));
-            return new FunctionDeclaration(ident, NodeList.Create(parameters), body, false, false, false);
+            return new FunctionDeclaration(ident, parameters, body, false, false, false);
         }
         else if (stmt_type == "Var")
         {
@@ -145,6 +148,8 @@ public class MistContainerConverter : JsonConverter<MistContainer>
                 var typ = stmt.Value<string>("stmt_type") ?? "";
                 if (typ == "Expr")
                 {
+                    // Unpack the inner expression since Esprima will try to convert the body of
+                    // ArrowFunctionExpression to Expression if any Body is not BlockStatement.
                     var expr = (ExpressionStatement)this.ToStatement(stmt);
                     arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list), expr.Expression, true, false, false);
                 } else
@@ -158,7 +163,6 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             {
                 throw new Exception("unexpected token type");
             }
-
 
             List<Expression> args = new();
             args.Add(arrow_func);
@@ -222,7 +226,8 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             else if (token_type == "String")
             {
                 var value = obj.SelectToken("$.value.value", true);
-                return new Literal(value.ToString(), value.ToString());
+                // Esprima will use the raw to render the String literal, so we add back the double quotes.
+                return new Literal(value.ToString(), $"\"{value.ToString()}\"");
             }
             else
             {
