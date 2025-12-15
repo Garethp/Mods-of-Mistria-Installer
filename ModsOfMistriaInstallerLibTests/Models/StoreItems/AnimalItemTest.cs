@@ -1,13 +1,14 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
-using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.Models.StoreItems;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using ModsOfMistriaInstallerLibTests.Fixtures;
+using Newtonsoft.Json.Linq;
 
-namespace ModsOfMistriaInstallerLibTests.Models;
+namespace ModsOfMistriaInstallerLibTests.Models.StoreItems;
 
 [TestFixture]
-public class SimpleStoreItemTest
+public class AnimalItemTest
 {
     private IMod _mockMod;
 
@@ -17,18 +18,18 @@ public class SimpleStoreItemTest
         _mockMod = new MockMod([]);
     }
 
-    private static SimpleItem GetMockItem()
+    private static AnimalStoreItem GetMockItem()
     {
-        var item = new SimpleItem()
+        var item = new AnimalStoreItem()
         {
             Store = "general store",
             Category = "general category",
-            Item = "test item"
+            Item = new AnimalItemDefinition() { Animal = "test animal", Cosmetic = "test item" }
         };
 
         return item;
     }
-
+    
     [Test]
     public void ShouldHaveNoErrorsForValidStoreItem()
     {
@@ -40,7 +41,7 @@ public class SimpleStoreItemTest
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
 
-    [TestCase("spring")]
+        [TestCase("spring")]
     [TestCase("summer")]
     [TestCase("fall")]
     [TestCase("winter")]
@@ -101,7 +102,7 @@ public class SimpleStoreItemTest
     public void ShouldHaveErrorIfItemIsEmpty()
     {
         var item = GetMockItem();
-        item.Item = "";
+        item.Item = null;
         var validation = item.Validate(new Validation(), _mockMod, "storeItem.json");
 
         var expectedValidation = new Validation();
@@ -109,5 +110,70 @@ public class SimpleStoreItemTest
             string.Format(Resources.CoreErrorStoreItemHasNoItem, item.Store, item.Category));
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+
+    [Test]
+    public void ShouldHaveErrorIfItemHasNoAnimal()
+    {
+        var item = GetMockItem();
+        item.Item.Animal = "";
+        var validation = item.Validate(new Validation(), _mockMod, "storeItem.json");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(_mockMod, "storeItem.json",
+            string.Format(Resources.CoreErrorStoreItemHasNoItem, item.Store, item.Category));
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+
+    [Test]
+    public void ShouldHaveErrorIfAnimalHasNoCosmetic()
+    {
+        var item = GetMockItem();
+        item.Item.Cosmetic = "";
+        var validation = item.Validate(new Validation(), _mockMod, "storeItem.json");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(_mockMod, "storeItem.json",
+            string.Format(Resources.CoreErrorStoreItemAnimalHasNoCosmetic, item.Item.Animal, item.Store));
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+    
+    [Test]
+    public void ShouldGenerateJsonCorrectly()
+    {
+        var item = GetMockItem();
+
+        var actualJson = item.ToJson();
+        var expectedJson = new JObject
+        {
+            { "animal", item.Item.Animal },
+            { "cosmetic", item.Item.Cosmetic },
+        };
+
+        Assert.That(actualJson.ToString(), Is.EqualTo(expectedJson.ToString()));
+    }
+
+    [Test]
+    public void ShouldGenerateJsonWithRequirements()
+    {
+        var item = GetMockItem();
+        var requirements = new JObject
+        {
+            { "unlocked_animal", "horse" }
+        };
+
+        item.requirements = requirements;
+
+        var actualJson = item.ToJson();
+        var expectedJson = new JObject
+        {
+            { "requirements", requirements },
+            { "animal", item.Item.Animal },
+            { "cosmetic", item.Item.Cosmetic },
+        };
+
+        Assert.That(actualJson.ToString(), Is.EqualTo(expectedJson.ToString()));
     }
 }

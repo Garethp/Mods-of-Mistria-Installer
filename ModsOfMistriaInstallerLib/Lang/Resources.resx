@@ -307,4 +307,7 @@
     <data name="GUIReloadModlist" xml:space="preserve">
         <value>Reload mod list</value>
     </data>
+    <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve">
+        <value>Animal {0} for store {1} has no cosmetic defined.</value>
+    </data>
 </root>

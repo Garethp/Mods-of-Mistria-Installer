@@ -89,26 +89,7 @@ public class StoreInstaller : ISubModuleInstaller
 
             if (arrayToAddTo is null) throw new Exception("Could not find array to add item to");
             
-            switch (item)
-            {
-                case SimpleItem simpleItem:
-                    arrayToAddTo.Add(new JValue(simpleItem.Item));
-                    break;
-                case CosmeticItem cosmeticItem:
-                    arrayToAddTo.Add(new JObject
-                    {
-                        { "cosmetic", cosmeticItem.Item.Cosmetic }
-                    });
-                    break;
-                case RecipeScrollItem recipeScrollItem:
-                    arrayToAddTo.Add(new JObject
-                    {
-                        { "recipe_scroll", recipeScrollItem.Item.RecipeScroll }
-                    });
-                    break;
-                default:
-                    throw new Exception("Unknown item type");
-            }
+            arrayToAddTo.Add(item.ToJson());
         });
 
         return existingInformation;

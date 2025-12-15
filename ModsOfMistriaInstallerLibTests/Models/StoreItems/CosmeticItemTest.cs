@@ -1,10 +1,11 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
-using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.Models.StoreItems;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using ModsOfMistriaInstallerLibTests.Fixtures;
+using Newtonsoft.Json.Linq;
 
-namespace ModsOfMistriaInstallerLibTests.Models;
+namespace ModsOfMistriaInstallerLibTests.Models.StoreItems;
 
 [TestFixture]
 public class CosmeticItemTest
@@ -110,7 +111,7 @@ public class CosmeticItemTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldHaveErrorIfItemIsNotPresent()
     {
@@ -123,5 +124,40 @@ public class CosmeticItemTest
             string.Format(Resources.CoreErrorStoreItemHasNoItem, item.Store, item.Category));
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+
+    [Test]
+    public void ShouldGenerateJsonCorrectly()
+    {
+        var item = GetMockItem();
+
+        var actualJson = item.ToJson();
+        var expectedJson = new JObject
+        {
+            { "cosmetic", item.Item.Cosmetic }
+        };
+
+        Assert.That(actualJson.ToString(), Is.EqualTo(expectedJson.ToString()));
+    }
+
+    [Test]
+    public void ShouldGenerateJsonWithRequirements()
+    {
+        var item = GetMockItem();
+        var requirements = new JObject
+        {
+            { "unlocked_animal", "horse" }
+        };
+
+        item.requirements = requirements;
+
+        var actualJson = item.ToJson();
+        var expectedJson = new JObject
+        {
+            { "requirements", requirements },
+            { "cosmetic", item.Item.Cosmetic },
+        };
+
+        Assert.That(actualJson.ToString(), Is.EqualTo(expectedJson.ToString()));
     }
 }

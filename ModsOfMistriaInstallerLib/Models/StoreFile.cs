@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Garethp.ModsOfMistriaInstallerLib.Models.StoreItems;
+using Newtonsoft.Json;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Models;
 
