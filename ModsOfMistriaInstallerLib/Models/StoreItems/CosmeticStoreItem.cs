@@ -29,5 +29,5 @@ public class CosmeticItem : StoreItem
         return validation;
     }
 
-    public override void AddJSON(JObject json) => json.Add("cosmetic", Item.Cosmetic);
+    public override void AddJson(JObject json) => json.Add("cosmetic", Item.Cosmetic);
 }

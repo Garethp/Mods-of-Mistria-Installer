@@ -36,7 +36,7 @@ public class AnimalStoreItem : StoreItem
         return validation;
     }
     
-    public override void AddJSON(JObject json)
+    public override void AddJson(JObject json)
     {
         json.Add("animal", Item.Animal);
         json.Add("cosmetic", Item.Cosmetic);

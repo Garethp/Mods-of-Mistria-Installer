@@ -30,5 +30,5 @@ public class RecipeScrollItem : StoreItem
         return validation;
     }
 
-    public override void AddJSON(JObject json) => json.Add("recipe_scroll", Item.RecipeScroll);
+    public override void AddJson(JObject json) => json.Add("recipe_scroll", Item.RecipeScroll);
 }

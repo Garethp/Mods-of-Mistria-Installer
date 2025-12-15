@@ -30,5 +30,5 @@ public class CraftingScrollStoreItem: StoreItem
         return validation;
     }
     
-    public override void AddJSON(JObject json) => json.Add("crafting_scroll", Item.CraftingScroll);
+    public override void AddJson(JObject json) => json.Add("crafting_scroll", Item.CraftingScroll);
 }

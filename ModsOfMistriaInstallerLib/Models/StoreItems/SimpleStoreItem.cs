@@ -24,5 +24,5 @@ public class SimpleItem : StoreItem
         return validation;
     }
 
-    public override void AddJSON(JObject json) => json.Add("item", Item);
+    public override void AddJson(JObject json) => json.Add("item", Item);
 }

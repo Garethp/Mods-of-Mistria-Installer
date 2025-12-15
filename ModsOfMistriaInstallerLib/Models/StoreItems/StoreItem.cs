@@ -39,12 +39,12 @@ public class StoreItem
     {
         var json = new JObject();
         if (requirements is not null) json.Add("requirements", requirements);
-        AddJSON(json);
+        AddJson(json);
 
         return json;
     }
 
-    public virtual void AddJSON(JObject json)
+    public virtual void AddJson(JObject json)
     {
         throw new NotImplementedException();
     }
