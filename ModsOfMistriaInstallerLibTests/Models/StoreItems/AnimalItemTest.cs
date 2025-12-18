@@ -24,7 +24,7 @@ public class AnimalItemTest
         {
             Store = "general store",
             Category = "general category",
-            Item = new AnimalItemDefinition() { Animal = "test animal", Cosmetic = "test item" }
+            Item = new AnimalItemDefinition() { Animal = "test animal", AnimalCosmetic = "test item" }
         };
 
         return item;
@@ -130,7 +130,7 @@ public class AnimalItemTest
     public void ShouldHaveErrorIfAnimalHasNoCosmetic()
     {
         var item = GetMockItem();
-        item.Item.Cosmetic = "";
+        item.Item.AnimalCosmetic = "";
         var validation = item.Validate(new Validation(), _mockMod, "storeItem.json");
 
         var expectedValidation = new Validation();
@@ -149,7 +149,7 @@ public class AnimalItemTest
         var expectedJson = new JObject
         {
             { "animal", item.Item.Animal },
-            { "cosmetic", item.Item.Cosmetic },
+            { "animal_cosmetic", item.Item.AnimalCosmetic },
         };
 
         Assert.That(actualJson.ToString(), Is.EqualTo(expectedJson.ToString()));
@@ -171,7 +171,7 @@ public class AnimalItemTest
         {
             { "requirements", requirements },
             { "animal", item.Item.Animal },
-            { "cosmetic", item.Item.Cosmetic },
+            { "animal_cosmetic", item.Item.AnimalCosmetic },
         };
 
         Assert.That(actualJson.ToString(), Is.EqualTo(expectedJson.ToString()));

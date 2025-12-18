@@ -11,7 +11,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Models.StoreItems;
 public class AnimalItemDefinition
 {
     public string Animal;
-    public string Cosmetic;
+    public string AnimalCosmetic;
 }
 
 [JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
@@ -28,7 +28,7 @@ public class AnimalStoreItem : StoreItem
             validation.AddError(mod, file, string.Format(Resources.CoreErrorStoreItemHasNoItem, Store, Category));
         }
 
-        if (Item is not null && !string.IsNullOrWhiteSpace(Item.Animal) && string.IsNullOrWhiteSpace(Item.Cosmetic))
+        if (Item is not null && !string.IsNullOrWhiteSpace(Item.Animal) && string.IsNullOrWhiteSpace(Item.AnimalCosmetic))
         {
             validation.AddError(mod, file, string.Format(Resources.CoreErrorStoreItemAnimalHasNoCosmetic, Item.Animal, Store));
         }
@@ -39,6 +39,6 @@ public class AnimalStoreItem : StoreItem
     public override void AddJson(JObject json)
     {
         json.Add("animal", Item.Animal);
-        json.Add("cosmetic", Item.Cosmetic);
+        json.Add("animal_cosmetic", Item.AnimalCosmetic);
     }
 }
