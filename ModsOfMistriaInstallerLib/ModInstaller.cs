@@ -18,6 +18,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         ["localization.json"],
         ["animation", "generated", "outlines.json"],
         ["animation", "generated", "player_asset_parts.json"],
+        ["animation", "generated", "player_tools.json"],
         ["animation", "generated", "shadow_manifest.json"],
         ["room_data", "points.json"],
         ["data.win"],
@@ -29,10 +30,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         var desiredGenerators = GetGenerators();
         mods.ForEach(mod =>
         {
-            desiredGenerators.ForEach(generator =>
-            {
-                mod.GetValidation().Merge(generator.Validate(mod));
-            });
+            desiredGenerators.ForEach(generator => { mod.GetValidation().Merge(generator.Validate(mod)); });
         });
     }
 
@@ -44,7 +42,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
 
         var desiredGenerators = GetGenerators();
         var desiredInstallers = GetInstallers();
-        
+
         foreach (var mod in mods)
         {
             foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
@@ -52,33 +50,33 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
                 generatedInformation.Merge(generator.Generate(mod));
             }
         }
-        
+
         foreach (var installer in desiredInstallers)
         {
             if (installer is not IPreinstallInfo preinstallChecker) continue;
-            
+
             information.AddRange(preinstallChecker.GetPreinstallInformation(generatedInformation));
         }
-        
+
         return information;
     }
-    
+
     public List<string> PreUninstallInformation()
     {
         var information = new List<string>();
-        
+
         var desiredInstallers = GetInstallers();
-        
+
         foreach (var installer in desiredInstallers)
         {
             if (installer is not IPreUninstallInfo preUninstallInfo) continue;
-            
+
             information.AddRange(preUninstallInfo.GetPreUninstallInformation());
         }
-        
+
         return information;
     }
-    
+
     public void InstallMods(List<IMod> mods, Action<string, string> reportStatus)
     {
         var totalTime = new Stopwatch();
@@ -87,12 +85,12 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         {
             throw new DirectoryNotFoundException(Resources.CoreMistriaLocationDoesNotExist);
         }
-        
+
         if (IsFreshInstall())
         {
             _filesToBackup.ForEach(filePath =>
             {
-                var path = Path.Combine(new List<string> {fieldsOfMistriaLocation}.Concat(filePath).ToArray());
+                var path = Path.Combine(new List<string> { fieldsOfMistriaLocation }.Concat(filePath).ToArray());
                 if (!File.Exists(path)) return;
 
                 var extension = Path.GetExtension(path);
@@ -109,17 +107,17 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
 
         var desiredGenerators = GetGenerators();
         var desiredInstallers = GetInstallers();
-        
+
         foreach (var mod in mods)
         {
             var informationWithMod = new GeneratedInformationWithMod(mod);
-            
+
             reportStatus(string.Format(Resources.CoreGeneratingInformationForMod, mod.GetId()), "");
             foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
             {
                 informationWithMod.Merge(generator.Generate(mod));
             }
-            
+
             generatedInformation.Add(informationWithMod);
         }
 
@@ -130,7 +128,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         }
 
         var timer = new Stopwatch();
-        
+
         foreach (var installer in desiredInstallers)
         {
             timer.Restart();
@@ -138,10 +136,10 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
             timer.Stop();
             reportStatus(installer.GetType().Name, timer.ToString());
         }
-        
+
         new ChecksumInstaller().Install(fieldsOfMistriaLocation, modsLocation, generatedInformation, reportStatus);
         totalTime.Stop();
-        
+
         reportStatus(Resources.CoreInstallCompleted, totalTime.ToString());
     }
 
@@ -158,7 +156,8 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
             from type in app.GetTypes()
             where type.GetInterface(nameof(IGenerator)) is not null && !type.IsAbstract
             let attributes = type.GetCustomAttributes(typeof(InformationGenerator), true)
-            where attributes is { Length: > 0 } && attributes.Any(attribute => (InformationGenerator) attribute is { ManifestVersion: 1 })
+            where attributes is { Length: > 0 } &&
+                  attributes.Any(attribute => (InformationGenerator)attribute is { ManifestVersion: 1 })
             select Activator.CreateInstance(type) as IGenerator).ToList();
     }
 
@@ -168,7 +167,8 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
             from type in app.GetTypes()
             where type.GetInterface(nameof(IModuleInstaller)) is not null && !type.IsAbstract
             let attributes = type.GetCustomAttributes(typeof(InformationInstaller), true)
-            where attributes is { Length: > 0 } && attributes.Any(attribute => (InformationInstaller) attribute is { ManifestVersion: 1 })
+            where attributes is { Length: > 0 } &&
+                  attributes.Any(attribute => (InformationInstaller)attribute is { ManifestVersion: 1 })
             select Activator.CreateInstance(type) as IModuleInstaller).ToList();
     }
 
@@ -176,7 +176,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
     {
         _filesToBackup.ForEach(filePath =>
         {
-            var path = Path.Combine(new List<string> {fieldsOfMistriaLocation}.Concat(filePath).ToArray());
+            var path = Path.Combine(new List<string> { fieldsOfMistriaLocation }.Concat(filePath).ToArray());
             if (!File.Exists(path)) return;
 
             var extension = Path.GetExtension(path);
@@ -189,7 +189,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
                 File.Delete(backupPath);
             }
         });
-        
+
         new ChecksumInstaller().Uninstall(fieldsOfMistriaLocation);
         new AurieInstaller().Uninstall(fieldsOfMistriaLocation);
     }
