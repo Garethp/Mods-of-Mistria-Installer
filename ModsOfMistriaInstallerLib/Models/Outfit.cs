@@ -42,6 +42,12 @@ public class Outfit
     public string OutlineFile;
 
     [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+    public string UiAssetFile;
+
+    [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+    public string UiBodyFile;
+
+    [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public Dictionary<string, string> AnimationFiles = new ();
 
     public Validation Validate(Validation validation, IMod mod, string file, string id)
@@ -87,6 +93,17 @@ public class Outfit
         if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s outlineFile", OutlineFile) is { } outlineError)
         {
             validation.AddError(mod, file, outlineError);
+        }
+
+        // if included (for face cosmetics), validate sprite files
+        if (!string.IsNullOrWhiteSpace(UiAssetFile) && ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiAssetFile", UiAssetFile) is { } uiAssetError)
+        {
+            validation.AddError(mod, file, uiAssetError);
+        }
+
+        if (!string.IsNullOrWhiteSpace(UiBodyFile) && ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiBodyFile", UiBodyFile) is { } uiBodyError)
+        {
+            validation.AddError(mod, file, uiBodyError);
         }
 
         if (AnimationFiles.Count == 0)

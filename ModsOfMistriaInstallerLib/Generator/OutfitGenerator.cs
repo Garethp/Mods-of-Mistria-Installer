@@ -96,37 +96,90 @@ public class OutfitGenerator : IGenerator
                     }
                 };
 
+                // handle outline as _merged and _merged_outline for face cosmetics
+                var isFaceCosmetic = outfitData["isFaceCosmetic"]?.Value<bool>() ?? false;
+
                 var outline = new JObject
                 {
                     { $"spr_ui_item_wearable_{name}", $"spr_ui_item_wearable_{name}_outline" }
                 };
+                if (isFaceCosmetic)
+                {
+                    outline = new JObject
+                    {
+                        { $"spr_ui_item_wearable_{name}_merged", $"spr_ui_item_wearable_{name}_merged_outline" }
+                    };
+                }
 
-                newSprites.AddRange([
-                    new()
-                    {
-                        Name = $"spr_player_{name}_lut",
-                        Mod = mod,
-                        Location = outfitData["lutFile"].ToString(),
-                        IsAnimated = false,
-                        IsPlayerSprite = true
-                    },
-                    new()
-                    {
-                        Name = $"spr_ui_item_wearable_{name}",
-                        Mod = mod,
-                        Location = outfitData["uiItem"].ToString(),
-                        IsAnimated = false,
-                        IsUiSprite = true
-                    },
-                    new()
-                    {
-                        Name = $"spr_ui_item_wearable_{name}_outline",
-                        Mod = mod,
-                        Location = outfitData["outlineFile"].ToString(),
-                        IsAnimated = false,
-                        IsUiSprite = true
-                    }
-                ]);
+                // add lut
+                newSprites.Add(new()
+                {
+                    Name = $"spr_player_{name}_lut",
+                    Mod = mod,
+                    Location = outfitData["lutFile"].ToString(),
+                    IsAnimated = false,
+                    IsPlayerSprite = true
+                });
+
+                // add ui sprites
+                if (!isFaceCosmetic)
+                {
+                    newSprites.AddRange([
+                        new()
+                        {
+                            Name = $"spr_ui_item_wearable_{name}",
+                            Mod = mod,
+                            Location = outfitData["uiItem"].ToString(),
+                            IsAnimated = false,
+                            IsUiSprite = true
+                        },
+                        new()
+                        {
+                            Name = $"spr_ui_item_wearable_{name}_outline",
+                            Mod = mod,
+                            Location = outfitData["outlineFile"].ToString(),
+                            IsAnimated = false,
+                            IsUiSprite = true
+                        }
+                    ]);
+                }
+                else
+                {
+                    newSprites.AddRange([
+                        new()
+                        {
+                            Name = $"spr_ui_item_wearable_{name}_asset",
+                            Mod = mod,
+                            Location = outfitData["uiAssetFile"].ToString(),
+                            IsAnimated = false,
+                            IsUiSprite = true
+                        },
+                        new()
+                        {
+                            Name = $"spr_ui_item_wearable_{name}_body",
+                            Mod = mod,
+                            Location = outfitData["uiBodyFile"].ToString(),
+                            IsAnimated = false,
+                            IsUiSprite = true
+                        },
+                        new()
+                        {
+                            Name = $"spr_ui_item_wearable_{name}_merged",
+                            Mod = mod,
+                            Location = outfitData["uiItem"].ToString(),
+                            IsAnimated = false,
+                            IsUiSprite = true
+                        },
+                        new()
+                        {
+                            Name = $"spr_ui_item_wearable_{name}_merged_outline",
+                            Mod = mod,
+                            Location = outfitData["outlineFile"].ToString(),
+                            IsAnimated = false,
+                            IsUiSprite = true
+                        }
+                    ]);
+                }
 
                 if (!information.Sprites.ContainsKey(modId)) information.Sprites[modId] = [];
                 information.Sprites[modId].AddRange(newSprites);
