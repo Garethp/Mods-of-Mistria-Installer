@@ -98,7 +98,7 @@ public class OutfitGenerator : IGenerator
 
                 // handle outline as _merged and _merged_outline for face cosmetics
                 var isFaceCosmetic = outfitData["isFaceCosmetic"]?.Value<bool>() ?? false;
-
+                
                 var outline = new JObject
                 {
                     { $"spr_ui_item_wearable_{name}", $"spr_ui_item_wearable_{name}_outline" }
@@ -110,7 +110,6 @@ public class OutfitGenerator : IGenerator
                         { $"spr_ui_item_wearable_{name}_merged", $"spr_ui_item_wearable_{name}_merged_outline" }
                     };
                 }
-
                 // add lut
                 newSprites.Add(new()
                 {
