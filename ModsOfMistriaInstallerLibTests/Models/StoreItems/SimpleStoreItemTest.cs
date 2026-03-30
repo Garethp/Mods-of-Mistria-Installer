@@ -1,13 +1,14 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
-using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.Models.StoreItems;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using ModsOfMistriaInstallerLibTests.Fixtures;
+using Newtonsoft.Json.Linq;
 
-namespace ModsOfMistriaInstallerLibTests.Models;
+namespace ModsOfMistriaInstallerLibTests.Models.StoreItems;
 
 [TestFixture]
-public class RecipeScrollItemTest
+public class SimpleStoreItemTest
 {
     private IMod _mockMod;
 
@@ -17,13 +18,13 @@ public class RecipeScrollItemTest
         _mockMod = new MockMod([]);
     }
 
-    private static RecipeScrollItem GetMockItem()
+    private static SimpleItem GetMockItem()
     {
-        var item = new RecipeScrollItem()
+        var item = new SimpleItem()
         {
             Store = "general store",
             Category = "general category",
-            Item = new RecipeScrollDefinition() { RecipeScroll = "test scroll" }
+            Item = "test item"
         };
 
         return item;
@@ -101,7 +102,7 @@ public class RecipeScrollItemTest
     public void ShouldHaveErrorIfItemIsEmpty()
     {
         var item = GetMockItem();
-        item.Item = null;
+        item.Item = "";
         var validation = item.Validate(new Validation(), _mockMod, "storeItem.json");
 
         var expectedValidation = new Validation();
@@ -110,18 +111,39 @@ public class RecipeScrollItemTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
-    public void ShouldHaveErrorIfItemIsNotPresent()
+    public void ShouldGenerateJsonCorrectly()
     {
         var item = GetMockItem();
-        item.Item.RecipeScroll = "";
-        var validation = item.Validate(new Validation(), _mockMod, "storeItem.json");
 
-        var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "storeItem.json",
-            string.Format(Resources.CoreErrorStoreItemHasNoItem, item.Store, item.Category));
+        var actualJson = item.ToJson();
+        var expectedJson = new JObject
+        {
+            { "item", item.Item }
+        };
 
-        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+        Assert.That(actualJson.ToString(), Is.EqualTo(expectedJson.ToString()));
+    }
+
+    [Test]
+    public void ShouldGenerateJsonWithRequirements()
+    {
+        var item = GetMockItem();
+        var requirements = new JObject
+        {
+            { "unlocked_animal", "horse" }
+        };
+
+        item.requirements = requirements;
+
+        var actualJson = item.ToJson();
+        var expectedJson = new JObject
+        {
+            { "requirements", requirements },
+            { "item", item.Item },
+        };
+
+        Assert.That(actualJson.ToString(), Is.EqualTo(expectedJson.ToString()));
     }
 }

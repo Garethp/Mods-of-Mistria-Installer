@@ -294,6 +294,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Animal {0} for store {1} has no cosmetic defined..
+        /// </summary>
+        public static string CoreErrorStoreItemAnimalHasNoCosmetic {
+            get {
+                return ResourceManager.GetString("CoreErrorStoreItemAnimalHasNoCosmetic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cannot add item to store {0} and category {1} because it has an invalid season {2}..
         /// </summary>
         public static string CoreErrorStoreItemHasInvalidSeason {

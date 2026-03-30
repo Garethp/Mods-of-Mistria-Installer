@@ -29,6 +29,12 @@ public abstract class GenericInstaller(List<string> fileNamePaths) : IModuleInst
             );
         }
         
+        File.Copy(
+            Path.Combine(location, $"{fileName}.bak.json"),
+            Path.Combine(location, $"{fileName}.json"),
+            true
+        );
+        
         var newInformation = GetNewInformation(information);
         if (newInformation.Count == 0) return;
         
