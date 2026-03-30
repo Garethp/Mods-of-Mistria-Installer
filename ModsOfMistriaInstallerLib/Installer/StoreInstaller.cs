@@ -35,7 +35,7 @@ public class StoreInstaller : ISubModuleInstaller
             
             if (category.RandomSelections is not null)
             {
-                newCategory["random_selections"] = category.RandomSelections;
+                newCategory["target_selections"] = category.RandomSelections;
                 newCategory["random_stock"] = new JArray();
             }
             
