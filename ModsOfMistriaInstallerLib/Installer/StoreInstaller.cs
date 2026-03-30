@@ -33,9 +33,9 @@ public class StoreInstaller : ISubModuleInstaller
                 { "icon", iconName }
             };
             
-            if (category.RandomSelections is not null)
+            if (category.RandomSelections is not null || category.TargetSelections is not null)
             {
-                newCategory["target_selections"] = category.RandomSelections;
+                newCategory["target_selections"] = category.TargetSelections ?? category.RandomSelections;
                 newCategory["random_stock"] = new JArray();
             }
             

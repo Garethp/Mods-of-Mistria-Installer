@@ -269,7 +269,7 @@ of new items to add to categories or both. Below is an example of the options th
       "store": "louis",
       "icon_name": "modded_icon",
       "sprite": "images/icon_modded.png",
-      "random_selections": 5
+      "target_selections": 5
     }
   ]
 }

@@ -17,6 +17,8 @@ public class StoreCategory
 
     public int? RandomSelections;
 
+    public int? TargetSelections;
+
     public Validation Validate(Validation validation, IMod mod, string file)
     {
         if (string.IsNullOrWhiteSpace(Store))
