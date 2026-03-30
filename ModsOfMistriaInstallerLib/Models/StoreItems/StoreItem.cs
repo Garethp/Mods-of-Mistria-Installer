@@ -1,10 +1,13 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Models.StoreItems;
 
+[JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
 public class StoreItem
 {
     public string Store;
