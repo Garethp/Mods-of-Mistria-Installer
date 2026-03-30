@@ -1,10 +1,9 @@
-﻿using System.Text.Json.Nodes;
-using Garethp.ModsOfMistriaInstallerLib.Generator;
+﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models.StoreItems;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using ModsOfMistriaInstallerLibTests.Fixtures;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace ModsOfMistriaInstallerLibTests.Models.StoreItems;
 
@@ -96,5 +95,22 @@ public class StoreItemTest
             string.Format(Resources.CoreErrorStoreItemHasInvalidSeason, item.Store, item.Category, "invalid"));
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+
+    [Test]
+    public void ShouldParseRandomStockCorrectly()
+    {
+        var item = new SimpleItem()
+        {
+            Store = "general store",
+            Category = "general category",
+            Item = "test item"
+        }.ToJson();
+        
+        item.Add("random_stock", true);
+        
+        var parsedItem = JsonConvert.DeserializeObject<StoreItem>(item.ToString());
+        
+        Assert.That(parsedItem?.RandomStock, Is.True);
     }
 }
