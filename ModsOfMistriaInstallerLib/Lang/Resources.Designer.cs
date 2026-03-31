@@ -726,6 +726,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Did you know that a thoughtful strike with a pickaxe is a great way to install any mods you have downloaded..
+        /// </summary>
+        public static string GUIGreetingText_April {
+            get {
+                return ResourceManager.GetString("GUIGreetingText_April", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Install.
         /// </summary>
         public static string GUIInstallButtonText {
@@ -735,11 +744,29 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Strike thoughtfully.
+        /// </summary>
+        public static string GUIInstallButtonText_April {
+            get {
+                return ResourceManager.GetString("GUIInstallButtonText_April", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installing mods....
         /// </summary>
         public static string GUIInstallInProgress {
             get {
                 return ResourceManager.GetString("GUIInstallInProgress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Striking thoughtfully....
+        /// </summary>
+        public static string GUIInstallInProgress_April {
+            get {
+                return ResourceManager.GetString("GUIInstallInProgress_April", resourceCulture);
             }
         }
         
@@ -789,11 +816,29 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Check the boxes for all the mods you want to strike:.
+        /// </summary>
+        public static string GUIModsWillBeInstalled_April {
+            get {
+                return ResourceManager.GetString("GUIModsWillBeInstalled_April", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No mods found to install.
         /// </summary>
         public static string GUINoModsToInstall {
             get {
                 return ResourceManager.GetString("GUINoModsToInstall", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No mods found to strike.
+        /// </summary>
+        public static string GUINoModsToInstall_April {
+            get {
+                return ResourceManager.GetString("GUINoModsToInstall_April", resourceCulture);
             }
         }
         
