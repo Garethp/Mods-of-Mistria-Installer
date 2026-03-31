@@ -47,7 +47,7 @@ public class ConversationInstaller : IModuleInstaller
 
         _fileModifier.Write(
             fieldsOfMistriaLocation, 
-            "t2_output .json", 
+            "t2_output.json", 
             merged.ToString()
         );
     }

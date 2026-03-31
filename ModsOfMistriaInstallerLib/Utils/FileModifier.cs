@@ -26,7 +26,7 @@ public class FileModifier: IFileModifier
 
     public void Write(string fieldsOfMistriaLocation, string file, string contents)
     {
-        throw new NotImplementedException();
+        File.WriteAllText(Path.Combine(fieldsOfMistriaLocation, file), contents);
     }
 
     public bool ConditionalRestoreBackup(string fieldsOfMistriaLocation, string file, Func<bool> condition)

@@ -1,6 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
-using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using ModsOfMistriaInstallerLibTests.Fixtures;
 using ModsOfMistriaInstallerLibTests.Utils;
 using Newtonsoft.Json.Linq;
@@ -19,7 +18,7 @@ public class FiddleTest
         {
             { "fiddle/fiddle.json", moddedFile.ToString() }
         });
-     
+        
         var originalFiddle = new JObject();
         
         var fileModifier = new MockFileModifier(new Dictionary<string, string>()
@@ -30,17 +29,19 @@ public class FiddleTest
         new MockInstaller([new FiddleGenerator()], [new FiddleInstaller()])
             .InstallMods([mod], fileModifier);
         
-        Assert.That(fileModifier.GetFile("__fiddle__.json"), Is.EqualTo(new JObject()
+        var expected = new JObject()
         {
-            { 
+            {
                 "extras", new JObject()
                 {
                     { "objects", new JArray() },
                     { "items", new JArray() }
                 }
             },
+            { "extras/items", new JArray() },
             { "extras/objects", new JArray() },
-            { "extras/items", new JArray() }
-        }.ToString()));
+        };
+        
+        Assert.That(fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(expected));
     }
 }
