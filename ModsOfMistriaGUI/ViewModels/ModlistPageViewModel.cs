@@ -69,7 +69,7 @@ public partial class ModlistPageViewModel : PageViewBase
             }
             else if (Mods.Count == 0)
             {
-                InstallStatus = Resources.GUINoModsToInstall;
+                InstallStatus = NoModsToInstallText;
             }
             else if (Mods.Any(mod => mod.CanInstall is not null))
             {
@@ -81,6 +81,18 @@ public partial class ModlistPageViewModel : PageViewBase
     }
 
     [ObservableProperty] private string _installStatus = "";
+
+    private static readonly bool isAprilFools = DateTime.Today.Month == 4 && DateTime.Today.Day == 1;
+    [ObservableProperty] private string _greetingText = 
+        isAprilFools ? Resources.GUIGreetingText_April : Resources.GUIGreetingText;
+    [ObservableProperty] private string _installButtonText =
+        isAprilFools ? Resources.GUIInstallButtonText_April : Resources.GUIInstallButtonText;
+    [ObservableProperty] private string _installInProgressText =
+        isAprilFools ? Resources.GUIInstallInProgress_April : Resources.GUIInstallInProgress;
+    [ObservableProperty] private string _noModsToInstallText =
+        isAprilFools ? Resources.GUINoModsToInstall_April : Resources.GUINoModsToInstall;
+    [ObservableProperty] private string _modsWillBeInstalledText =
+        isAprilFools ? Resources.GUIModsWillBeInstalled_April : Resources.GUIModsWillBeInstalled;
 
     [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))] [ObservableProperty]
     private string _modsLocation = "";
@@ -102,7 +114,7 @@ public partial class ModlistPageViewModel : PageViewBase
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private void InstallMods()
     {
-        InstallStatus = Resources.GUIInstallInProgress;
+        InstallStatus = InstallInProgressText;
         IsInstalling = true;
 
         Task.Run(BackgroundInstall);

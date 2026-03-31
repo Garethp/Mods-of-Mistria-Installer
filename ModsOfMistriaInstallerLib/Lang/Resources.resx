@@ -310,4 +310,19 @@
     <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve">
         <value>Animal {0} for store {1} has no cosmetic defined.</value>
     </data>
+    <data name="GUIGreetingText_April" xml:space="preserve">
+        <value>Did you know that a thoughtful strike with a pickaxe is a great way to install any mods you have downloaded.</value>
+    </data>
+    <data name="GUIInstallButtonText_April" xml:space="preserve">
+        <value>Strike thoughtfully</value>
+    </data>
+    <data name="GUIInstallInProgress_April" xml:space="preserve">
+        <value>Striking thoughtfully...</value>
+    </data>
+    <data name="GUINoModsToInstall_April" xml:space="preserve">
+        <value>No mods found to strike</value>
+    </data>
+    <data name="GUIModsWillBeInstalled_April" xml:space="preserve">
+        <value>Check the boxes for all the mods you want to strike:</value>
+    </data>
 </root>
