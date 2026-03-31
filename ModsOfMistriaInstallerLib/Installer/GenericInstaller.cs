@@ -22,7 +22,8 @@ public abstract class GenericInstaller(List<string> fileNamePaths) : IModuleInst
         var location = Path.Combine(locationPath.ToArray());
         
         var newInformation = GetNewInformation(information);
-        if (newInformation.Count == 0) return;
+        if (_fileModifier.ConditionalRestoreBackup(location, $"{fileName}.json", () => newInformation.Count == 0)) 
+            return;
 
         var existingInformation = JObject.Parse(_fileModifier.Read(location, $"{fileName}.json"));
 
