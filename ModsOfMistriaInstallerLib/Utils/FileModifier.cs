@@ -21,7 +21,7 @@ public class FileModifier: IFileModifier
             );
         }
 
-        return File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "__fiddle__.bak.json"));
+        return File.ReadAllText(path);
     }
 
     public void Write(string fieldsOfMistriaLocation, string file, string contents)

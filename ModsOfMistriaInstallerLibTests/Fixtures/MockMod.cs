@@ -78,10 +78,7 @@ public class MockMod : IMod
         throw new NotImplementedException();
     }
 
-    public string GetId()
-    {
-        throw new NotImplementedException();
-    }
+    public string GetId() => "mock.mod";
 
     public Validation Validate()
     {

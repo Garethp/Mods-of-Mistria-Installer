@@ -19,7 +19,7 @@ public class MockInstaller
         _installers = installers;
     }
 
-    public void InstallMods(List<IMod> mods, IFileModifier fileModifier)
+    public GeneratedInformation InstallMods(List<IMod> mods, IFileModifier fileModifier)
     {
         var generatedInformation = new List<GeneratedInformationWithMod>();
 
@@ -49,6 +49,8 @@ public class MockInstaller
             installer.SetFileModifier(fileModifier);
             installer.Install("", "", finalizedInformation, (_, _) => { });
         }
+
+        return finalizedInformation;
     }
 
     private List<IGenerator> GetGenerators()
