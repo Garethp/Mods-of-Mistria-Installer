@@ -5,7 +5,7 @@ namespace ModsOfMistriaInstallerLibTests.Fixtures;
 
 public class MockMod : IMod
 {
-    private readonly Dictionary<string, List<string>> _files = new();
+    private readonly Dictionary<string, Dictionary<string, string>> _files = new();
 
     public MockMod(List<string> files)
     {
@@ -15,12 +15,30 @@ public class MockMod : IMod
             {
                 var folderName = Path.GetDirectoryName(file)?.Replace('\\', '/');
                 
-                if (!_files.ContainsKey(folderName)) _files.Add(folderName, []);
-                _files[folderName].Add(file);
+                if (!_files.ContainsKey(folderName)) _files[folderName] = new();
+                _files[folderName][file] = "";
             }
             else
             {
-                if (!_files.ContainsKey(file)) _files.Add(file, []);
+                if (!_files.ContainsKey(file)) _files[file] = new();
+            }
+        });
+    }
+
+    public MockMod(Dictionary<string, string> files)
+    {
+        files.Keys.ToList().ForEach(file =>
+        {
+            if (Path.HasExtension(file))
+            {
+                var folderName = Path.GetDirectoryName(file)?.Replace('\\', '/');
+                
+                if (!_files.ContainsKey(folderName)) _files[folderName] = new();
+                _files[folderName][file] = files[file];
+            }
+            else
+            {
+                if (!_files.ContainsKey(file)) _files[file] = new();
             }
         });
     }
@@ -104,7 +122,9 @@ public class MockMod : IMod
 
     public List<string> GetFilesInFolder(string folder)
     {
-        throw new NotImplementedException();
+        if (!_files.ContainsKey(folder)) return [];
+
+        return _files[folder].Keys.ToList();
     }
 
     public List<string> GetAllFiles(string extension)
@@ -112,12 +132,20 @@ public class MockMod : IMod
         throw new NotImplementedException();
     }
 
-    public bool FileExists(string path) => _files.Values.Any(files => files.Contains(path));
+    public bool FileExists(string path) => _files.Values.Any(files => files.Keys.Contains(path));
 
     public bool FolderExists(string path) => _files.Keys.Contains(path);
 
     public string ReadFile(string path)
     {
+        foreach (var folder in _files.Keys)
+        {
+            foreach (var file in _files[folder])
+            {
+                if (file.Key == path) return file.Value;
+            }
+        }
+
         throw new NotImplementedException();
     }
 

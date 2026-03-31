@@ -15,8 +15,7 @@ public class NewObjectTest
     [SetUp]
     public void SetUp()
     {
-        _mockMod = new MockMod([
-        ]);
+        _mockMod = new MockMod(new List<string>());
     }
 
     private static NewObject GetNewObject()

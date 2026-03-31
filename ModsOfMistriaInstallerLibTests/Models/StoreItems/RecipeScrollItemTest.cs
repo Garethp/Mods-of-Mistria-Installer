@@ -15,7 +15,7 @@ public class RecipeScrollItemTest
     [SetUp]
     public void SetUp()
     {
-        _mockMod = new MockMod([]);
+        _mockMod = new MockMod(new List<string>());
     }
 
     private static RecipeScrollItem GetMockItem()

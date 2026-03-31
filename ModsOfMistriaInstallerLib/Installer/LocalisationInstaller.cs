@@ -1,33 +1,29 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
 [InformationInstaller(1)]
 public class LocalisationInstaller : IModuleInstaller
 {
+    private IFileModifier _fileModifier = new FileModifier();
+
+    public void SetFileModifier(IFileModifier fileModifier) => _fileModifier = fileModifier;
+    
     public void Install(
         string fieldsOfMistriaLocation,
         string modsLocation,
         GeneratedInformation information,
         Action<string, string> reportStatus
     ) {
-        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "localization.json")))
-        {
-            throw new FileNotFoundException("Could not find localization.json in Fields of Mistria folder");
-        }
-
-        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "localization.bak.json")))
-        {
-            File.Copy(
-                Path.Combine(fieldsOfMistriaLocation, "localization.json"),
-                Path.Combine(fieldsOfMistriaLocation, "localization.bak.json")
-            );
-        }
-        
-        if (information.Localisations.Count == 0) return;
+        if (_fileModifier.ConditionalRestoreBackup(
+            fieldsOfMistriaLocation, 
+            "localization.json", 
+            () => information.Localisations.Count == 0
+        )) return;
 
         var existingFiddle = JObject.Parse(
-            File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "localization.bak.json"))
+            _fileModifier.Read(fieldsOfMistriaLocation, "localization.json")
         );
 
         var allSources = new List<JObject> { existingFiddle };
@@ -62,8 +58,9 @@ public class LocalisationInstaller : IModuleInstaller
             }
         }
 
-        File.WriteAllText(
-            Path.Combine(fieldsOfMistriaLocation, "localization.json"),
+        _fileModifier.Write(
+            fieldsOfMistriaLocation, 
+            "localization.json",
             merged.ToString()
         );
     }

@@ -15,7 +15,7 @@ public class CraftingScrollItemTest
     [SetUp]
     public void SetUp()
     {
-        _mockMod = new MockMod([]);
+        _mockMod = new MockMod(new List<string>());
     }
 
     private static CraftingScrollStoreItem GetMockItem()

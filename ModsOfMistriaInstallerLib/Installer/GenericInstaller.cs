@@ -1,10 +1,15 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
 [InformationInstaller(1)]
 public abstract class GenericInstaller(List<string> fileNamePaths) : IModuleInstaller
 {
+    private IFileModifier _fileModifier = new FileModifier();
+
+    public void SetFileModifier(IFileModifier fileModifier) => _fileModifier = fileModifier;
+    
     public void Install(
         string fieldsOfMistriaLocation,
         string modsLocation,
@@ -16,31 +21,10 @@ public abstract class GenericInstaller(List<string> fileNamePaths) : IModuleInst
         locationPath.AddRange(fileNamePaths[..^1]);
         var location = Path.Combine(locationPath.ToArray());
         
-        if (!File.Exists(Path.Combine(location, $"{fileName}.json")))
-        {
-            throw new FileNotFoundException($"Could not find {fileName}.json in Fields of Mistria folder");
-        }
-
-        if (!File.Exists(Path.Combine(location, $"{fileName}.bak.json")))
-        {
-            File.Copy(
-                Path.Combine(location, $"{fileName}.json"),
-                Path.Combine(location, $"{fileName}.bak.json")
-            );
-        }
-        
-        File.Copy(
-            Path.Combine(location, $"{fileName}.bak.json"),
-            Path.Combine(location, $"{fileName}.json"),
-            true
-        );
-        
         var newInformation = GetNewInformation(information);
         if (newInformation.Count == 0) return;
-        
-        var existingInformation = JObject.Parse(
-            File.ReadAllText(Path.Combine(location, $"{fileName}.bak.json"))
-        );
+
+        var existingInformation = JObject.Parse(_fileModifier.Read(location, $"{fileName}.json"));
 
         var allSources = new List<JObject> { existingInformation };
         allSources.AddRange(newInformation);
@@ -52,10 +36,7 @@ public abstract class GenericInstaller(List<string> fileNamePaths) : IModuleInst
             merged.Merge(source);
         }
         
-        File.WriteAllText(
-            Path.Combine(location, $"{fileName}.json"),
-            merged.ToString()
-        );
+        _fileModifier.Write(location, $"{fileName}.json", merged.ToString());
     }
 
     public abstract List<JObject> GetNewInformation(GeneratedInformation information);

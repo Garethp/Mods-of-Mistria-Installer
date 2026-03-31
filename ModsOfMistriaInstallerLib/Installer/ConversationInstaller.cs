@@ -1,38 +1,35 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
 [InformationInstaller(1)]
 public class ConversationInstaller : IModuleInstaller
 {
+    private IFileModifier _fileModifier = new FileModifier();
+
+    public void SetFileModifier(IFileModifier fileModifier) => _fileModifier = fileModifier;
+    
     public void Install(
         string fieldsOfMistriaLocation,
         string modsLocation,
         GeneratedInformation information,
         Action<string, string> reportStatus
-    ) {
-        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "t2_output.json")))
-        {
-            throw new FileNotFoundException("Could not find t2_output.json in Fields of Mistria folder");
-        }
+    )
+    {
+        
 
-        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "t2_output.bak.json")))
+        if (_fileModifier.ConditionalRestoreBackup(
+                fieldsOfMistriaLocation, 
+                "t2_output.json",
+                () => information.Conversations.Count == 0
+            ))
         {
-            File.Copy(
-                Path.Combine(fieldsOfMistriaLocation, "t2_output.json"),
-                Path.Combine(fieldsOfMistriaLocation, "t2_output.bak.json")
-            );
-        }
-
-        if (information.Conversations.Count == 0)
-        {
-            File.Delete(Path.Combine(fieldsOfMistriaLocation, "t2_output.json"));
-            File.Copy(Path.Combine(fieldsOfMistriaLocation, "t2_output.bak.json"), Path.Combine(fieldsOfMistriaLocation, "t2_output.json"));
             return;
         };
-        
+
         var existingInformation = JObject.Parse(
-            File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "t2_output.bak.json"))
+            _fileModifier.Read(fieldsOfMistriaLocation, "t2_output.json")
         );
         
         var allSources = new List<JObject> { existingInformation };
@@ -48,8 +45,9 @@ public class ConversationInstaller : IModuleInstaller
             });
         }
 
-        File.WriteAllText(
-            Path.Combine(fieldsOfMistriaLocation, "t2_output.json"),
+        _fileModifier.Write(
+            fieldsOfMistriaLocation, 
+            "t2_output .json", 
             merged.ToString()
         );
     }

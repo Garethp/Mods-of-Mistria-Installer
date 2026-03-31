@@ -1,5 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Utils;
 using UndertaleModLib;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
@@ -7,6 +8,11 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 [InformationInstaller(1)]
 public class GraphicsInstaller : IModuleInstaller
 {
+    private IFileModifier _fileModifier = new FileModifier();
+
+    public void SetFileModifier(IFileModifier fileModifier) => _fileModifier = fileModifier;
+
+    
     public void Install(
         string fieldsOfMistriaLocation,
         string modsLocation,
