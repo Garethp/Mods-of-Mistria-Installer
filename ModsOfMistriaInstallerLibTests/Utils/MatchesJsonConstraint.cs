@@ -1,5 +1,4 @@
-﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using NUnit.Framework.Constraints;
 
 namespace ModsOfMistriaInstallerLibTests.Utils;
@@ -18,7 +17,7 @@ public class MatchesJsonConstraint(JObject expected) : Constraint
             {
                 actualJson = JObject.Parse(actualString);
             }
-            catch (Exception _)
+            catch (Exception)
             {
                 return new ConstraintResult(this, actual, false);
             }

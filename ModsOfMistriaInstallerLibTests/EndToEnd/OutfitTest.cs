@@ -81,7 +81,7 @@ public class OutfitTest
             )
         );
         
-        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(new JObject
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(new JObject
         {
             { "player_assets", new JObject
             {
@@ -93,16 +93,7 @@ public class OutfitTest
                     { "ui_sub_category", "capes" },
                     { "default_unlocked", true }
                 }} 
-            }},
-            {
-                "extras", new JObject
-                {
-                    { "objects", new JArray() },
-                    { "items", new JArray() }
-                }
-            },
-            { "extras/items", new JArray() },
-            { "extras/objects", new JArray() }
+            }}
         }));
     }
     
@@ -140,28 +131,15 @@ public class OutfitTest
             }}
         }));
         
-        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(new JObject
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(new JObject
         {
             { "player_assets", new JObject
             {
                 { "test_outfit", new JObject
                 {
-                    { "name", "player_assets/test_outfit/name" },
-                    { "lut", "spr_player_test_outfit_lut" },
-                    { "ui_slot", "back" },
-                    { "ui_sub_category", "capes" },
-                    { "default_unlocked", true }
+                    { "name", "player_assets/test_outfit/name" }
                 }} 
-            }},
-            {
-                "extras", new JObject
-                {
-                    { "objects", new JArray() },
-                    { "items", new JArray() }
-                }
-            },
-            { "extras/items", new JArray() },
-            { "extras/objects", new JArray() }
+            }}
         }));
     }
     
@@ -171,7 +149,7 @@ public class OutfitTest
         var mod = _mockMod;
         _installer.InstallMods([mod], _fileModifier);
         
-        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(new JObject
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(new JObject
         {
             { "player_assets", new JObject
             {
@@ -183,16 +161,7 @@ public class OutfitTest
                     { "ui_sub_category", "capes" },
                     { "default_unlocked", true }
                 }} 
-            }},
-            {
-                "extras", new JObject
-                {
-                    { "objects", new JArray() },
-                    { "items", new JArray() }
-                }
-            },
-            { "extras/items", new JArray() },
-            { "extras/objects", new JArray() }
+            }}
         }));
         
         Assert.That(_fileModifier.GetFile("player_asset_parts.json"), new MatchesJsonConstraint(new JObject

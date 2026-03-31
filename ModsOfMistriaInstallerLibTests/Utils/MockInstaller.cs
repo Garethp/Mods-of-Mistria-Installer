@@ -1,8 +1,6 @@
-﻿using System.Diagnostics;
-using Garethp.ModsOfMistriaInstallerLib;
+﻿using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
-using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
 
@@ -10,8 +8,8 @@ namespace ModsOfMistriaInstallerLibTests.Utils;
 
 public class MockInstaller
 {
-    private List<IGenerator> _generators;
-    private List<IModuleInstaller> _installers;
+    private readonly List<IGenerator> _generators;
+    private readonly List<IModuleInstaller> _installers;
 
     public MockInstaller(List<IGenerator> generators, List<IModuleInstaller> installers)
     {
@@ -51,15 +49,5 @@ public class MockInstaller
         }
 
         return finalizedInformation;
-    }
-
-    private List<IGenerator> GetGenerators()
-    {
-        return new List<IGenerator>() { new FiddleGenerator() };
-    }
-
-    private List<IModuleInstaller> GetInstallers()
-    {
-        return new List<IModuleInstaller>() { new FiddleInstaller() };
     }
 }
