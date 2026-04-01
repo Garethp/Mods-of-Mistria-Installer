@@ -238,8 +238,8 @@
     <data name="GUIModsWillBeInstalled" xml:space="preserve">
         <value>Check the boxes for all the mods you want to install:</value>
     </data>
-    <data name="GUIModByAuthor" xml:space="preserve">
-        <value>{0} by {1}</value>
+    <data name="GUIModByAuthorWithVersion" xml:space="preserve">
+        <value>{0} by {1} - Version {2}</value>
     </data>
     <data name="GUICouldNotFindMistria" xml:space="preserve">
         <value>Could not find Fields of Mistria location. Try placing this in the same folder as Fields of Mistria.</value>

@@ -780,11 +780,11 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} by {1}.
+        ///   Looks up a localized string similar to {0} by {1} - Version {2}.
         /// </summary>
-        public static string GUIModByAuthor {
+        public static string GUIModByAuthorWithVersion {
             get {
-                return ResourceManager.GetString("GUIModByAuthor", resourceCulture);
+                return ResourceManager.GetString("GUIModByAuthorWithVersion", resourceCulture);
             }
         }
         
