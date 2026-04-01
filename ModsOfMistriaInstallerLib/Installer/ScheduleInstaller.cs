@@ -1,33 +1,29 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
 [InformationInstaller(1)]
 public class ScheduleInstaller : IModuleInstaller
 {
+    private IFileModifier _fileModifier = new FileModifier();
+
+    public void SetFileModifier(IFileModifier fileModifier) => _fileModifier = fileModifier;
+    
     public void Install(
         string fieldsOfMistriaLocation,
         string modsLocation,
         GeneratedInformation information,
         Action<string, string> reportStatus
     ) {
-        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "t2_output.json")))
-        {
-            throw new FileNotFoundException("Could not find t2_output.json in Fields of Mistria folder");
-        }
-
-        if (!File.Exists(Path.Combine(fieldsOfMistriaLocation, "t2_output.bak.json")))
-        {
-            File.Copy(
-                Path.Combine(fieldsOfMistriaLocation, "t2_output.json"),
-                Path.Combine(fieldsOfMistriaLocation, "t2_output.bak.json")
-            );
-        }
-        
-        if (information.Schedules.Count == 0) return;
+        if (_fileModifier.ConditionalRestoreBackup(
+            fieldsOfMistriaLocation, 
+            "t2_output.json", 
+            () => information.Schedules.Count == 0
+        )) return;
         
         var existingInformation = JObject.Parse(
-            File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "t2_output.bak.json"))
+            _fileModifier.Read(fieldsOfMistriaLocation, "t2_output.json")
         );
         
         var allSources = new List<JObject> { existingInformation };
@@ -43,8 +39,9 @@ public class ScheduleInstaller : IModuleInstaller
             });
         }
 
-        File.WriteAllText(
-            Path.Combine(fieldsOfMistriaLocation, "t2_output.json"),
+        _fileModifier.Write(
+            fieldsOfMistriaLocation, 
+            "t2_output.json",
             merged.ToString()
         );
     }

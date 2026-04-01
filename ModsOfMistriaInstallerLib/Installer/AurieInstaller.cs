@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Utils;
 using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using PeNet;
@@ -20,6 +21,10 @@ class FileToEnsure
 [InformationInstaller(1)]
 public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallInfo
 {
+    private IFileModifier _fileModifier = new FileModifier();
+
+    public void SetFileModifier(IFileModifier fileModifier) => _fileModifier = fileModifier;
+    
     private static readonly string IFEORegistryKey =
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options";
 
