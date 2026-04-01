@@ -231,6 +231,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Outfit {0}&apos;s price override must be a positive number..
+        /// </summary>
+        public static string CoreErrorOutfitPriceOverrideNegative {
+            get {
+                return ResourceManager.GetString("CoreErrorOutfitPriceOverrideNegative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Outfit {0} has incorrect ui_slot. Must be one of: {1}..
         /// </summary>
         public static string CoreErrorOutfitUiSlotWrong {

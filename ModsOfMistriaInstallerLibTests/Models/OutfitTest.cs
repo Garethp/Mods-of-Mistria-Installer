@@ -57,7 +57,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateNameIsNotEmpty()
     {
@@ -79,7 +79,8 @@ public class OutfitTest
         var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(_mockMod, "outfit.json", string.Format(Resources.CoreErrorOutfitNoUiSlot, "outfit"));
+        expectedValidation.AddError(_mockMod, "outfit.json",
+            string.Format(Resources.CoreErrorOutfitNoUiSlot, "outfit"));
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -124,7 +125,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateUiSubCategoryHasCorrectValue()
     {
@@ -165,7 +166,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateLutFileExists()
     {
@@ -186,7 +187,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateLutFileIsNotDirectory()
     {
@@ -207,7 +208,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateUiItemIsNotEmpty()
     {
@@ -227,7 +228,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateUiItemExists()
     {
@@ -248,7 +249,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateUiItemIsNotDirectory()
     {
@@ -269,7 +270,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateOutlineIsNotEmpty()
     {
@@ -289,7 +290,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateOutlineExists()
     {
@@ -310,7 +311,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateOutlineIsNotDirectory()
     {
@@ -372,7 +373,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidationAnimationFileDirectoryIsNotEmpty()
     {
@@ -417,7 +418,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateUiAssetFileExistsIfProvided()
     {
@@ -438,7 +439,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldEnsureUiBodyFileIsOptional()
     {
@@ -462,7 +463,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-    
+
     [Test]
     public void ShouldValidateUiBodyFileExistsIfProvided()
     {
@@ -478,6 +479,26 @@ public class OutfitTest
                 Resources.CoreSpriteFileDoesNotExist,
                 $"Outfit outfit's uiBodyFile",
                 "images/not-found"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+
+    [Test]
+    public void ShouldValidateThatPriceOverrideIsPositive()
+    {
+        var outfit = GetMockOutfit();
+        outfit.PriceOverride = -1;
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.CoreErrorOutfitPriceOverrideNegative,
+                "outfit"
             )
         );
 

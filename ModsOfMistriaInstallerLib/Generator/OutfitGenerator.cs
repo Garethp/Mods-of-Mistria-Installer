@@ -19,23 +19,16 @@ public class OutfitGenerator : IGenerator
 
         foreach (var outfitFile in mod.GetFilesInFolder("outfits").Order())
         {
-            var outfitJson = JObject.Parse(mod.ReadFile(outfitFile));
-
-            foreach (var outfit in outfitJson.Properties())
+            var outfitJson = JsonConvert.DeserializeObject<Dictionary<string, Outfit>>(mod.ReadFile(outfitFile));
+            if (outfitJson is null) throw new Exception($"Attempted to read file {outfitFile} but it did not match expected format.");
+            
+            foreach (var outfitId in outfitJson.Keys)
             {
+                var outfit = outfitJson[outfitId];
+                
                 var newSprites = new List<SpriteData>();
 
-                if (outfit.Value is not JObject outfitData)
-                {
-                    continue;
-                }
-
-                if (outfitData.Property("animationFiles")?.Value is not JObject animationFiles)
-                {
-                    continue;
-                }
-
-                var name = outfit.Name;
+                var name = outfitId;
 
                 /**
                  * @TODO:
@@ -43,22 +36,16 @@ public class OutfitGenerator : IGenerator
                  */
 
                 var assetParts = new JObject();
-                foreach (var animationType in animationFiles.Properties())
+                foreach (var animationName in outfit.AnimationFiles.Keys)
                 {
-                    var animationName = animationType.Name;
-                    var animationData = animationType.Value;
-
-                    if (animationData is null)
-                    {
-                        continue;
-                    }
+                    var animationData = outfit.AnimationFiles[animationName];
 
                     // @TODO: Handle trailing slashes in the animationData string
                     newSprites.Add(new()
                     {
                         Name = $"spr_player_{name}_{animationName}",
                         Mod = mod,
-                        Location = animationData.ToString(),
+                        Location = animationData,
                         IsAnimated = true,
                         BoundingBoxMode = 1,
                         DeleteCollisionMask = true,
@@ -73,7 +60,7 @@ public class OutfitGenerator : IGenerator
                 var localisation = new JObject
                 {
                     {
-                        "eng", new JObject { { $"player_assets/{name}/name", outfitData["name"] } }
+                        "eng", new JObject { { $"player_assets/{name}/name", outfit.Name } }
                     }
                 };
 
@@ -87,17 +74,22 @@ public class OutfitGenerator : IGenerator
                                 {
                                     { "name", $"player_assets/{name}/name" },
                                     { "lut", $"spr_player_{name}_lut" },
-                                    { "ui_slot", outfitData["ui_slot"] },
-                                    { "default_unlocked", outfitData["default_unlocked"] },
-                                    { "ui_sub_category", outfitData["ui_sub_category"] }
+                                    { "ui_slot", outfit.UiSlot },
+                                    { "default_unlocked", outfit.DefaultUnlocked },
+                                    { "ui_sub_category", outfit.UiSubCategory }
                                 }
                             }
                         }
                     }
                 };
 
+                if (outfit.PriceOverride is not null)
+                {
+                    (fiddle["player_assets"][name] as JObject).Add("price_override", outfit.PriceOverride);
+                }
+
                 // handle outline as _merged and _merged_outline for face cosmetics
-                var isFaceCosmetic = outfitData["isFaceCosmetic"]?.Value<bool>() ?? false;
+                var isFaceCosmetic = outfit.IsFaceCosmetic;
                 
                 var outline = new JObject
                 {
@@ -115,7 +107,7 @@ public class OutfitGenerator : IGenerator
                 {
                     Name = $"spr_player_{name}_lut",
                     Mod = mod,
-                    Location = outfitData["lutFile"].ToString(),
+                    Location = outfit.LutFile,
                     IsAnimated = false,
                     IsPlayerSprite = true
                 });
@@ -128,7 +120,7 @@ public class OutfitGenerator : IGenerator
                         {
                             Name = $"spr_ui_item_wearable_{name}",
                             Mod = mod,
-                            Location = outfitData["uiItem"].ToString(),
+                            Location = outfit.UiItem,
                             IsAnimated = false,
                             IsUiSprite = true
                         },
@@ -136,7 +128,7 @@ public class OutfitGenerator : IGenerator
                         {
                             Name = $"spr_ui_item_wearable_{name}_outline",
                             Mod = mod,
-                            Location = outfitData["outlineFile"].ToString(),
+                            Location = outfit.OutlineFile,
                             IsAnimated = false,
                             IsUiSprite = true
                         }
@@ -149,7 +141,7 @@ public class OutfitGenerator : IGenerator
                         {
                             Name = $"spr_ui_item_wearable_{name}_asset",
                             Mod = mod,
-                            Location = outfitData["uiAssetFile"].ToString(),
+                            Location = outfit.UiAssetFile,
                             IsAnimated = false,
                             IsUiSprite = true
                         },
@@ -157,7 +149,7 @@ public class OutfitGenerator : IGenerator
                         {
                             Name = $"spr_ui_item_wearable_{name}_body",
                             Mod = mod,
-                            Location = outfitData["uiBodyFile"].ToString(),
+                            Location = outfit.UiBodyFile,
                             IsAnimated = false,
                             IsUiSprite = true
                         },
@@ -165,7 +157,7 @@ public class OutfitGenerator : IGenerator
                         {
                             Name = $"spr_ui_item_wearable_{name}_merged",
                             Mod = mod,
-                            Location = outfitData["uiItem"].ToString(),
+                            Location = outfit.UiItem,
                             IsAnimated = false,
                             IsUiSprite = true
                         },
@@ -173,7 +165,7 @@ public class OutfitGenerator : IGenerator
                         {
                             Name = $"spr_ui_item_wearable_{name}_merged_outline",
                             Mod = mod,
-                            Location = outfitData["outlineFile"].ToString(),
+                            Location = outfit.OutlineFile,
                             IsAnimated = false,
                             IsUiSprite = true
                         }

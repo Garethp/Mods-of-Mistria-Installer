@@ -42,6 +42,9 @@ public class Outfit
     public string OutlineFile;
 
     [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+    public bool IsFaceCosmetic;
+    
+    [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public string UiAssetFile;
 
     [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
@@ -49,6 +52,9 @@ public class Outfit
 
     [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public Dictionary<string, string> AnimationFiles = new ();
+
+    [JsonProperty(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
+    public int? PriceOverride;
 
     public Validation Validate(Validation validation, IMod mod, string file, string id)
     {
@@ -120,6 +126,11 @@ public class Outfit
             }
         }
 
+        if (PriceOverride is not null && PriceOverride < 0)
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitPriceOverrideNegative, id));
+        }
+        
         return validation;
     }
 }
