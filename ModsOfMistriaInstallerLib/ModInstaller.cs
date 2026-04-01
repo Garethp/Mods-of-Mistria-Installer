@@ -16,6 +16,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         ["t2_input.json"],
         ["t2_output.json"],
         ["localization.json"],
+        ["macro_lines.json"],
         ["animation", "generated", "outlines.json"],
         ["animation", "generated", "player_asset_parts.json"],
         ["animation", "generated", "player_tools.json"],
