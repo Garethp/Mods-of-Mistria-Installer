@@ -383,4 +383,63 @@ public class OutfitTest
             )
         ); 
     }
+
+    [Test]
+    public void ShouldPassPriceOverrideToFiddle()
+    {
+        var mod = new MockMod(new Dictionary<string, string> {
+            { "outfits/outfit.json", new JObject {
+                { "test_outfit", new JObject {
+                    { "name", "Test Outfit" },
+                    { "description", "This is the test outfit" },
+                    { "default_unlocked", true },
+                    { "ui_slot", "back" },
+                    { "ui_sub_category", "capes" },
+                    { "lutFile", "images/lut.png" },
+                    { "uiItem", "images/ui.png" },
+                    { "outlineFile", "images/outline.png" },
+                    { "price_override", 5 },
+                    { "animationFiles", new JObject {
+                        { "back", "images/animation" }
+                    }}
+                    
+                }}
+            }.ToString() },
+            { "images/lut.png", "" },
+            { "images/ui.png", "" },
+            { "images/outline.png", "" },
+            { "images/animation/1.png", "" },
+            { "images/animation/2.png", "" }
+        });
+        var generatedInformation = _installer.InstallMods([mod], _fileModifier);
+        
+        Assert.That(generatedInformation.Sprites, Contains.Key(mod.GetId()));
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_player_test_outfit_back" &&
+                sprite.Location == "images/animation" &&
+                sprite.IsPlayerSprite &&
+                !sprite.IsUiSprite &&
+                sprite.IsAnimated &&
+                sprite.BoundingBoxMode == 1 &&
+                sprite.DeleteCollisionMask &&
+                sprite.SpecialType && 
+                sprite.SpecialTypeVersion == 3 &&
+                sprite.SpecialPlaybackSpeed == 40 &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        );
+        
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(new JObject
+        {
+            { "player_assets", new JObject
+            {
+                { "test_outfit", new JObject
+                {
+                    { "price_override", 5 }
+                }} 
+            }}
+        }));
+    }
 }

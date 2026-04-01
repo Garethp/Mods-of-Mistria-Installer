@@ -105,7 +105,8 @@ in their own folder, separate from other sprites. Here's an example file:
     "outlineFile": "images/outline.png",
     "animationFiles": {
       "back_gear": "images/tail_animation"
-    }
+    },
+    "price_override": 0 // This is an optional field, but cannot be below 0
   }
 }
 ```
