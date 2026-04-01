@@ -12,13 +12,7 @@ namespace ModsOfMistriaInstallerLibTests.EndToEnd;
 public class OutfitTest
 {
     private IMod _mockMod;
-    private readonly MockFileModifier _fileModifier = new(new Dictionary<string, string>
-    {
-        { "localization.json", "{}" },
-        { "__fiddle__.json", "{}" },
-        { "player_asset_parts.json", "{}" },
-        { "outlines.json", "{}" }
-    });
+    private MockFileModifier _fileModifier;
     
     private readonly MockInstaller _installer = new([
         new OutfitGenerator()
@@ -32,6 +26,14 @@ public class OutfitTest
     [SetUp]
     public void SetUp()
     {
+        _fileModifier =  new(new Dictionary<string, string>
+        {
+            { "localization.json", "{}" },
+            { "__fiddle__.json", "{}" },
+            { "player_asset_parts.json", "{}" },
+            { "outlines.json", "{}" }
+        });
+        
         _mockMod = new MockMod(new Dictionary<string, string> {
             { "outfits/outfit.json", new JObject {
                 { "test_outfit", new JObject {
@@ -216,5 +218,169 @@ public class OutfitTest
                 sprite.Mod.GetId() == mod.GetId()
             )
         );
+    }
+
+    [Test]
+    public void ShouldAddMergedOutlineForFaceCosmetics()
+    {
+        var mod = new MockMod(new Dictionary<string, string> {
+            { "outfits/outfit.json", new JObject {
+                { "test_outfit", new JObject {
+                    { "name", "Test Outfit" },
+                    { "description", "This is the test outfit" },
+                    { "default_unlocked", true },
+                    { "ui_slot", "back" },
+                    { "ui_sub_category", "capes" },
+                    { "lutFile", "images/lut.png" },
+                    { "uiItem", "images/ui.png" },
+                    { "outlineFile", "images/outline.png" },
+                    { "isFaceCosmetic", true },
+                    { "uiAssetFile", "images/ui_asset_file.png" },
+                    { "uiBodyFile", "images/ui_body_file.png" },
+                    { "animationFiles", new JObject {
+                        { "back", "images/animation" }
+                    }}
+                    
+                }}
+            }.ToString() },
+            { "images/lut.png", "" },
+            { "images/ui.png", "" },
+            { "images/outline.png", "" },
+            { "images/animation/1.png", "" },
+            { "images/animation/2.png", "" },
+            { "images/ui_asset_file.png", "" },
+            { "images/ui_body_file.png", "" }
+        });
+        
+        var generatedInformation = _installer.InstallMods([mod], _fileModifier);
+        
+        Assert.That(generatedInformation.Sprites, Contains.Key(mod.GetId()));
+        
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_ui_item_wearable_test_outfit_merged" &&
+                sprite.Location == "images/ui.png" &&
+                !sprite.IsPlayerSprite &&
+                sprite.IsUiSprite &&
+                !sprite.IsAnimated &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        );
+        
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_ui_item_wearable_test_outfit_merged_outline" &&
+                sprite.Location == "images/outline.png" &&
+                !sprite.IsPlayerSprite &&
+                sprite.IsUiSprite &&
+                !sprite.IsAnimated &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        );
+        
+        Assert.That(_fileModifier.GetFile("outlines.json"), new MatchesJsonConstraint(new JObject
+        {
+            { "spr_ui_item_wearable_test_outfit_merged", "spr_ui_item_wearable_test_outfit_merged_outline" }
+        }));
+    }
+    
+    [Test]
+    public void ShouldAddUiAssetFileSpriteForFaceCosmetics()
+    {
+        var mod = new MockMod(new Dictionary<string, string> {
+            { "outfits/outfit.json", new JObject {
+                { "test_outfit", new JObject {
+                    { "name", "Test Outfit" },
+                    { "description", "This is the test outfit" },
+                    { "default_unlocked", true },
+                    { "ui_slot", "back" },
+                    { "ui_sub_category", "capes" },
+                    { "lutFile", "images/lut.png" },
+                    { "uiItem", "images/ui.png" },
+                    { "outlineFile", "images/outline.png" },
+                    { "isFaceCosmetic", true },
+                    { "uiAssetFile", "images/ui_asset_file.png" },
+                    { "uiBodyFile", "images/ui_body_file.png" },
+                    { "animationFiles", new JObject {
+                        { "back", "images/animation" }
+                    }}
+                    
+                }}
+            }.ToString() },
+            { "images/lut.png", "" },
+            { "images/ui.png", "" },
+            { "images/outline.png", "" },
+            { "images/animation/1.png", "" },
+            { "images/animation/2.png", "" },
+            { "images/ui_asset_file.png", "" },
+            { "images/ui_body_file.png", "" }
+        });
+        
+        var generatedInformation = _installer.InstallMods([mod], _fileModifier);
+        
+        Assert.That(generatedInformation.Sprites, Contains.Key(mod.GetId()));
+        
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_ui_item_wearable_test_outfit_asset" &&
+                sprite.Location == "images/ui_asset_file.png" &&
+                !sprite.IsPlayerSprite &&
+                sprite.IsUiSprite &&
+                !sprite.IsAnimated &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        ); 
+    }
+
+    [Test]
+    public void ShouldAddUiBodyFileSpriteForFaceCosmetics()
+    {
+        var mod = new MockMod(new Dictionary<string, string> {
+            { "outfits/outfit.json", new JObject {
+                { "test_outfit", new JObject {
+                    { "name", "Test Outfit" },
+                    { "description", "This is the test outfit" },
+                    { "default_unlocked", true },
+                    { "ui_slot", "back" },
+                    { "ui_sub_category", "capes" },
+                    { "lutFile", "images/lut.png" },
+                    { "uiItem", "images/ui.png" },
+                    { "outlineFile", "images/outline.png" },
+                    { "isFaceCosmetic", true },
+                    { "uiAssetFile", "images/ui_asset_file.png" },
+                    { "uiBodyFile", "images/ui_body_file.png" },
+                    { "animationFiles", new JObject {
+                        { "back", "images/animation" }
+                    }}
+                    
+                }}
+            }.ToString() },
+            { "images/lut.png", "" },
+            { "images/ui.png", "" },
+            { "images/outline.png", "" },
+            { "images/animation/1.png", "" },
+            { "images/animation/2.png", "" },
+            { "images/ui_asset_file.png", "" },
+            { "images/ui_body_file.png", "" }
+        });
+        
+        var generatedInformation = _installer.InstallMods([mod], _fileModifier);
+        
+        Assert.That(generatedInformation.Sprites, Contains.Key(mod.GetId()));
+        
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_ui_item_wearable_test_outfit_body" &&
+                sprite.Location == "images/ui_body_file.png" &&
+                !sprite.IsPlayerSprite &&
+                sprite.IsUiSprite &&
+                !sprite.IsAnimated &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        ); 
     }
 }

@@ -17,6 +17,8 @@ public class OutfitTest
         _mockMod = new MockMod([
             "images/lut.png",
             "images/ui.png",
+            "images/ui_asset.png",
+            "images/body_asset.png",
             "images/outline.png",
             "images/animation/1.png",
             "images/animation/2.png",
@@ -386,6 +388,96 @@ public class OutfitTest
                 Resources.CoreSpriteFolderIsEmpty,
                 "Outfit outfit's animation file back",
                 "images/empty"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+
+    [Test]
+    public void ShouldEnsureUiAssetFileIsOptional()
+    {
+        var outfit = GetMockOutfit();
+        outfit.UiAssetFile = null;
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+
+    [Test]
+    public void ShouldEnsureValidUiAssetFileHasNoErrors()
+    {
+        var outfit = GetMockOutfit();
+        outfit.UiAssetFile = "images/ui_asset.png";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+    
+    [Test]
+    public void ShouldValidateUiAssetFileExistsIfProvided()
+    {
+        var outfit = GetMockOutfit();
+        outfit.UiAssetFile = "images/not-found";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.CoreSpriteFileDoesNotExist,
+                $"Outfit outfit's uiAssetFile",
+                "images/not-found"
+            )
+        );
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+    
+    [Test]
+    public void ShouldEnsureUiBodyFileIsOptional()
+    {
+        var outfit = GetMockOutfit();
+        outfit.UiBodyFile = null;
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+
+    [Test]
+    public void ShouldEnsureValidUiBodyFileHasNoErrors()
+    {
+        var outfit = GetMockOutfit();
+        outfit.UiAssetFile = "images/ui_asset.png";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+    
+    [Test]
+    public void ShouldValidateUiBodyFileExistsIfProvided()
+    {
+        var outfit = GetMockOutfit();
+        outfit.UiBodyFile = "images/not-found";
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.CoreSpriteFileDoesNotExist,
+                $"Outfit outfit's uiBodyFile",
+                "images/not-found"
             )
         );
 

@@ -12,10 +12,7 @@ namespace ModsOfMistriaInstallerLibTests.EndToEnd;
 public class ShadowTest
 {
     private IMod _mockMod;
-    private readonly MockFileModifier _fileModifier = new(new Dictionary<string, string>
-    {
-        { "shadow_manifest.json", "{}" }
-    });
+    private MockFileModifier _fileModifier;
     
     private readonly MockInstaller _installer = new([
         new ShadowGenerator()
@@ -26,6 +23,11 @@ public class ShadowTest
     [SetUp]
     public void SetUp()
     {
+        _fileModifier = new(new Dictionary<string, string>
+        {
+            { "shadow_manifest.json", "{}" }
+        });
+        
         _mockMod = new MockMod(new Dictionary<string, string> {
             { "shadows/shadow.json", new JObject {
                 { "test_shadow", new JObject {
