@@ -41,8 +41,7 @@ public class Outfit
     [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public string OutlineFile;
 
-    [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public bool IsFaceCosmetic;
+    public bool HasMergedAssetOutline => !string.IsNullOrEmpty(UiAssetFile) || !string.IsNullOrEmpty(UiBodyFile);
     
     [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public string UiAssetFile;
@@ -102,12 +101,12 @@ public class Outfit
         }
 
         // if included (for face cosmetics), validate sprite files
-        if (!string.IsNullOrWhiteSpace(UiAssetFile) && ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiAssetFile", UiAssetFile) is { } uiAssetError)
+        if (HasMergedAssetOutline && ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiAssetFile", UiAssetFile) is { } uiAssetError)
         {
             validation.AddError(mod, file, uiAssetError);
         }
 
-        if (!string.IsNullOrWhiteSpace(UiBodyFile) && ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiBodyFile", UiBodyFile) is { } uiBodyError)
+        if (HasMergedAssetOutline && ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiBodyFile", UiBodyFile) is { } uiBodyError)
         {
             validation.AddError(mod, file, uiBodyError);
         }

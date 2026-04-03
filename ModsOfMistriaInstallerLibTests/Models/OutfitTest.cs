@@ -412,9 +412,32 @@ public class OutfitTest
     {
         var outfit = GetMockOutfit();
         outfit.UiAssetFile = "images/ui_asset.png";
+        outfit.UiBodyFile = "images/body_asset.png";
+        
         var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
 
         var expectedValidation = new Validation();
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+    
+    [Test]
+    public void ShouldValidateUiAssetFileIsPresentIfUiBodyFileIsPreset()
+    {
+        var outfit = GetMockOutfit();
+        outfit.UiBodyFile = "images/body_asset.png";
+        
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.CoreItemDoesNotHaveValue,
+                $"Outfit outfit's uiAssetFile"
+            )
+        );
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -424,6 +447,8 @@ public class OutfitTest
     {
         var outfit = GetMockOutfit();
         outfit.UiAssetFile = "images/not-found";
+        outfit.UiBodyFile = "images/body_asset.png";
+        
         var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
 
         var expectedValidation = new Validation();
@@ -451,15 +476,38 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-
+    
     [Test]
     public void ShouldEnsureValidUiBodyFileHasNoErrors()
     {
         var outfit = GetMockOutfit();
         outfit.UiAssetFile = "images/ui_asset.png";
+        outfit.UiBodyFile = "images/body_asset.png";
+        
         var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
 
         var expectedValidation = new Validation();
+
+        Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+    
+    [Test]
+    public void ShouldValidateUiBodyFileIsPresentIfUiAssetFileIsPreset()
+    {
+        var outfit = GetMockOutfit();
+        outfit.UiAssetFile = "images/ui_asset.png";
+        
+        var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
+
+        var expectedValidation = new Validation();
+        expectedValidation.AddError(
+            _mockMod,
+            "outfit.json",
+            string.Format(
+                Resources.CoreItemDoesNotHaveValue,
+                $"Outfit outfit's uiBodyFile"
+            )
+        );
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
@@ -468,7 +516,9 @@ public class OutfitTest
     public void ShouldValidateUiBodyFileExistsIfProvided()
     {
         var outfit = GetMockOutfit();
+        outfit.UiAssetFile = "images/ui_asset.png";
         outfit.UiBodyFile = "images/not-found";
+        
         var validation = outfit.Validate(new Validation(), _mockMod, "outfit.json", "outfit");
 
         var expectedValidation = new Validation();
@@ -484,7 +534,7 @@ public class OutfitTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
-
+    
     [Test]
     public void ShouldValidateThatPriceOverrideIsPositive()
     {

@@ -87,21 +87,12 @@ public class OutfitGenerator : IGenerator
                 {
                     (fiddle["player_assets"][name] as JObject).Add("price_override", outfit.PriceOverride);
                 }
-
-                // handle outline as _merged and _merged_outline for face cosmetics
-                var isFaceCosmetic = outfit.IsFaceCosmetic;
                 
                 var outline = new JObject
                 {
                     { $"spr_ui_item_wearable_{name}", $"spr_ui_item_wearable_{name}_outline" }
                 };
-                if (isFaceCosmetic)
-                {
-                    outline = new JObject
-                    {
-                        { $"spr_ui_item_wearable_{name}_merged", $"spr_ui_item_wearable_{name}_merged_outline" }
-                    };
-                }
+
                 // add lut
                 newSprites.Add(new()
                 {
@@ -113,7 +104,7 @@ public class OutfitGenerator : IGenerator
                 });
 
                 // add ui sprites
-                if (!isFaceCosmetic)
+                if (!outfit.HasMergedAssetOutline)
                 {
                     newSprites.AddRange([
                         new()
@@ -136,6 +127,11 @@ public class OutfitGenerator : IGenerator
                 }
                 else
                 {
+                    outline = new JObject
+                    {
+                        { $"spr_ui_item_wearable_{name}_merged", $"spr_ui_item_wearable_{name}_merged_outline" }
+                    };
+                    
                     newSprites.AddRange([
                         new()
                         {
