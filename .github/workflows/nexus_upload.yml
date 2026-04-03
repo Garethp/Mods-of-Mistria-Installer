@@ -2,7 +2,8 @@
 
 on:
   push:
-    branches: [ nexus-upload ]
+    tags:
+      - '*'
   workflow_dispatch:
 
 jobs:
@@ -63,7 +64,7 @@ jobs:
         uses: Nexus-Mods/upload-action@v1.0.0-beta.3
         with:
           api_key: ${{ secrets.NEXUS_TOKEN }}
-          file_group_id: 7261307
+          file_group_id: 569647
           filename: Release/ModsOfMistriaInstaller.exe
           version: ${{ env.APP_VERSION }}
           display_name: "Mods Of Mistria Installer"
@@ -73,7 +74,7 @@ jobs:
         uses: Nexus-Mods/upload-action@v1.0.0-beta.3
         with:
           api_key: ${{ secrets.NEXUS_TOKEN }}
-          file_group_id: 7261313
+          file_group_id: 569653
           filename: Release/ModsOfMistriaInstaller.exe
           version: ${{ env.APP_VERSION }}
           display_name: "Mods Of Mistria Installer Linux"
@@ -83,9 +84,8 @@ jobs:
         uses: Nexus-Mods/upload-action@v1.0.0-beta.3
         with:
           api_key: ${{ secrets.NEXUS_TOKEN }}
-          file_group_id: 7261310
+          file_group_id: 569668
           filename: Release/ModsOfMistriaInstaller.exe
           version: ${{ env.APP_VERSION }}
           display_name: "Mods Of Mistria Installer OSX"
           description: "If you're on a Mac, you should probably use this release"
-
