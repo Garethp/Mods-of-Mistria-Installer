@@ -39,30 +39,37 @@ jobs:
         run: dotnet build
       - name: Build Windows
         run: dotnet publish ModsOfMistriaGUI -c Release -r win-x64 -o Release
-      - name: Build Linux
-        run: dotnet publish ModsOfMistriaGUI -c Release -r linux-x64 -o Release
-      - uses: vimtor/action-zip@v1.3
+#      - name: Build Linux
+#        run: dotnet publish ModsOfMistriaGUI -c Release -r linux-x64 -o Release
+#      - uses: vimtor/action-zip@v1.3
+#        with:
+#          files: Release/ModsOfMistriaInstaller-linux
+#          dest: Release/ModsOfMistriaInstaller-linux.zip
+#      - name: Build OSX
+#        run: dotnet publish ModsOfMistriaGUI -c Release -r osx-x64 -o Release
+#      - uses: vimtor/action-zip@v1.3
+#        with:
+#          files: Release/ModsOfMistriaInstaller-osx
+#          dest: Release/ModsOfMistriaInstaller-osx.zip
+#      - uses: actions/upload-artifact@v6
+#        with:
+#          name: my-artifact-windows
+#          path: Release/ModsOfMistriaInstaller.exe
+#      - uses: actions/upload-artifact@v6
+#        with:
+#          name: my-artifact-linux
+#          path: Release/ModsOfMistriaInstaller-linux.zip
+#      - uses: actions/upload-artifact@v6
+#        with:
+#          name: my-artifact-osx
+#          path: Release/ModsOfMistriaInstaller-osx.zip
+      - name: Upload to NexusMods
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
         with:
-          files: Release/ModsOfMistriaInstaller-linux
-          dest: Release/ModsOfMistriaInstaller-linux.zip
-      - name: Build OSX
-        run: dotnet publish ModsOfMistriaGUI -c Release -r osx-x64 -o Release
-      - uses: vimtor/action-zip@v1.3
-        with:
-          files: Release/ModsOfMistriaInstaller-osx
-          dest: Release/ModsOfMistriaInstaller-osx.zip
-      - uses: actions/upload-artifact@v6
-        with:
-          name: my-artifact-windows
-          path: Release/ModsOfMistriaInstaller.exe
-      - uses: actions/upload-artifact@v6
-        with:
-          name: my-artifact-linux
-          path: Release/ModsOfMistriaInstaller-linux.zip
-      - uses: actions/upload-artifact@v6
-        with:
-          name: my-artifact-osx
-          path: Release/ModsOfMistriaInstaller-osx.zip
+          api_key: ${{ secrets.NEXUS_TOKEN }}
+          file_group_id: ""
+          filename: Release/ModsOfMistriaInstaller.exe
+          version: 0.8.2
 #      - name: Run Nexus uploader
 #        shell: bash
 #        run: |
