@@ -51,18 +51,18 @@ jobs:
         with:
           files: Release/ModsOfMistriaInstaller-osx
           dest: Release/ModsOfMistriaInstaller-osx.zip
-      - uses: actions/upload-artifact@v1.1
+      - uses: actions/upload-artifact@v6
+        with:
+          name: my-artifact-windows
+          path: Release/ModsOfMistriaInstaller.exe
+      - uses: actions/upload-artifact@v6
         with:
           name: my-artifact-linux
-          path: ${{ github.workspace }}/Release/ModsOfMistriaInstaller.exe
-      - uses: actions/upload-artifact@v1.1
-        with:
-          name: my-artifact-linux
-          path: ${{ github.workspace }}/Release/ModsOfMistriaInstaller-linux.zip
-      - uses: actions/upload-artifact@v1.1
+          path: Release/ModsOfMistriaInstaller-linux.zip
+      - uses: actions/upload-artifact@v6
         with:
           name: my-artifact-osx
-          path: ${{ github.workspace }}/Release/ModsOfMistriaInstaller-osx.zip
+          path: Release/ModsOfMistriaInstaller-osx.zip
 #      - name: Run Nexus uploader
 #        shell: bash
 #        run: |
