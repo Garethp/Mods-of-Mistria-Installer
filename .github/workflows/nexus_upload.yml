@@ -73,7 +73,7 @@ jobs:
         uses: Nexus-Mods/upload-action@v1.0.0-beta.3
         with:
           api_key: ${{ secrets.NEXUS_TOKEN }}
-          file_group_id: 7261307
+          file_group_id: 7261313
           filename: Release/ModsOfMistriaInstaller.exe
           version: ${{ env.APP_VERSION }}
           display_name: "Mods Of Mistria Installer Linux"
@@ -83,7 +83,7 @@ jobs:
         uses: Nexus-Mods/upload-action@v1.0.0-beta.3
         with:
           api_key: ${{ secrets.NEXUS_TOKEN }}
-          file_group_id: 7261307
+          file_group_id: 7261310
           filename: Release/ModsOfMistriaInstaller.exe
           version: ${{ env.APP_VERSION }}
           display_name: "Mods Of Mistria Installer OSX"
