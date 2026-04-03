@@ -1,8 +1,9 @@
 ﻿name: Upload To Nexus
 
 on:
-  #push:
-  #  branches: [ master ]
+  push:
+    tags:
+      - '*'
   workflow_dispatch:
 
 jobs:
@@ -11,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [ModsOfMistriaCommandLine]
+        project: [ModsOfMistriaGUI]
         arch: [win-x64]
         os: [windows]
         configuration: [Release]
@@ -26,38 +27,65 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            3.1.x
-      - name: Restore Tools
-        shell: bash
-        run: |
-          dotnet tool install -g BUTR.NexusUploader
-      - name: Restore dependencies
+          dotnet-version: 8.0.x
+          
+      - name: Restore
         run: dotnet restore
       - name: Build
         run: dotnet build
-      - name: Publish ${{ matrix.arch }} CLI
-        run: dotnet publish ${{ matrix.project }} -c ${{ matrix.configuration }} -r ${{ matrix.arch }} -o Release
-      - name: Set version output
-        id: vars
-        run: echo ::set-output name=tag::0.1.4
-      - name: Validate unex config
-        shell: bash
-        continue-on-error: true
+      - name: Test
+        run: dotnet test
+
+      - name: Get Assembly Version
         run: |
-          unex check -c
-        env:
-          UNEX_APIKEY: ${{ secrets.NEXUS_TOKEN }}
-          UNEX_COOKIES: ${{ secrets.NEXUS_COOKIES }}
-          UNEX_DEBUG: true
-          UNEX_FILENAME: Mods Of Mistria Installer Windows Command Line
-      - name: Run Nexus uploader
-        shell: bash
-        run: |
-          ls Release
-          unex upload 78 ./Release/ModsOfMistriaInstaller-cli.exe --game fieldsofmistria --file-name "Mods Of Mistria Installer Windows Command Line" -v ${{ steps.vars.outputs.tag }} --no-version-update 
-        env:
-          UNEX_APIKEY: ${{ secrets.NEXUS_TOKEN }}
-          UNEX_COOKIES: ${{ secrets.NEXUS_COOKIES }}
-          UNEX_DEBUG: true
+          VERSION=$(dotnet msbuild -nologo -verbosity:quiet -getProperty:AssemblyVersion ModsOfMistriaGUI)
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+        
+      - name: Compile Windows
+        run: dotnet publish ModsOfMistriaGUI -c Release -r win-x64 -o Release
+          
+      - name: Compile Linux
+        run: dotnet publish ModsOfMistriaGUI -c Release -r linux-x64 -o Release
+      - name: Zip Linux
+        uses: vimtor/action-zip@v1.3
+        with:
+          files: Release/ModsOfMistriaInstaller-linux
+          dest: Release/ModsOfMistriaInstaller-linux.zip
+          
+      - name: Compile OSX
+        run: dotnet publish ModsOfMistriaGUI -c Release -r osx-x64 -o Release
+      - name: Zip OSX
+        uses: vimtor/action-zip@v1.3
+        with:
+          files: Release/ModsOfMistriaInstaller-osx
+          dest: Release/ModsOfMistriaInstaller-osx.zip
+          
+      - name: Upload to Windows GUI NexusMods
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        with:
+          api_key: ${{ secrets.NEXUS_TOKEN }}
+          file_group_id: 569647
+          filename: Release/ModsOfMistriaInstaller.exe
+          version: ${{ env.APP_VERSION }}
+          display_name: "Mods Of Mistria Installer"
+          description: "If you're on Windows, you should probably use this release"
+          
+      - name: Upload to Linux GUI NexusMods
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        with:
+          api_key: ${{ secrets.NEXUS_TOKEN }}
+          file_group_id: 569653
+          filename: Release/ModsOfMistriaInstaller.exe
+          version: ${{ env.APP_VERSION }}
+          display_name: "Mods Of Mistria Installer Linux"
+          description: "If you're on a Steam Deck, you should probably use this release"
+
+      - name: Upload to OSX GUI NexusMods
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        with:
+          api_key: ${{ secrets.NEXUS_TOKEN }}
+          file_group_id: 569668
+          filename: Release/ModsOfMistriaInstaller.exe
+          version: ${{ env.APP_VERSION }}
+          display_name: "Mods Of Mistria Installer OSX"
+          description: "If you're on a Mac, you should probably use this release"
