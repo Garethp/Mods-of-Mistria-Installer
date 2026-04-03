@@ -1,8 +1,8 @@
 ﻿name: Upload To Nexus
 
 on:
-  #push:
-  #  branches: [ master ]
+  push:
+    branches: [ nexus-upload ]
   workflow_dispatch:
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [ModsOfMistriaCommandLine]
+        project: [ModsOfMistriaGUI]
         arch: [win-x64]
         os: [windows]
         configuration: [Release]
@@ -37,27 +37,38 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build
-      - name: Publish ${{ matrix.arch }} CLI
-        run: dotnet publish ${{ matrix.project }} -c ${{ matrix.configuration }} -r ${{ matrix.arch }} -o Release
-      - name: Set version output
-        id: vars
-        run: echo ::set-output name=tag::0.1.4
-      - name: Validate unex config
-        shell: bash
-        continue-on-error: true
-        run: |
-          unex check -c
-        env:
-          UNEX_APIKEY: ${{ secrets.NEXUS_TOKEN }}
-          UNEX_COOKIES: ${{ secrets.NEXUS_COOKIES }}
-          UNEX_DEBUG: true
-          UNEX_FILENAME: Mods Of Mistria Installer Windows Command Line
-      - name: Run Nexus uploader
-        shell: bash
-        run: |
-          ls Release
-          unex upload 78 ./Release/ModsOfMistriaInstaller-cli.exe --game fieldsofmistria --file-name "Mods Of Mistria Installer Windows Command Line" -v ${{ steps.vars.outputs.tag }} --no-version-update 
-        env:
-          UNEX_APIKEY: ${{ secrets.NEXUS_TOKEN }}
-          UNEX_COOKIES: ${{ secrets.NEXUS_COOKIES }}
-          UNEX_DEBUG: true
+      - name: Build Windows
+        run: dotnet publish ModsOfMistriaGUI -c Release -r win-x64 -o Release
+      - name: Build Linux
+        run: dotnet publish ModsOfMistriaGUI -c Release -r linux-x64 -o Release
+      - uses: vimtor/action-zip@v1.3
+        with:
+          files: Release/ModsOfMistriaInstaller-linux
+          dest: Release/ModsOfMistriaInstaller-linux.zip
+      - name: Build OSX
+        run: dotnet publish ModsOfMistriaGUI -c Release -r osx-x64 -o Release
+      - uses: vimtor/action-zip@v1.3
+        with:
+          files: Release/ModsOfMistriaInstaller-osx
+          dest: Release/ModsOfMistriaInstaller-osx.zip
+      - uses: actions/upload-artifact@v1.1
+        with:
+          name: my-artifact-linux
+          path: ${{ github.workspace }}/Release/ModsOfMistriaInstaller.exe
+      - uses: actions/upload-artifact@v1.1
+        with:
+          name: my-artifact-linux
+          path: ${{ github.workspace }}/Release/ModsOfMistriaInstaller-linux.zip
+      - uses: actions/upload-artifact@v1.1
+        with:
+          name: my-artifact-osx
+          path: ${{ github.workspace }}/Release/ModsOfMistriaInstaller-osx.zip
+#      - name: Run Nexus uploader
+#        shell: bash
+#        run: |
+#          ls Release
+#          unex upload 78 ./Release/ModsOfMistriaInstaller-cli.exe --game fieldsofmistria --file-name "Mods Of Mistria Installer Windows Command Line" -v ${{ steps.vars.outputs.tag }} --no-version-update 
+#        env:
+#          UNEX_APIKEY: ${{ secrets.NEXUS_TOKEN }}
+#          UNEX_COOKIES: ${{ secrets.NEXUS_COOKIES }}
+#          UNEX_DEBUG: true
