@@ -14,7 +14,7 @@ public class CutsceneGenerator : IGenerator
 
         foreach (var cutsceneFile in cutsceneFiles.Order().Where(file => file.EndsWith(".js")))
         {
-            var mist = new MistCompiler().Compile(mod.ReadFile(cutsceneFile));
+            var mist = MistCompiler.Compile(mod.ReadFile(cutsceneFile));
 
             generatedInformation.Cutscenes.Add(mist);
         }

@@ -3,32 +3,24 @@ using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Tools.Compiler;
 
-public class Encoder
+public static class JsCompiler
 {
-    public static JObject EncodeJS(Node statement)
+    public static JObject Compile(Node statement)
     {
-        switch (statement)
+        return statement switch
         {
-            case ExpressionStatement expressionStatement:
-                return ExpressionStatementEncoder.Encode(expressionStatement);
-            case VariableDeclaration variableDeclaration:
-                return EncodeVariableDeclaration(variableDeclaration);
-            case BlockStatement blockStatement:
-                return EncodeBlockStatement(blockStatement);
-            case IfStatement ifStatement:
-                return EncodeIfStatement(ifStatement);
-            case FunctionDeclaration functionDeclaration:
-                return EncodeFunctionDeclaration(functionDeclaration);
-            case ReturnStatement returnStatement:
-                return EncodeReturnStatement(returnStatement);
-            case Expression expression:
-                return ExpressionEncoder.Encode(expression);
-        }
-
-        throw new Exception($"Type not implemented: {statement.Type}");
+            ExpressionStatement expressionStatement => ExpressionStatementCompiler.Compile(expressionStatement),
+            VariableDeclaration variableDeclaration => CompileVariableDeclaration(variableDeclaration),
+            BlockStatement blockStatement => CompileBlockStatement(blockStatement),
+            IfStatement ifStatement => CompileIfStatement(ifStatement),
+            FunctionDeclaration functionDeclaration => CompileFunctionDeclaration(functionDeclaration),
+            ReturnStatement returnStatement => CompileReturnStatement(returnStatement),
+            Expression expression => ExpressionCompiler.Compile(expression),
+            _ => throw new Exception($"Type not implemented: {statement.Type}")
+        };
     }
 
-    private static JObject EncodeVariableDeclaration(VariableDeclaration declarations)
+    private static JObject CompileVariableDeclaration(VariableDeclaration declarations)
     {
         if (declarations.Kind != VariableDeclarationKind.Var)
             throw new NotImplementedException($"Variable type {declarations.Kind} not implemented");
@@ -42,7 +34,7 @@ public class Encoder
             throw new NotImplementedException($"Identifier type {declaration.Id} not implemented");
 
         if (declaration.Init is null)
-            throw new NotImplementedException($"Empty variable initializers not supported");
+            throw new NotImplementedException("Empty variable initializers not supported");
 
         return new JObject
         {
@@ -54,39 +46,42 @@ public class Encoder
                     { "value", declarationId.Name }
                 }
             },
-            { "initializer", Encoder.CleanCallExpression(ExpressionEncoder.Encode(declaration.Init)) }
+            { "initializer", CleanCallExpression(ExpressionCompiler.Compile(declaration.Init)) }
         };
     }
 
-    private static JObject EncodeBlockStatement(BlockStatement statement)
+    private static JObject CompileBlockStatement(BlockStatement statement)
     {
         return new JObject
         {
             { "stmt_type", "Block" },
-            { "stmts", new JArray(statement.Body.Select(EncodeJS)) }
+            { "stmts", new JArray(statement.Body.Select(Compile)) }
         };
     }
 
-    private static JObject EncodeIfStatement(IfStatement ifStatement)
+    private static JObject CompileIfStatement(IfStatement ifStatement)
     {
         var ifObject = new JObject
         {
             { "stmt_type", "If" },
-            { "condition", Encoder.CleanCallExpression(ExpressionEncoder.Encode(ifStatement.Test)) },
-            { "then_branch", EncodeJS(ifStatement.Consequent) },
-            { "else_branch", ifStatement.Alternate is not null ? EncodeJS(ifStatement.Alternate) : "null" }
+            { "condition", CleanCallExpression(ExpressionCompiler.Compile(ifStatement.Test)) },
+            { "then_branch", Compile(ifStatement.Consequent) },
+            { "else_branch", ifStatement.Alternate is not null ? Compile(ifStatement.Alternate) : "null" }
         };
         
         return ifObject;
     }
 
-    private static JObject EncodeFunctionDeclaration(FunctionDeclaration functionDeclaration)
+    private static JObject CompileFunctionDeclaration(FunctionDeclaration functionDeclaration)
     {
-        var bodyStatements = functionDeclaration.Body.Body.Select(EncodeJS);
+        var bodyStatements = functionDeclaration.Body.Body.Select(Compile);
 
-        var resolve = bodyStatements.Where(statement => statement["stmt_type"].ToString() == "Resolve")
+        var resolve = bodyStatements
+            .Where(statement => statement["stmt_type"].ToString() == "Resolve")
             .FirstOrDefault();
-        bodyStatements = bodyStatements.Where(statement => statement["stmt_type"].ToString() != "Resolve").ToList();
+        bodyStatements = bodyStatements
+            .Where(statement => statement["stmt_type"].ToString() != "Resolve")
+            .ToList();
 
         var functionObj = new JObject
         {
@@ -113,7 +108,7 @@ public class Encoder
                                 $"Param Assignment Type Not Supported: {assignmentParam.Left.Type}");
 
                         paramObj.Add("value", assignmentParamIdentifier.Name);
-                        paramObj.Add("default_value", ExpressionEncoder.Encode(assignmentParam.Right));
+                        paramObj.Add("default_value", ExpressionCompiler.Compile(assignmentParam.Right));
                     }
                     else if (param is Identifier identifierParam)
                     {
@@ -137,7 +132,7 @@ public class Encoder
         return functionObj;
     }
 
-    private static JObject EncodeReturnStatement(ReturnStatement returnStatement)
+    private static JObject CompileReturnStatement(ReturnStatement returnStatement)
     {
         
         if (returnStatement.Argument is null)
@@ -150,12 +145,12 @@ public class Encoder
         }
         
         if (returnStatement.Argument is CallExpression { Callee: Identifier { Name: "__resolve" } })
-            return EncodeJS(returnStatement.Argument);
+            return Compile(returnStatement.Argument);
 
         return new JObject
         {
             { "stmt_type", "Return" },
-            { "value", Encoder.CleanCallExpression(ExpressionEncoder.Encode(returnStatement.Argument)) }
+            { "value", CleanCallExpression(ExpressionCompiler.Compile(returnStatement.Argument)) }
         };
     }
 
