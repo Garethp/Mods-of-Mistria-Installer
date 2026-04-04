@@ -3,154 +3,175 @@ using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Tools.Decompiler;
 
-public class ExpressionDecompiler
+public static class ExpressionDecompiler
 {
     public static Expression Decompile(JObject expressionObject)
     {
-        if (!expressionObject.ContainsKey("expr_type"))
-            throw new Exception($"Unexpected expression");
-        
-        var expressionType = expressionObject["expr_type"]!.ToString();
-        switch (expressionType)
+        if (expressionObject.SelectToken("$.expr_type") is not JValue expressionType)
+            throw new Exception("Expression has no expression type");
+
+        return $"{expressionType}" switch
         {
-            case "Literal":
-            {
-                string token_type = expressionObject.SelectToken("$.value.token_type", true).ToString();
+            "Literal" => DecompileLiteralExpression(expressionObject),
+            "Named" => DecompileNamedExpression(expressionObject),
+            "Unary" => DecompileUnaryExpression(expressionObject),
+            "Binary" => DecompileBinaryExpression(expressionObject),
+            "Logical" => DecompileLogicalExpression(expressionObject),
+            "Assign" => DecompileAssignExpression(expressionObject),
+            "Call" => DecompileCallExpression(expressionObject),
+            "Grouping" => DecompileGroupingExpression(expressionObject),
+            _ => throw new Exception($"Unhandled Expression Type: {expressionType}")
+        };
+    }
 
-                if (token_type == "True")
-                {
-                    return new Literal(true, "true");
-                }
-                else if (token_type == "False")
-                {
-                    return new Literal(false, "false");
-                }
-                else if (token_type == "Number")
-                {
-                    var value = expressionObject.SelectToken("$.value.Value", true);
-                    return new Literal((double)value, value.ToString());
-                }
-                else if (token_type == "String")
-                {
-                    var value = expressionObject.SelectToken("$.value.value", true);
-                    // Esprima will use the raw to render the String literal, so we add back the double quotes.
-                    return new Literal(value.ToString(), $"\"{value.ToString()}\"");
-                }
-                else
-                {
-                    throw new Exception($"unknown token type for a Literal Expression: {token_type}");
-                }
+    private static Expression DecompileLiteralExpression(JObject expressionObject)
+    {
+        if (expressionObject.SelectToken("$.value.token_type") is not JValue tokenType)
+            throw new Exception("Literal Value has no token type");
+
+        switch ($"{tokenType}")
+        {
+            case "True":
+                return new Literal(true, "true");
+            case "False":
+                return new Literal(false, "false");
+            case "Number":
+            {
+                if (expressionObject.SelectToken("$.value.Value") is not JValue value)
+                    throw new Exception("Literal Number has no value");
+                
+                return new Literal((double) value, $"{value}");
             }
-            case "Named":
+            case "String":
             {
-                string ident = expressionObject.SelectToken("$.name.value", true).ToString();
-                return new Identifier(ident);
-            }
-            case "Unary":
-            {
-                string operator_name = expressionObject.SelectToken("$.operator.token_type", true).ToString();
-                JObject right = (JObject)expressionObject.SelectToken("$.right");
-
-                UnaryOperator op;
-                switch (operator_name)
-                {
-                    case "Minus":
-                        op = UnaryOperator.Minus; break;
-                    case "Bang":
-                        op = UnaryOperator.LogicalNot; break;
-                    default:
-                        throw new Exception($"unknown binary operator: {operator_name}");
-                }
-
-                var right_expr = Decompile(right);
-                return new UnaryExpression(op, right_expr);
-            }
-            case "Binary":
-            {
-                JObject left = (JObject)expressionObject.SelectToken("$.left");
-                string operator_name = expressionObject.SelectToken("$.operator.token_type", true).ToString();
-                JObject right = (JObject)expressionObject.SelectToken("$.right");
-
-                BinaryOperator op;
-                switch (operator_name)
-                {
-                    case "DoubleEqual":
-                        op = BinaryOperator.Equal; break;
-                    case "BangEqual":
-                        op = BinaryOperator.NotEqual; break;
-                    case "LessEqual":
-                        op = BinaryOperator.LessOrEqual; break;
-                    case "Less":
-                        op = BinaryOperator.Less; break;
-                    case "GreaterEqual":
-                        op = BinaryOperator.GreaterOrEqual; break;
-                    case "Greater":
-                        op = BinaryOperator.Greater; break;
-                    case "Plus":
-                        op = BinaryOperator.Plus; break;
-                    case "Minus":
-                        op = BinaryOperator.Minus; break;
-                    case "Star":
-                        op = BinaryOperator.Times; break;
-                    case "Slash":
-                        op = BinaryOperator.Divide; break;
-                    default:
-                        throw new Exception($"unknown binary operator: {operator_name}");
-                }
-
-                var left_expr = Decompile(left);
-                var right_expr = Decompile(right);
-                return new BinaryExpression(op, left_expr, right_expr);
-            }
-            case "Logical":
-            {
-                JObject left = (JObject)expressionObject.SelectToken("$.left");
-                string operator_name = expressionObject.SelectToken("$.operator.token_type", true).ToString();
-                JObject right = (JObject)expressionObject.SelectToken("$.right");
-
-                BinaryOperator op;
-                switch (operator_name)
-                {
-                    case "And":
-                        op = BinaryOperator.LogicalAnd; break;
-                    case "Or":
-                        op = BinaryOperator.LogicalOr; break;
-                    default:
-                        throw new Exception($"unknown logical operator: {operator_name}");
-                }
-
-                var left_expr = Decompile(left);
-                var right_expr = Decompile(right);
-                return new LogicalExpression(op, left_expr, right_expr);
-            }
-            case "Assign":
-            {
-                JObject name = (JObject)expressionObject.SelectToken("$.name");
-                JObject value = (JObject)expressionObject.SelectToken("$.value");
-                var name_expr = Decompile(name);
-                var value_expr = Decompile(value);
-                return new AssignmentExpression(AssignmentOperator.Assign, name_expr, value_expr);
-            }
-            case "Call":
-            {
-                Expression callee = Decompile((JObject)expressionObject.SelectToken("$.call", true));
-                JArray args = (JArray)expressionObject.SelectToken("$.args", true);
-                List<Expression> args_list = args.Select(arg => Decompile((JObject)arg)).ToList();
-                return new CallExpression(callee, NodeList.Create(args_list), false);
-            }
-            case "Grouping":
-            {
-                JObject expr = (JObject)expressionObject.SelectToken("$.expr");
-                // Esprima does not have explicit grouping in its AST, however, it appears to render it out properly.
-
-                return new CallExpression(
-                    new Identifier("__group"),
-                    NodeList.Create(new List<Expression>() { Decompile(expr) }),
-                     false
-                );
+                if (expressionObject.SelectToken("$.value.value") is not JValue value)
+                    throw new Exception("Literal String has no value");
+                
+                // Esprima will use the raw to render the String literal, so we add back the double quotes.
+                return new Literal($"{value}", $"\"{value}\"");
             }
             default:
-                throw new Exception($"Unhandled Expression Type: {expressionType}");
+                throw new Exception($"Unknown token type for a Literal Expression: {tokenType}");
         }
+    }
+
+    private static Expression DecompileNamedExpression(JObject expressionObject)
+    {
+        if (expressionObject.SelectToken("$.name.value") is not JValue name)
+            throw new Exception("Named expression has no name");
+
+        return new Identifier($"{name}");
+    }
+
+    private static Expression DecompileUnaryExpression(JObject expressionObject)
+    {
+        if (expressionObject.SelectToken("$.operator.token_type") is not JValue operatorName)
+            throw new Exception("Unary Operator has no token type");
+        
+        if (expressionObject.SelectToken("$.right") is not JObject right)
+            throw new Exception("Unary Expression has no right side");
+        
+        var unaryOperator = $"{operatorName}" switch
+        {
+            "Minus" => UnaryOperator.Minus,
+            "Bang" => UnaryOperator.LogicalNot,
+            _ => throw new Exception($"unknown binary operator: {operatorName}")
+        };
+
+        return new UnaryExpression(unaryOperator, Decompile(right));
+    }
+
+    private static Expression DecompileBinaryExpression(JObject expressionObject)
+    {
+        if (expressionObject.SelectToken("$.left") is not JObject left)
+            throw new Exception("Binary operator has no left side");
+        
+        if (expressionObject.SelectToken("$.operator.token_type") is not JValue operatorName)
+            throw new Exception("Binary Operator has no token type");
+        
+        if (expressionObject.SelectToken("$.right") is not JObject right)
+            throw new Exception("Binary Expression has no right side");
+        
+        var binaryOperator = $"{operatorName}" switch
+        {
+            "DoubleEqual" => BinaryOperator.Equal,
+            "BangEqual" => BinaryOperator.NotEqual,
+            "LessEqual" => BinaryOperator.LessOrEqual,
+            "Less" => BinaryOperator.Less,
+            "GreaterEqual" => BinaryOperator.GreaterOrEqual,
+            "Greater" => BinaryOperator.Greater,
+            "Plus" => BinaryOperator.Plus,
+            "Minus" => BinaryOperator.Minus,
+            "Star" => BinaryOperator.Times,
+            "Slash" => BinaryOperator.Divide,
+            _ => throw new Exception($"Unknown binary operator: {operatorName}")
+        };
+        
+        return new BinaryExpression(binaryOperator, Decompile(left), Decompile(right));
+    }
+
+    private static Expression DecompileLogicalExpression(JObject expressionObject)
+    {
+        if (expressionObject.SelectToken("$.left") is not JObject left)
+            throw new Exception("Logical Expression has no left side");
+
+        if (expressionObject.SelectToken("$.operator.token_type") is not JValue operatorName)
+            throw new Exception("Logical Expression has no token type");
+        
+        if (expressionObject.SelectToken("$.right") is not JObject right)
+            throw new Exception("Logical Expression has no right side");
+        
+        var binaryOperator = $"{operatorName}" switch
+        {
+            "And" => BinaryOperator.LogicalAnd,
+            "Or" => BinaryOperator.LogicalOr,
+            _ => throw new Exception($"unknown logical operator: {operatorName}")
+        };
+
+        return new LogicalExpression(binaryOperator, Decompile(left), Decompile(right));
+    }
+
+    private static Expression DecompileAssignExpression(JObject expressionObject)
+    {
+        if (expressionObject.SelectToken("$.name") is not JObject name)
+            throw new Exception("Assign expression has no name");
+        
+        if (expressionObject.SelectToken("$.value") is not JObject value)
+            throw new Exception("Assign Expression has no value");
+        
+        return new AssignmentExpression(AssignmentOperator.Assign, Decompile(name), Decompile(value));
+    }
+
+    private static Expression DecompileCallExpression(JObject expressionObject)
+    {
+        if (expressionObject.SelectToken("$.call") is not JObject call)
+            throw new Exception("Call Expression has no call");
+        
+        if (expressionObject.SelectToken("$.args") is not JArray arguments)
+            throw new Exception("Call Expression has no arguments");
+        
+        return new CallExpression(
+            Decompile(call),
+            NodeList.Create(arguments.Select(argumentToken =>
+            {
+                if (argumentToken is not JObject argument)
+                    throw new Exception("Call Expression argument is not an object");
+                
+                return Decompile(argument);
+            })), 
+            false
+        );
+    }
+
+    private static Expression DecompileGroupingExpression(JObject expressionObject)
+    {
+        if (expressionObject.SelectToken("$.expr") is not JObject expression)
+            throw new Exception("Grouping Expression has no expr");
+
+        return new CallExpression(
+            new Identifier("__group"),
+            NodeList.Create(new List<Expression> { Decompile(expression) }),
+            false
+        );
     }
 }

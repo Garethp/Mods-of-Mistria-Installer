@@ -4,9 +4,9 @@ using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Tools.Compiler;
 
-public class MistCompiler
+public static class MistCompiler
 {
-    public JObject Compile(string contents)
+    public static JObject Compile(string contents)
     {
         var parser = new JavaScriptParser();
         var script = parser.ParseScript(contents);
@@ -18,10 +18,9 @@ public class MistCompiler
             if (statement is not FunctionDeclaration functionDeclaration)
                 throw new Exception("All top level tokens must be function declarations");
 
-            var compiledFunction = new JArray(functionDeclaration.Body.Body.ToList().Select(Encoder.EncodeJS));
+            var compiledFunction = new JArray(functionDeclaration.Body.Body.ToList().Select(JsCompiler.Compile));
 
             mist.Add($"{functionDeclaration.Id}.mist", compiledFunction);
-            var a = 1 + 1;
         }
 
         return mist;

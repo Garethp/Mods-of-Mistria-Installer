@@ -4,7 +4,6 @@ using Garethp.ModsOfMistriaInstallerLib.Installer;
 using ModsOfMistriaInstallerLibTests.Fixtures;
 using ModsOfMistriaInstallerLibTests.Utils;
 using Newtonsoft.Json.Linq;
-using NUnit.Framework.Interfaces;
 
 namespace ModsOfMistriaInstallerLibTests.EndToEnd;
 

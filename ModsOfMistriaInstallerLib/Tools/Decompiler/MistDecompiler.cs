@@ -2,15 +2,19 @@
 using Esprima.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Text;
 using JsonWriter = Newtonsoft.Json.JsonWriter;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Tools.Decompiler;
 
 public class MistConverter : JsonConverter<Module>
 {
-    public override Module? ReadJson(JsonReader reader, Type objectType, Module? existingValue,
-        bool hasExistingValue, JsonSerializer serializer)
+    public override Module ReadJson(
+        JsonReader reader,
+        Type objectType,
+        Module? existingValue,
+        bool hasExistingValue,
+        JsonSerializer serializer
+    )
     {
         // This, to my understanding, load the entire JSON tree.
         var token = JToken.Load(reader);
@@ -19,15 +23,22 @@ public class MistConverter : JsonConverter<Module>
 
         return new Module(NodeList.Create<Statement>(obj.Properties().Select(property =>
         {
-            return new FunctionDeclaration(new Identifier(property.Name.Replace(".mist", "")), [], new BlockStatement(
-                NodeList.Create<Statement>(property.Value.Select(statement =>
-                {
-                    if (statement is not JObject statementObject)
-                        throw new NotImplementedException($"Expected statement type: {statement.Type}");
+            return new FunctionDeclaration(
+                new Identifier(property.Name.Replace(".mist", "")),
+                [],
+                new BlockStatement(
+                    NodeList.Create(property.Value.Select(statement =>
+                    {
+                        if (statement is not JObject statementObject)
+                            throw new NotImplementedException($"Expected statement type: {statement.Type}");
 
-                    return ToStatement(statementObject);
-                }))
-            ), false, false, false);
+                        return ToStatement(statementObject);
+                    }))
+                ),
+                false,
+                false,
+                false
+            );
         })));
     }
 
@@ -47,9 +58,9 @@ public class MistConverter : JsonConverter<Module>
     }
 }
 
-public class MistDecompiler
+public static class MistDecompiler
 {
-    public string Decompile(string mist)
+    public static string Decompile(string mist)
     {
         var settings = new JsonSerializerSettings();
         settings.Converters.Add(new MistConverter());

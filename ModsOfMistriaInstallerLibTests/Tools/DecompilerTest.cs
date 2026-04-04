@@ -17,7 +17,7 @@ public class DecompilerTest
         var expectedJs = "function spell_learned() {}";
         var mist = """{ "spell_learned.mist": [] }""";
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(expectedJs));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(expectedJs));
     }
 
     [Test]
@@ -34,7 +34,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(expectedJs));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(expectedJs));
     }
 
     [Test]
@@ -62,7 +62,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(expectedJs));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(expectedJs));
     }
 
     [Test]
@@ -98,7 +98,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -126,7 +126,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -180,7 +180,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -270,7 +270,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -318,7 +318,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -359,7 +359,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -711,7 +711,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -786,7 +786,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -845,7 +845,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -921,7 +921,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -961,7 +961,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -1061,7 +1061,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -1140,7 +1140,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -1207,7 +1207,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -1253,7 +1253,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -1291,7 +1291,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -1317,7 +1317,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -1408,13 +1408,13 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
     public void ShouldPassUnitTests()
     {
-        // Our test output is *slightly* (very very slightly) different from the original MIST, but for this test we're
+        // Our test output is *slightly* (very slightly) different from the original MIST, but for this test we're
         // going to consider it okay. For more information, see the notes in the `ShouldEncodeFullMistFile` test.
         var js = """
                  function unit_test() {
@@ -2352,7 +2352,7 @@ public class DecompilerTest
                    }
                    """;
 
-        Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+        Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Test]
@@ -2415,7 +2415,7 @@ public class DecompilerTest
                  }
                  """;
       
-      Assert.That(new MistDecompiler().Decompile(mist), new MatchesJs(js));
+      Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
     [Ignore("I need to get permission to ship the original __mist__.json file with this project for this test.")]
@@ -2424,16 +2424,9 @@ public class DecompilerTest
     {
         // @TODO: We need to make this more reliable. Maybe find our way up to the parents until we hit a predictable path?
         var projectPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        var js = File.ReadAllText($"{projectPath}/../../../Fixtures/__mist__.js");
         var mist = File.ReadAllText($"{projectPath}/../../../Fixtures/__mist__.json");
         
         var fullDesiredMist = JObject.Parse(mist);
-        Program fullDesiredJs = new JavaScriptParser().ParseScript(js);
-        
-        var allJsFunctions = fullDesiredJs.Body
-          .OfType<FunctionDeclaration?>()
-          .ToDictionary(functionDeclaration => functionDeclaration.Id.Name, functionDeclaration => functionDeclaration);
-
         var functionNames = fullDesiredMist.Properties().Select(prop => prop.Name).ToList();
 
         foreach (var functionName in functionNames)
@@ -2448,8 +2441,8 @@ public class DecompilerTest
           // functions, so we'll just skip it.
           if (functionName == "balor_six_hearts.mist") continue;
           
-          var singleDecompile = new MistDecompiler().Decompile(singleMist.ToString());
-          var singleRecompile = new MistCompiler().Compile(singleDecompile);
+          var singleDecompile = MistDecompiler.Decompile(singleMist.ToString());
+          var singleRecompile = MistCompiler.Compile(singleDecompile);
 
           Assert.That(singleRecompile.ToString(), new MatchesJsonConstraint(singleMist));
         }

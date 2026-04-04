@@ -3,47 +3,35 @@ using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Tools.Compiler;
 
-public class ExpressionEncoder
+public static class ExpressionCompiler
 {
-    public static JObject Encode(Expression expression)
+    public static JObject Compile(Expression expression)
     {
-        switch (expression)
+        return expression switch
         {
-            case Literal literal:
-                return EncodeLiteral(literal);
-            case Identifier identifier:
-                return EncodeIdentifier(identifier);
-            case LogicalExpression logicalExpression:
-                return EncodeLogicalExpression(logicalExpression);
-            case BinaryExpression binaryExpression:
-                return EncodeBinaryExpression(binaryExpression);
-            case UnaryExpression unaryExpression:
-                return EncodeUnaryExpression(unaryExpression);
-            case AssignmentExpression assignmentExpression:
-                return EncodeAssignmentExpression(assignmentExpression);
-            case CallExpression callExpression:
-                return EncodeCallExpression(callExpression);
-        }
-
-        throw new NotImplementedException();
+            Literal literal => CompileLiteral(literal),
+            Identifier identifier => CompileIdentifier(identifier),
+            LogicalExpression logicalExpression => CompileLogicalExpression(logicalExpression),
+            BinaryExpression binaryExpression => CompileBinaryExpression(binaryExpression),
+            UnaryExpression unaryExpression => CompileUnaryExpression(unaryExpression),
+            AssignmentExpression assignmentExpression => CompileAssignmentExpression(assignmentExpression),
+            CallExpression callExpression => CompileCallExpression(callExpression),
+            _ => throw new NotImplementedException()
+        };
     }
 
-    private static JObject EncodeLiteral(Literal literal)
+    private static JObject CompileLiteral(Literal literal)
     {
-        switch (literal.TokenType.ToString())
+        return literal.TokenType.ToString() switch
         {
-            case "NumericLiteral":
-                return EncodeLiteralNumber(literal);
-            case "StringLiteral":
-                return EncodeLiteralString(literal);
-            case "BooleanLiteral":
-                return EncodeLiteralBoolean(literal);
-        }
-
-        throw new NotImplementedException();
+            "NumericLiteral" => CompileLiteralNumber(literal),
+            "StringLiteral" => CompileLiteralString(literal),
+            "BooleanLiteral" => CompileLiteralBoolean(literal),
+            _ => throw new NotImplementedException()
+        };
     }
 
-    private static JObject EncodeLiteralString(Literal literal)
+    private static JObject CompileLiteralString(Literal literal)
     {
         return new JObject
         {
@@ -58,7 +46,7 @@ public class ExpressionEncoder
         };
     }
 
-    private static JObject EncodeLiteralNumber(Literal number)
+    private static JObject CompileLiteralNumber(Literal number)
     {
         return new JObject
         {
@@ -73,7 +61,7 @@ public class ExpressionEncoder
         };
     }
 
-    private static JObject EncodeLiteralBoolean(Literal boolean)
+    private static JObject CompileLiteralBoolean(Literal boolean)
     {
         return new JObject
         {
@@ -81,13 +69,13 @@ public class ExpressionEncoder
             {
                 "value", new JObject
                 {
-                    { "token_type", (bool)boolean.BooleanValue ? "True" : "False" },
+                    { "token_type", (bool) boolean.BooleanValue! ? "True" : "False" }
                 }
             }
         };
     }
 
-    private static JObject EncodeIdentifier(Identifier identifier)
+    private static JObject CompileIdentifier(Identifier identifier)
     {
         var name = identifier.Name == "throwFunc" ? "throw" : identifier.Name;
 
@@ -104,50 +92,27 @@ public class ExpressionEncoder
         };
     }
 
-    private static JObject EncodeBinaryExpression(BinaryExpression binaryExpression)
+    private static JObject CompileBinaryExpression(BinaryExpression binaryExpression)
     {
         if (binaryExpression is LogicalExpression logicalExpression)
-            return EncodeLogicalExpression(logicalExpression);
+            return CompileLogicalExpression(logicalExpression);
 
-        var operatorString = "";
-
-        switch (binaryExpression.Operator.ToString())
+        var operatorString = binaryExpression.Operator.ToString() switch
         {
-            case "Equal":
-                operatorString = "DoubleEqual";
-                break;
-            case "NotEqual":
-                operatorString = "BangEqual";
-                break;
-            case "Plus":
-                operatorString = "Plus";
-                break;
-            case "Minus":
-                operatorString = "Minus";
-                break;
-            case "Times":
-                operatorString = "Star";
-                break;
-            case "Divide":
-                operatorString = "Slash";
-                break;
-            case "Less":
-                operatorString = "Less";
-                break;
-            case "Greater":
-                operatorString = "Greater";
-                break;
-            case "LessOrEqual":
-                operatorString = "LessEqual";
-                break;
-            case "GreaterOrEqual":
-                operatorString = "GreaterEqual";
-                break;
-            default:
-                throw new NotImplementedException($"Binary operator {binaryExpression.Operator} not implemented");
-        }
+            "Equal" => "DoubleEqual",
+            "NotEqual" => "BangEqual",
+            "Plus" => "Plus",
+            "Minus" => "Minus",
+            "Times" => "Star",
+            "Divide" => "Slash",
+            "Less" => "Less",
+            "Greater" => "Greater",
+            "LessOrEqual" => "LessEqual",
+            "GreaterOrEqual" => "GreaterEqual",
+            _ => throw new NotImplementedException($"Binary operator {binaryExpression.Operator} not implemented")
+        };
 
-        var right = Encode(binaryExpression.Right);
+        var right = Compile(binaryExpression.Right);
         if (binaryExpression.Right is BinaryExpression &&
             (binaryExpression.Operator.ToString() == "Times" ||
              binaryExpression.Operator.ToString() == "Divide"))
@@ -162,32 +127,25 @@ public class ExpressionEncoder
         return new JObject
         {
             { "expr_type", "Binary" },
-            { "left", Encoder.CleanCallExpression(Encode(binaryExpression.Left)) },
+            { "left", JsCompiler.CleanCallExpression(Compile(binaryExpression.Left)) },
             {
                 "operator", new JObject
                 {
-                    { "token_type", operatorString },
+                    { "token_type", operatorString }
                 }
             },
-            { "right", Encoder.CleanCallExpression(right) }
+            { "right", JsCompiler.CleanCallExpression(right) }
         };
     }
 
-    private static JObject EncodeUnaryExpression(UnaryExpression unaryExpression)
+    private static JObject CompileUnaryExpression(UnaryExpression unaryExpression)
     {
-        var operatorString = "";
-
-        switch (unaryExpression.Operator.ToString())
+        var operatorString = unaryExpression.Operator.ToString() switch
         {
-            case "Minus":
-                operatorString = "Minus";
-                break;
-            case "LogicalNot":
-                operatorString = "Bang";
-                break;
-            default:
-                throw new NotImplementedException($"Unary operator {unaryExpression.Operator} not implemented");
-        }
+            "Minus" => "Minus",
+            "LogicalNot" => "Bang",
+            _ => throw new NotImplementedException($"Unary operator {unaryExpression.Operator} not implemented")
+        };
 
         return new JObject
         {
@@ -198,41 +156,34 @@ public class ExpressionEncoder
                     { "token_type", operatorString }
                 }
             },
-            { "right", Encoder.CleanCallExpression(Encode(unaryExpression.Argument)) }
+            { "right", JsCompiler.CleanCallExpression(Compile(unaryExpression.Argument)) }
         };
     }
 
-    private static JObject EncodeLogicalExpression(LogicalExpression logicalExpression)
+    private static JObject CompileLogicalExpression(LogicalExpression logicalExpression)
     {
-        var operatorString = "";
-
-        switch (logicalExpression.Operator.ToString())
+        var operatorString = logicalExpression.Operator.ToString() switch
         {
-            case "LogicalAnd":
-                operatorString = "And";
-                break;
-            case "LogicalOr":
-                operatorString = "Or";
-                break;
-            default:
-                throw new NotImplementedException($"Logical operator {logicalExpression.Operator} not implemented");
-        }
+            "LogicalAnd" => "And",
+            "LogicalOr" => "Or",
+            _ => throw new NotImplementedException($"Logical operator {logicalExpression.Operator} not implemented")
+        };
 
         return new JObject
         {
             { "expr_type", "Logical" },
-            { "left", Encoder.CleanCallExpression(Encode(logicalExpression.Left)) },
+            { "left", JsCompiler.CleanCallExpression(Compile(logicalExpression.Left)) },
             {
                 "operator", new JObject
                 {
-                    { "token_type", operatorString },
+                    { "token_type", operatorString }
                 }
             },
-            { "right", Encoder.CleanCallExpression(Encode(logicalExpression.Right)) }
+            { "right", JsCompiler.CleanCallExpression(Compile(logicalExpression.Right)) }
         };
     }
 
-    private static JObject EncodeCallExpression(CallExpression callExpression)
+    private static JObject CompileCallExpression(CallExpression callExpression)
     {
         if (callExpression.Callee is not Identifier callee)
         {
@@ -242,13 +193,13 @@ public class ExpressionEncoder
         switch (callee.Name)
         {
             case "__async":
-                return EncodeSimultaneousExpression(callExpression);
+                return CompileSimultaneousExpression(callExpression);
             case "__free":
-                return EncodeFreeExpression(callExpression);
+                return CompileFreeExpression(callExpression);
             case "__group":
-                return EncodeGroupingExpression(callExpression);
+                return CompileGroupingExpression(callExpression);
             case "__resolve":
-                return EncodeResolveExpression(callExpression);
+                return CompileResolveExpression(callExpression);
             default:
                 if (callee.ChildNodes.Count() != 0)
                     throw new NotImplementedException();
@@ -276,7 +227,7 @@ public class ExpressionEncoder
                             {
                                 "args",
                                 new JArray(callExpression.Arguments.ToArray()
-                                    .Select(arg => Encoder.CleanCallExpression(Encode(arg))))
+                                    .Select(arg => JsCompiler.CleanCallExpression(Compile(arg))))
                             }
                         }
                     }
@@ -284,7 +235,7 @@ public class ExpressionEncoder
         }
     }
 
-    private static JObject EncodeResolveExpression(CallExpression callExpression)
+    private static JObject CompileResolveExpression(CallExpression callExpression)
     {
         if (callExpression.Arguments.Count != 1)
             throw new NotImplementedException($"Unexpected __resolve argument count: {callExpression.Arguments.Count}");
@@ -296,11 +247,11 @@ public class ExpressionEncoder
         return new JObject
         {
             { "stmt_type", "Resolve" },
-            { "stmts", Encoder.EncodeJS(arrowFunction.Body) }
+            { "stmts", JsCompiler.Compile(arrowFunction.Body) }
         };
     }
 
-    private static JObject EncodeSimultaneousExpression(CallExpression callExpression)
+    private static JObject CompileSimultaneousExpression(CallExpression callExpression)
     {
         if (callExpression.Arguments.Count == 0)
             throw new NotImplementedException($"Unexpected __async argument count: {callExpression.Arguments.Count}");
@@ -322,15 +273,15 @@ public class ExpressionEncoder
                             if (arg is not ArrowFunctionExpression arrowFunction)
                                 throw new NotImplementedException("Unexpected __async argument type");
                             
-                            return Encoder.EncodeJS(arrowFunction.Body);
+                            return JsCompiler.Compile(arrowFunction.Body);
                         }))
-                    },
+                    }
                 }
             }
         };
     }
 
-    private static JObject EncodeFreeExpression(CallExpression callExpression)
+    private static JObject CompileFreeExpression(CallExpression callExpression)
     {
         if (callExpression.Arguments.Count != 1)
             throw new NotImplementedException($"Unexpected __resolve argument count: {callExpression.Arguments.Count}");
@@ -342,20 +293,20 @@ public class ExpressionEncoder
         return new JObject
         {
             { "stmt_type", "Free" },
-            { "stmt", Encoder.EncodeJS(arrowFunction.Body) }
+            { "stmt", JsCompiler.Compile(arrowFunction.Body) }
         };
     }
 
-    private static JObject EncodeGroupingExpression(CallExpression callExpression)
+    private static JObject CompileGroupingExpression(CallExpression callExpression)
     {
         return new JObject
         {
             { "expr_type", "Grouping" },
-            { "expr", Encoder.EncodeJS(callExpression.Arguments.First()) }
+            { "expr", JsCompiler.Compile(callExpression.Arguments.First()) }
         };
     }
 
-    private static JObject EncodeAssignmentExpression(AssignmentExpression assignmentExpression)
+    private static JObject CompileAssignmentExpression(AssignmentExpression assignmentExpression)
     {
         if (assignmentExpression.Operator is not AssignmentOperator.Assign)
             throw new NotImplementedException(
@@ -384,7 +335,7 @@ public class ExpressionEncoder
                             }
                         }
                     },
-                    { "value", Encoder.CleanCallExpression(Encode(assignmentExpression.Right)) }
+                    { "value", JsCompiler.CleanCallExpression(Compile(assignmentExpression.Right)) }
                 }
             }
         };
