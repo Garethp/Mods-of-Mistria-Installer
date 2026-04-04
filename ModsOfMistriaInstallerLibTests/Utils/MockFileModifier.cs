@@ -9,8 +9,8 @@ public class MockFileModifier: IFileModifier
 
     public MockFileModifier(Dictionary<string, string> files)
     {
-        _originalFiles = files;
-        _resultingFiles = files;
+        _originalFiles = files.ToDictionary(x => x.Key, x => x.Value);
+        _resultingFiles = files.ToDictionary(x => x.Key, x => x.Value);
     }
 
     public string Read(string fieldsOfMistriaLocation, string file)
