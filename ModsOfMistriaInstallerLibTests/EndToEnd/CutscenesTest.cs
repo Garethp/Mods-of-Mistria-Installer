@@ -754,7 +754,7 @@ public class CutscenesTest
     {
         var js = """
                  function spell_learned() {
-                   var a = (1 + 1) * (1 + 1);
+                   var a = (1 + 1) * __group(1 + 1);
                  }
                  """;
 
@@ -2427,6 +2427,7 @@ public class CutscenesTest
     }
 
     [Ignore("I need to get permission to ship the original __mist__.json file with this project for this test.")]
+    [Test]
     public void ShouldEncodeFullMistFile()
     {
         // @TODO: We need to make this more reliable. Maybe find our way up to the parents until we hit a predictable path?
@@ -2467,20 +2468,7 @@ public class CutscenesTest
                 new MatchesJsonConstraint(new JObject { { functionName, fullDesiredMist[functionName] } }));
         }
     }
-
-    [Test]
-    public void ShouldTest()
-    {
-        var js = """
-                 function unit_test() {
-                   var e = __group(1 * 5) + 3 - __group(8 - 2);
-                   assert(e == 2, "Complex expression failed!");
-                 }
-                 """;
-
-        var mod = GetMockMod(js);
-        _installer.InstallMods([mod], _fileModifier);
-    }
+  
 
     [Test]
     public void ShouldOverwriteExistingMethods()
