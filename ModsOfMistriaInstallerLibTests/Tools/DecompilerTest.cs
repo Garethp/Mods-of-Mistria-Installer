@@ -8,7 +8,6 @@ namespace ModsOfMistriaInstallerLibTests.Tools;
 [TestFixture]
 public class DecompilerTest
 {
-
     [SetUp]
     public void SetUp()
     {
@@ -18,17 +17,17 @@ public class DecompilerTest
     public void ShouldDecompileEmptyFunction()
     {
         string ast = """
-{
-    "stmt_type": "Function",
-    "name": {"token_type": "Identifier", "value": "go_to_bed"},
-    "params": [],
-    "body": {
-        "stmt_type": "Block",
-        "stmts": []
-    },
-    "resolve": "null"
-}
-""";
+                     {
+                         "stmt_type": "Function",
+                         "name": {"token_type": "Identifier", "value": "go_to_bed"},
+                         "params": [],
+                         "body": {
+                             "stmt_type": "Block",
+                             "stmts": []
+                         },
+                         "resolve": "null"
+                     }
+                     """;
         string expected_js = "function go_to_bed() { }";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
@@ -40,6 +39,7 @@ public class DecompilerTest
             writer.NewLine = "\n";
             mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
         }
+
         Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
@@ -47,32 +47,32 @@ public class DecompilerTest
     public void ShouldDecompileFunction()
     {
         string ast = """
-{
-    "stmt_type": "Function",
-    "name": {"token_type": "Identifier", "value": "go_to_bed"},
-    "params": [],
-    "body": {
-        "stmt_type": "Block",
-        "stmts": [
-            {
-                "stmt_type": "Return", 
-                "value": {
-                    "expr_type": "Call", 
-                    "call": {
-                        "expr_type": "Named", 
-                        "name": {
-                            "token_type": "Identifier", 
-                            "value": "__await_ari_animation"
-                        }
-                    }, 
-                    "args": []
-                }
-            }
-        ]
-    },
-    "resolve": "null"
-}
-""";
+                     {
+                         "stmt_type": "Function",
+                         "name": {"token_type": "Identifier", "value": "go_to_bed"},
+                         "params": [],
+                         "body": {
+                             "stmt_type": "Block",
+                             "stmts": [
+                                 {
+                                     "stmt_type": "Return", 
+                                     "value": {
+                                         "expr_type": "Call", 
+                                         "call": {
+                                             "expr_type": "Named", 
+                                             "name": {
+                                                 "token_type": "Identifier", 
+                                                 "value": "__await_ari_animation"
+                                             }
+                                         }, 
+                                         "args": []
+                                     }
+                                 }
+                             ]
+                         },
+                         "resolve": "null"
+                     }
+                     """;
         string expected_js = "function go_to_bed() {\n  return __await_ari_animation();\n}";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
@@ -83,6 +83,7 @@ public class DecompilerTest
             writer.NewLine = "\n";
             mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
         }
+
         Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
@@ -90,26 +91,26 @@ public class DecompilerTest
     public void ShouldDecompileExpressionStatement()
     {
         string ast = """
-{
-    "stmt_type": "Expr",
-    "expr": {
-        "expr_type": "Call",
-        "call": {
-            "expr_type": "Named",
-            "name": {
-                "token_type": "Identifier",
-                "value": "camera_follow"
-            }
-        },
-        "args": [
-            {
-                "expr_type": "Named",
-                "name": {"token_type": "Identifier", "value": "ari"}
-            }
-        ]
-    }
-}
-""";
+                     {
+                         "stmt_type": "Expr",
+                         "expr": {
+                             "expr_type": "Call",
+                             "call": {
+                                 "expr_type": "Named",
+                                 "name": {
+                                     "token_type": "Identifier",
+                                     "value": "camera_follow"
+                                 }
+                             },
+                             "args": [
+                                 {
+                                     "expr_type": "Named",
+                                     "name": {"token_type": "Identifier", "value": "ari"}
+                                 }
+                             ]
+                         }
+                     }
+                     """;
         string expected_js = "camera_follow(ari)";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
@@ -120,31 +121,32 @@ public class DecompilerTest
             writer.NewLine = "\n";
             mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
         }
+
         Assert.That(sb.ToString(), Is.EqualTo(expected_js));
 
         ast = """
-            
-{
-    "stmt_type": "Expr", 
-    "expr": {
-        "expr_type": "Call", 
-        "call": {
-            "expr_type": "Named", 
-            "name": {"token_type": "Identifier", "value": "face"}
-        }, 
-        "args": [
-            {
-                "expr_type": "Named", 
-                "name": {"token_type": "Identifier", "value": "ari"}
-            }, 
-            {
-                "expr_type": "Named", 
-                "name": {"token_type": "Identifier", "value": "south"}
-            }
-        ]
-    }
-}
-""";
+                          
+              {
+                  "stmt_type": "Expr", 
+                  "expr": {
+                      "expr_type": "Call", 
+                      "call": {
+                          "expr_type": "Named", 
+                          "name": {"token_type": "Identifier", "value": "face"}
+                      }, 
+                      "args": [
+                          {
+                              "expr_type": "Named", 
+                              "name": {"token_type": "Identifier", "value": "ari"}
+                          }, 
+                          {
+                              "expr_type": "Named", 
+                              "name": {"token_type": "Identifier", "value": "south"}
+                          }
+                      ]
+                  }
+              }
+              """;
         expected_js = "face(ari, south)";
 
         obj = (JObject)JToken.Parse(ast);
@@ -154,6 +156,7 @@ public class DecompilerTest
             writer.NewLine = "\n";
             mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
         }
+
         Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
@@ -161,67 +164,67 @@ public class DecompilerTest
     public void ShouldDecompileIfStatement()
     {
         string ast = """
-{
-    "stmt_type": "If", 
-    "condition": {
-        "expr_type": "Binary", 
-        "left": {
-            "expr_type": "Call", 
-            "call": {
-                "expr_type": "Named", 
-                "name": {
-                    "token_type": "Identifier", 
-                    "value": "get_response"
-                }
-            }, 
-            "args": []
-        }, 
-        "operator": {"token_type": "DoubleEqual"}, 
-        "right": {
-            "expr_type": "Literal", 
-            "value": {"token_type": "Number", "Value": 0.0}
-        }
-    }, 
-    "then_branch": {
-        "stmt_type": "Block", 
-        "stmts": [
-            {
-                "stmt_type": "Expr", 
-                "expr": {
-                    "expr_type": "Call", 
-                    "call": {
-                        "expr_type": "Named", 
-                        "name": {
-                            "token_type": "Identifier", 
-                            "value": "close_textbox"
-                        }
-                    }, 
-                    "args": []
-                }
-            }
-        ]
-        }, 
-    "else_branch": {
-        "stmt_type": "Block", 
-        "stmts": [
-            {
-                "stmt_type": "Expr", 
-                "expr": {
-                    "expr_type": "Call", 
-                    "call": {
-                        "expr_type": "Named", 
-                        "name": {
-                            "token_type": "Identifier", 
-                            "value": "close_textbox"
-                        }
-                    }, 
-                    "args": []
-                }
-            }
-        ]
-    }
-}
-""";
+                     {
+                         "stmt_type": "If", 
+                         "condition": {
+                             "expr_type": "Binary", 
+                             "left": {
+                                 "expr_type": "Call", 
+                                 "call": {
+                                     "expr_type": "Named", 
+                                     "name": {
+                                         "token_type": "Identifier", 
+                                         "value": "get_response"
+                                     }
+                                 }, 
+                                 "args": []
+                             }, 
+                             "operator": {"token_type": "DoubleEqual"}, 
+                             "right": {
+                                 "expr_type": "Literal", 
+                                 "value": {"token_type": "Number", "Value": 0.0}
+                             }
+                         }, 
+                         "then_branch": {
+                             "stmt_type": "Block", 
+                             "stmts": [
+                                 {
+                                     "stmt_type": "Expr", 
+                                     "expr": {
+                                         "expr_type": "Call", 
+                                         "call": {
+                                             "expr_type": "Named", 
+                                             "name": {
+                                                 "token_type": "Identifier", 
+                                                 "value": "close_textbox"
+                                             }
+                                         }, 
+                                         "args": []
+                                     }
+                                 }
+                             ]
+                             }, 
+                         "else_branch": {
+                             "stmt_type": "Block", 
+                             "stmts": [
+                                 {
+                                     "stmt_type": "Expr", 
+                                     "expr": {
+                                         "expr_type": "Call", 
+                                         "call": {
+                                             "expr_type": "Named", 
+                                             "name": {
+                                                 "token_type": "Identifier", 
+                                                 "value": "close_textbox"
+                                             }
+                                         }, 
+                                         "args": []
+                                     }
+                                 }
+                             ]
+                         }
+                     }
+                     """;
         string expected_js = "if (get_response() == 0) {\n  close_textbox();\n} else {\n  close_textbox();\n}";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
@@ -232,6 +235,7 @@ public class DecompilerTest
             writer.NewLine = "\n";
             mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
         }
+
         Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
@@ -239,21 +243,21 @@ public class DecompilerTest
     public void ShouldDecompileReturnStatement()
     {
         string ast = """
-{
-    "stmt_type": "Return", 
-    "value": {
-        "expr_type": "Call", 
-        "call": {
-            "expr_type": "Named", 
-            "name": {
-                "token_type": "Identifier", 
-                "value": "__await_ari_animation"
-            }
-        }, 
-        "args": []
-    }
-}
-""";
+                     {
+                         "stmt_type": "Return", 
+                         "value": {
+                             "expr_type": "Call", 
+                             "call": {
+                                 "expr_type": "Named", 
+                                 "name": {
+                                     "token_type": "Identifier", 
+                                     "value": "__await_ari_animation"
+                                 }
+                             }, 
+                             "args": []
+                         }
+                     }
+                     """;
         string expected_js = "return __await_ari_animation()";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
@@ -264,6 +268,7 @@ public class DecompilerTest
             writer.NewLine = "\n";
             mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
         }
+
         Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
@@ -271,19 +276,19 @@ public class DecompilerTest
     public void ShouldDecompileBasicBinaryExpression()
     {
         string ast = """
-{
-    "expr_type": "Binary", 
-    "left": {
-        "expr_type": "Literal", 
-        "value": {"token_type": "True"}
-    }, 
-    "operator": {"token_type": "DoubleEqual"}, 
-    "right": {
-        "expr_type": "Literal", 
-        "value": {"token_type": "False"}
-    }
-}
-""";
+                     {
+                         "expr_type": "Binary", 
+                         "left": {
+                             "expr_type": "Literal", 
+                             "value": {"token_type": "True"}
+                         }, 
+                         "operator": {"token_type": "DoubleEqual"}, 
+                         "right": {
+                             "expr_type": "Literal", 
+                             "value": {"token_type": "False"}
+                         }
+                     }
+                     """;
         string expected_js = "true == false";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
@@ -294,22 +299,23 @@ public class DecompilerTest
             writer.NewLine = "\n";
             mistContainerConverter.ToExpression(obj).WriteJavaScript(writer, true);
         }
+
         Assert.That(sb.ToString(), Is.EqualTo(expected_js));
 
         ast = """
-{
-    "expr_type": "Logical", 
-    "left": {
-        "expr_type": "Literal", 
-        "value": {"token_type": "True"}
-    }, 
-    "operator": {"token_type": "And"},
-    "right": {
-        "expr_type": "Literal", 
-        "value": {"token_type": "False"}
-    }
-}
-""";
+              {
+                  "expr_type": "Logical", 
+                  "left": {
+                      "expr_type": "Literal", 
+                      "value": {"token_type": "True"}
+                  }, 
+                  "operator": {"token_type": "And"},
+                  "right": {
+                      "expr_type": "Literal", 
+                      "value": {"token_type": "False"}
+                  }
+              }
+              """;
         expected_js = "true && false";
 
         mistContainerConverter = new MistContainerConverter();
@@ -320,6 +326,7 @@ public class DecompilerTest
             writer.NewLine = "\n";
             mistContainerConverter.ToExpression(obj).WriteJavaScript(writer, true);
         }
+
         Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
@@ -327,26 +334,26 @@ public class DecompilerTest
     public void ShouldDecompileAssignExpression()
     {
         string ast = """
-{
-    "expr_type": "Assign", 
-    "name": {
-        "expr_type": "Named", 
-        "name": {"token_type": "Identifier", "value": "timer"}
-    }, 
-    "value": {
-        "expr_type": "Binary", 
-        "left": {
-            "expr_type": "Named", 
-            "name": {"token_type": "Identifier", "value": "timer"}
-        }, 
-        "operator": {"token_type": "Minus"}, 
-        "right": {
-            "expr_type": "Literal", 
-            "value": {"token_type": "Number", "Value": 1.0}
-        }
-    }
-}
-""";
+                     {
+                         "expr_type": "Assign", 
+                         "name": {
+                             "expr_type": "Named", 
+                             "name": {"token_type": "Identifier", "value": "timer"}
+                         }, 
+                         "value": {
+                             "expr_type": "Binary", 
+                             "left": {
+                                 "expr_type": "Named", 
+                                 "name": {"token_type": "Identifier", "value": "timer"}
+                             }, 
+                             "operator": {"token_type": "Minus"}, 
+                             "right": {
+                                 "expr_type": "Literal", 
+                                 "value": {"token_type": "Number", "Value": 1.0}
+                             }
+                         }
+                     }
+                     """;
         string expected_js = "timer = timer - 1";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
@@ -357,6 +364,7 @@ public class DecompilerTest
             writer.NewLine = "\n";
             mistContainerConverter.ToExpression(obj).WriteJavaScript(writer, true);
         }
+
         Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
@@ -366,40 +374,40 @@ public class DecompilerTest
     public void ShouldDecompileGrouping()
     {
         string ast = """
-{
-    "stmt_type": "Var", 
-    "name": {"token_type": "Identifier", "value": "increment"}, 
-    "initializer": {
-        "expr_type": "Binary", 
-        "left": {
-            "expr_type": "Grouping", 
-            "expr": {
-                "expr_type": "Binary", 
-                "left": {
-                    "expr_type": "Named", 
-                    "name": {
-                        "token_type": "Identifier", 
-                        "value": "target_time"
-                    }
-                }, 
-                "operator": {"token_type": "Minus"}, 
-                "right": {
-                    "expr_type": "Named", 
-                    "name": {"token_type": "Identifier", "value": "start"}
-                }
-            }
-        }, 
-        "operator": {"token_type": "Slash"}, 
-        "right": {
-            "expr_type": "Named", 
-            "name": {
-                "token_type": "Identifier", 
-                "value": "frame_length"
-            }
-        }
-    }
-}
-""";
+                     {
+                         "stmt_type": "Var", 
+                         "name": {"token_type": "Identifier", "value": "increment"}, 
+                         "initializer": {
+                             "expr_type": "Binary", 
+                             "left": {
+                                 "expr_type": "Grouping", 
+                                 "expr": {
+                                     "expr_type": "Binary", 
+                                     "left": {
+                                         "expr_type": "Named", 
+                                         "name": {
+                                             "token_type": "Identifier", 
+                                             "value": "target_time"
+                                         }
+                                     }, 
+                                     "operator": {"token_type": "Minus"}, 
+                                     "right": {
+                                         "expr_type": "Named", 
+                                         "name": {"token_type": "Identifier", "value": "start"}
+                                     }
+                                 }
+                             }, 
+                             "operator": {"token_type": "Slash"}, 
+                             "right": {
+                                 "expr_type": "Named", 
+                                 "name": {
+                                     "token_type": "Identifier", 
+                                     "value": "frame_length"
+                                 }
+                             }
+                         }
+                     }
+                     """;
         string expected_js = "var increment = (target_time - start) / frame_length";
 
         MistContainerConverter mistContainerConverter = new MistContainerConverter();
@@ -410,51 +418,53 @@ public class DecompilerTest
             writer.NewLine = "\n";
             mistContainerConverter.ToStatement(obj).WriteJavaScript(writer, true);
         }
+
         Assert.That(sb.ToString(), Is.EqualTo(expected_js));
     }
 
     [Test]
-    [Ignore("The file day_zero.json was not committed. The expected_js is shorter than the actual result. Parameters of function declaraction still fail.")]
+    [Ignore(
+        "The file day_zero.json was not committed. The expected_js is shorter than the actual result. Parameters of function declaraction still fail.")]
     public void ShouldDecompileMistAst()
     {
         var decompiler = new MistDecompiler();
         string decompiled_js = decompiler.Decompile("..\\..\\..\\..\\mists\\day_zero.json");
 
         string expected_js = """
-function go_to_bed() {
-  var x = __get_new_day_spawn_x();
-  var y = __get_new_day_spawn_y();
-  camera_follow(ari);
-  __async(() => {
-    walk(ari, x, y);
-    set_move_speed(ari, 0.5);
-  });
-  face(ari, south);
-  wait(1);
-  request_music_stop(1);
-  __async(() => {
-    play_sound("Music/Jingles/GoToSleep");
-    {
-      animate(ari, blink);
-      wait(0.2);
-      freeze_ari();
-    }
-    fade_out(8);
-  });
-}
-function balor_jump(dir = null, tp = null) {
-  play_sound("SoundEffects/Ari/Jump");
-  animate(balor, jump);
-  set_shadow_enabled(balor, false);
-  await_npc_animation(balor);
-  set_shadow_enabled(balor, true);
-  __async(() => {
-    place_actor(balor, dir, tp);
-    animate(balor, idle);
-  });
-}
-""";
-        
+                             function go_to_bed() {
+                               var x = __get_new_day_spawn_x();
+                               var y = __get_new_day_spawn_y();
+                               camera_follow(ari);
+                               __async(() => {
+                                 walk(ari, x, y);
+                                 set_move_speed(ari, 0.5);
+                               });
+                               face(ari, south);
+                               wait(1);
+                               request_music_stop(1);
+                               __async(() => {
+                                 play_sound("Music/Jingles/GoToSleep");
+                                 {
+                                   animate(ari, blink);
+                                   wait(0.2);
+                                   freeze_ari();
+                                 }
+                                 fade_out(8);
+                               });
+                             }
+                             function balor_jump(dir = null, tp = null) {
+                               play_sound("SoundEffects/Ari/Jump");
+                               animate(balor, jump);
+                               set_shadow_enabled(balor, false);
+                               await_npc_animation(balor);
+                               set_shadow_enabled(balor, true);
+                               __async(() => {
+                                 place_actor(balor, dir, tp);
+                                 animate(balor, idle);
+                               });
+                             }
+                             """;
+
         Assert.That(decompiled_js, Is.EqualTo(expected_js));
     }
 }
