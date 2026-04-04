@@ -3,8 +3,6 @@
 using System.Reflection;
 using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
-using Garethp.ModsOfMistriaInstallerLib.Tools.Compiler;
-using Garethp.ModsOfMistriaInstallerLib.Tools.Decompiler;
 
 var currentExe = Assembly.GetEntryAssembly();
 var currentVersionString =
@@ -32,11 +30,7 @@ if (args.Contains("--uninstall"))
 }
 else
 {
-    new MistDecompiler().Decompile("D:\\SteamLibrary\\steamapps\\common\\Fields of Mistria\\__mist__.json");
-    
-    new MistCompiler().Compile(
-    "D:\\SteamLibrary\\steamapps\\common\\Fields of Mistria\\mods\\pumpkin_carving\\cutscenes\\pumpkin_carving_1.js");
-    // Standalone.Run();
+    Standalone.Run();
     Logger.Log(Resources.CLICompleted);
 }
 

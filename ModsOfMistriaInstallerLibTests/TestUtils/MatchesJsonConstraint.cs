@@ -3,26 +3,26 @@ using NUnit.Framework.Constraints;
 
 namespace ModsOfMistriaInstallerLibTests.TestUtils;
 
-public class MatchesJsonConstraint(JObject expected) : Constraint
+public class MatchesJsonConstraint(JToken expected) : Constraint
 {
-    private readonly JObject _object = expected;
+    private readonly JToken _object = expected;
 
     public override ConstraintResult ApplyTo<TActual>(TActual actual)
     {
-        JObject actualJson;
+        JToken actualJson;
         
         if (actual is string actualString)
         {
             try
             {
-                actualJson = JObject.Parse(actualString);
+                actualJson = JToken.Parse(actualString);
             }
             catch (Exception)
             {
                 return new ConstraintResult(this, actual, false);
             }
         }
-        else if (actual is JObject actualObject)
+        else if (actual is JToken actualObject)
         {
             actualJson = actualObject;
         }

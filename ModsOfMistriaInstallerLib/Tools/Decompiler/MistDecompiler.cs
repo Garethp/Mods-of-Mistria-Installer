@@ -18,6 +18,7 @@ public class MistContainer
 public class MistProgram
 {
     public string Name;
+
     // Esprima's Program is an abstract partial class.
     public Module Program;
 
@@ -31,13 +32,15 @@ public class MistProgram
             //writer.NewLine = "\n";
             Program.WriteJavaScript(writer, true);
         }
+
         return sb.ToString();
     }
 }
 
 public class MistContainerConverter : JsonConverter<MistContainer>
 {
-    public override MistContainer? ReadJson(JsonReader reader, Type objectType, MistContainer? existingValue, bool hasExistingValue, JsonSerializer serializer)
+    public override MistContainer? ReadJson(JsonReader reader, Type objectType, MistContainer? existingValue,
+        bool hasExistingValue, JsonSerializer serializer)
     {
         // This, to my understanding, load the entire JSON tree.
         JToken token = JToken.Load(reader);
@@ -59,7 +62,8 @@ public class MistContainerConverter : JsonConverter<MistContainer>
 
                 MistProgram mist = new MistProgram();
                 mist.Name = prop.Name.ToString();
-                mist.Program = new Module(NodeList.Create(statements.Select(stmt => (Statement)this.ToStatement((JObject)stmt))));
+                mist.Program =
+                    new Module(NodeList.Create(statements.Select(stmt => (Statement)this.ToStatement((JObject)stmt))));
 
                 container.Programs.Add(mist);
             }
@@ -85,6 +89,7 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             {
                 throw new Exception("expected a statement but found a token.");
             }
+
             throw new Exception("expected a statement but found JSON objectg without 'stmt_type' key");
         }
 
@@ -92,7 +97,8 @@ public class MistContainerConverter : JsonConverter<MistContainer>
         if (stmt_type == "Block")
         {
             JArray stmts = (JArray)obj.SelectToken("$.stmts", true);
-            NodeList<Statement> statements = NodeList.Create(stmts.Select(stmt => (Statement)this.ToStatement((JObject)stmt)));
+            NodeList<Statement> statements =
+                NodeList.Create(stmts.Select(stmt => (Statement)this.ToStatement((JObject)stmt)));
             return new BlockStatement(statements);
         }
         else if (stmt_type == "Expr")
@@ -126,7 +132,8 @@ public class MistContainerConverter : JsonConverter<MistContainer>
 
             var func_name = new Identifier("__async");
             List<Node> arrow_args_list = new();
-            var arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list), (StatementListItem)this.ToStatement(body), false, false, false);
+            var arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list),
+                (StatementListItem)this.ToStatement(body), false, false, false);
             List<Expression> args = new();
             args.Add(arrow_func);
 
@@ -151,12 +158,15 @@ public class MistContainerConverter : JsonConverter<MistContainer>
                     // Unpack the inner expression since Esprima will try to convert the body of
                     // ArrowFunctionExpression to Expression if any Body is not BlockStatement.
                     var expr = (ExpressionStatement)this.ToStatement(stmt);
-                    arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list), expr.Expression, true, false, false);
-                } else
+                    arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list), expr.Expression, true,
+                        false, false);
+                }
+                else
                 {
                     Statement[] stmts = { (Statement)this.ToStatement(stmt) };
                     NodeList<Statement> statements = NodeList.Create(stmts);
-                    arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list), new BlockStatement(statements), false, false, false);
+                    arrow_func = new ArrowFunctionExpression(NodeList.Create(arrow_args_list),
+                        new BlockStatement(statements), false, false, false);
                 }
             }
             else
@@ -187,6 +197,7 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             JObject expr = (JObject)obj.SelectToken("$.value");
             return new ReturnStatement(this.ToExpression(expr));
         }
+
         return null;
     }
 
@@ -202,6 +213,7 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             {
                 throw new Exception("expected an expression but found a token.");
             }
+
             throw new Exception("expected a statement but found JSON objectg without 'expr_type' key");
         }
 
@@ -337,6 +349,7 @@ public class MistContainerConverter : JsonConverter<MistContainer>
             // Esprima does not have explicit grouping in its AST, however, it appears to render it out properly.
             return this.ToExpression(expr);
         }
+
         return null;
     }
 
