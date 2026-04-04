@@ -17,12 +17,10 @@ public class ConversationInstaller : IModuleInstaller
         Action<string, string> reportStatus
     )
     {
-        
-
         if (_fileModifier.ConditionalRestoreBackup(
                 fieldsOfMistriaLocation, 
                 "t2_output.json",
-                () => information.Conversations.Count == 0
+                () => information.Conversations.Count == 0 && information.Schedules.Count == 0
             ))
         {
             return;
