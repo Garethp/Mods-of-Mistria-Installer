@@ -21,7 +21,7 @@ public class FileModifier: IFileModifier
             );
         }
 
-        return File.ReadAllText(path);
+        return File.ReadAllText(backupPath);
     }
 
     public void Write(string fieldsOfMistriaLocation, string file, string contents)
