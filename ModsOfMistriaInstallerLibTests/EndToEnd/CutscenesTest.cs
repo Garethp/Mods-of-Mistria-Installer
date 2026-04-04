@@ -1482,397 +1482,79 @@ public class CutscenesTest
     [Test]
     public void ShouldPassUnitTests()
     {
-      // Our test output is *slightly* (very very slightly) different from the original MIST, but for this test we're
-      // going to consider it okay. For more information, see the notes in the `ShouldEncodeFullMistFile` test.
-      var js = """
-               function unit_test() {
-                 var a = 1;
-                 assert(a == 1, "Assignment failed!");
-                 var b = a + 1;
-                 assert(b == 2, "Addition failed!");
-                 var c = a - 1;
-                 assert(c == 0, "Subtraction failed!");
-                 var d = a * 2;
-                 assert(d == 2, "Multiplication failed!");
-                 var d = a / 2;
-                 assert(d == 0.5, "Divison failed!");
-                 var e = __group(a * 5) + 3 - __group(8 - 2);
-                 assert(e == 2, "Complex expression failed!");
-                 function add(a, b) {
-                   return a + b;
-                 }
-               
-                 var f = add(1, 1);
-                 assert(f == 2, "Function call failed!");
-                 var g = 0;
-                 __async(
-                   () => (g = g + 1),
-                   () => {
-                     g = g + 1;
-                     g = g + 1;
-                     g = g + 1;
-                   },
-                   () => __free(() => (g = g + 1)),
-                   () =>
-                     __free(() =>
-                       __async(() => {
-                         g = g + 1;
-                         g = g + 1;
-                       }),
-                     ),
-                 );
-                 assert(g == 7, "Sim/Free blocks failed!");
-               }
-               """;
+        // Our test output is *slightly* (very very slightly) different from the original MIST, but for this test we're
+        // going to consider it okay. For more information, see the notes in the `ShouldEncodeFullMistFile` test.
+        var js = """
+                 function unit_test() {
+                   var a = 1;
+                   assert(a == 1, "Assignment failed!");
+                   var b = a + 1;
+                   assert(b == 2, "Addition failed!");
+                   var c = a - 1;
+                   assert(c == 0, "Subtraction failed!");
+                   var d = a * 2;
+                   assert(d == 2, "Multiplication failed!");
+                   var d = a / 2;
+                   assert(d == 0.5, "Divison failed!");
+                   var e = __group(a * 5) + 3 - __group(8 - 2);
+                   assert(e == 2, "Complex expression failed!");
+                   function add(a, b) {
+                     return a + b;
+                   }
 
-      var mist = """
-                 {
-                   "unit_test.mist": [
-                     {
-                       "stmt_type": "Var",
-                       "name": {
-                         "token_type": "Identifier",
-                         "value": "a"
-                       },
-                       "initializer": {
-                         "expr_type": "Literal",
-                         "value": {
-                           "token_type": "Number",
-                           "Value": 1.0
-                         }
-                       }
+                   var f = add(1, 1);
+                   assert(f == 2, "Function call failed!");
+                   var g = 0;
+                   __async(
+                     () => (g = g + 1),
+                     () => {
+                       g = g + 1;
+                       g = g + 1;
+                       g = g + 1;
                      },
-                     {
-                       "stmt_type": "Expr",
-                       "expr": {
-                         "expr_type": "Call",
-                         "call": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "assert"
-                           }
+                     () => __free(() => (g = g + 1)),
+                     () =>
+                       __free(() =>
+                         __async(() => {
+                           g = g + 1;
+                           g = g + 1;
+                         }),
+                       ),
+                   );
+                   assert(g == 7, "Sim/Free blocks failed!");
+                 }
+                 """;
+
+        var mist = """
+                   {
+                     "unit_test.mist": [
+                       {
+                         "stmt_type": "Var",
+                         "name": {
+                           "token_type": "Identifier",
+                           "value": "a"
                          },
-                         "args": [
-                           {
-                             "expr_type": "Binary",
-                             "left": {
-                               "expr_type": "Named",
-                               "name": {
-                                 "token_type": "Identifier",
-                                 "value": "a"
-                               }
-                             },
-                             "operator": {
-                               "token_type": "DoubleEqual"
-                             },
-                             "right": {
-                               "expr_type": "Literal",
-                               "value": {
-                                 "token_type": "Number",
-                                 "Value": 1.0
-                               }
-                             }
-                           },
-                           {
-                             "expr_type": "Literal",
-                             "value": {
-                               "token_type": "String",
-                               "value": "Assignment failed!"
-                             }
-                           }
-                         ]
-                       }
-                     },
-                     {
-                       "stmt_type": "Var",
-                       "name": {
-                         "token_type": "Identifier",
-                         "value": "b"
-                       },
-                       "initializer": {
-                         "expr_type": "Binary",
-                         "left": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "a"
-                           }
-                         },
-                         "operator": {
-                           "token_type": "Plus"
-                         },
-                         "right": {
+                         "initializer": {
                            "expr_type": "Literal",
                            "value": {
                              "token_type": "Number",
                              "Value": 1.0
                            }
                          }
-                       }
-                     },
-                     {
-                       "stmt_type": "Expr",
-                       "expr": {
-                         "expr_type": "Call",
-                         "call": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "assert"
-                           }
-                         },
-                         "args": [
-                           {
-                             "expr_type": "Binary",
-                             "left": {
-                               "expr_type": "Named",
-                               "name": {
-                                 "token_type": "Identifier",
-                                 "value": "b"
-                               }
-                             },
-                             "operator": {
-                               "token_type": "DoubleEqual"
-                             },
-                             "right": {
-                               "expr_type": "Literal",
-                               "value": {
-                                 "token_type": "Number",
-                                 "Value": 2.0
-                               }
+                       },
+                       {
+                         "stmt_type": "Expr",
+                         "expr": {
+                           "expr_type": "Call",
+                           "call": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "assert"
                              }
                            },
-                           {
-                             "expr_type": "Literal",
-                             "value": {
-                               "token_type": "String",
-                               "value": "Addition failed!"
-                             }
-                           }
-                         ]
-                       }
-                     },
-                     {
-                       "stmt_type": "Var",
-                       "name": {
-                         "token_type": "Identifier",
-                         "value": "c"
-                       },
-                       "initializer": {
-                         "expr_type": "Binary",
-                         "left": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "a"
-                           }
-                         },
-                         "operator": {
-                           "token_type": "Minus"
-                         },
-                         "right": {
-                           "expr_type": "Literal",
-                           "value": {
-                             "token_type": "Number",
-                             "Value": 1.0
-                           }
-                         }
-                       }
-                     },
-                     {
-                       "stmt_type": "Expr",
-                       "expr": {
-                         "expr_type": "Call",
-                         "call": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "assert"
-                           }
-                         },
-                         "args": [
-                           {
-                             "expr_type": "Binary",
-                             "left": {
-                               "expr_type": "Named",
-                               "name": {
-                                 "token_type": "Identifier",
-                                 "value": "c"
-                               }
-                             },
-                             "operator": {
-                               "token_type": "DoubleEqual"
-                             },
-                             "right": {
-                               "expr_type": "Literal",
-                               "value": {
-                                 "token_type": "Number",
-                                 "Value": 0.0
-                               }
-                             }
-                           },
-                           {
-                             "expr_type": "Literal",
-                             "value": {
-                               "token_type": "String",
-                               "value": "Subtraction failed!"
-                             }
-                           }
-                         ]
-                       }
-                     },
-                     {
-                       "stmt_type": "Var",
-                       "name": {
-                         "token_type": "Identifier",
-                         "value": "d"
-                       },
-                       "initializer": {
-                         "expr_type": "Binary",
-                         "left": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "a"
-                           }
-                         },
-                         "operator": {
-                           "token_type": "Star"
-                         },
-                         "right": {
-                           "expr_type": "Literal",
-                           "value": {
-                             "token_type": "Number",
-                             "Value": 2.0
-                           }
-                         }
-                       }
-                     },
-                     {
-                       "stmt_type": "Expr",
-                       "expr": {
-                         "expr_type": "Call",
-                         "call": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "assert"
-                           }
-                         },
-                         "args": [
-                           {
-                             "expr_type": "Binary",
-                             "left": {
-                               "expr_type": "Named",
-                               "name": {
-                                 "token_type": "Identifier",
-                                 "value": "d"
-                               }
-                             },
-                             "operator": {
-                               "token_type": "DoubleEqual"
-                             },
-                             "right": {
-                               "expr_type": "Literal",
-                               "value": {
-                                 "token_type": "Number",
-                                 "Value": 2.0
-                               }
-                             }
-                           },
-                           {
-                             "expr_type": "Literal",
-                             "value": {
-                               "token_type": "String",
-                               "value": "Multiplication failed!"
-                             }
-                           }
-                         ]
-                       }
-                     },
-                     {
-                       "stmt_type": "Var",
-                       "name": {
-                         "token_type": "Identifier",
-                         "value": "d"
-                       },
-                       "initializer": {
-                         "expr_type": "Binary",
-                         "left": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "a"
-                           }
-                         },
-                         "operator": {
-                           "token_type": "Slash"
-                         },
-                         "right": {
-                           "expr_type": "Literal",
-                           "value": {
-                             "token_type": "Number",
-                             "Value": 2.0
-                           }
-                         }
-                       }
-                     },
-                     {
-                       "stmt_type": "Expr",
-                       "expr": {
-                         "expr_type": "Call",
-                         "call": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "assert"
-                           }
-                         },
-                         "args": [
-                           {
-                             "expr_type": "Binary",
-                             "left": {
-                               "expr_type": "Named",
-                               "name": {
-                                 "token_type": "Identifier",
-                                 "value": "d"
-                               }
-                             },
-                             "operator": {
-                               "token_type": "DoubleEqual"
-                             },
-                             "right": {
-                               "expr_type": "Literal",
-                               "value": {
-                                 "token_type": "Number",
-                                 "Value": 0.5
-                               }
-                             }
-                           },
-                           {
-                             "expr_type": "Literal",
-                             "value": {
-                               "token_type": "String",
-                               "value": "Divison failed!"
-                             }
-                           }
-                         ]
-                       }
-                     },
-                     {
-                       "stmt_type": "Var",
-                       "name": {
-                         "token_type": "Identifier",
-                         "value": "e"
-                       },
-                       "initializer": {
-                         "expr_type": "Binary",
-                         "left": {
-                           "expr_type": "Binary",
-                           "left": {
-                             "expr_type": "Grouping",
-                             "expr": {
+                           "args": [
+                             {
                                "expr_type": "Binary",
                                "left": {
                                  "expr_type": "Named",
@@ -1882,15 +1564,39 @@ public class CutscenesTest
                                  }
                                },
                                "operator": {
-                                 "token_type": "Star"
+                                 "token_type": "DoubleEqual"
                                },
                                "right": {
                                  "expr_type": "Literal",
                                  "value": {
                                    "token_type": "Number",
-                                   "Value": 5.0
+                                   "Value": 1.0
                                  }
                                }
+                             },
+                             {
+                               "expr_type": "Literal",
+                               "value": {
+                                 "token_type": "String",
+                                 "value": "Assignment failed!"
+                               }
+                             }
+                           ]
+                         }
+                       },
+                       {
+                         "stmt_type": "Var",
+                         "name": {
+                           "token_type": "Identifier",
+                           "value": "b"
+                         },
+                         "initializer": {
+                           "expr_type": "Binary",
+                           "left": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "a"
                              }
                            },
                            "operator": {
@@ -1900,362 +1606,517 @@ public class CutscenesTest
                              "expr_type": "Literal",
                              "value": {
                                "token_type": "Number",
-                               "Value": 3.0
-                             }
-                           }
-                         },
-                         "operator": {
-                           "token_type": "Minus"
-                         },
-                         "right": {
-                           "expr_type": "Grouping",
-                           "expr": {
-                             "expr_type": "Binary",
-                             "left": {
-                               "expr_type": "Literal",
-                               "value": {
-                                 "token_type": "Number",
-                                 "Value": 8.0
-                               }
-                             },
-                             "operator": {
-                               "token_type": "Minus"
-                             },
-                             "right": {
-                               "expr_type": "Literal",
-                               "value": {
-                                 "token_type": "Number",
-                                 "Value": 2.0
-                               }
+                               "Value": 1.0
                              }
                            }
                          }
-                       }
-                     },
-                     {
-                       "stmt_type": "Expr",
-                       "expr": {
-                         "expr_type": "Call",
-                         "call": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "assert"
-                           }
-                         },
-                         "args": [
-                           {
-                             "expr_type": "Binary",
-                             "left": {
-                               "expr_type": "Named",
-                               "name": {
-                                 "token_type": "Identifier",
-                                 "value": "e"
-                               }
-                             },
-                             "operator": {
-                               "token_type": "DoubleEqual"
-                             },
-                             "right": {
-                               "expr_type": "Literal",
-                               "value": {
-                                 "token_type": "Number",
-                                 "Value": 2.0
-                               }
+                       },
+                       {
+                         "stmt_type": "Expr",
+                         "expr": {
+                           "expr_type": "Call",
+                           "call": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "assert"
                              }
                            },
-                           {
-                             "expr_type": "Literal",
-                             "value": {
-                               "token_type": "String",
-                               "value": "Complex expression failed!"
-                             }
-                           }
-                         ]
-                       }
-                     },
-                     {
-                       "stmt_type": "Function",
-                       "name": {
-                         "token_type": "Identifier",
-                         "value": "add"
-                       },
-                       "params": [
-                         {
-                           "token_type": "Identifier",
-                           "value": "a",
-                           "default_value": "null"
-                         },
-                         {
-                           "token_type": "Identifier",
-                           "value": "b",
-                           "default_value": "null"
-                         }
-                       ],
-                       "body": {
-                         "stmt_type": "Block",
-                         "stmts": [
-                           {
-                             "stmt_type": "Return",
-                             "value": {
+                           "args": [
+                             {
                                "expr_type": "Binary",
                                "left": {
                                  "expr_type": "Named",
                                  "name": {
                                    "token_type": "Identifier",
-                                   "value": "a"
+                                   "value": "b"
                                  }
                                },
                                "operator": {
-                                 "token_type": "Plus"
+                                 "token_type": "DoubleEqual"
                                },
                                "right": {
+                                 "expr_type": "Literal",
+                                 "value": {
+                                   "token_type": "Number",
+                                   "Value": 2.0
+                                 }
+                               }
+                             },
+                             {
+                               "expr_type": "Literal",
+                               "value": {
+                                 "token_type": "String",
+                                 "value": "Addition failed!"
+                               }
+                             }
+                           ]
+                         }
+                       },
+                       {
+                         "stmt_type": "Var",
+                         "name": {
+                           "token_type": "Identifier",
+                           "value": "c"
+                         },
+                         "initializer": {
+                           "expr_type": "Binary",
+                           "left": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "a"
+                             }
+                           },
+                           "operator": {
+                             "token_type": "Minus"
+                           },
+                           "right": {
+                             "expr_type": "Literal",
+                             "value": {
+                               "token_type": "Number",
+                               "Value": 1.0
+                             }
+                           }
+                         }
+                       },
+                       {
+                         "stmt_type": "Expr",
+                         "expr": {
+                           "expr_type": "Call",
+                           "call": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "assert"
+                             }
+                           },
+                           "args": [
+                             {
+                               "expr_type": "Binary",
+                               "left": {
                                  "expr_type": "Named",
                                  "name": {
                                    "token_type": "Identifier",
-                                   "value": "b"
+                                   "value": "c"
+                                 }
+                               },
+                               "operator": {
+                                 "token_type": "DoubleEqual"
+                               },
+                               "right": {
+                                 "expr_type": "Literal",
+                                 "value": {
+                                   "token_type": "Number",
+                                   "Value": 0.0
                                  }
                                }
+                             },
+                             {
+                               "expr_type": "Literal",
+                               "value": {
+                                 "token_type": "String",
+                                 "value": "Subtraction failed!"
+                               }
                              }
-                           }
-                         ]
+                           ]
+                         }
                        },
-                       "resolve": "null"
-                     },
-                     {
-                       "stmt_type": "Var",
-                       "name": {
-                         "token_type": "Identifier",
-                         "value": "f"
-                       },
-                       "initializer": {
-                         "expr_type": "Call",
-                         "call": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "add"
-                           }
+                       {
+                         "stmt_type": "Var",
+                         "name": {
+                           "token_type": "Identifier",
+                           "value": "d"
                          },
-                         "args": [
-                           {
-                             "expr_type": "Literal",
-                             "value": {
-                               "token_type": "Number",
-                               "Value": 1.0
+                         "initializer": {
+                           "expr_type": "Binary",
+                           "left": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "a"
                              }
                            },
-                           {
+                           "operator": {
+                             "token_type": "Star"
+                           },
+                           "right": {
                              "expr_type": "Literal",
                              "value": {
                                "token_type": "Number",
-                               "Value": 1.0
+                               "Value": 2.0
                              }
                            }
-                         ]
-                       }
-                     },
-                     {
-                       "stmt_type": "Expr",
-                       "expr": {
-                         "expr_type": "Call",
-                         "call": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "assert"
-                           }
+                         }
+                       },
+                       {
+                         "stmt_type": "Expr",
+                         "expr": {
+                           "expr_type": "Call",
+                           "call": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "assert"
+                             }
+                           },
+                           "args": [
+                             {
+                               "expr_type": "Binary",
+                               "left": {
+                                 "expr_type": "Named",
+                                 "name": {
+                                   "token_type": "Identifier",
+                                   "value": "d"
+                                 }
+                               },
+                               "operator": {
+                                 "token_type": "DoubleEqual"
+                               },
+                               "right": {
+                                 "expr_type": "Literal",
+                                 "value": {
+                                   "token_type": "Number",
+                                   "Value": 2.0
+                                 }
+                               }
+                             },
+                             {
+                               "expr_type": "Literal",
+                               "value": {
+                                 "token_type": "String",
+                                 "value": "Multiplication failed!"
+                               }
+                             }
+                           ]
+                         }
+                       },
+                       {
+                         "stmt_type": "Var",
+                         "name": {
+                           "token_type": "Identifier",
+                           "value": "d"
                          },
-                         "args": [
-                           {
+                         "initializer": {
+                           "expr_type": "Binary",
+                           "left": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "a"
+                             }
+                           },
+                           "operator": {
+                             "token_type": "Slash"
+                           },
+                           "right": {
+                             "expr_type": "Literal",
+                             "value": {
+                               "token_type": "Number",
+                               "Value": 2.0
+                             }
+                           }
+                         }
+                       },
+                       {
+                         "stmt_type": "Expr",
+                         "expr": {
+                           "expr_type": "Call",
+                           "call": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "assert"
+                             }
+                           },
+                           "args": [
+                             {
+                               "expr_type": "Binary",
+                               "left": {
+                                 "expr_type": "Named",
+                                 "name": {
+                                   "token_type": "Identifier",
+                                   "value": "d"
+                                 }
+                               },
+                               "operator": {
+                                 "token_type": "DoubleEqual"
+                               },
+                               "right": {
+                                 "expr_type": "Literal",
+                                 "value": {
+                                   "token_type": "Number",
+                                   "Value": 0.5
+                                 }
+                               }
+                             },
+                             {
+                               "expr_type": "Literal",
+                               "value": {
+                                 "token_type": "String",
+                                 "value": "Divison failed!"
+                               }
+                             }
+                           ]
+                         }
+                       },
+                       {
+                         "stmt_type": "Var",
+                         "name": {
+                           "token_type": "Identifier",
+                           "value": "e"
+                         },
+                         "initializer": {
+                           "expr_type": "Binary",
+                           "left": {
                              "expr_type": "Binary",
                              "left": {
-                               "expr_type": "Named",
-                               "name": {
-                                 "token_type": "Identifier",
-                                 "value": "f"
+                               "expr_type": "Grouping",
+                               "expr": {
+                                 "expr_type": "Binary",
+                                 "left": {
+                                   "expr_type": "Named",
+                                   "name": {
+                                     "token_type": "Identifier",
+                                     "value": "a"
+                                   }
+                                 },
+                                 "operator": {
+                                   "token_type": "Star"
+                                 },
+                                 "right": {
+                                   "expr_type": "Literal",
+                                   "value": {
+                                     "token_type": "Number",
+                                     "Value": 5.0
+                                   }
+                                 }
                                }
                              },
                              "operator": {
-                               "token_type": "DoubleEqual"
+                               "token_type": "Plus"
                              },
                              "right": {
                                "expr_type": "Literal",
                                "value": {
                                  "token_type": "Number",
-                                 "Value": 2.0
+                                 "Value": 3.0
                                }
                              }
                            },
-                           {
-                             "expr_type": "Literal",
-                             "value": {
-                               "token_type": "String",
-                               "value": "Function call failed!"
+                           "operator": {
+                             "token_type": "Minus"
+                           },
+                           "right": {
+                             "expr_type": "Grouping",
+                             "expr": {
+                               "expr_type": "Binary",
+                               "left": {
+                                 "expr_type": "Literal",
+                                 "value": {
+                                   "token_type": "Number",
+                                   "Value": 8.0
+                                 }
+                               },
+                               "operator": {
+                                 "token_type": "Minus"
+                               },
+                               "right": {
+                                 "expr_type": "Literal",
+                                 "value": {
+                                   "token_type": "Number",
+                                   "Value": 2.0
+                                 }
+                               }
                              }
                            }
-                         ]
-                       }
-                     },
-                     {
-                       "stmt_type": "Var",
-                       "name": {
-                         "token_type": "Identifier",
-                         "value": "g"
-                       },
-                       "initializer": {
-                         "expr_type": "Literal",
-                         "value": {
-                           "token_type": "Number",
-                           "Value": 0.0
                          }
-                       }
-                     },
-                     {
-                       "stmt_type": "Simultaneous",
-                       "body": {
-                         "stmt_type": "Block",
-                         "stmts": [
-                           {
-                             "stmt_type": "Expr",
-                             "expr": {
-                               "expr_type": "Assign",
-                               "name": {
+                       },
+                       {
+                         "stmt_type": "Expr",
+                         "expr": {
+                           "expr_type": "Call",
+                           "call": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "assert"
+                             }
+                           },
+                           "args": [
+                             {
+                               "expr_type": "Binary",
+                               "left": {
                                  "expr_type": "Named",
                                  "name": {
                                    "token_type": "Identifier",
-                                   "value": "g"
+                                   "value": "e"
                                  }
                                },
+                               "operator": {
+                                 "token_type": "DoubleEqual"
+                               },
+                               "right": {
+                                 "expr_type": "Literal",
+                                 "value": {
+                                   "token_type": "Number",
+                                   "Value": 2.0
+                                 }
+                               }
+                             },
+                             {
+                               "expr_type": "Literal",
+                               "value": {
+                                 "token_type": "String",
+                                 "value": "Complex expression failed!"
+                               }
+                             }
+                           ]
+                         }
+                       },
+                       {
+                         "stmt_type": "Function",
+                         "name": {
+                           "token_type": "Identifier",
+                           "value": "add"
+                         },
+                         "params": [
+                           {
+                             "token_type": "Identifier",
+                             "value": "a",
+                             "default_value": "null"
+                           },
+                           {
+                             "token_type": "Identifier",
+                             "value": "b",
+                             "default_value": "null"
+                           }
+                         ],
+                         "body": {
+                           "stmt_type": "Block",
+                           "stmts": [
+                             {
+                               "stmt_type": "Return",
                                "value": {
                                  "expr_type": "Binary",
                                  "left": {
                                    "expr_type": "Named",
                                    "name": {
                                      "token_type": "Identifier",
-                                     "value": "g"
+                                     "value": "a"
                                    }
                                  },
                                  "operator": {
                                    "token_type": "Plus"
                                  },
                                  "right": {
-                                   "expr_type": "Literal",
-                                   "value": {
-                                     "token_type": "Number",
-                                     "Value": 1.0
+                                   "expr_type": "Named",
+                                   "name": {
+                                     "token_type": "Identifier",
+                                     "value": "b"
                                    }
                                  }
                                }
                              }
+                           ]
+                         },
+                         "resolve": "null"
+                       },
+                       {
+                         "stmt_type": "Var",
+                         "name": {
+                           "token_type": "Identifier",
+                           "value": "f"
+                         },
+                         "initializer": {
+                           "expr_type": "Call",
+                           "call": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "add"
+                             }
                            },
-                           {
-                             "stmt_type": "Block",
-                             "stmts": [
-                               {
-                                 "stmt_type": "Expr",
-                                 "expr": {
-                                   "expr_type": "Assign",
-                                   "name": {
-                                     "expr_type": "Named",
-                                     "name": {
-                                       "token_type": "Identifier",
-                                       "value": "g"
-                                     }
-                                   },
-                                   "value": {
-                                     "expr_type": "Binary",
-                                     "left": {
-                                       "expr_type": "Named",
-                                       "name": {
-                                         "token_type": "Identifier",
-                                         "value": "g"
-                                       }
-                                     },
-                                     "operator": {
-                                       "token_type": "Plus"
-                                     },
-                                     "right": {
-                                       "expr_type": "Literal",
-                                       "value": {
-                                         "token_type": "Number",
-                                         "Value": 1.0
-                                       }
-                                     }
-                                   }
+                           "args": [
+                             {
+                               "expr_type": "Literal",
+                               "value": {
+                                 "token_type": "Number",
+                                 "Value": 1.0
+                               }
+                             },
+                             {
+                               "expr_type": "Literal",
+                               "value": {
+                                 "token_type": "Number",
+                                 "Value": 1.0
+                               }
+                             }
+                           ]
+                         }
+                       },
+                       {
+                         "stmt_type": "Expr",
+                         "expr": {
+                           "expr_type": "Call",
+                           "call": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "assert"
+                             }
+                           },
+                           "args": [
+                             {
+                               "expr_type": "Binary",
+                               "left": {
+                                 "expr_type": "Named",
+                                 "name": {
+                                   "token_type": "Identifier",
+                                   "value": "f"
                                  }
                                },
-                               {
-                                 "stmt_type": "Expr",
-                                 "expr": {
-                                   "expr_type": "Assign",
-                                   "name": {
-                                     "expr_type": "Named",
-                                     "name": {
-                                       "token_type": "Identifier",
-                                       "value": "g"
-                                     }
-                                   },
-                                   "value": {
-                                     "expr_type": "Binary",
-                                     "left": {
-                                       "expr_type": "Named",
-                                       "name": {
-                                         "token_type": "Identifier",
-                                         "value": "g"
-                                       }
-                                     },
-                                     "operator": {
-                                       "token_type": "Plus"
-                                     },
-                                     "right": {
-                                       "expr_type": "Literal",
-                                       "value": {
-                                         "token_type": "Number",
-                                         "Value": 1.0
-                                       }
-                                     }
-                                   }
-                                 }
+                               "operator": {
+                                 "token_type": "DoubleEqual"
                                },
-                               {
-                                 "stmt_type": "Expr",
-                                 "expr": {
-                                   "expr_type": "Assign",
-                                   "name": {
-                                     "expr_type": "Named",
-                                     "name": {
-                                       "token_type": "Identifier",
-                                       "value": "g"
-                                     }
-                                   },
-                                   "value": {
-                                     "expr_type": "Binary",
-                                     "left": {
-                                       "expr_type": "Named",
-                                       "name": {
-                                         "token_type": "Identifier",
-                                         "value": "g"
-                                       }
-                                     },
-                                     "operator": {
-                                       "token_type": "Plus"
-                                     },
-                                     "right": {
-                                       "expr_type": "Literal",
-                                       "value": {
-                                         "token_type": "Number",
-                                         "Value": 1.0
-                                       }
-                                     }
-                                   }
+                               "right": {
+                                 "expr_type": "Literal",
+                                 "value": {
+                                   "token_type": "Number",
+                                   "Value": 2.0
                                  }
                                }
-                             ]
-                           },
-                           {
-                             "stmt_type": "Free",
-                             "stmt": {
+                             },
+                             {
+                               "expr_type": "Literal",
+                               "value": {
+                                 "token_type": "String",
+                                 "value": "Function call failed!"
+                               }
+                             }
+                           ]
+                         }
+                       },
+                       {
+                         "stmt_type": "Var",
+                         "name": {
+                           "token_type": "Identifier",
+                           "value": "g"
+                         },
+                         "initializer": {
+                           "expr_type": "Literal",
+                           "value": {
+                             "token_type": "Number",
+                             "Value": 0.0
+                           }
+                         }
+                       },
+                       {
+                         "stmt_type": "Simultaneous",
+                         "body": {
+                           "stmt_type": "Block",
+                           "stmts": [
+                             {
                                "stmt_type": "Expr",
                                "expr": {
                                  "expr_type": "Assign",
@@ -2287,145 +2148,284 @@ public class CutscenesTest
                                    }
                                  }
                                }
-                             }
-                           },
-                           {
-                             "stmt_type": "Free",
-                             "stmt": {
-                               "stmt_type": "Simultaneous",
-                               "body": {
-                                 "stmt_type": "Block",
-                                 "stmts": [
-                                   {
-                                     "stmt_type": "Block",
-                                     "stmts": [
-                                       {
-                                         "stmt_type": "Expr",
-                                         "expr": {
-                                           "expr_type": "Assign",
-                                           "name": {
-                                             "expr_type": "Named",
-                                             "name": {
-                                               "token_type": "Identifier",
-                                               "value": "g"
-                                             }
-                                           },
-                                           "value": {
-                                             "expr_type": "Binary",
-                                             "left": {
-                                               "expr_type": "Named",
-                                               "name": {
-                                                 "token_type": "Identifier",
-                                                 "value": "g"
-                                               }
-                                             },
-                                             "operator": {
-                                               "token_type": "Plus"
-                                             },
-                                             "right": {
-                                               "expr_type": "Literal",
-                                               "value": {
-                                                 "token_type": "Number",
-                                                 "Value": 1.0
-                                               }
-                                             }
-                                           }
+                             },
+                             {
+                               "stmt_type": "Block",
+                               "stmts": [
+                                 {
+                                   "stmt_type": "Expr",
+                                   "expr": {
+                                     "expr_type": "Assign",
+                                     "name": {
+                                       "expr_type": "Named",
+                                       "name": {
+                                         "token_type": "Identifier",
+                                         "value": "g"
+                                       }
+                                     },
+                                     "value": {
+                                       "expr_type": "Binary",
+                                       "left": {
+                                         "expr_type": "Named",
+                                         "name": {
+                                           "token_type": "Identifier",
+                                           "value": "g"
                                          }
                                        },
-                                       {
-                                         "stmt_type": "Expr",
-                                         "expr": {
-                                           "expr_type": "Assign",
-                                           "name": {
-                                             "expr_type": "Named",
+                                       "operator": {
+                                         "token_type": "Plus"
+                                       },
+                                       "right": {
+                                         "expr_type": "Literal",
+                                         "value": {
+                                           "token_type": "Number",
+                                           "Value": 1.0
+                                         }
+                                       }
+                                     }
+                                   }
+                                 },
+                                 {
+                                   "stmt_type": "Expr",
+                                   "expr": {
+                                     "expr_type": "Assign",
+                                     "name": {
+                                       "expr_type": "Named",
+                                       "name": {
+                                         "token_type": "Identifier",
+                                         "value": "g"
+                                       }
+                                     },
+                                     "value": {
+                                       "expr_type": "Binary",
+                                       "left": {
+                                         "expr_type": "Named",
+                                         "name": {
+                                           "token_type": "Identifier",
+                                           "value": "g"
+                                         }
+                                       },
+                                       "operator": {
+                                         "token_type": "Plus"
+                                       },
+                                       "right": {
+                                         "expr_type": "Literal",
+                                         "value": {
+                                           "token_type": "Number",
+                                           "Value": 1.0
+                                         }
+                                       }
+                                     }
+                                   }
+                                 },
+                                 {
+                                   "stmt_type": "Expr",
+                                   "expr": {
+                                     "expr_type": "Assign",
+                                     "name": {
+                                       "expr_type": "Named",
+                                       "name": {
+                                         "token_type": "Identifier",
+                                         "value": "g"
+                                       }
+                                     },
+                                     "value": {
+                                       "expr_type": "Binary",
+                                       "left": {
+                                         "expr_type": "Named",
+                                         "name": {
+                                           "token_type": "Identifier",
+                                           "value": "g"
+                                         }
+                                       },
+                                       "operator": {
+                                         "token_type": "Plus"
+                                       },
+                                       "right": {
+                                         "expr_type": "Literal",
+                                         "value": {
+                                           "token_type": "Number",
+                                           "Value": 1.0
+                                         }
+                                       }
+                                     }
+                                   }
+                                 }
+                               ]
+                             },
+                             {
+                               "stmt_type": "Free",
+                               "stmt": {
+                                 "stmt_type": "Expr",
+                                 "expr": {
+                                   "expr_type": "Assign",
+                                   "name": {
+                                     "expr_type": "Named",
+                                     "name": {
+                                       "token_type": "Identifier",
+                                       "value": "g"
+                                     }
+                                   },
+                                   "value": {
+                                     "expr_type": "Binary",
+                                     "left": {
+                                       "expr_type": "Named",
+                                       "name": {
+                                         "token_type": "Identifier",
+                                         "value": "g"
+                                       }
+                                     },
+                                     "operator": {
+                                       "token_type": "Plus"
+                                     },
+                                     "right": {
+                                       "expr_type": "Literal",
+                                       "value": {
+                                         "token_type": "Number",
+                                         "Value": 1.0
+                                       }
+                                     }
+                                   }
+                                 }
+                               }
+                             },
+                             {
+                               "stmt_type": "Free",
+                               "stmt": {
+                                 "stmt_type": "Simultaneous",
+                                 "body": {
+                                   "stmt_type": "Block",
+                                   "stmts": [
+                                     {
+                                       "stmt_type": "Block",
+                                       "stmts": [
+                                         {
+                                           "stmt_type": "Expr",
+                                           "expr": {
+                                             "expr_type": "Assign",
                                              "name": {
-                                               "token_type": "Identifier",
-                                               "value": "g"
-                                             }
-                                           },
-                                           "value": {
-                                             "expr_type": "Binary",
-                                             "left": {
                                                "expr_type": "Named",
                                                "name": {
                                                  "token_type": "Identifier",
                                                  "value": "g"
                                                }
                                              },
-                                             "operator": {
-                                               "token_type": "Plus"
+                                             "value": {
+                                               "expr_type": "Binary",
+                                               "left": {
+                                                 "expr_type": "Named",
+                                                 "name": {
+                                                   "token_type": "Identifier",
+                                                   "value": "g"
+                                                 }
+                                               },
+                                               "operator": {
+                                                 "token_type": "Plus"
+                                               },
+                                               "right": {
+                                                 "expr_type": "Literal",
+                                                 "value": {
+                                                   "token_type": "Number",
+                                                   "Value": 1.0
+                                                 }
+                                               }
+                                             }
+                                           }
+                                         },
+                                         {
+                                           "stmt_type": "Expr",
+                                           "expr": {
+                                             "expr_type": "Assign",
+                                             "name": {
+                                               "expr_type": "Named",
+                                               "name": {
+                                                 "token_type": "Identifier",
+                                                 "value": "g"
+                                               }
                                              },
-                                             "right": {
-                                               "expr_type": "Literal",
-                                               "value": {
-                                                 "token_type": "Number",
-                                                 "Value": 1.0
+                                             "value": {
+                                               "expr_type": "Binary",
+                                               "left": {
+                                                 "expr_type": "Named",
+                                                 "name": {
+                                                   "token_type": "Identifier",
+                                                   "value": "g"
+                                                 }
+                                               },
+                                               "operator": {
+                                                 "token_type": "Plus"
+                                               },
+                                               "right": {
+                                                 "expr_type": "Literal",
+                                                 "value": {
+                                                   "token_type": "Number",
+                                                   "Value": 1.0
+                                                 }
                                                }
                                              }
                                            }
                                          }
-                                       }
-                                     ]
-                                   }
-                                 ]
+                                       ]
+                                     }
+                                   ]
+                                 }
                                }
                              }
-                           }
-                         ]
-                       }
-                     },
-                     {
-                       "stmt_type": "Expr",
-                       "expr": {
-                         "expr_type": "Call",
-                         "call": {
-                           "expr_type": "Named",
-                           "name": {
-                             "token_type": "Identifier",
-                             "value": "assert"
-                           }
-                         },
-                         "args": [
-                           {
-                             "expr_type": "Binary",
-                             "left": {
-                               "expr_type": "Named",
-                               "name": {
-                                 "token_type": "Identifier",
-                                 "value": "g"
-                               }
-                             },
-                             "operator": {
-                               "token_type": "DoubleEqual"
-                             },
-                             "right": {
-                               "expr_type": "Literal",
-                               "value": {
-                                 "token_type": "Number",
-                                 "Value": 7.0
-                               }
+                           ]
+                         }
+                       },
+                       {
+                         "stmt_type": "Expr",
+                         "expr": {
+                           "expr_type": "Call",
+                           "call": {
+                             "expr_type": "Named",
+                             "name": {
+                               "token_type": "Identifier",
+                               "value": "assert"
                              }
                            },
-                           {
-                             "expr_type": "Literal",
-                             "value": {
-                               "token_type": "String",
-                               "value": "Sim/Free blocks failed!"
+                           "args": [
+                             {
+                               "expr_type": "Binary",
+                               "left": {
+                                 "expr_type": "Named",
+                                 "name": {
+                                   "token_type": "Identifier",
+                                   "value": "g"
+                                 }
+                               },
+                               "operator": {
+                                 "token_type": "DoubleEqual"
+                               },
+                               "right": {
+                                 "expr_type": "Literal",
+                                 "value": {
+                                   "token_type": "Number",
+                                   "Value": 7.0
+                                 }
+                               }
+                             },
+                             {
+                               "expr_type": "Literal",
+                               "value": {
+                                 "token_type": "String",
+                                 "value": "Sim/Free blocks failed!"
+                               }
                              }
-                           }
-                         ]
+                           ]
+                         }
                        }
-                     }
-                   ]
-                 }
-                 """;
-      
-      var mod = GetMockMod(js);
-      _installer.InstallMods([mod], _fileModifier);
+                     ]
+                   }
+                   """;
 
-      Assert.That(_fileModifier.GetFile("__mist__.json"), new MatchesJsonConstraint(JObject.Parse(mist)));
+        var mod = GetMockMod(js);
+        _installer.InstallMods([mod], _fileModifier);
+
+        Assert.That(_fileModifier.GetFile("__mist__.json"), new MatchesJsonConstraint(JObject.Parse(mist)));
     }
-    
+
     [Ignore("I need to get permission to ship the original __mist__.json file with this project for this test.")]
     public void ShouldEncodeFullMistFile()
     {
@@ -2447,38 +2447,190 @@ public class CutscenesTest
 
         foreach (var functionName in functionNames)
         {
-          // For some reason balor_six_hearts has an `if` condition inside a `simultaneous` statement (`__async`) that
-          // doesn't go inside a `Block`. It's the only if statement in a `simultaneous` statement that acts like this,
-          // so when I tried to code around it, three other functions failed instead. For that reason we're just going to
-          // ignore that function for testing.
-          if (functionName == "balor_six_hearts.mist") continue;
-          
-          // It looks like we're not quite applying grouping in binary expressions correctly, but seem functionally
-          // equivalent and I think it only really matters if you're doing very complex math with ambiguous grouping.
-          // What's happening is that the original AST shows `BINARY(+, GROUPING(1 * 5), BINARY(-, 3, GROUPING(8 - 2))`,
-          // which turns into the JS `__group(1 * 5) + 3 - __group(8 - 2)`. Converting that back into AST we get
-          // `BINARY(-, BINARY(+, GROUP(1 * 5), 3), GROUP(8 - 2)`. So during the conversion the 3 moves from the right
-          // side to the left side, which doesn't seem to be all that important to be honest. But it's going to be
-          // painful to fix and would only be fixed for the very specific purpose of passing this test. Which might be
-          // worth it, but maybe not right now.
-          if (functionName == "unit_test.mist") continue;
-          
-          Assert.That(new JObject { { functionName, fullActualMist[functionName] } },
-            new MatchesJsonConstraint(new JObject { { functionName, fullDesiredMist[functionName] } }));
+            // For some reason balor_six_hearts has an `if` condition inside a `simultaneous` statement (`__async`) that
+            // doesn't go inside a `Block`. It's the only if statement in a `simultaneous` statement that acts like this,
+            // so when I tried to code around it, three other functions failed instead. For that reason we're just going to
+            // ignore that function for testing.
+            if (functionName == "balor_six_hearts.mist") continue;
+
+            // It looks like we're not quite applying grouping in binary expressions correctly, but seem functionally
+            // equivalent and I think it only really matters if you're doing very complex math with ambiguous grouping.
+            // What's happening is that the original AST shows `BINARY(+, GROUPING(1 * 5), BINARY(-, 3, GROUPING(8 - 2))`,
+            // which turns into the JS `__group(1 * 5) + 3 - __group(8 - 2)`. Converting that back into AST we get
+            // `BINARY(-, BINARY(+, GROUP(1 * 5), 3), GROUP(8 - 2)`. So during the conversion the 3 moves from the right
+            // side to the left side, which doesn't seem to be all that important to be honest. But it's going to be
+            // painful to fix and would only be fixed for the very specific purpose of passing this test. Which might be
+            // worth it, but maybe not right now.
+            if (functionName == "unit_test.mist") continue;
+
+            Assert.That(new JObject { { functionName, fullActualMist[functionName] } },
+                new MatchesJsonConstraint(new JObject { { functionName, fullDesiredMist[functionName] } }));
         }
     }
 
     [Test]
     public void ShouldTest()
     {
+        var js = """
+                 function unit_test() {
+                   var e = __group(1 * 5) + 3 - __group(8 - 2);
+                   assert(e == 2, "Complex expression failed!");
+                 }
+                 """;
+
+        var mod = GetMockMod(js);
+        _installer.InstallMods([mod], _fileModifier);
+    }
+
+    [Test]
+    public void ShouldOverwriteExistingMethods()
+    {
+        _fileModifier = new MockFileModifier(new Dictionary<string, string>
+        {
+          // function test() { var a = 1 + 1; }
+          { "__mist__.json", """
+                             {
+                               "test.mist": [
+                                 {
+                                   "stmt_type": "Var",
+                                   "name": {
+                                     "token_type": "Identifier",
+                                     "value": "a"
+                                   },
+                                   "initializer": {
+                                     "expr_type": "Binary",
+                                     "left": {
+                                       "expr_type": "Literal",
+                                       "value": {
+                                         "token_type": "Number",
+                                         "Value": 1.0
+                                       }
+                                     },
+                                     "operator": {
+                                       "token_type": "Plus"
+                                     },
+                                     "right": {
+                                       "expr_type": "Literal",
+                                       "value": {
+                                         "token_type": "Number",
+                                         "Value": 1.0
+                                       }
+                                     }
+                                   }
+                                 }
+                               ]
+                             }
+                             """
+          }
+        });
+
+        var js = """
+                 function test() {
+                  var b = 1;
+                 }
+                 """;
+        
+        var mist = """
+                   {
+                     "test.mist": [
+                       {
+                         "stmt_type": "Var",
+                         "name": {
+                           "token_type": "Identifier",
+                           "value": "b"
+                         },
+                         "initializer": {
+                           "expr_type": "Literal",
+                           "value": {
+                             "token_type": "Number",
+                             "Value": 1.0
+                           }
+                         }
+                       }
+                     ]
+                   }
+                   """;
+        
+        var mod = GetMockMod(js);
+        _installer.InstallMods([mod], _fileModifier);
+
+        Assert.That(_fileModifier.GetFile("__mist__.json"), new MatchesJsonConstraint(JObject.Parse(mist)));
+    }
+
+    [Test]
+    public void ShouldKeepExistingCutscenes()
+    {
+      _fileModifier = new MockFileModifier(new Dictionary<string, string>
+      {
+        {
+          // function a() { var a = 1; }
+          "__mist__.json", """
+                           {
+                             "a.mist": [
+                               {
+                                 "stmt_type": "Var",
+                                 "name": {
+                                   "token_type": "Identifier",
+                                   "value": "a"
+                                 },
+                                 "initializer": {
+                                   "expr_type": "Literal",
+                                   "value": {
+                                     "token_type": "Number",
+                                     "Value": 1.0
+                                   }
+                                 }
+                               }
+                             ]
+                           }
+                           """
+        }
+      });
+      
       var js = """
-               function unit_test() {
-                 var e = __group(1 * 5) + 3 - __group(8 - 2);
-                 assert(e == 2, "Complex expression failed!");
-               }
+               function b() { var b = 2; }
                """;
+
+      var mist = """
+                 {
+                   "a.mist": [
+                     {
+                       "stmt_type": "Var",
+                       "name": {
+                         "token_type": "Identifier",
+                         "value": "a"
+                       },
+                       "initializer": {
+                         "expr_type": "Literal",
+                         "value": {
+                           "token_type": "Number",
+                           "Value": 1.0
+                         }
+                       }
+                     }
+                   ],
+                   "b.mist": [
+                     {
+                       "stmt_type": "Var",
+                       "name": {
+                         "token_type": "Identifier",
+                         "value": "b"
+                       },
+                       "initializer": {
+                         "expr_type": "Literal",
+                         "value": {
+                           "token_type": "Number",
+                           "Value": 2.0
+                         }
+                       }
+                     }
+                   ]
+                 }
+                 """;
       
       var mod = GetMockMod(js);
       _installer.InstallMods([mod], _fileModifier);
+
+      Assert.That(_fileModifier.GetFile("__mist__.json"), new MatchesJsonConstraint(JObject.Parse(mist)));
     }
 }
