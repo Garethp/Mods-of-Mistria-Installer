@@ -8,7 +8,7 @@ public class ConversationInstaller : ISubModuleInstaller
     public JObject Install(JObject existingInformation, GeneratedInformation information, Action<string, string> reportStatus)
     {
         var allSources = new List<JObject> { existingInformation };
-        allSources.AddRange(information.Conversations.Select(conversation => new JObject { ["conversations"] = conversation }));
+        allSources.AddRange(information.Conversations);
 
         var merged = new JObject();
         

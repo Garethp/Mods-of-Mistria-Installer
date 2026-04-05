@@ -32,6 +32,33 @@ public class ScheduleTest
     }
 
     [Test]
+    public void ShouldMergeScheduleChanges()
+    {
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            { "schedule/test.json", new JObject()
+            {
+                { "balor", new JObject
+                {
+                    { "monday", new JObject() }
+                }}
+            }.ToString() }
+        });
+
+        _installer.InstallMods([mod], _fileModifier);
+        Assert.That(_fileModifier.GetFile("t2_output.json"), new ContainsJsonConstraint(new JObject
+        {
+            { "schedules", new JObject()
+            {
+                { "balor", new JObject
+                {
+                    { "monday", new JObject() }
+                }}
+            } },
+        }));
+    }
+    
+    [Test]
     public void ShouldNotOverrideConversationsIfEmpty()
     {
         var mod = new MockMod(new Dictionary<string, string>

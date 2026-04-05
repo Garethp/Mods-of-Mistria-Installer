@@ -8,7 +8,7 @@ public class ScheduleInstaller : ISubModuleInstaller
     public JObject Install(JObject existingInformation, GeneratedInformation information, Action<string, string> reportStatus)
     {
         var allSources = new List<JObject> { existingInformation };
-        allSources.AddRange(information.Schedules.Select(schedule => new JObject { ["schedules"] = schedule }));
+        allSources.AddRange(information.Schedules);
 
         var merged = new JObject();
         
