@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using NUnit.Framework.Constraints;
 
-namespace ModsOfMistriaInstallerLibTests.Utils;
+namespace ModsOfMistriaInstallerLibTests.TestUtils;
 
 public class MatchesJsonConstraint(JObject expected) : Constraint
 {

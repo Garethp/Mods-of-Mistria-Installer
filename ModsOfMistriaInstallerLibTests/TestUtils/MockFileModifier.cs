@@ -1,6 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
 
-namespace ModsOfMistriaInstallerLibTests.Utils;
+namespace ModsOfMistriaInstallerLibTests.TestUtils;
 
 public class MockFileModifier: IFileModifier
 {

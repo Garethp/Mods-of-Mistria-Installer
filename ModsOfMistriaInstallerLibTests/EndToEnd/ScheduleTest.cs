@@ -1,7 +1,7 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
 using ModsOfMistriaInstallerLibTests.Fixtures;
-using ModsOfMistriaInstallerLibTests.Utils;
+using ModsOfMistriaInstallerLibTests.TestUtils;
 using Newtonsoft.Json.Linq;
 
 namespace ModsOfMistriaInstallerLibTests.EndToEnd;

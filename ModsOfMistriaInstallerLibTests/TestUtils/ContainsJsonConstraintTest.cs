@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace ModsOfMistriaInstallerLibTests.Utils;
+namespace ModsOfMistriaInstallerLibTests.TestUtils;
 
 [TestFixture]
 public class ContainsJsonConstraintTest
