@@ -3,29 +3,10 @@ using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
-[InformationInstaller(1)]
-public class ScheduleInstaller : IModuleInstaller
+public class ScheduleInstaller : ISubModuleInstaller
 {
-    private IFileModifier _fileModifier = new FileModifier();
-
-    public void SetFileModifier(IFileModifier fileModifier) => _fileModifier = fileModifier;
-    
-    public void Install(
-        string fieldsOfMistriaLocation,
-        string modsLocation,
-        GeneratedInformation information,
-        Action<string, string> reportStatus
-    ) {
-        if (_fileModifier.ConditionalRestoreBackup(
-            fieldsOfMistriaLocation, 
-            "t2_output.json", 
-            () => information.Schedules.Count == 0 && information.Conversations.Count == 0
-        )) return;
-        
-        var existingInformation = JObject.Parse(
-            _fileModifier.Read(fieldsOfMistriaLocation, "t2_output.json")
-        );
-        
+    public JObject Install(JObject existingInformation, GeneratedInformation information, Action<string, string> reportStatus)
+    {
         var allSources = new List<JObject> { existingInformation };
         allSources.AddRange(information.Schedules.Select(schedule => new JObject { ["schedules"] = schedule }));
 
@@ -39,10 +20,6 @@ public class ScheduleInstaller : IModuleInstaller
             });
         }
 
-        _fileModifier.Write(
-            fieldsOfMistriaLocation, 
-            "t2_output.json",
-            merged.ToString()
-        );
+        return merged;
     }
 }
