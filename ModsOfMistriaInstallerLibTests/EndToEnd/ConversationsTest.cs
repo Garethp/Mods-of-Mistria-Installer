@@ -125,7 +125,16 @@ public class ConversationsTest
 
         _installer.InstallMods([mod], _fileModifier);
 
-        Assert.That(_fileModifier.GetFile("t2_output.json"), Is.Not.Matches(new MatchesJsonConstraint(new JObject())));
+        Assert.That(_fileModifier.GetFile("t2_output.json"), new ContainsJsonConstraint(new JObject
+        {
+          { "conversations", new JObject
+          {
+            { "Conversations/story_quests/balors_finest_wares_turn_in", new JObject
+            {
+              { "kind", "Normal" }
+            }}
+          }}
+        }));
     }
 
     [Test]
