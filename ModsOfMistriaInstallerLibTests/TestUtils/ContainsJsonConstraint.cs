@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using NUnit.Framework.Constraints;
 
-namespace ModsOfMistriaInstallerLibTests.Utils;
+namespace ModsOfMistriaInstallerLibTests.TestUtils;
 
 public class ContainsJsonConstraint(JObject expected): Constraint
 {
@@ -63,5 +63,5 @@ public class ContainsJsonConstraint(JObject expected): Constraint
         }
     }
     
-    public override string Description => "contains json";
+    public override string Description => $"contains json {_object}";
 }
