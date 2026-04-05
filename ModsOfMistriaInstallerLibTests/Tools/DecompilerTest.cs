@@ -3,7 +3,7 @@ using Esprima;
 using Esprima.Ast;
 using Garethp.ModsOfMistriaInstallerLib.Tools.Compiler;
 using Garethp.ModsOfMistriaInstallerLib.Tools.Decompiler;
-using ModsOfMistriaInstallerLibTests.Utils;
+using ModsOfMistriaInstallerLibTests.TestUtils;
 using Newtonsoft.Json.Linq;
 
 namespace ModsOfMistriaInstallerLibTests.Tools;

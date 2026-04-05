@@ -2,7 +2,7 @@
 using Esprima.Utils;
 using NUnit.Framework.Constraints;
 
-namespace ModsOfMistriaInstallerLibTests.Utils;
+namespace ModsOfMistriaInstallerLibTests.TestUtils;
 
 public class MatchesJs: Constraint
 {

@@ -8,7 +8,7 @@ public class CutsceneGenerator : IGenerator
 {
     public GeneratedInformation Generate(IMod mod)
     {
-        var cutsceneFiles = mod.GetFilesInFolder("cutscene");
+        var cutsceneFiles = mod.GetFilesInFolder("cutscenes");
 
         var generatedInformation = new GeneratedInformation();
 
@@ -22,7 +22,7 @@ public class CutsceneGenerator : IGenerator
         return generatedInformation;
     }
 
-    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("cutscene");
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("cutscenes");
 
     public Validation Validate(IMod mod)
     {

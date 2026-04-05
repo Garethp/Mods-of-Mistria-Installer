@@ -1,5 +1,4 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
-using ModsOfMistriaInstallerLibTests.Fixtures;
 using ModsOfMistriaInstallerLibTests.TestUtils;
 using Newtonsoft.Json.Linq;
 
