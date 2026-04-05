@@ -15,8 +15,7 @@ public class ScheduleTest
         new ConversationGenerator(),
         new ScheduleGenerator()
     ], [
-        new ConversationInstaller(),
-        new ScheduleInstaller()
+        new T2Installer()
     ]);
 
     [SetUp]
@@ -24,7 +23,11 @@ public class ScheduleTest
     {
         _fileModifier = new(new Dictionary<string, string>
         {
-            { "t2_output.json", "{}" }
+            { "t2_output.json", new JObject
+            {
+                { "conversations", new JObject() },
+                { "schedules", new JObject() },
+            }.ToString() }
         });
     }
 
