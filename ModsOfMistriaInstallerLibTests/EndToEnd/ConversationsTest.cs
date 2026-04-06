@@ -142,7 +142,7 @@ public class ConversationsTest
     {
         var mod = new MockMod(new Dictionary<string, string>
         {
-            { "schedule/test.json", "{ \"test\": {} }" }
+            { "schedules/test.json", "{ \"test\": {} }" }
         });
 
         _installer.InstallMods([mod], _fileModifier);
