@@ -19,6 +19,7 @@ public class FiddleInformation
             {
                 "Concat" => MergeArrayHandling.Concat,
                 "Merge" => MergeArrayHandling.Merge,
+                "Replace" => MergeArrayHandling.Replace,
                 _ => throw new Exception($"Expected arrayMergeSetting {arrayMergeSetting}")
             };
             

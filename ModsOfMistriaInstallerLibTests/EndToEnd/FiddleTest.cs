@@ -412,6 +412,46 @@ public class FiddleTest
 
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(expected));
     }
+
+    [Test]
+    public void ShouldAllowArrayReplacement()
+    {
+        _fileModifier = new MockFileModifier(new Dictionary<string, string>
+        {
+            {
+                "__fiddle__.json", new JObject {
+                    { "a", new JArray { "1", "2", "3" } }
+                }.ToString()
+            }
+        });
+
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            { "fiddle/fiddle.json", new JObject
+            {
+                { "__arrayMergeSetting", "Replace" },
+                { "a", new JArray { "4", "5" } }
+            }.ToString() }
+        });
+
+        _installer.InstallMods([mod], _fileModifier);
+
+        var expected = new JObject
+        {
+            { "a", new JArray { "4", "5" } },
+            {
+                "extras", new JObject
+                {
+                    { "objects", new JArray() },
+                    { "items", new JArray() }
+                }
+            },
+            { "extras/items", new JArray() },
+            { "extras/objects", new JArray() },
+        };
+
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(expected));
+    }
     
     [Test]
     public void ShouldAllowArrayMergePerFile()
