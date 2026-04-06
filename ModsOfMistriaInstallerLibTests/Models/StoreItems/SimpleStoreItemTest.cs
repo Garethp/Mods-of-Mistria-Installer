@@ -146,4 +146,21 @@ public class SimpleStoreItemTest
 
         Assert.That(actualJson.ToString(), Is.EqualTo(expectedJson.ToString()));
     }
+
+    [Test]
+    public void ShouldNotIncludeRecipeByDefault()
+    {
+        var item = GetMockItem();
+
+        Assert.That(item.ToJson()["include_recipe"], Is.Null);
+}
+
+    [Test]
+    public void ShouldAllowIncludeRecipe()
+    {
+        var item = GetMockItem();
+        item.IncludeRecipe = true;
+        
+        Assert.That(item.ToJson()["include_recipe"], Is.True);
+    }
 }

@@ -21,7 +21,7 @@ public class StoreCategoryTest
 
     private static StoreCategory GetMockItem()
     {
-        var category = new StoreCategory()
+        var category = new StoreCategory
         {
             Store = "general store",
             IconName = "general icon",
