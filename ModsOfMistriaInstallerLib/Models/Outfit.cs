@@ -32,27 +32,56 @@ public class Outfit
 
     public string UiSubCategory;
 
-    [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public string LutFile;
 
-    [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public string UiItem;
-
-    [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+    
     public string OutlineFile;
-
+    
     public bool HasMergedAssetOutline => !string.IsNullOrEmpty(UiAssetFile) || !string.IsNullOrEmpty(UiBodyFile);
     
-    [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public string UiAssetFile;
 
-    [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
     public string UiBodyFile;
-
-    [JsonProperty(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+    
     public Dictionary<string, string> AnimationFiles = new ();
 
-    [JsonProperty(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
+    [JsonProperty("lutFile")]
+    private string lutFileLegacy
+    {
+        set => LutFile = value;
+    }
+    
+    [JsonProperty("uiItem")]
+    private string uiItemLegacy
+    {
+        set => UiItem = value;
+    }
+    
+    [JsonProperty("outlineFile")]
+    private string outlineFileLegacy
+    {
+        set => OutlineFile = value;
+    }
+    
+    [JsonProperty("uiAssetFile")]
+    private string uiAssetFileLegacy
+    {
+        set => UiAssetFile = value;
+    }
+    
+    [JsonProperty("uiBodyFile")]
+    private string uiBodyFileLegacy
+    {
+        set => UiBodyFile = value;
+    }
+    
+    [JsonProperty("animationFiles")]
+    private Dictionary<string, string> animationFilesLegacy
+    {
+        set => AnimationFiles = value;
+    }
+    
     public int? PriceOverride;
 
     public Validation Validate(Validation validation, IMod mod, string file, string id)
