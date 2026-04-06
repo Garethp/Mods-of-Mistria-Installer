@@ -389,7 +389,7 @@ public class FiddleTest
         {
             { "fiddle/fiddle.json", new JObject
             {
-                { "__arrayMergeSetting", "Concat" },
+                { "__arrayMergeSetting", "Add" },
                 { "a", new JArray { "4", "5" } }
             }.ToString() }
         });
@@ -469,7 +469,7 @@ public class FiddleTest
         {
             { "fiddle/fiddle1.json", new JObject
             {
-                { "__arrayMergeSetting", "Concat" },
+                { "__arrayMergeSetting", "Add" },
                 { "a", new JArray { "4", "5" } }
             }.ToString() },
             { "fiddle/fiddle2.json", new JObject
