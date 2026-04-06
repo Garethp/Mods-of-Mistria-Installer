@@ -263,4 +263,74 @@ public class SpritesTest
             )
         );
     }
+    
+    [Test]
+    public void ShouldAcceptLegacyCasing()
+    {
+        _mockMod = GetMod(new JObject
+        {
+            { "test_sprite", new JObject
+            {
+                { "OutlineLocation", "images/outline.png" },
+                { "Location", "images/animated" },
+                { "IsAnimated", true },
+                { "OriginX", 1 },
+                { "OriginY" ,2 },
+                { "MarginRight", 3 },
+                { "MarginLeft", 4 },
+                { "MarginTop", 5 },
+                { "MarginBottom", 6 },
+                { "BoundingBoxMode", 7 },
+                { "IsPlayerSprite", true },
+                { "IsUiSprite", true }
+            }}
+        });
+        
+        var generatedInformation = _installer.InstallMods([_mockMod], _fileModifier);
+        
+        Assert.That(generatedInformation.Sprites, Contains.Key(_mockMod.GetId()));
+        
+        Assert.That(
+            generatedInformation.Sprites[_mockMod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Mod.GetId() == _mockMod.GetId() &&
+                sprite is
+                {
+                    Name: "test_sprite", 
+                    Location: "images/animated", 
+                    IsAnimated: true, 
+                    OriginX: 1,
+                    OriginY: 2,
+                    MarginRight: 3,
+                    MarginLeft: 4,
+                    MarginTop: 5,
+                    MarginBottom: 6,
+                    BoundingBoxMode: 7,
+                    IsPlayerSprite: true,
+                    IsUiSprite: true
+                }
+            )
+        );
+        
+        Assert.That(
+            generatedInformation.Sprites[_mockMod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Mod.GetId() == _mockMod.GetId() &&
+                sprite is {
+                    Name: "test_sprite_outline", 
+                    Location: "images/outline.png", 
+                    IsAnimated: false, 
+                    OriginX: 1,
+                    OriginY: 2,
+                    MarginRight: 3,
+                    MarginLeft: 4,
+                    MarginTop: 5,
+                    MarginBottom: 6,
+                    BoundingBoxMode: 7,
+                    IsPlayerSprite: false,
+                    IsUiSprite: true
+                }
+            )
+        );
+    }
 }
