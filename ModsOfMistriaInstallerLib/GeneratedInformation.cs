@@ -9,7 +9,7 @@ public class GeneratedInformation
 {
     public List<JObject> Localisations = [];
 
-    public List<JObject> Fiddles = [];
+    public List<FiddleInformation> Fiddles = [];
 
     public List<JObject> Conversations = [];
 
