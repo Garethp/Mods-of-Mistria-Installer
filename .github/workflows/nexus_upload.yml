@@ -75,7 +75,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUS_TOKEN }}
           file_group_id: 569653
-          filename: Release/ModsOfMistriaInstaller.exe
+          filename: Release/ModsOfMistriaInstaller-linux.zip
           version: ${{ env.APP_VERSION }}
           display_name: "Mods Of Mistria Installer Linux"
           description: "If you're on a Steam Deck, you should probably use this release"
@@ -85,7 +85,7 @@ jobs:
         with:
           api_key: ${{ secrets.NEXUS_TOKEN }}
           file_group_id: 569668
-          filename: Release/ModsOfMistriaInstaller.exe
+          filename: Release/ModsOfMistriaInstaller-osx.zip
           version: ${{ env.APP_VERSION }}
           display_name: "Mods Of Mistria Installer OSX"
           description: "If you're on a Mac, you should probably use this release"
