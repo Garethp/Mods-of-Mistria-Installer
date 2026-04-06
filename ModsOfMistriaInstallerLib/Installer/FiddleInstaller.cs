@@ -37,7 +37,6 @@ public class FiddleInstaller : IModuleInstaller
         }
         
         var merged = new JObject();
-        
         foreach (var source in allSources)
         {
             merged.Merge(source, new JsonMergeSettings
@@ -46,6 +45,8 @@ public class FiddleInstaller : IModuleInstaller
                 MergeNullValueHandling = MergeNullValueHandling.Merge
             });    
         }
+
+        merged = JsonNestHandler.NestTokens(merged, nestingReference);
         
         if (merged["extras"] is not JObject)
         {
