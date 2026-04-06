@@ -442,4 +442,148 @@ public class OutfitTest
             }}
         }));
     }
+
+    [Test]
+    public void ShouldAcceptSnakeCaseForEverything()
+    {
+        var mod = new MockMod(new Dictionary<string, string> {
+            { "outfits/outfit.json", new JObject {
+                { "test_outfit", new JObject {
+                    { "name", "Test Outfit" },
+                    { "description", "This is the test outfit" },
+                    { "default_unlocked", true },
+                    { "ui_slot", "back" },
+                    { "ui_sub_category", "capes" },
+                    { "lut_file", "images/lut.png" },
+                    { "ui_item", "images/ui.png" },
+                    { "outline_file", "images/outline.png" },
+                    { "animation_files", new JObject {
+                        { "back", "images/animation" }
+                    }}
+                    
+                }},
+                { "test_outfit2", new JObject {
+                    { "name", "Test Outfit" },
+                    { "description", "This is the test outfit" },
+                    { "default_unlocked", true },
+                    { "ui_slot", "back" },
+                    { "ui_sub_category", "capes" },
+                    { "lut_file", "images/lut.png" },
+                    { "ui_item", "images/ui.png" },
+                    { "outline_file", "images/outline.png" },
+                    { "ui_asset_file", "images/ui_asset_file.png" },
+                    { "ui_body_file", "images/ui_body_file.png" },
+                    { "animation_files", new JObject {
+                        { "back", "images/animation" }
+                    }}
+                    
+                }}
+            }.ToString() },
+            { "images/lut.png", "" },
+            { "images/ui.png", "" },
+            { "images/outline.png", "" },
+            { "images/animation/1.png", "" },
+            { "images/animation/2.png", "" }
+        });
+        
+        var generatedInformation = _installer.InstallMods([mod], _fileModifier);
+        
+        Assert.That(generatedInformation.Sprites, Contains.Key(mod.GetId()));
+        
+        // Lut File
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_player_test_outfit_lut" &&
+                sprite.Location == "images/lut.png" &&
+                sprite.IsPlayerSprite &&
+                !sprite.IsUiSprite &&
+                !sprite.IsAnimated &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        );
+        
+        // UI Item
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_ui_item_wearable_test_outfit" &&
+                sprite.Location == "images/ui.png" &&
+                !sprite.IsPlayerSprite &&
+                sprite.IsUiSprite &&
+                !sprite.IsAnimated &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        );
+        
+        // Outline
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_ui_item_wearable_test_outfit_outline" &&
+                sprite.Location == "images/outline.png" &&
+                !sprite.IsPlayerSprite &&
+                sprite.IsUiSprite &&
+                !sprite.IsAnimated &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        );
+
+        Assert.That(_fileModifier.GetFile("outlines.json"), new ContainsJsonConstraint(new JObject
+        {
+            { "spr_ui_item_wearable_test_outfit", "spr_ui_item_wearable_test_outfit_outline" }
+        }));
+        
+        // Animation Files
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_player_test_outfit_back" &&
+                sprite.Location == "images/animation" &&
+                sprite.IsPlayerSprite &&
+                !sprite.IsUiSprite &&
+                sprite.IsAnimated &&
+                sprite.BoundingBoxMode == 1 &&
+                sprite.DeleteCollisionMask &&
+                sprite.SpecialType && 
+                sprite.SpecialTypeVersion == 3 &&
+                sprite.SpecialPlaybackSpeed == 40 &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        );
+        
+        Assert.That(_fileModifier.GetFile("player_asset_parts.json"), new ContainsJsonConstraint(new JObject
+        {
+            { "test_outfit", new JObject
+            {
+                { "back", "spr_player_test_outfit_back" }
+            }}
+        }));
+        
+        // UI Asset
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_ui_item_wearable_test_outfit2_asset" &&
+                sprite.Location == "images/ui_asset_file.png" &&
+                !sprite.IsPlayerSprite &&
+                sprite.IsUiSprite &&
+                !sprite.IsAnimated &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        ); 
+        
+        // UI Body
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "spr_ui_item_wearable_test_outfit2_body" &&
+                sprite.Location == "images/ui_body_file.png" &&
+                !sprite.IsPlayerSprite &&
+                sprite.IsUiSprite &&
+                !sprite.IsAnimated &&
+                sprite.Mod.GetId() == mod.GetId()
+            )
+        );
+    }
 }

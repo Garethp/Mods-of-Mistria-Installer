@@ -100,10 +100,10 @@ in their own folder, separate from other sprites. Here's an example file:
     "ui_slot": "back",
     "default_unlocked": true,
     "ui_sub_category": "capes",
-    "lutFile": "images/lut.png",
-    "uiItem": "images/ui.png",
-    "outlineFile": "images/outline.png",
-    "animationFiles": {
+    "lut_file": "images/lut.png",
+    "ui_item": "images/ui.png",
+    "outline_file": "images/outline.png",
+    "animation_files": {
       "back_gear": "images/tail_animation"
     },
     "price_override": 0 // This is an optional field, but cannot be below 0
