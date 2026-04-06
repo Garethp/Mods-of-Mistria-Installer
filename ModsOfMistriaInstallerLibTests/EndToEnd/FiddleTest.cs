@@ -99,6 +99,84 @@ public class FiddleTest
     }
 
     [Test]
+    public void ShouldAllowUsingNullsToRemoveKeys()
+    {
+        _fileModifier = new MockFileModifier(new Dictionary<string, string>
+        {
+            {
+                "__fiddle__.json", new JObject
+                {
+                    { "a", new JObject {
+                        { "b", "1" },
+                        { "c", "2"}
+                    } }
+                }.ToString()
+            }
+        });
+        
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            { "fiddle/test1.json", new JObject
+            {
+                { "a", new JObject
+                {
+                    { "b", null }
+                }}
+            }.ToString() }
+        });
+
+        _installer.InstallMods([mod], _fileModifier);
+
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(new JObject
+        {
+            { "a", new JObject {
+                { "b", null },
+                { "c", "2" }
+            }}
+        }));
+    }
+    
+    [Test]
+    public void ShouldAllowUsingNullsToEmptyArrays()
+    {
+        _fileModifier = new MockFileModifier(new Dictionary<string, string>
+        {
+            {
+                "__fiddle__.json", new JObject
+                {
+                    { "a", new JArray { "1", "2", "3" } }
+                }.ToString()
+            }
+        });
+    
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            { "fiddle/test1.json", new JObject { { "a", null } }.ToString() },
+            { "fiddle/test2.json", new JObject
+            {
+                { "a", new JArray { "4", "5" }}
+            }.ToString() }
+        });
+
+        _installer.InstallMods([mod], _fileModifier);
+
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(new JObject
+        {
+            { "a", new JArray { "4", "5" }},
+            {
+                "extras", new JObject
+                {
+                    { "objects", new JArray() },
+                    { "items", new JArray() }
+                }
+            },
+            { "extras/items", new JArray() },
+            { "extras/objects", new JArray() },
+        }));
+    }
+
+    [Ignore("Nested JSON needed to get removed")]
+    [Test]
     public void ShouldAutomaticallyNestObjects()
     {
         var mod = new MockMod(new Dictionary<string, string>()
@@ -126,6 +204,7 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
+    [Ignore("Nested JSON needed to get removed")]
     [Test]
     public void ShouldAutomaticallyNestObjectsAtMultipleLevels()
     {
@@ -165,6 +244,7 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
+    [Ignore("Nested JSON needed to get removed")]
     [Test]
     public void ShouldAutomaticallyNestArrays()
     {
@@ -220,6 +300,7 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
+    [Ignore("Nested JSON needed to get removed")]
     [Test]
     public void ShouldOnlyNestNewItems()
     {

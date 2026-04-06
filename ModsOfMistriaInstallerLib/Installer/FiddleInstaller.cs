@@ -23,35 +23,20 @@ public class FiddleInstaller : IModuleInstaller
 
         existingFiddle = new StoreInstaller().Install(existingFiddle, information, reportStatus);
 
-        // var allSources = new List<JObject> { existingFiddle };
-
-        var mergedFiddle = new JObject();
-        foreach (var informationFiddle in information.Fiddles)
+        var allSources = new List<JObject> { existingFiddle };
+        allSources.AddRange(information.Fiddles);
+        
+        var merged = new JObject();
+        
+        foreach (var source in allSources)
         {
-            mergedFiddle.Merge(informationFiddle, new JsonMergeSettings
+            merged.Merge(source, new JsonMergeSettings
             {
                 MergeArrayHandling = MergeArrayHandling.Merge,
                 MergeNullValueHandling = MergeNullValueHandling.Merge
-            });
+            });    
         }
-
-        if (JsonNestHandler.NestTokens(mergedFiddle) is not JObject nestedMergedFiddle)
-            throw new Exception("Unexpected output while nesting fiddle file");
         
-        var merged = new JObject();
-
-        merged.Merge(existingFiddle, new JsonMergeSettings
-        {
-            MergeArrayHandling = MergeArrayHandling.Merge,
-            MergeNullValueHandling = MergeNullValueHandling.Merge
-        });
-        
-        merged.Merge(nestedMergedFiddle, new JsonMergeSettings
-        {
-            MergeArrayHandling = MergeArrayHandling.Merge,
-            MergeNullValueHandling = MergeNullValueHandling.Merge
-        });
-
         if (merged["extras"] is not JObject)
         {
             merged["extras"] = new JObject()
