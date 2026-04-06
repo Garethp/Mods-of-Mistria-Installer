@@ -161,6 +161,6 @@ public class SimpleStoreItemTest
         var item = GetMockItem();
         item.IncludeRecipe = true;
         
-        Assert.That(item.ToJson()["include_recipe"], Is.True);
+        Assert.That((bool) item.ToJson()["include_recipe"], Is.True);
     }
 }
