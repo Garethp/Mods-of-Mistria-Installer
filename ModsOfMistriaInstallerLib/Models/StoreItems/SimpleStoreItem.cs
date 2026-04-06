@@ -12,6 +12,8 @@ public class SimpleItem : StoreItem
 {
     public string Item;
 
+    public bool IncludeRecipe;
+
     public new Validation Validate(Validation validation, IMod mod, string file)
     {
         validation = base.Validate(validation, mod, file);
@@ -24,5 +26,13 @@ public class SimpleItem : StoreItem
         return validation;
     }
 
-    public override void AddJson(JObject json) => json.Add("item", Item);
+    public override void AddJson(JObject json)
+    {
+        json.Add("item", Item);
+
+        if (IncludeRecipe)
+        {
+            json.Add("include_recipe", true);
+        }
+    }
 }
