@@ -42,10 +42,10 @@ public class OutfitTest
                     { "default_unlocked", true },
                     { "ui_slot", "back" },
                     { "ui_sub_category", "capes" },
-                    { "lutFile", "images/lut.png" },
-                    { "uiItem", "images/ui.png" },
-                    { "outlineFile", "images/outline.png" },
-                    { "animationFiles", new JObject {
+                    { "lut_file", "images/lut.png" },
+                    { "ui_item", "images/ui.png" },
+                    { "outline_file", "images/outline.png" },
+                    { "animation_files", new JObject {
                         { "back", "images/animation" }
                     }}
                     
@@ -231,13 +231,12 @@ public class OutfitTest
                     { "default_unlocked", true },
                     { "ui_slot", "back" },
                     { "ui_sub_category", "capes" },
-                    { "lutFile", "images/lut.png" },
-                    { "uiItem", "images/ui.png" },
-                    { "outlineFile", "images/outline.png" },
-                    { "isFaceCosmetic", true },
-                    { "uiAssetFile", "images/ui_asset_file.png" },
-                    { "uiBodyFile", "images/ui_body_file.png" },
-                    { "animationFiles", new JObject {
+                    { "lut_file", "images/lut.png" },
+                    { "ui_item", "images/ui.png" },
+                    { "outline_file", "images/outline.png" },
+                    { "ui_asset_file", "images/ui_asset_file.png" },
+                    { "ui_body_file", "images/ui_body_file.png" },
+                    { "animation_files", new JObject {
                         { "back", "images/animation" }
                     }}
                     
@@ -297,13 +296,12 @@ public class OutfitTest
                     { "default_unlocked", true },
                     { "ui_slot", "back" },
                     { "ui_sub_category", "capes" },
-                    { "lutFile", "images/lut.png" },
-                    { "uiItem", "images/ui.png" },
-                    { "outlineFile", "images/outline.png" },
-                    { "isFaceCosmetic", true },
-                    { "uiAssetFile", "images/ui_asset_file.png" },
-                    { "uiBodyFile", "images/ui_body_file.png" },
-                    { "animationFiles", new JObject {
+                    { "lut_file", "images/lut.png" },
+                    { "ui_item", "images/ui.png" },
+                    { "outline_file", "images/outline.png" },
+                    { "ui_asset_file", "images/ui_asset_file.png" },
+                    { "ui_body_file", "images/ui_body_file.png" },
+                    { "animation_files", new JObject {
                         { "back", "images/animation" }
                     }}
                     
@@ -346,13 +344,12 @@ public class OutfitTest
                     { "default_unlocked", true },
                     { "ui_slot", "back" },
                     { "ui_sub_category", "capes" },
-                    { "lutFile", "images/lut.png" },
-                    { "uiItem", "images/ui.png" },
-                    { "outlineFile", "images/outline.png" },
-                    { "isFaceCosmetic", true },
-                    { "uiAssetFile", "images/ui_asset_file.png" },
-                    { "uiBodyFile", "images/ui_body_file.png" },
-                    { "animationFiles", new JObject {
+                    { "lut_file", "images/lut.png" },
+                    { "ui_item", "images/ui.png" },
+                    { "outline_file", "images/outline.png" },
+                    { "ui_asset_file", "images/ui_asset_file.png" },
+                    { "ui_body_file", "images/ui_body_file.png" },
+                    { "animation_files", new JObject {
                         { "back", "images/animation" }
                     }}
                     
@@ -395,11 +392,11 @@ public class OutfitTest
                     { "default_unlocked", true },
                     { "ui_slot", "back" },
                     { "ui_sub_category", "capes" },
-                    { "lutFile", "images/lut.png" },
-                    { "uiItem", "images/ui.png" },
-                    { "outlineFile", "images/outline.png" },
+                    { "lut_file", "images/lut.png" },
+                    { "ui_item", "images/ui.png" },
+                    { "outline_file", "images/outline.png" },
                     { "price_override", 5 },
-                    { "animationFiles", new JObject {
+                    { "animation_files", new JObject {
                         { "back", "images/animation" }
                     }}
                     
@@ -444,7 +441,7 @@ public class OutfitTest
     }
 
     [Test]
-    public void ShouldAcceptSnakeCaseForEverything()
+    public void ShouldAcceptLegacyCamelCase()
     {
         var mod = new MockMod(new Dictionary<string, string> {
             { "outfits/outfit.json", new JObject {
@@ -454,10 +451,10 @@ public class OutfitTest
                     { "default_unlocked", true },
                     { "ui_slot", "back" },
                     { "ui_sub_category", "capes" },
-                    { "lut_file", "images/lut.png" },
-                    { "ui_item", "images/ui.png" },
-                    { "outline_file", "images/outline.png" },
-                    { "animation_files", new JObject {
+                    { "lutFile", "images/lut.png" },
+                    { "uiItem", "images/ui.png" },
+                    { "outlineFile", "images/outline.png" },
+                    { "animationFiles", new JObject {
                         { "back", "images/animation" }
                     }}
                     
@@ -468,12 +465,12 @@ public class OutfitTest
                     { "default_unlocked", true },
                     { "ui_slot", "back" },
                     { "ui_sub_category", "capes" },
-                    { "lut_file", "images/lut.png" },
-                    { "ui_item", "images/ui.png" },
-                    { "outline_file", "images/outline.png" },
-                    { "ui_asset_file", "images/ui_asset_file.png" },
-                    { "ui_body_file", "images/ui_body_file.png" },
-                    { "animation_files", new JObject {
+                    { "lutFile", "images/lut.png" },
+                    { "uiItem", "images/ui.png" },
+                    { "outlineFile", "images/outline.png" },
+                    { "uiAssetFile", "images/ui_asset_file.png" },
+                    { "uiBodyFile", "images/ui_body_file.png" },
+                    { "animationFiles", new JObject {
                         { "back", "images/animation" }
                     }}
                     
