@@ -2,7 +2,7 @@
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
-public class ScheduleGenerator(): GenericGenerator("schedule")
+public class ScheduleGenerator(): GenericGenerator("schedules")
 {
     public override void AddJson(GeneratedInformation information, JObject json)
     {

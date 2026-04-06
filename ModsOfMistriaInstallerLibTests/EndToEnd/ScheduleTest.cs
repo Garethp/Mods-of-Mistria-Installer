@@ -36,7 +36,7 @@ public class ScheduleTest
     {
         var mod = new MockMod(new Dictionary<string, string>
         {
-            { "schedule/test.json", new JObject()
+            { "schedules/test.json", new JObject()
             {
                 { "balor", new JObject
                 {
