@@ -328,4 +328,7 @@
     <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve">
         <value>Outfit {0}'s price override must be a positive number.</value>
     </data>
+    <data name="CoreRunningInstaller" xml:space="preserve">
+        <value>Running {0}</value>
+    </data>
 </root>

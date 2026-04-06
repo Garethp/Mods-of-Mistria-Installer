@@ -132,6 +132,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
 
         foreach (var installer in desiredInstallers)
         {
+            reportStatus(string.Format(Resources.CoreRunningInstaller, installer.GetType().Name), "");
             timer.Restart();
             installer.Install(fieldsOfMistriaLocation, modsLocation, finalizedInformation, reportStatus);
             timer.Stop();

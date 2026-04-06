@@ -555,6 +555,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Running {0}.
+        /// </summary>
+        public static string CoreRunningInstaller {
+            get {
+                return ResourceManager.GetString("CoreRunningInstaller", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Skipping {0} for the following Errors:.
         /// </summary>
         public static string CoreSkippingModBecauseErrors {
