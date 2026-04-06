@@ -175,7 +175,6 @@ public class FiddleTest
         }));
     }
 
-    [Ignore("Nested JSON needed to get removed")]
     [Test]
     public void ShouldAutomaticallyNestObjects()
     {
@@ -204,7 +203,6 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
-    [Ignore("Nested JSON needed to get removed")]
     [Test]
     public void ShouldAutomaticallyNestObjectsAtMultipleLevels()
     {
@@ -244,7 +242,6 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
-    [Ignore("Nested JSON needed to get removed")]
     [Test]
     public void ShouldAutomaticallyNestArrays()
     {

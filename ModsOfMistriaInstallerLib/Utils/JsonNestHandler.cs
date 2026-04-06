@@ -1,10 +1,11 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Text.RegularExpressions;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 
 public static class JsonNestHandler
 {
-    public static JToken NestTokens(JObject jObject)
+    public static JToken NestTokens(JObject writeObject, JObject referenceObject)
     {
         var nested = new JObject();
         
@@ -29,6 +30,8 @@ public static class JsonNestHandler
                 var item = parent[key];
                 nested[$"{path}{key}"] = item;
 
+                if (key.Contains("/")) continue;
+                
                 Visit(item, $"{path}{key}/");
             }
             
@@ -45,7 +48,23 @@ public static class JsonNestHandler
             };
         }
 
-        Visit(jObject);
+        Visit(writeObject);
+        
+        var nestedProperties = writeObject
+            .Properties()
+            .Where(p => p.Name.Contains("/"))
+            .Select(p => p.Name)
+            .ToList();
+        
+        foreach (var property in nestedProperties)
+        {
+            var propertyName = property.Replace("/", ".");
+            propertyName = Regex.Replace(propertyName, "\\.([\\d+])", "[$1]");
+            if (nested.SelectToken(propertyName) is null)
+                nested.Remove(property);
+            
+            var a = 1 + 1;
+        }
 
         return nested;
     }

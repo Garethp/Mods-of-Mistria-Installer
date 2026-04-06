@@ -33,7 +33,7 @@ public class MatchesJsonConstraint(JToken expected) : Constraint
         
         var equals= JToken.EqualityComparer.Equals(_object, actualJson);
         
-        return new ConstraintResult(this, actual, equals);
+        return new ConstraintResult(this, actualJson.ToString(), equals);
     }
 
     public override string Description => $"matches the {_object}";
