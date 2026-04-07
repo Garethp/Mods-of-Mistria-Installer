@@ -285,6 +285,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Sprite {0} has no Location set..
+        /// </summary>
+        public static string CoreErrorSpriteHasNoLocation {
+            get {
+                return ResourceManager.GetString("CoreErrorSpriteHasNoLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Category has no store..
         /// </summary>
         public static string CoreErrorStoreCategoryHasNoStore {

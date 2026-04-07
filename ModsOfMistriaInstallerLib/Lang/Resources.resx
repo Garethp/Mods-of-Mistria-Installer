@@ -331,4 +331,7 @@
     <data name="CoreRunningInstaller" xml:space="preserve">
         <value>Running {0}</value>
     </data>
+    <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve">
+        <value>Sprite {0} has no Location set.</value>
+    </data>
 </root>

@@ -29,8 +29,8 @@ public class SpritesTest
         {
             { "test_sprite", new JObject
             {
-                { "Location", "images/sprite.png" },
-                { "IsAnimated", false },
+                { "location", "images/sprite.png" },
+                { "is_animated", false },
             }}
         });
     }
@@ -70,9 +70,9 @@ public class SpritesTest
         {
             { "test_sprite", new JObject
             {
-                { "OutlineLocation", "images/outline.png" },
-                { "Location", "images/sprite.png" },
-                { "IsAnimated", false },
+                { "outline_location", "images/outline.png" },
+                { "location", "images/sprite.png" },
+                { "is_animated", false },
             }}
         });
         
@@ -102,9 +102,9 @@ public class SpritesTest
         {
             { "test_sprite", new JObject
             {
-                { "OutlineLocation", "images/outline.png" },
-                { "Location", "images/animated" },
-                { "IsAnimated", true },
+                { "outline_location", "images/outline.png" },
+                { "location", "images/animated" },
+                { "is_animated", true },
             }}
         });
         
@@ -140,9 +140,9 @@ public class SpritesTest
         {
             { "test_sprite", new JObject
             {
-                { "OutlineLocation", "images/outline.png" },
-                { "Location", "images/sprite.png" },
-                { "IsAnimated", false },
+                { "outline_location", "images/outline.png" },
+                { "location", "images/sprite.png" },
+                { "is_animated", false },
             }}
         });
         
@@ -201,18 +201,18 @@ public class SpritesTest
         {
             { "test_sprite", new JObject
             {
-                { "OutlineLocation", "images/outline.png" },
-                { "Location", "images/animated" },
-                { "IsAnimated", true },
-                { "OriginX", 1 },
-                { "OriginY" ,2 },
-                { "MarginRight", 3 },
-                { "MarginLeft", 4 },
-                { "MarginTop", 5 },
-                { "MarginBottom", 6 },
-                { "BoundingBoxMode", 7 },
-                { "IsPlayerSprite", true },
-                { "IsUiSprite", true }
+                { "outline_location", "images/outline.png" },
+                { "location", "images/animated" },
+                { "is_animated", true },
+                { "origin_x", 1 },
+                { "origin_y" ,2 },
+                { "margin_right", 3 },
+                { "margin_left", 4 },
+                { "margin_top", 5 },
+                { "margin_bottom", 6 },
+                { "bounding_box_mode", 7 },
+                { "is_player_sprite", true },
+                { "is_ui_sprite", true }
             }}
         });
         

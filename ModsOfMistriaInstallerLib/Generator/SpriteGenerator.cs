@@ -1,5 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Installer.UMT;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Models;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,57 +18,47 @@ public class SpriteGenerator : IGenerator
 
         foreach (var file in mod.GetFilesInFolder("sprites"))
         {
-            var spriteInfo = JObject.Parse(mod.ReadFile(file));
+            var sprites = JsonConvert.DeserializeObject<Dictionary<string, Sprite>>(mod.ReadFile(file));
+            if (sprites is null) throw new Exception($"Attempted to read file {file} but it did not match expected format.");
 
-            foreach (var spriteJson in spriteInfo.Properties())
+            foreach (var spriteName in sprites.Keys)
             {
-                if (spriteJson.Value is not JObject spriteData)
-                {
-                    continue;
-                }
-
-                var isAnimated = spriteData["IsAnimated"]?.Value<bool>() ?? false;
-                var location = spriteData["Location"]?.Value<string>();
-                if (location is null) continue;
-                if (isAnimated && !mod.FolderExists(location)) continue;
-                if (!isAnimated && !mod.FileExists(location)) continue;
+                var sprite = sprites[spriteName];
+                sprite.Name = spriteName;
                 
-                var spriteName = spriteJson.Name;
-
                 if (!information.Sprites.ContainsKey(modId)) information.Sprites[modId] = [];
                 information.Sprites[modId].Add(new SpriteData
                 {
-                    Name = spriteName,
+                    Name = sprite.Name,
                     Mod = mod,
-                    Location = location,
-                    IsAnimated = isAnimated,
-                    OriginX =  spriteData["OriginX"]?.Value<int>(),
-                    OriginY = spriteData["OriginY"]?.Value<int>(),
-                    MarginRight = spriteData["MarginRight"]?.Value<int>(),
-                    MarginLeft = spriteData["MarginLeft"]?.Value<int>(),
-                    MarginTop = spriteData["MarginTop"]?.Value<int>(),
-                    MarginBottom = spriteData["MarginBottom"]?.Value<int>(),
-                    BoundingBoxMode = spriteData["BoundingBoxMode"]?.Value<uint>(),
-                    IsPlayerSprite = spriteData["IsPlayerSprite"]?.Value<bool>() ?? false,
-                    IsUiSprite = spriteData["IsUiSprite"]?.Value<bool>() ?? false
+                    Location = sprite.Location,
+                    IsAnimated = sprite.IsAnimated,
+                    OriginX =  sprite.OriginX,
+                    OriginY = sprite.OriginY,
+                    MarginRight = sprite.MarginRight,
+                    MarginLeft = sprite.MarginLeft,
+                    MarginTop = sprite.MarginTop,
+                    MarginBottom = sprite.MarginBottom,
+                    BoundingBoxMode = sprite.BoundingBoxMode,
+                    IsPlayerSprite = sprite.IsPlayerSprite,
+                    IsUiSprite = sprite.IsUiSprite
                 });
                 
-                var outline = spriteData["OutlineLocation"]?.Value<string>();
-                if (!string.IsNullOrEmpty(outline) && mod.FileExists(outline))
+                if (!string.IsNullOrEmpty(sprite.OutlineLocation) && mod.FileExists(sprite.OutlineLocation))
                 {
                     information.Sprites[modId].Add(new SpriteData
                     {
-                        Name = $"{spriteName}_outline",
+                        Name = $"{sprite.Name}_outline",
                         Mod = mod,
-                        Location = outline,
+                        Location = sprite.OutlineLocation,
                         IsAnimated = false,
-                        OriginX =  spriteData["OriginX"]?.Value<int>(),
-                        OriginY = spriteData["OriginY"]?.Value<int>(),
-                        MarginRight = spriteData["MarginRight"]?.Value<int>(),
-                        MarginLeft = spriteData["MarginLeft"]?.Value<int>(),
-                        MarginTop = spriteData["MarginTop"]?.Value<int>(),
-                        MarginBottom = spriteData["MarginBottom"]?.Value<int>(),
-                        BoundingBoxMode = spriteData["BoundingBoxMode"]?.Value<uint>(),
+                        OriginX =  sprite.OriginX,
+                        OriginY = sprite.OriginY,
+                        MarginRight = sprite.MarginRight,
+                        MarginLeft = sprite.MarginLeft,
+                        MarginTop = sprite.MarginTop,
+                        MarginBottom = sprite.MarginBottom,
+                        BoundingBoxMode = sprite.BoundingBoxMode,
                         IsPlayerSprite = false,
                         IsUiSprite = true
                     });
@@ -90,13 +81,13 @@ public class SpriteGenerator : IGenerator
         var validation = new Validation();
         if (!CanGenerate(mod)) return validation;
         
-        Dictionary<string, SpriteData> sprites;
+        Dictionary<string, Sprite> sprites;
         foreach (var file in mod.GetFilesInFolder("sprites"))
         {
             try
             {
-                sprites = JsonConvert.DeserializeObject<Dictionary<string, SpriteData>>(mod.ReadFile(file));
-            } 
+                sprites = JsonConvert.DeserializeObject<Dictionary<string, Sprite>>(mod.ReadFile(file));
+            }
             catch (Exception e)
             {
                 validation.AddError(mod, file, string.Format(Resources.CoreCouldNotParseJSON, e.Message));
