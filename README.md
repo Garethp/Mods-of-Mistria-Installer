@@ -288,14 +288,14 @@ creating a definition JSON file in the `sprites/` folder. Here's an example file
 ```json
 {
   "spr_furniture_stone_storage_chest_spring_v1_bounce": {
-    "IsAnimated": true,
-    "Location": "images/v1/bounce",
-    "OriginX": 16,
-    "OriginY": 56,
-    "MarginLeft": 3,
-    "MarginRight": 29,
-    "MarginBottom": 39,
-    "MarginTop": 15
+    "is_animated": true,
+    "location": "images/v1/bounce",
+    "origin_x": 16,
+    "origin_y": 56,
+    "margin_left": 3,
+    "margin_right": 29,
+    "margin_bottom": 39,
+    "margin_top": 15
   }
 }
 ```
@@ -307,17 +307,17 @@ the full list of sprite properties that you can control are:
 ```json
 {
   "sprite_name": {
-    "Location": "imageLocation.png",
-    "IsAnimated": true,
-    "BoundingBoxMode": 2,
-    "OriginX": 0,
-    "OriginY": 0,
-    "MarginRight": 0,
-    "MarginLeft": 0,
-    "MarginTop": 0,
-    "MarginBottom": 0,
-    "IsPlayerSprite": true,
-    "IsUiSprite": true
+    "location": "imageLocation.png",
+    "is_animated": true,
+    "bounding_box_mode": 2,
+    "origin_x": 0,
+    "origin_y": 0,
+    "margin_right": 0,
+    "margin_left": 0,
+    "margin_top": 0,
+    "margin_bottom": 0,
+    "is_player_sprite": true,
+    "is_ui_sprite": true
   }
 }
 ```

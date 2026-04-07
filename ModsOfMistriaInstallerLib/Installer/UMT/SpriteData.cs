@@ -42,6 +42,8 @@ public class SpriteData
 
     public int? MarginBottom;
 
+    public Dictionary<string, UndertaleTexturePageItem> PageItems = [];
+
     public bool MatchesPath(string path)
     {
         var ourPath = Path.Combine(Mod.GetBasePath(), Location).Replace('\\', '/');
@@ -56,23 +58,6 @@ public class SpriteData
         }
         
         return ourPath == path;
-    }
-
-    public Dictionary<string, UndertaleTexturePageItem> PageItems = [];
-
-    public Validation Validate(Validation validation, IMod mod, string file)
-    {
-        if (IsAnimated && ValidationTools.CheckSpriteDirectoryExists(mod, Name, Location) is { } singleSpriteError)
-        {
-            validation.AddWarning(mod, file, singleSpriteError);
-        }
-        
-        if (!IsAnimated && ValidationTools.CheckSpriteFileExists(mod, Name, Location) is { } animatedSpriteError)
-        {
-            validation.AddWarning(mod, file, animatedSpriteError);
-        }
-        
-        return validation;
     }
 }
 
