@@ -9,12 +9,17 @@ public static class JsonNestHandler
     {
         JToken VisitArray(JArray parent, JArray reference, string path = "")
         {
-            for (var key = 0; key < reference.Count; key++)
+            // For objects we only want to nest keys from the refence object, but for arrays we have the ability to append
+            // new keys on to the array. So key 0 in the reference might be key 5 in the real object. For this reason we're
+            // just going to ditch using the reference once we hit arrays. It's just there for performance, and when tested
+            // specifically with arrays we're only looking at ~90ms difference. There would be about 900ms difference if
+            // we didn't use reference keys at all anywhere though.
+            for (var key = 0; key < parent.Count; key++)
             {
                 var item = parent[key];
                 writeObject[$"{path}{key}"] = item;
                 
-                Visit(item, reference[key],$"{path}{key}/");
+                Visit(item, parent[key],$"{path}{key}/");
             }
             
             return parent;
