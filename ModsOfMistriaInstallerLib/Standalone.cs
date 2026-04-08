@@ -77,6 +77,33 @@ public static class Standalone
         Logger.Log(Resources.CoreModsInstalledInTime, totalTime);
     }
 
+    public static List<ModTypes.IMod>? ListMods()
+    {
+        var mistriaLocation = MistriaLocator.GetMistriaLocation();
+        if (mistriaLocation == null)
+        {
+            Logger.Log(Resources.CoreMistriaNotFound);
+            return null;
+        }
+
+        var modsLocation = MistriaLocator.GetModsLocation(mistriaLocation);
+
+        if (modsLocation is null || !Directory.Exists(modsLocation))
+        {
+            Logger.Log(Resources.CoreCouldNotGuessModsAt, Path.Combine(mistriaLocation, "mods"));
+            return null;
+        }
+
+        Logger.Log(Resources.CoreGuessedMistriaAt, mistriaLocation);
+
+        var installer = new ModInstaller(mistriaLocation, modsLocation);
+
+        var allMods = MistriaLocator.GetMods(mistriaLocation, modsLocation);
+        installer.ValidateMods(allMods);
+
+        return allMods;
+    }
+
     public static void UnInstall()
     {
         var mistriaLocation = MistriaLocator.GetMistriaLocation();
