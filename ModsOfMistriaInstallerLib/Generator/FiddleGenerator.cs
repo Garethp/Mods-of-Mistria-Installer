@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Garethp.ModsOfMistriaInstallerLib.Models;
+using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
@@ -6,6 +7,6 @@ public class FiddleGenerator() : GenericGenerator("fiddle")
 {
     public override void AddJson(GeneratedInformation information, JObject json)
     {
-        information.Fiddles.Add(json);
+        information.Fiddles.Add(new FiddleInformation(json));
     }
 }

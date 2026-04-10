@@ -1,4 +1,5 @@
-﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
+﻿using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
@@ -23,15 +24,15 @@ public class FiddleInstaller : IModuleInstaller
 
         existingFiddle = new StoreInstaller().Install(existingFiddle, information, reportStatus);
 
-        var allSources = new List<JObject> { existingFiddle };
+        var allSources = new List<FiddleInformation> { new (existingFiddle) };
         allSources.AddRange(information.Fiddles);
 
         var nestingReference = new JObject();
         foreach (var fiddle in information.Fiddles)
         {
-            nestingReference.Merge(fiddle, new JsonMergeSettings
+            nestingReference.Merge(fiddle.FiddleObject, new JsonMergeSettings
             {
-                MergeArrayHandling = MergeArrayHandling.Merge,
+                MergeArrayHandling = fiddle.MergeArrayHandling,
                 MergeNullValueHandling = MergeNullValueHandling.Merge
             });
         }
@@ -39,9 +40,9 @@ public class FiddleInstaller : IModuleInstaller
         var merged = new JObject();
         foreach (var source in allSources)
         {
-            merged.Merge(source, new JsonMergeSettings
+            merged.Merge(source.FiddleObject, new JsonMergeSettings
             {
-                MergeArrayHandling = MergeArrayHandling.Merge,
+                MergeArrayHandling = source.MergeArrayHandling,
                 MergeNullValueHandling = MergeNullValueHandling.Merge
             });    
         }

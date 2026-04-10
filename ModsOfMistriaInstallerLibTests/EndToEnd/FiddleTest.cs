@@ -342,4 +342,171 @@ public class FiddleTest
                 { "c/d", "4" }
             }));
     }
+
+    [Test]
+    public void ShouldMergeArraysByDefault()
+    {
+        _fileModifier = new MockFileModifier(new Dictionary<string, string>
+        {
+            {
+                "__fiddle__.json", new JObject {
+                    { "a", new JArray { "1", "2", "3" } }
+                }.ToString()
+            }
+        });
+
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            { "fiddle/fiddle.json", new JObject
+            {
+                { "a", new JArray { "4", "5" } }
+            }.ToString() }
+        });
+
+        _installer.InstallMods([mod], _fileModifier);
+
+        var expected = new JObject
+        {
+            { "a", new JArray { "4", "5", "3" } }
+        };
+
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
+    }
+    
+    [Test]
+    public void ShouldAllowSettingArraysToBeConcatted()
+    {
+        _fileModifier = new MockFileModifier(new Dictionary<string, string>
+        {
+            {
+                "__fiddle__.json", new JObject {
+                    { "a", new JArray { "1", "2", "3" } }
+                }.ToString()
+            }
+        });
+
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            { "fiddle/fiddle.json", new JObject
+            {
+                { "__arrayMergeSetting", "Add" },
+                { "a", new JArray { "4", "5" } }
+            }.ToString() }
+        });
+
+        _installer.InstallMods([mod], _fileModifier);
+
+        var expected = new JObject
+        {
+            { "a", new JArray { "1", "2", "3", "4", "5" } },
+            {
+                "extras", new JObject
+                {
+                    { "objects", new JArray() },
+                    { "items", new JArray() }
+                }
+            },
+            { "a/0", "1" },
+            { "a/1", "2" },
+            { "a/2", "3" },
+            { "a/3", "4" },
+            { "a/4", "5" },
+            { "extras/items", new JArray() },
+            { "extras/objects", new JArray() },
+        };
+
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(expected));
+    }
+
+    [Test]
+    public void ShouldAllowArrayReplacement()
+    {
+        _fileModifier = new MockFileModifier(new Dictionary<string, string>
+        {
+            {
+                "__fiddle__.json", new JObject {
+                    { "a", new JArray { "1", "2", "3" } }
+                }.ToString()
+            }
+        });
+
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            { "fiddle/fiddle.json", new JObject
+            {
+                { "__arrayMergeSetting", "Replace" },
+                { "a", new JArray { "4", "5" } }
+            }.ToString() }
+        });
+
+        _installer.InstallMods([mod], _fileModifier);
+
+        var expected = new JObject
+        {
+            { "a", new JArray { "4", "5" } },
+            {
+                "extras", new JObject
+                {
+                    { "objects", new JArray() },
+                    { "items", new JArray() }
+                }
+            },
+            { "a/0", "4" },
+            { "a/1", "5" },
+            { "extras/items", new JArray() },
+            { "extras/objects", new JArray() },
+        };
+
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(expected));
+    }
+    
+    [Test]
+    public void ShouldAllowArrayMergePerFile()
+    {
+        _fileModifier = new MockFileModifier(new Dictionary<string, string>
+        {
+            {
+                "__fiddle__.json", new JObject {
+                    { "a", new JArray { "1", "2", "3" } }
+                }.ToString()
+            }
+        });
+
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            { "fiddle/fiddle1.json", new JObject
+            {
+                { "__arrayMergeSetting", "Add" },
+                { "a", new JArray { "4", "5" } }
+            }.ToString() },
+            { "fiddle/fiddle2.json", new JObject
+            {
+                { "__arrayMergeSetting", "Merge" },
+                { "a", new JArray { "6", "7" } }
+            }.ToString() }
+        });
+
+        _installer.InstallMods([mod], _fileModifier);
+
+        var expected = new JObject
+        {
+            { "a", new JArray { "6", "7", "3", "4", "5" } },
+            {
+                "extras", new JObject
+                {
+                    { "objects", new JArray() },
+                    { "items", new JArray() }
+                }
+            },
+            { "a/0", "6" },
+            { "a/1", "7" },
+            { "a/2", "3" },
+            { "a/3", "4" },
+            { "a/4", "5" },
+            { "extras/items", new JArray() },
+            { "extras/objects", new JArray() },
+        };
+
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(expected));
+    }
 }
