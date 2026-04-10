@@ -30,9 +30,9 @@ public class FiddleInstaller : IModuleInstaller
         var nestingReference = new JObject();
         foreach (var fiddle in information.Fiddles)
         {
-            nestingReference.Merge(fiddle, new JsonMergeSettings
+            nestingReference.Merge(fiddle.FiddleObject, new JsonMergeSettings
             {
-                MergeArrayHandling = MergeArrayHandling.Merge,
+                MergeArrayHandling = fiddle.MergeArrayHandling,
                 MergeNullValueHandling = MergeNullValueHandling.Merge
             });
         }

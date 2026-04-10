@@ -406,6 +406,11 @@ public class FiddleTest
                     { "items", new JArray() }
                 }
             },
+            { "a/0", "1" },
+            { "a/1", "2" },
+            { "a/2", "3" },
+            { "a/3", "4" },
+            { "a/4", "5" },
             { "extras/items", new JArray() },
             { "extras/objects", new JArray() },
         };
@@ -446,6 +451,8 @@ public class FiddleTest
                     { "items", new JArray() }
                 }
             },
+            { "a/0", "4" },
+            { "a/1", "5" },
             { "extras/items", new JArray() },
             { "extras/objects", new JArray() },
         };
@@ -491,6 +498,11 @@ public class FiddleTest
                     { "items", new JArray() }
                 }
             },
+            { "a/0", "6" },
+            { "a/1", "7" },
+            { "a/2", "3" },
+            { "a/3", "4" },
+            { "a/4", "5" },
             { "extras/items", new JArray() },
             { "extras/objects", new JArray() },
         };
