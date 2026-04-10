@@ -144,7 +144,10 @@ public class FiddleTest
             {
                 "__fiddle__.json", new JObject
                 {
-                    { "a", new JArray { "1", "2", "3" } }
+                    { "a", new JArray { "1", "2", "3" } },
+                    { "a/0", "1" },
+                    { "a/1", "2" },
+                    { "a/2", "3" }
                 }.ToString()
             }
         });
@@ -170,12 +173,13 @@ public class FiddleTest
                     { "items", new JArray() }
                 }
             },
+            { "a/0", "4" },
+            { "a/1", "5" },
             { "extras/items", new JArray() },
             { "extras/objects", new JArray() },
         }));
     }
 
-    [Ignore("Nested JSON needed to get removed")]
     [Test]
     public void ShouldAutomaticallyNestObjects()
     {
@@ -204,7 +208,6 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
-    [Ignore("Nested JSON needed to get removed")]
     [Test]
     public void ShouldAutomaticallyNestObjectsAtMultipleLevels()
     {
@@ -244,7 +247,6 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
-    [Ignore("Nested JSON needed to get removed")]
     [Test]
     public void ShouldAutomaticallyNestArrays()
     {
@@ -300,7 +302,6 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
-    [Ignore("Nested JSON needed to get removed")]
     [Test]
     public void ShouldOnlyNestNewItems()
     {
@@ -321,16 +322,24 @@ public class FiddleTest
 
         var mod = new MockMod(new Dictionary<string, string>
         {
-            { "fiddle/fiddle.json", new JObject().ToString() }
+            { "fiddle/fiddle.json", new JObject
+            {
+                { "c", new JObject { { "d", "4" } } }
+            }.ToString() }
         });
 
         _installer.InstallMods([mod], _fileModifier);
-
-        var expected = new JObject
-        {
+        
+        Assert.That(
+            _fileModifier.GetFile("__fiddle__.json"), 
+            Is.Not.Matches(new ContainsJsonConstraint(new JObject {
             { "a/b", "foo" }
-        };
-
-        Assert.That(_fileModifier.GetFile("__fiddle__.json"), Is.Not.Matches(new ContainsJsonConstraint(expected)));
+        })));
+        
+        Assert.That(
+            _fileModifier.GetFile("__fiddle__.json"), 
+            new ContainsJsonConstraint(new JObject {
+                { "c/d", "4" }
+            }));
     }
 }

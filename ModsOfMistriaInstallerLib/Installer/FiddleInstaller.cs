@@ -25,9 +25,18 @@ public class FiddleInstaller : IModuleInstaller
 
         var allSources = new List<JObject> { existingFiddle };
         allSources.AddRange(information.Fiddles);
+
+        var nestingReference = new JObject();
+        foreach (var fiddle in information.Fiddles)
+        {
+            nestingReference.Merge(fiddle, new JsonMergeSettings
+            {
+                MergeArrayHandling = MergeArrayHandling.Merge,
+                MergeNullValueHandling = MergeNullValueHandling.Merge
+            });
+        }
         
         var merged = new JObject();
-        
         foreach (var source in allSources)
         {
             merged.Merge(source, new JsonMergeSettings
@@ -36,6 +45,8 @@ public class FiddleInstaller : IModuleInstaller
                 MergeNullValueHandling = MergeNullValueHandling.Merge
             });    
         }
+
+        merged = JsonNestHandler.NestTokens(merged, nestingReference);
         
         if (merged["extras"] is not JObject)
         {
