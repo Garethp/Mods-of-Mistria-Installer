@@ -244,7 +244,7 @@ public class JsonNestHandlerTest
                 { "d", new JObject { { "e", "3" } } },
                 { "f", new JArray { "4" } }
             } },
-            { "deep/d", new JObject { { "e", "3" }}},
+            { "deep/d", new JObject { { "e", "3" } } },
             { "deep/d/e", "3" },
             { "deep/f", new JArray { "4" } },
             { "deep/f/0", "4" }
@@ -346,5 +346,35 @@ public class JsonNestHandlerTest
         };
         
         Assert.That(JsonNestHandler.NestTokens(full, full), new MatchesJsonConstraint(expected));
+    }
+
+    [TestCase("items")]
+    [TestCase("object_prototypes")]
+    [TestCase("fonts")]
+    public void ShouldNotNestTopLevelKey(string topLevelKey)
+    {
+        var full = new JObject
+        {
+            { topLevelKey, new JObject {
+                { "test", "test" }
+            } }
+        };
+        
+        var expected = new JObject
+        {
+            { topLevelKey, new JObject {
+                { "test", "test" }
+            } }
+        };
+
+        var nested = JsonNestHandler.NestTokens(full, full);
+        
+        Assert.That(nested, new MatchesJsonConstraint(expected));
+        Assert.That(
+            nested, Is.Not.Matches(new ContainsJsonConstraint(new JObject
+            {
+                { $"{topLevelKey}/test", "test" }
+            }))
+        );
     }
 }

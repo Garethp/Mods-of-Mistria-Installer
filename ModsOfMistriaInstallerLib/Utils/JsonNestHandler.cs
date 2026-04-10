@@ -7,6 +7,8 @@ public static class JsonNestHandler
 {
     public static JObject NestTokens(JObject writeObject, JObject referenceObject)
     {
+        List<string> topLevelKeysToSkip = ["items", "object_prototypes", "fonts"];
+        
         JToken VisitArray(JArray parent, JArray reference, string path = "")
         {
             // For objects we only want to nest keys from the refence object, but for arrays we have the ability to append
@@ -30,6 +32,8 @@ public static class JsonNestHandler
             var properties = reference.Properties().Select(p => p.Name).ToList();
             foreach (var key in properties)
             {
+                if (path == "" && topLevelKeysToSkip.Contains(key)) continue;
+                
                 var item = parent[key];
                 writeObject[$"{path}{key}"] = item;
 
