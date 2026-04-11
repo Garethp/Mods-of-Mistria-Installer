@@ -1,8 +1,8 @@
-﻿using System.Reflection;
-using Garethp.ModsOfMistriaInstallerLib.Generator;
+﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
 using ModsOfMistriaInstallerLibTests.Fixtures;
 using ModsOfMistriaInstallerLibTests.TestUtils;
+using ModsOfMistriaInstallerLibTests.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace ModsOfMistriaInstallerLibTests.EndToEnd;
@@ -2425,20 +2425,14 @@ public class CutscenesTest
         Assert.That(_fileModifier.GetFile("__mist__.json"), new MatchesJsonConstraint(JObject.Parse(mist)));
     }
 
-    [Ignore("I need to get permission to ship the original __mist__.json file with this project for this test.")]
     [Test]
     public void ShouldEncodeFullMistFile()
     {
-        // @TODO: We need to make this more reliable. Maybe find our way up to the parents until we hit a predictable path?
-        var projectPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        var js = File.ReadAllText($"{projectPath}/../../../Fixtures/__mist__.js");
-        var mist = File.ReadAllText($"{projectPath}/../../../Fixtures/__mist__.json");
+        var js = File.ReadAllText(FixtureHandler.GetFixturePath("__mist__.js"));
+        var mist = File.ReadAllText(FixtureHandler.GetFixturePath("__mist__.json"));
 
         var mod = GetMockMod(js);
         _installer.InstallMods([mod], _fileModifier);
-
-        File.WriteAllText($"{projectPath}/../../../Fixtures/__decompiled__.json",
-            _fileModifier.GetFile("__mist__.json"));
 
         var fullActualMist = JObject.Parse(_fileModifier.GetFile("__mist__.json"));
         var fullDesiredMist = JObject.Parse(mist);
@@ -2452,16 +2446,6 @@ public class CutscenesTest
             // so when I tried to code around it, three other functions failed instead. For that reason we're just going to
             // ignore that function for testing.
             if (functionName == "balor_six_hearts.mist") continue;
-
-            // It looks like we're not quite applying grouping in binary expressions correctly, but seem functionally
-            // equivalent and I think it only really matters if you're doing very complex math with ambiguous grouping.
-            // What's happening is that the original AST shows `BINARY(+, GROUPING(1 * 5), BINARY(-, 3, GROUPING(8 - 2))`,
-            // which turns into the JS `__group(1 * 5) + 3 - __group(8 - 2)`. Converting that back into AST we get
-            // `BINARY(-, BINARY(+, GROUP(1 * 5), 3), GROUP(8 - 2)`. So during the conversion the 3 moves from the right
-            // side to the left side, which doesn't seem to be all that important to be honest. But it's going to be
-            // painful to fix and would only be fixed for the very specific purpose of passing this test. Which might be
-            // worth it, but maybe not right now.
-            if (functionName == "unit_test.mist") continue;
 
             Assert.That(new JObject { { functionName, fullActualMist[functionName] } },
                 new MatchesJsonConstraint(new JObject { { functionName, fullDesiredMist[functionName] } }));
