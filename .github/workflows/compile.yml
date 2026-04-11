@@ -1,9 +1,8 @@
 ﻿name: Publish To Release
 
 on:
-  push:
-    tags:
-      - '*'
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
