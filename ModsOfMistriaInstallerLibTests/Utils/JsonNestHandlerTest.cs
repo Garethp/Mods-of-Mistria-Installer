@@ -377,4 +377,10 @@ public class JsonNestHandlerTest
             }))
         );
     }
+
+    [Test]
+    public void ShouldHandleObjectsWithNumberKeys()
+    {
+        throw new NotImplementedException();
+    }
 }

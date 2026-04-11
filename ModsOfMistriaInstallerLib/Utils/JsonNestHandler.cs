@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
+using SharpCompress;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 
@@ -68,18 +69,55 @@ public static class JsonNestHandler
         
         foreach (var property in nestedProperties)
         {
-            var propertyName = property.Replace("/", ".");
-            propertyName = Regex.Replace(propertyName, @"\.([\d]+)\.", "[$1].");
-            propertyName = Regex.Replace(propertyName, @"\.([\d]+)$", "[$1]");
+            List<string> propertiesToCheck = [];
+            var nameParts = property.Split('/');
 
             if (property.StartsWith("doors/"))
             {
                 var doorKey = property.Substring("doors/".Length);
-                propertyName = $"doors['{doorKey.Replace("'", @"\'")}']";
+                var propertyName = $"doors['{doorKey.Replace("'", @"\'")}']";
+                
+                if (writeObject.SelectToken(propertyName) is null)
+                    writeObject.Remove(property);
+                
+                continue;
             }
             
-            if (writeObject.SelectToken(propertyName) is null)
-                writeObject.Remove(property);
+            JToken currentObject = writeObject;
+            for (var namePartIndex = 0; namePartIndex < nameParts.Length; namePartIndex++)
+            {
+                var namePart = nameParts[namePartIndex];
+
+                if (currentObject is JArray)
+                {
+                    var index = int.Parse(namePart);
+                    if (index < 0 || index >= currentObject.Count())
+                    {
+                        writeObject.Remove(property);
+                        break;
+                    }
+                    
+                    currentObject = currentObject[index];
+                }
+                else if (currentObject is JObject)
+                {
+                    currentObject = currentObject[namePart];
+                } else if (currentObject is JValue)
+                {
+                    writeObject.Remove(property);
+                    break;
+                }
+                else
+                {
+                    throw new Exception("Unknown fiddle object type");
+                }
+                
+                if (currentObject is null)
+                {
+                    writeObject.Remove(property);
+                    break;
+                }
+            }
         }
 
         return writeObject;
