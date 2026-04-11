@@ -47,7 +47,7 @@ public class FiddleInstaller : IModuleInstaller
             });    
         }
 
-        merged = JsonNestHandler.NestTokens(merged, nestingReference);
+        // merged = JsonNestHandler.NestTokens(merged, nestingReference);
         
         if (merged["extras"] is not JObject)
         {
