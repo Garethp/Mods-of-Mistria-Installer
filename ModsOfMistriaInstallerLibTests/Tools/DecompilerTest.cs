@@ -1,9 +1,7 @@
-﻿using System.Reflection;
-using Esprima;
-using Esprima.Ast;
-using Garethp.ModsOfMistriaInstallerLib.Tools.Compiler;
+﻿using Garethp.ModsOfMistriaInstallerLib.Tools.Compiler;
 using Garethp.ModsOfMistriaInstallerLib.Tools.Decompiler;
 using ModsOfMistriaInstallerLibTests.TestUtils;
+using ModsOfMistriaInstallerLibTests.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace ModsOfMistriaInstallerLibTests.Tools;
@@ -2418,13 +2416,10 @@ public class DecompilerTest
       Assert.That(MistDecompiler.Decompile(mist), new MatchesJs(js));
     }
 
-    [Ignore("I need to get permission to ship the original __mist__.json file with this project for this test.")]
     [Test]
     public void ShouldEncodeFullMistFile()
     {
-        // @TODO: We need to make this more reliable. Maybe find our way up to the parents until we hit a predictable path?
-        var projectPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-        var mist = File.ReadAllText($"{projectPath}/../../../Fixtures/__mist__.json");
+        var mist = File.ReadAllText(FixtureHandler.GetFixturePath("__mist__.json"));
         
         var fullDesiredMist = JObject.Parse(mist);
         var functionNames = fullDesiredMist.Properties().Select(prop => prop.Name).ToList();
