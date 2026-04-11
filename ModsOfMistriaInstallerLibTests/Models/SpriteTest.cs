@@ -145,6 +145,7 @@ public class SpriteTest
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
 
+    [Ignore("We'll show no error for the 0.10.x version, reintroduce this test for 0.11.0")]
     [Test]
     public void ShouldValidateOutlineSpriteIfGiven()
     {
@@ -154,7 +155,7 @@ public class SpriteTest
         var validation = sprite.Validate(new Validation(), _mockMod, "sprite.json");
 
         var expectedValidation = new Validation();
-        expectedValidation.AddError(
+        expectedValidation.AddWarning(
             _mockMod,
             "sprite.json",
             string.Format(
