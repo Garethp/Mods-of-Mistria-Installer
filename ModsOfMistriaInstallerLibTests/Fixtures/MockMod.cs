@@ -6,6 +6,8 @@ namespace ModsOfMistriaInstallerLibTests.Fixtures;
 public class MockMod : IMod
 {
     private readonly Dictionary<string, Dictionary<string, string>> _files = new();
+    
+    private Validation _validation = new();
 
     public MockMod(List<string> files)
     {
@@ -75,7 +77,7 @@ public class MockMod : IMod
 
     public Validation GetValidation()
     {
-        throw new NotImplementedException();
+        return _validation;
     }
 
     public string GetId() => "mock.mod";

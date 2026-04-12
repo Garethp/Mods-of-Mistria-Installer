@@ -53,7 +53,7 @@ public class NewObject
             validation.AddError(mod, file, string.Format(Resources.CoreErrorNewObjectInvalidCategory, Name, Category));
         }
         
-        if (Data.ToString()?.Replace(" ","") == "{}")
+        if (Data is null || Data.ToString()?.Replace(" ","") == "{}")
         {
             validation.AddError(mod, file, string.Format(Resources.CoreErrorNewObjectNoData, Name));
         }

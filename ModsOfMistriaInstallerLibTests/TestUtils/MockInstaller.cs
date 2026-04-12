@@ -50,4 +50,12 @@ public class MockInstaller
 
         return finalizedInformation;
     }
+    
+    public void ValidateMods(List<IMod> mods)
+    {
+        mods.ForEach(mod =>
+        {
+            _generators.ForEach(generator => { mod.GetValidation().Merge(generator.Validate(mod)); });
+        });
+    }
 }
