@@ -381,6 +381,62 @@ public class JsonNestHandlerTest
     [Test]
     public void ShouldHandleObjectsWithNumberKeys()
     {
-        throw new NotImplementedException();
+        var full = new JObject
+        {
+            {
+                "a", new JObject
+                {
+                    { "0", "foo" },
+                    { "5", "bar" }
+                }
+            }
+        };
+
+        var expected = new JObject
+        {
+            {
+                "a", new JObject
+                {
+                    { "0", "foo" },
+                    { "5", "bar" }
+                }
+            },
+            { "a/0", "foo" },
+            { "a/5", "bar" }
+        };
+        
+        Assert.That(JsonNestHandler.NestTokens(full, full), new MatchesJsonConstraint(expected));
+    }
+
+    [Test]
+    public void ShouldHandleBothArraysAndObjectsWithNumberKeys()
+    {
+        var full = new JObject
+        {
+            {
+                "a", new JArray
+                {
+                    new JObject { { "0", "foo" } },
+                    new JObject { { "5", "bar" } }
+                }
+            }
+        };
+
+        var expected = new JObject
+        {
+            {
+                "a", new JArray
+                {
+                    new JObject { { "0", "foo" } },
+                    new JObject { { "5", "bar" } }
+                }
+            },
+            { "a/0", new JObject { { "0", "foo" } } },
+            { "a/1", new JObject { { "5", "bar" } } },
+            { "a/0/0", "foo" },
+            { "a/1/5", "bar" }
+        };
+        
+        Assert.That(JsonNestHandler.NestTokens(full, full), new MatchesJsonConstraint(expected));
     }
 }
