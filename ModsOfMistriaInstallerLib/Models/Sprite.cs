@@ -112,6 +112,14 @@ public class Sprite
             validation.AddError(mod, file, animatedSpriteError);
         }
         
+        if (
+            !string.IsNullOrEmpty(OutlineLocation) &&
+            ValidationTools.CheckSpriteFileExists(mod, $"Sprite {Name}'s outline_location", OutlineLocation) is
+                { } outlineSpriteError)
+        {
+            validation.AddWarning(mod, file, outlineSpriteError);
+        }
+        
         return validation;
     }
 }
