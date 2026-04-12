@@ -145,9 +145,9 @@ public class FiddleTest
                 "__fiddle__.json", new JObject
                 {
                     { "a", new JArray { "1", "2", "3" } },
-                    // { "a/0", "1" },
-                    // { "a/1", "2" },
-                    // { "a/2", "3" }
+                    { "a/0", "1" },
+                    { "a/1", "2" },
+                    { "a/2", "3" }
                 }.ToString()
             }
         });
@@ -173,14 +173,13 @@ public class FiddleTest
                     { "items", new JArray() }
                 }
             },
-            // { "a/0", "4" },
-            // { "a/1", "5" },
+            { "a/0", "4" },
+            { "a/1", "5" },
             { "extras/items", new JArray() },
             { "extras/objects", new JArray() },
         }));
     }
 
-    [Ignore("Temporarily disabling nesting")]
     [Test]
     public void ShouldAutomaticallyNestObjects()
     {
@@ -209,7 +208,6 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
-    [Ignore("Temporarily disabling nesting")]
     [Test]
     public void ShouldAutomaticallyNestObjectsAtMultipleLevels()
     {
@@ -249,7 +247,6 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
-    [Ignore("Temporarily disabling nesting")]
     [Test]
     public void ShouldAutomaticallyNestArrays()
     {
@@ -305,7 +302,6 @@ public class FiddleTest
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 
-    [Ignore("Temporarily disabling nesting")]
     [Test]
     public void ShouldOnlyNestNewItems()
     {
@@ -410,11 +406,11 @@ public class FiddleTest
                     { "items", new JArray() }
                 }
             },
-            // { "a/0", "1" },
-            // { "a/1", "2" },
-            // { "a/2", "3" },
-            // { "a/3", "4" },
-            // { "a/4", "5" },
+            { "a/0", "1" },
+            { "a/1", "2" },
+            { "a/2", "3" },
+            { "a/3", "4" },
+            { "a/4", "5" },
             { "extras/items", new JArray() },
             { "extras/objects", new JArray() },
         };
@@ -455,8 +451,8 @@ public class FiddleTest
                     { "items", new JArray() }
                 }
             },
-            // { "a/0", "4" },
-            // { "a/1", "5" },
+            { "a/0", "4" },
+            { "a/1", "5" },
             { "extras/items", new JArray() },
             { "extras/objects", new JArray() },
         };
@@ -502,11 +498,11 @@ public class FiddleTest
                     { "items", new JArray() }
                 }
             },
-            // { "a/0", "6" },
-            // { "a/1", "7" },
-            // { "a/2", "3" },
-            // { "a/3", "4" },
-            // { "a/4", "5" },
+            { "a/0", "6" },
+            { "a/1", "7" },
+            { "a/2", "3" },
+            { "a/3", "4" },
+            { "a/4", "5" },
             { "extras/items", new JArray() },
             { "extras/objects", new JArray() },
         };
