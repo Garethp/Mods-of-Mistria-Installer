@@ -119,4 +119,31 @@ public class NewObjectsTest
         
         Assert.That(mod.GetValidation(), Is.EqualTo(expected).Using(new ValidationComparer()));
     }
+    
+    [Test]
+    public void ShouldValidateDataIsRequired()
+    {
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            {
+                "objects/test.json", new JObject
+                {
+                    {
+                        "new_object", new JObject
+                        {
+                            { "category", "building" },
+                            { "overwrites_other_mod", false }
+                        }
+                    },
+                }.ToString()
+            }
+        });
+
+        _installer.ValidateMods([mod]);
+
+        var expected = new Validation();
+        expected.AddError(mod, "objects/test.json", string.Format(Resources.CoreErrorNewObjectNoData, "new_object"));
+        
+        Assert.That(mod.GetValidation(), Is.EqualTo(expected).Using(new ValidationComparer()));
+    }
 }
