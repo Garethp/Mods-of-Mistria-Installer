@@ -107,6 +107,8 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
             }
         ];
         
+        // Archie released a version of AurieCore.dll (2.0.2) that is broken on Linux and stops the game from loading.
+        // This will downgrade people specifically to the original 2.0.0 release for Linux only
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             filesToEnsure[2].Release = "267229495";
