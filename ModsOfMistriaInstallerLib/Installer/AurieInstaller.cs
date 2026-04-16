@@ -106,6 +106,13 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
                 Artifact = "AurieCore.dll"
             }
         ];
+        
+        // Archie released a version of AurieCore.dll (2.0.2) that is broken on Linux and stops the game from loading.
+        // This will downgrade people specifically to the original 2.0.0 release for Linux only
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            filesToEnsure[2].Release = "267229495";
+        }
 
         using var client = new HttpClient();
         client.DefaultRequestHeaders.UserAgent.ParseAdd("Aurie");
@@ -141,8 +148,13 @@ public class AurieInstaller : IModuleInstaller, IPreinstallInfo, IPreUninstallIn
 
                             latestVersion = Regex.Replace(latestVersion, @"[a-zA-Z]", "");
                             var latestVersionItem = new Version(latestVersion);
-
-                            if (latestVersionItem.CompareTo(new Version(versionString)) > 0)
+                            if (latestVersion.Split('.').Length == 3 && versionString.Split('.').Length > 3)
+                            {
+                                var versionArray = versionString.Split('.').Take(3);
+                                versionString = String.Join('.', versionArray);
+                            }
+                            
+                            if (latestVersionItem.CompareTo(new Version(versionString)) != 0)
                             {
                                 needsUpdate = true;
                             }
