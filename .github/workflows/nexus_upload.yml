@@ -60,7 +60,7 @@ jobs:
           dest: Release/ModsOfMistriaInstaller-osx.zip
           
       - name: Upload to Windows GUI NexusMods
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUS_TOKEN }}
           file_group_id: 569647
@@ -70,7 +70,7 @@ jobs:
           description: "If you're on Windows, you should probably use this release"
           
       - name: Upload to Linux GUI NexusMods
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUS_TOKEN }}
           file_group_id: 569653
@@ -80,7 +80,7 @@ jobs:
           description: "If you're on a Steam Deck, you should probably use this release"
 
       - name: Upload to OSX GUI NexusMods
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.3
+        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUS_TOKEN }}
           file_group_id: 569668
