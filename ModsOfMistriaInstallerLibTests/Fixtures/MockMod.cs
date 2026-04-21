@@ -27,7 +27,9 @@ public class MockMod : IMod
         });
     }
 
-    public MockMod(Dictionary<string, string> files)
+    public MockMod(Dictionary<string, string> files) : this("mod", files) { }
+
+    public MockMod(string modName, Dictionary<string, string> files)
     {
         files.Keys.ToList().ForEach(file =>
         {
@@ -152,4 +154,5 @@ public class MockMod : IMod
     {
         throw new NotImplementedException();
     }
-}
+
+    }

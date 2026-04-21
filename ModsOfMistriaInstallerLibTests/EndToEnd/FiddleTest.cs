@@ -10,7 +10,7 @@ namespace ModsOfMistriaInstallerLibTests.EndToEnd;
 public class FiddleTest
 {
     private MockInstaller _installer = new MockInstaller(
-        [new FiddleGenerator()],
+        [new FiddleGenerator(), new StoreGenerator()],
         [new FiddleInstaller()]
     );
 
@@ -508,5 +508,117 @@ public class FiddleTest
         };
 
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new MatchesJsonConstraint(expected));
+    }
+
+    [Test]
+    public void ShouldMaintainModOrderingWithFiddleAndStores()
+    {
+        _fileModifier = new MockFileModifier(new Dictionary<string, string>
+        {
+            { "__fiddle__.json", new JObject
+            {
+                { "stores", new JObject
+                {
+                    { "test", new JObject
+                    {
+                        { "name", "test" },
+                        { "categories", new JArray()
+                        {
+                            new JObject
+                            {
+                                { "icon", "test" },
+                                { "constant_stock", new JArray
+                                {
+                                    new JObject { { "item", "remove" } }
+                                } }
+                            }
+                        }}
+                    }}
+                }}
+            }.ToString() }
+        });
+        
+        var mod1 = new MockMod("mod1", new Dictionary<string, string>()
+        {
+            { "fiddle/fiddle.json", new JObject
+            {
+                { "stores", new JObject
+                {
+                    { "test", new JObject
+                    {
+                        { "name", "test" },
+                        { "categories", null }
+                    }}
+                }}
+            }.ToString() }
+        });
+
+        var mod2 = new MockMod("mod2", new Dictionary<string, string>()
+        {
+            {  "stores/items.json", new JObject
+            {
+                { "items", new JArray
+                {
+                    new JObject
+                    {
+                        { "item", "seed_turnip" },
+                        { "store", "test" },
+                        { "category", "test" }
+                    }
+                }}
+            }.ToString() }
+        });
+        
+        _installer.InstallMods([mod1, mod2], _fileModifier);
+
+        var expected = new JObject
+        {
+            { "stores", new JObject
+            {
+                { "test", new JObject
+                {
+                    { "name", "test" },
+                    { "categories", new JArray()
+                    {
+                        new JObject
+                        {
+                            { "icon", "test" },
+                            { "constant_stock", new JArray
+                            {
+                                new JObject { { "item", "seed_turnip" } }
+                            } }
+                        }
+                    }}
+                }}
+            }}
+        };
+
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
+    }
+
+    [Test]
+    public void ShouldRespectFileNameOrder()
+    {
+        var mod = new MockMod("mod", new Dictionary<string, string>()
+        {
+            { "fiddle/b.json", new JObject
+            {
+                { "key", "right" }
+            }.ToString() },
+            
+            { "fiddle/a.json", new JObject
+            {
+                { "key", "wrong" }
+            }.ToString() }
+        });
+        
+        _installer.InstallMods([mod], _fileModifier);
+
+        var expected = new JObject
+        {
+            { "key", "right" }
+        };
+        
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
 }
