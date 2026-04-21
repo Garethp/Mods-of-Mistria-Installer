@@ -329,7 +329,7 @@ If you want to add shadow sprites to the game, create a JSON file in the `shadow
 {
   "shadow_sprite_name": {
     "regular_sprite_name": "spr_regular_sprite_name",
-    "sprite": "images/sprite.png",
+    "location": "images/sprite.png",
     "is_animated": false
   }
 }
@@ -344,7 +344,8 @@ This will create new sprites in the `data.win` folder with the name `shadow_spri
 }
 ```
 
-If you use this, please set `minInstallerVersion` in your `manifest.json` to no lower than `0.1.4`
+Optionally, you can also specify `origin_x`, `origin_y`, `maring_left`, `margin_right`, `margin_top` and `margin_bottom`
+for your shadow sprite.
 
 ### `aurie/`
 **Note: At the moment, Aurie mods will not install on the Steam Deck/Linux**
