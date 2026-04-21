@@ -32,7 +32,7 @@ public class ShadowTest
             { "shadows/shadow.json", new JObject {
                 { "test_shadow", new JObject {
                     { "regular_sprite_name", "test_sprite" },
-                    { "sprite", "images/sprite.png" },
+                    { "location", "images/sprite.png" },
                     { "is_animated", false }
                 }}
             }.ToString() },
@@ -66,5 +66,74 @@ public class ShadowTest
         {
             { "test_sprite", "test_shadow" }
         }));
+    }
+
+    [Test]
+    public void ShouldAllowSettingOriginAndMargin()
+    {
+        var mod = new MockMod(new Dictionary<string, string> {
+            { "shadows/shadow.json", new JObject {
+                { "test_shadow", new JObject {
+                    { "regular_sprite_name", "test_sprite" },
+                    { "location", "images/sprite.png" },
+                    { "is_animated", false },
+                    { "origin_x", 1 },
+                    { "origin_y", 2 },
+                    { "margin_left", 3 },
+                    { "margin_right", 4 },
+                    { "margin_top", 5 },
+                    { "margin_bottom", 6 }
+                }}
+            }.ToString() },
+            { "images/sprite.png", "" },
+        });
+        
+        var generatedInformation = _installer.InstallMods([mod], _fileModifier);
+        
+        Assert.That(generatedInformation.Sprites, Contains.Key(mod.GetId()));
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()],
+            Has.Some.Matches((SpriteData sprite) =>
+                sprite is
+                {
+                    Name: "test_shadow",
+                    Location: "images/sprite.png",
+                    IsAnimated: false,
+                    OriginX: 1,
+                    OriginY: 2,
+                    MarginLeft: 3,
+                    MarginRight: 4,
+                    MarginTop: 5,
+                    MarginBottom: 6
+                }
+            )
+        );
+    }
+
+    [Test]
+    public void ShouldSupportLegacySpriteKey()
+    {
+        var mod = new MockMod(new Dictionary<string, string> {
+            { "shadows/shadow.json", new JObject {
+                { "test_shadow", new JObject {
+                    { "regular_sprite_name", "test_sprite" },
+                    { "sprite", "images/sprite.png" },
+                    { "is_animated", false }
+                }}
+            }.ToString() },
+            { "images/sprite.png", "" },
+        });
+        
+        var generatedInformation = _installer.InstallMods([mod], _fileModifier);
+        
+        Assert.That(generatedInformation.Sprites, Contains.Key(mod.GetId()));
+        Assert.That(
+            generatedInformation.Sprites[mod.GetId()], 
+            Has.Some.Matches((SpriteData sprite) => 
+                sprite.Name == "test_shadow" &&
+                sprite.Location == "images/sprite.png" &&
+                !sprite.IsAnimated
+            )
+        );
     }
 }

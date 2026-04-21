@@ -29,8 +29,14 @@ public class ShadowGenerator : IGenerator
                 {
                     Name = shadowSprite.Name,
                     Mod = mod,
-                    Location = shadowSprite.Sprite,
-                    IsAnimated = shadowSprite.IsAnimated
+                    Location = shadowSprite.Location,
+                    IsAnimated = shadowSprite.IsAnimated,
+                    OriginX = shadowSprite.OriginX,
+                    OriginY = shadowSprite.OriginY,
+                    MarginLeft = shadowSprite.MarginLeft,
+                    MarginRight = shadowSprite.MarginRight,
+                    MarginTop = shadowSprite.MarginTop,
+                    MarginBottom = shadowSprite.MarginBottom
                 });
 
                 information.ShadowManifests.Add(new JObject

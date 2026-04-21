@@ -26,7 +26,7 @@ public class ShadowSpriteTest
         var sprite = new ShadowSprite
         {
             RegularSpriteName = "test_sprite",
-            Sprite = "images/sprite.png",
+            Location = "images/sprite.png",
             IsAnimated = false
         };
 
@@ -48,7 +48,7 @@ public class ShadowSpriteTest
     public void ShouldHaveNoErrorsForValidShadowSpriteWithAnimation()
     {
         var shadowSprite = GetMockShadowSprite();
-        shadowSprite.Sprite = "images/animation";
+        shadowSprite.Location = "images/animation";
         shadowSprite.IsAnimated = true;
         
         var validation = shadowSprite.Validate(new Validation(), _mockMod, "shadow.json", "shadow");
@@ -79,7 +79,7 @@ public class ShadowSpriteTest
     public void ShouldHaveErrorForEmptyNonAnimatedSprite()
     {
         var shadowSprite = GetMockShadowSprite();
-        shadowSprite.Sprite = "";
+        shadowSprite.Location = "";
         var validation = shadowSprite.Validate(new Validation(), _mockMod, "shadow.json", "shadow");
 
         var expectedValidation = new Validation();
@@ -102,7 +102,7 @@ public class ShadowSpriteTest
     public void ShouldHaveErrorForMissingNonAnimatedSprite()
     {
         var shadowSprite = GetMockShadowSprite();
-        shadowSprite.Sprite = "images/not-found.png";
+        shadowSprite.Location = "images/not-found.png";
         var validation = shadowSprite.Validate(new Validation(), _mockMod, "shadow.json", "shadow");
 
         var expectedValidation = new Validation();
@@ -119,7 +119,7 @@ public class ShadowSpriteTest
     public void ShouldHaveErrorForEmptyAnimatedSprite()
     {
         var shadowSprite = GetMockShadowSprite();
-        shadowSprite.Sprite = "";
+        shadowSprite.Location = "";
         shadowSprite.IsAnimated = true;
         var validation = shadowSprite.Validate(new Validation(), _mockMod, "shadow.json", "shadow");
 
@@ -143,7 +143,7 @@ public class ShadowSpriteTest
     public void ShouldHaveErrorForMissingAnimatedSprite()
     {
         var shadowSprite = GetMockShadowSprite();
-        shadowSprite.Sprite = "images/not-found";
+        shadowSprite.Location = "images/not-found";
         shadowSprite.IsAnimated = true;
         var validation = shadowSprite.Validate(new Validation(), _mockMod, "shadow.json", "shadow");
 
@@ -161,7 +161,7 @@ public class ShadowSpriteTest
     public void ShouldHaveErrorForEmptyDirectoryAnimatedSprite()
     {
         var shadowSprite = GetMockShadowSprite();
-        shadowSprite.Sprite = "images/empty";
+        shadowSprite.Location = "images/empty";
         shadowSprite.IsAnimated = true;
         var validation = shadowSprite.Validate(new Validation(), _mockMod, "shadow.json", "shadow");
 
@@ -173,5 +173,16 @@ public class ShadowSpriteTest
         );
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
+    }
+
+    [Test]
+    public void ShouldSetOldSpriteKeyToLocation()
+    {
+        var shadowSprite = new ShadowSprite();
+
+        shadowSprite.Location = "error";
+        shadowSprite.LegacySprite = "test";
+        
+        Assert.That(shadowSprite.Location, Is.EqualTo("test"));
     }
 }
