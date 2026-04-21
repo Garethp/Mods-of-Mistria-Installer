@@ -25,17 +25,27 @@ public class StoreInstaller : ISubModuleInstaller
                 throw new Exception(
                     $"Could not add category {iconName} to {storeName} because {storeName} does not exist");
 
-            if (categories.Any(existingCategory => existingCategory["icon"]?.ToString() == iconName))
+            var existingCategory = categories
+                .FirstOrDefault(existingCategory => existingCategory["icon"]?.ToString() == iconName);
+
+            if (existingCategory is not null)
+            {
+                if (category.TargetSelections is null) return;
+
+                existingCategory["target_selections"] = category.TargetSelections;
+                existingCategory["random_stock"] ??= new JArray();
+
                 return;
+            }
 
             var newCategory = new JObject
             {
                 { "icon", iconName }
             };
             
-            if (category.RandomSelections is not null || category.TargetSelections is not null)
+            if (category.TargetSelections is not null)
             {
-                newCategory["target_selections"] = category.TargetSelections ?? category.RandomSelections;
+                newCategory["target_selections"] = category.TargetSelections;
                 newCategory["random_stock"] = new JArray();
             }
             

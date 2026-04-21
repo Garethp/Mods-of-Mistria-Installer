@@ -94,4 +94,13 @@ public class StoreCategoryTest
 
         Assert.That(validation, Is.EqualTo(expectedValidation).Using(new ValidationComparer()));
     }
+
+    [Test]
+    public void ShouldSetTargetSelectionsFromLegacyRandomSelections()
+    {
+        var category = GetMockItem();
+        category.LegacyRandomSelections = 5;
+        
+        Assert.That(category.TargetSelections, Is.EqualTo(5));
+    }
 }
