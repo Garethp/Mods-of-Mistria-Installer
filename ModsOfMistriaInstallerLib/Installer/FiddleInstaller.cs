@@ -21,9 +21,7 @@ public class FiddleInstaller : IModuleInstaller
         var existingFiddle = JObject.Parse(
             _fileModifier.Read(fieldsOfMistriaLocation, "__fiddle__.json")
         );
-
-        existingFiddle = new StoreInstaller().Install(existingFiddle, information, reportStatus);
-
+        
         var nestingReference = new JObject();
         var merged = new JObject();
         merged.Merge(existingFiddle);
