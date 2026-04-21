@@ -7,7 +7,8 @@ public class MockMod : IMod
 {
     private readonly Dictionary<string, Dictionary<string, string>> _files = new();
     
-    private Validation _validation = new();
+    private readonly Validation _validation = new();
+    private readonly string _name = "mod";
 
     public MockMod(List<string> files)
     {
@@ -31,6 +32,8 @@ public class MockMod : IMod
 
     public MockMod(string modName, Dictionary<string, string> files)
     {
+        _name = modName;
+        
         files.Keys.ToList().ForEach(file =>
         {
             if (Path.HasExtension(file))
@@ -52,10 +55,7 @@ public class MockMod : IMod
         throw new NotImplementedException();
     }
 
-    public string GetName()
-    {
-        throw new NotImplementedException();
-    }
+    public string GetName() => _name;
 
     public string GetVersion()
     {

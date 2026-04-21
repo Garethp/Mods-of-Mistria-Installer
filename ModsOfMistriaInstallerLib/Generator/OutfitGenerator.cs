@@ -172,7 +172,7 @@ public class OutfitGenerator : IGenerator
                 information.Sprites[modId].AddRange(newSprites);
 
                 information.Localisations.Add(localisation);
-                information.Fiddles.Add(new FiddleInformation(fiddle));
+                information.Fiddles.Add(new FiddleInformation(mod.GetName(), outfitFile, fiddle));
                 information.Outlines.Add(outline);
                 information.AssetParts.Add(new JObject
                 {

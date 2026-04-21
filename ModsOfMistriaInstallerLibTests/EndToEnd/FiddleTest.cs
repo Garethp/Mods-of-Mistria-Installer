@@ -547,7 +547,14 @@ public class FiddleTest
                     { "test", new JObject
                     {
                         { "name", "test" },
-                        { "categories", null }
+                        { "categories", new JArray
+                        {
+                            new JObject
+                            {
+                                { "icon", "test" },
+                                { "constant_stock", null }
+                            }
+                        } }
                     }}
                 }}
             }.ToString() }
@@ -578,7 +585,7 @@ public class FiddleTest
                 { "test", new JObject
                 {
                     { "name", "test" },
-                    { "categories", new JArray()
+                    { "categories", new JArray
                     {
                         new JObject
                         {

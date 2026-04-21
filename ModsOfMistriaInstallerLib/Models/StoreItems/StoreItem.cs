@@ -15,6 +15,9 @@ public class StoreItem
     public string? Season;
     public bool RandomStock = false;
     public JObject? requirements;
+    
+    [JsonIgnore] public string ModName;
+    [JsonIgnore] public string FileName;
 
     public Validation Validate(Validation validation, IMod mod, string file)
     {

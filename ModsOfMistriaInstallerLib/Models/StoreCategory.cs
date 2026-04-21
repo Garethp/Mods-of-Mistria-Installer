@@ -19,6 +19,9 @@ public class StoreCategory
 
     public int? TargetSelections;
 
+    [JsonIgnore] public string ModName;
+    [JsonIgnore] public string FileName;
+
     public Validation Validate(Validation validation, IMod mod, string file)
     {
         if (string.IsNullOrWhiteSpace(Store))

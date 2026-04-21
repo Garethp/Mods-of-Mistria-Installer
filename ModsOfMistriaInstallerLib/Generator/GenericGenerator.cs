@@ -15,10 +15,15 @@ public abstract class GenericGenerator(string folderName) : IGenerator
         {
             var json = JObject.Parse(mod.ReadFile(file));
 
-            AddJson(generatedInformation, json);
+            AddJson(mod, file, generatedInformation, json);
         }
         
         return generatedInformation;
+    }
+
+    public virtual void AddJson(IMod mod, string fileName, GeneratedInformation information, JObject json)
+    {
+        AddJson(information, json);
     }
     
     public abstract void AddJson(GeneratedInformation information, JObject json);

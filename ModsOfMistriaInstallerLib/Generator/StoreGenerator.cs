@@ -28,7 +28,17 @@ public class StoreGenerator: IGenerator
                     Location = category.Sprite,
                     IsUiSprite = true
                 });
+
+                category.ModName = mod.GetName();
+                category.FileName = file;
             });
+            
+            storeFile.Items.ForEach(item =>
+            {
+                item.ModName = mod.GetName();
+                item.FileName = file;
+            });
+            
             information.StoreCategories.AddRange(storeFile.Categories);
             information.StoreItems.AddRange(storeFile.Items);
         }
