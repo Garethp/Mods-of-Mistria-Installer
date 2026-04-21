@@ -14,14 +14,18 @@ public class StoreCategory
     public string Store;
 
     public string Sprite;
-
-    public int? RandomSelections;
-
+    
     public int? TargetSelections;
-
+    
     [JsonIgnore] public string ModName;
     [JsonIgnore] public string FileName;
 
+    [JsonProperty("random_selections")]
+    public int? LegacyRandomSelections
+    {
+        set => TargetSelections = value;
+    }
+    
     public Validation Validate(Validation validation, IMod mod, string file)
     {
         if (string.IsNullOrWhiteSpace(Store))

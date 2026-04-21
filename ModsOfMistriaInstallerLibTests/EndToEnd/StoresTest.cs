@@ -250,6 +250,78 @@ public class StoresTest
         
         Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
     }
+    
+    [Test]
+    public void ShouldNotReplaceRandomStockWhenSettingTargetSelectionsOnExistingCategory()
+    {
+        _fileModifier = new MockFileModifier(new Dictionary<string, string>
+        {
+            { "__fiddle__.json", new JObject
+            {
+                { "stores", new JObject
+                {
+                    { "general", new JObject
+                    {
+                        { "name", "general" },
+                        { "categories", new JArray
+                        {
+                            new JObject
+                            {
+                                { "icon", "existing" },
+                                { "random_stock", new JArray
+                                {
+                                    new JObject { { "item", "turnip_seed" } }
+                                }}
+                            }
+                        } }
+                    } }
+                }}
+            }.ToString() }
+        });
+        
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            { "stores/store.json", new JObject
+            {
+                { "categories", new JArray
+                {
+                    new JObject
+                    {
+                        { "store", "general" },
+                        { "icon_name", "existing" },
+                        { "sprite", "images/sprite.png" },
+                        { "target_selections", 5 }
+                    }
+                } }
+            }.ToString()}
+        });
+
+        _installer.InstallMods([mod], _fileModifier);
+
+        var expected = new JObject
+        {
+            { "stores", new JObject
+            {
+                { "general", new JObject
+                {
+                    { "categories", new JArray
+                    {
+                        new JObject
+                        {
+                            { "icon", "existing" },
+                            { "target_selections", 5 },
+                            { "random_stock", new JArray
+                            {
+                                new JObject { { "item", "turnip_seed" } }
+                            } }
+                        }
+                    }}
+                }}
+            }}
+        };
+        
+        Assert.That(_fileModifier.GetFile("__fiddle__.json"), new ContainsJsonConstraint(expected));
+    }
 
     [Test]
     public void ShouldAcceptLegacyRandomSelectionsKey()
