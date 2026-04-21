@@ -24,29 +24,51 @@ public class FiddleInstaller : IModuleInstaller
 
         existingFiddle = new StoreInstaller().Install(existingFiddle, information, reportStatus);
 
-        var allSources = new List<FiddleInformation> { new (existingFiddle) };
-        allSources.AddRange(information.Fiddles);
-
         var nestingReference = new JObject();
-        foreach (var fiddle in information.Fiddles)
+        var merged = new JObject();
+        merged.Merge(existingFiddle);
+
+        var modNames = information.Fiddles.Select(fiddle => fiddle.ModName).ToList();
+        modNames.AddRange(information.StoreCategories.Select(category => category.ModName));
+        modNames.AddRange(information.StoreItems.Select(item => item.ModName));
+
+        modNames = modNames.Distinct().Order().ToList();
+
+        // We want to group the installs of mods together so that fiddle file and store files install in a more
+        // consistent manner, rather than them acting in an unintuitive order.
+        foreach (var mod in modNames)
         {
-            nestingReference.Merge(fiddle.FiddleObject, new JsonMergeSettings
+            foreach (var fiddle in information.Fiddles.Where(fiddle => fiddle.ModName == mod).OrderBy(fiddle => fiddle.FileName))
             {
-                MergeArrayHandling = fiddle.MergeArrayHandling,
-                MergeNullValueHandling = MergeNullValueHandling.Merge
-            });
+                nestingReference.Merge(fiddle.FiddleObject, new JsonMergeSettings
+                {
+                    MergeArrayHandling = fiddle.MergeArrayHandling,
+                    MergeNullValueHandling = MergeNullValueHandling.Merge
+                });
+                
+                merged.Merge(fiddle.FiddleObject, new JsonMergeSettings
+                {
+                    MergeArrayHandling = fiddle.MergeArrayHandling,
+                    MergeNullValueHandling = MergeNullValueHandling.Merge
+                });
+            }
+
+            var subInstallerInformation = new GeneratedInformation
+            {
+                StoreCategories = information.StoreCategories
+                    .Where(category => category.ModName == mod)
+                    .OrderBy(category => category.FileName)
+                    .ToList(),
+                
+                StoreItems = information.StoreItems
+                    .Where(item => item.ModName == mod)
+                    .OrderBy(item => item.FileName)
+                    .ToList()
+            };
+
+            merged = new StoreInstaller().Install(merged, subInstallerInformation, reportStatus);
         }
         
-        var merged = new JObject();
-        foreach (var source in allSources)
-        {
-            merged.Merge(source.FiddleObject, new JsonMergeSettings
-            {
-                MergeArrayHandling = source.MergeArrayHandling,
-                MergeNullValueHandling = MergeNullValueHandling.Merge
-            });    
-        }
-
         merged = JsonNestHandler.NestTokens(merged, nestingReference);
         
         if (merged["extras"] is not JObject)

@@ -45,7 +45,10 @@ public class ContainsJsonConstraint(JObject expected): Constraint
                 return partial is JValue partialValue && partialValue.Type == completeValue.Type && partialValue.Equals(completeValue);
             }
             case JArray completeArray:
-                return partial is JArray partialArray && partialArray.All(partialValue => completeArray.Values().Contains(partialValue));
+                return partial is JArray partialArray && partialArray.All(partialValue =>
+                {
+                    return completeArray.Any(item => JsonContains(item, partialValue));
+                });
             case JObject completeObject:
             {
                 if (partial is not JObject partialObject) return false;

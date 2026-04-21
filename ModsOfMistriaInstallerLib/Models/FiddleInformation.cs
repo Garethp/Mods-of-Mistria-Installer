@@ -8,8 +8,19 @@ public class FiddleInformation
 
     public readonly MergeArrayHandling MergeArrayHandling;
 
-    public FiddleInformation(JObject fiddleObject, MergeArrayHandling mergeArrayHandling = MergeArrayHandling.Merge)
+    public readonly string ModName;
+
+    public readonly string FileName;
+    
+    public FiddleInformation(
+        string modName,
+        string fileName,
+        JObject fiddleObject, 
+        MergeArrayHandling mergeArrayHandling = MergeArrayHandling.Merge
+    )
     {
+        ModName = modName;
+        FileName = fileName;
         FiddleObject = fiddleObject;
         MergeArrayHandling = mergeArrayHandling;
 
