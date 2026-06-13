@@ -10,29 +10,17 @@ public class MistriaLocator
     public static string? GetMistriaLocation()
     {
         var steamLocations = GetSteamLocations();
-        steamLocations
-            .Select(location => Path.Combine(location, "common", "Fields of Mistria"))
-            .ToList()
-            .ForEach(location =>
-            {
-                Logger.Log(Resources.CoreLookingForMistriaAt, Path.Combine(location, "data.win"));
-            });
-
         Logger.Log(Directory.GetCurrentDirectory());
 
         var mistriaLocation = steamLocations
             .Where(Path.Exists)
             .Select(location => Path.Combine(location, "common", "Fields of Mistria"))
-            .FirstOrDefault(location => Directory.Exists(location) && File.Exists(Path.Combine(location, "data.win")));
+            .FirstOrDefault(location => Directory.Exists(location));
         
         if (mistriaLocation is null)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
-            if (File.Exists(Path.Combine(currentDirectory, "data.win")))
-            {
-                Logger.Log(Resources.CoreMistriaNotFoundFallback);
-                return currentDirectory;
-            }
+          
             
             return mistriaLocation;
         }
@@ -43,7 +31,7 @@ public class MistriaLocator
     public static string? GetModsLocation(string? mistriaLocation)
     {
         var possibleLocations = new List<string>();
-        if (mistriaLocation is not null && File.Exists(Path.Combine(mistriaLocation, "data.win")))
+        if (mistriaLocation is not null)
         {
             possibleLocations.Add(Path.Combine(mistriaLocation, "mods"));
             possibleLocations.Add(Path.Combine(mistriaLocation, "Mods"));
@@ -142,19 +130,7 @@ public class MistriaLocator
         {
             var installedMods = new List<string>();
 
-            var checksums = JObject.Parse(File.ReadAllText(Path.Combine(mistriaLocation, "checksums.json")));
-            if (checksums["mods"] is null) return mods;
-            
-            foreach (var mod in checksums["mods"]!)
-            {
-                if (mod["id"] is null) continue;
-                installedMods.Add(mod["id"]!.Value<string>());
-            }
-
-            foreach (var mod in mods.Where(mod => installedMods.Contains(mod.GetId())))
-            {
-                mod.SetInstalled(true);
-            }
+            // I might just be dum but I don't think we have a checksums.json anymore.
         }
         catch (Exception e)
         {

@@ -19,8 +19,7 @@ public partial class Settings: ObservableObject
     [ObservableProperty] private string _modsLocation = "";
     
     public bool ValidMistriaLocation() => !string.IsNullOrEmpty(MistriaLocation) && 
-                                          Directory.Exists(MistriaLocation) &&
-                                          File.Exists(Path.Combine(MistriaLocation, "data.win"));
+                                          Directory.Exists(MistriaLocation) && (File.Exists(Path.Combine(MistriaLocation, "assets.zip")) || Directory.Exists(Path.Combine(MistriaLocation, "assets")));
     
     public bool ValidModsLocation() => !string.IsNullOrEmpty(ModsLocation) &&
                                        Directory.Exists(ModsLocation);
