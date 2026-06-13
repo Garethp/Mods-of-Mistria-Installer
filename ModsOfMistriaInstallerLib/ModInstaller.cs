@@ -854,7 +854,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         string destinationFolder = Path.Combine(
             fieldsOfMistriaLocation,
             "assets");
-
+        Directory.CreateDirectory(sourceFolder);
         foreach (var directory in Directory.GetDirectories(
                      sourceFolder,
                      "*",
