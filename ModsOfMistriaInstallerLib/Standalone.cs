@@ -33,7 +33,7 @@ public static class Standalone
         var installer = new ModInstaller(mistriaLocation, modsLocation);
 
         var allMods = MistriaLocator.GetMods(mistriaLocation, modsLocation);
-        installer.ValidateMods(allMods);
+        //installer.ValidateMods(allMods);
         
         allMods = allMods
             .Where(mod =>

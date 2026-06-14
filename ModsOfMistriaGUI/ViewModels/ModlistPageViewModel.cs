@@ -43,7 +43,7 @@ public partial class ModlistPageViewModel : PageViewBase
         {
             var mods = MistriaLocator.GetMods(MistriaLocation, ModsLocation);
 
-            new ModInstaller(MistriaLocation, ModsLocation).ValidateMods(mods);
+            //TODO:new ModInstaller(MistriaLocation, ModsLocation).ValidateMods(mods);
 
             var allModsDisabled = mods.All(mod => !mod.IsInstalled());
             if (allModsDisabled)
@@ -179,13 +179,13 @@ public partial class ModlistPageViewModel : PageViewBase
         IsInstalling = true;
 
         InstallStatus = "Uninstalling";
-
+        
         Task.Run(async () =>
         {
             try
             {
                 var installer = new ModInstaller(MistriaLocation, ModsLocation);
-
+                /*TODO:
                 var information = installer.PreUninstallInformation();
                 if (information.Count > 0)
                 {
@@ -193,7 +193,7 @@ public partial class ModlistPageViewModel : PageViewBase
                         MessageBoxManager
                             .GetMessageBoxStandard(Resources.GUIUninstallInformationTitle, string.Join('\n', information))
                             .ShowAsync());
-                }
+                }*/
 
                 installer.Uninstall();
 
@@ -218,14 +218,14 @@ public partial class ModlistPageViewModel : PageViewBase
 
             var modsToInstall = Mods.Where(model => model.Enabled).Select(model => model.Mod).ToList();
 
-            var information = installer.PreinstallInformation(modsToInstall);
+            /*TODO: var information = installer.PreinstallInformation(modsToInstall);
             if (information.Count > 0)
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
                     MessageBoxManager
                         .GetMessageBoxStandard(Resources.GUIPreinstallInformationTitle, string.Join('\n', information))
                         .ShowAsync());
-            }
+            }*/
 
             installer.InstallMods(modsToInstall, (message, _) =>
             {
