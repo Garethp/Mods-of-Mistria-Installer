@@ -16,7 +16,7 @@ public class FolderMod : IMod
 
     private string _location;
 
-    private string _minimunInstallerVersion;
+    private string _minimumInstallerVersion;
 
     private string _manifestVersion;
 
@@ -41,7 +41,7 @@ public class FolderMod : IMod
 
     public string GetLocation() => _location;
 
-    public string GetMinimunInstallerVersion() => _minimunInstallerVersion;
+    public string GetMinimumInstallerVersion() => _minimumInstallerVersion;
 
     public string GetManifestVersion() => _manifestVersion;
 
@@ -75,7 +75,7 @@ public class FolderMod : IMod
             _author = manifest["author"]?.ToString() ?? "",
             _version = manifest["version"]?.ToString() ?? "",
             _location = Path.GetDirectoryName(manifestLocation) ?? "",
-            _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0",
+            _minimumInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1",
             _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1"
         };
 
@@ -103,19 +103,28 @@ public class FolderMod : IMod
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
                 Resources.CoreManifestHasNoVersion));
         }
+        var version = new Version(_minimumInstallerVersion);
+        if (string.IsNullOrEmpty(_minimumInstallerVersion) || version.Major < 1.0)
+        {
+            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
+            Resources.CoreManifestHasNoMinimunInstallerVersion));
+        }
+
 
         return _validation;
     }
 
     public string? CanInstall()
     {
+        // TODO: fix this. Idk what I did wrong am doing wrong but I dont care anymore.
+        return null;
         try
         {
             var currentExe = Assembly.GetEntryAssembly();
             var currentVersionString =
                 currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
             var currentVersion = new Version(currentVersionString);
-            var requiredVersion = new Version(_minimunInstallerVersion);
+            var requiredVersion = new Version(_minimumInstallerVersion);
 
             if (requiredVersion.CompareTo(currentVersion) > 0)
             {

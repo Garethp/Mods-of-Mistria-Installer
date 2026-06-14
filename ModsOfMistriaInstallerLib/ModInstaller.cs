@@ -166,18 +166,17 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
                 if (current != null)
                 {
                     var atData = Toml.LoadToml(current.MetaPath);
-                    if (!File.Exists(current.MetaPath.Replace("assets", "assets_backup")))
+                    /*if (!File.Exists(current.MetaPath.Replace("assets", "assets_backup")))
                     {
                         Directory.CreateDirectory(
                             Path.GetDirectoryName(current.MetaPath.Replace("assets", "assets_backup"))!);
                         File.WriteAllText(current.MetaPath.Replace("assets", "assets_backup"), TomlSerializer.Serialize(atData));
                         File.Copy(current.MetaPath.Replace(".meta.toml", ".png"), current.MetaPath.Replace(".meta.toml", ".png").Replace("assets", "assets_backup"), overwrite: true);
-                    }
+                    }*/
                 }
                 else
                 {
-                    current = new Atlas(
-                        prefix, 0);
+                    current = new Atlas(prefix, 0);
 
                     atlases.Add(current);
                 }
@@ -507,6 +506,12 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
             }
             else
             {
+                if (File.Exists(destination))
+                {
+                    if (!Directory.Exists(Path.GetDirectoryName(destination.Replace("assets", "assets_backup"))))
+                        Directory.CreateDirectory(Path.GetDirectoryName(destination.Replace("assets", "assets_backup")));
+                    File.Copy(destination, destination.Replace("assets","assets_backup"));
+                }
                 File.Copy(
                     file,
                     destination,

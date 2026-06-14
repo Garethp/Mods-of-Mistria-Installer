@@ -10,9 +10,31 @@ namespace Garethp.ModsOfMistriaInstallerLib.Utils
 {
     public class IDManager
     {
-        private static HashSet<string> allUsedIds = new();
-        public static bool AddUsedId(string id) { return allUsedIds.Add(id); }
-        public static HashSet<string> GetAllUsedIds() { return allUsedIds; }
+        private static readonly HashSet<string> allUsedIds = new();
+
+        private static readonly Dictionary<string, HashSet<string>> atlasToIds = new(
+            StringComparer.OrdinalIgnoreCase);
+
+        private static readonly Dictionary<string, HashSet<string>> idToAtlases = new(
+            StringComparer.OrdinalIgnoreCase);
+
+        public static bool AddUsedId(string id)
+        {
+            return allUsedIds.Add(id);
+        }
+
+        public static HashSet<string> GetAllUsedIds()
+        {
+            return allUsedIds;
+        }
+
+        public static IReadOnlyCollection<string> GetAtlasesContainingId(string id)
+        {
+            return idToAtlases.TryGetValue(id, out var atlases)
+                ? atlases
+                : Array.Empty<string>();
+        }
+
         public static string GenerateUniqueId()
         {
             while (true)
@@ -35,21 +57,44 @@ namespace Garethp.ModsOfMistriaInstallerLib.Utils
                 if (!data.TryGetValue("asset_properties", out var assetObj))
                     continue;
 
-                var asset = (TomlTable)assetObj;
+                if (assetObj is not TomlTable asset)
+                    continue;
 
                 if (!asset.TryGetValue("animations", out var animObj))
                     continue;
 
-                foreach (TomlTable anim in (TomlTableArray)animObj)
+                if (animObj is not TomlTableArray animations)
+                    continue;
+
+                foreach (TomlTable anim in animations)
                 {
                     if (!anim.TryGetValue("texture_ids", out var texObj))
                         continue;
 
-                    foreach (var tex in (TomlArray)texObj)
+                    if (texObj is not TomlArray textureIds)
+                        continue;
+
+                    foreach (var tex in textureIds)
                     {
-                        var str = tex.ToString();
-                        var id = str.Split("::")[0];
+                        var id = tex.ToString()!.Split("::")[0];
+
                         allUsedIds.Add(id);
+
+                        if (!atlasToIds.TryGetValue(atlas.MetaPath, out var ids))
+                        {
+                            ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            atlasToIds[atlas.MetaPath] = ids;
+                        }
+
+                        ids.Add(id);
+
+                        if (!idToAtlases.TryGetValue(id, out var atlasPaths))
+                        {
+                            atlasPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                            idToAtlases[id] = atlasPaths;
+                        }
+
+                        atlasPaths.Add(atlas.MetaPath);
                     }
                 }
             }
@@ -57,5 +102,6 @@ namespace Garethp.ModsOfMistriaInstallerLib.Utils
             return allUsedIds;
         }
 
+        
     }
 }

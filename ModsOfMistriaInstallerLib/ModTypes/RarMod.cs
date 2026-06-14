@@ -15,7 +15,7 @@ public class RarMod() : IMod
 
     private string _version = "";
 
-    private string _minimunInstallerVersion = "0.1.0";
+    private string _minimumInstallerVersion = "0.1.0";
 
     private string _manifestVersion = "1";
 
@@ -52,7 +52,7 @@ public class RarMod() : IMod
         _name = manifest["name"]?.ToString() ?? "";
         _author = manifest["author"]?.ToString() ?? "";
         _version = manifest["version"]?.ToString() ?? "1.0.0";
-        _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0";
+        _minimumInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0";
         _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1";
         _rarFile = rarFile;
         _basePath = basePath;
@@ -97,7 +97,7 @@ public class RarMod() : IMod
 
     public string GetLocation() => "";
 
-    public string GetMinimunInstallerVersion() => _minimunInstallerVersion;
+    public string GetMinimumInstallerVersion() => _minimumInstallerVersion;
 
     public string GetManifestVersion() => _manifestVersion;
 
@@ -146,7 +146,7 @@ public class RarMod() : IMod
             var currentVersionString =
                 currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
             var currentVersion = new Version(currentVersionString);
-            var requiredVersion = new Version(GetMinimunInstallerVersion());
+            var requiredVersion = GetMinimumInstallerVersion();
 
             if (requiredVersion.CompareTo(currentVersion) > 0)
             {

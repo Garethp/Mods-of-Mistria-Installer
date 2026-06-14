@@ -12,7 +12,7 @@ public interface IMod
 
     public string GetLocation();
 
-    public string GetMinimunInstallerVersion();
+    public string GetMinimumInstallerVersion();
 
     public string GetManifestVersion();
     

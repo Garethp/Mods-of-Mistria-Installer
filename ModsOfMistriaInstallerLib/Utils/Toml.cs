@@ -42,5 +42,53 @@ namespace Garethp.ModsOfMistriaInstallerLib.Utils
         {
             return TomlSerializer.Deserialize<TomlTable>(File.ReadAllText(path));
         }
+
+        public static void RemoveAnimationEntriesForId(string id)
+        {
+            foreach (var atlasPath in IDManager.GetAtlasesContainingId(id))
+            {
+                Toml.BackupToml(atlasPath);
+
+                var atlasToml = Toml.LoadToml(atlasPath);
+
+                if (!atlasToml.TryGetValue("asset_properties", out var assetObj))
+                    continue;
+
+                if (assetObj is not TomlTable asset)
+                    continue;
+
+                if (!asset.TryGetValue("animations", out var animationsObj))
+                    continue;
+
+                if (animationsObj is not TomlTableArray animations)
+                    continue;
+
+                for (int i = animations.Count - 1; i >= 0; i--)
+                {
+                    var animation = animations[i];
+
+                    if (!animation.TryGetValue("texture_ids", out var textureIdsObj))
+                        continue;
+
+                    if (textureIdsObj is not TomlArray textureIds)
+                        continue;
+
+                    bool removeAnimation = textureIds
+                        .Cast<object>()
+                        .Select(x => x.ToString())
+                        .Any(x =>
+                            x != null &&
+                            x.StartsWith(id + "::", StringComparison.OrdinalIgnoreCase));
+
+                    if (removeAnimation)
+                    {
+                        animations.RemoveAt(i);
+                    }
+                }
+
+                Toml.SaveToml(atlasToml, atlasPath);
+            }
+        }
+
     }
 }
