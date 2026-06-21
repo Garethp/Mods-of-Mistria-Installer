@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
@@ -11,6 +13,8 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Tomlyn;
 using Tomlyn.Model;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 
 
@@ -383,6 +387,97 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         return result.ToList();
     }
 
+
+    private static void MergeJsonFile(
+        string sourceFile,
+        string destinationFile)
+    {
+        
+
+        JsonNode? source =
+            JsonNode.Parse(File.ReadAllText(sourceFile));
+
+        JsonNode? destination =
+            File.Exists(destinationFile)
+                ? JsonNode.Parse(File.ReadAllText(destinationFile))
+                : null;
+
+        if (source is null)
+            throw new InvalidOperationException(
+                $"Failed to parse source json '{sourceFile}'.");
+
+        if (destination is JsonObject destinationObject &&
+            source is JsonObject sourceObject)
+        {
+            MergeObjects(destinationObject, sourceObject);
+
+            File.WriteAllText(
+                destinationFile,
+                sourceObject.ToJsonString(
+                    new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    }));
+        }
+        else
+        {
+            File.Copy(sourceFile, destinationFile, true);
+        }
+    }
+    private static void MergeObjects(
+    JsonObject destination,
+    JsonObject source)
+    {
+        foreach (var property in destination)
+        {
+            if (property.Value is null)
+                continue;
+
+            if (!source.TryGetPropertyValue(
+                    property.Key,
+                    out var sourceValue))
+            {
+                source[property.Key] = property.Value.DeepClone();
+                continue;
+            }
+
+            switch (property.Value)
+            {
+                case JsonObject destinationObject
+                    when sourceValue is JsonObject sourceObject:
+
+                    MergeObjects(
+                        destinationObject,
+                        sourceObject);
+                    break;
+
+                case JsonArray destinationArray
+                    when sourceValue is JsonArray sourceArray:
+
+                    MergeArrays(
+                        destinationArray,
+                        sourceArray);
+                    break;
+
+                default:
+
+                    source[property.Key] =
+                        property.Value.DeepClone();
+                    break;
+            }
+        }
+    }
+
+    private static void MergeArrays(
+    JsonArray destination,
+    JsonArray source)
+    {
+        foreach (var item in destination)
+        {
+            source.Add(item?.DeepClone());
+        }
+    }
+
     private void Install(string fieldsOfMistriaLocation, string modsLocation, Action<string, string> reportStatus)
     {
 
@@ -493,7 +588,7 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
                     TomlSerializer.Deserialize<TomlTable>(
                         File.ReadAllText(destination));
 
-                //TODO: ApplyMomiOperations(destinationToml, sourceToml);
+                //ApplyMomiOperations(destinationToml, sourceToml);
 
                 string tomdestination = MergeTomlFile(
                     sourceToml,
@@ -506,16 +601,13 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
             }
             else
             {
-                if (File.Exists(destination))
+                if (File.Exists(destination) && !File.Exists(destination.Replace("assets", "assets_backup")))
                 {
                     if (!Directory.Exists(Path.GetDirectoryName(destination.Replace("assets", "assets_backup"))))
                         Directory.CreateDirectory(Path.GetDirectoryName(destination.Replace("assets", "assets_backup")));
                     File.Copy(destination, destination.Replace("assets","assets_backup"));
                 }
-                File.Copy(
-                    file,
-                    destination,
-                    overwrite: true);
+                //MergeJsonFile(file, destination);
 
                 reportStatus(
                     "File copied normally.",
@@ -523,6 +615,8 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
             }
         }
     }
+
+
 
     private static string MergeTomlFile(
     TomlTable sourceToml,
@@ -575,38 +669,192 @@ public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
         return destinationFile;
     }
 
-    private static void MergeTables(
-        TomlTable destination,
-        TomlTable source)
+    private const string IdentifyKey = "MOMIidentify";
+
+    private static void MergeTableArrays(
+    TomlTableArray destination,
+    TomlTableArray source)
     {
-        foreach (var (key, value) in source)
+        foreach (var sourceTable in source)
         {
-            if (value is TomlTable sourceTable)
+            if (sourceTable.TryGetValue("MOMIidentify", out var identifyObj) &&
+                identifyObj is TomlTable identifyTable)
             {
-                destination[key] = CloneTable(sourceTable);
+                var match = destination.FirstOrDefault(x => MatchesIdentifier(x, identifyTable));
+
+                if (match != null)
+                {
+                    var action = sourceTable.TryGetValue("MOMIaction", out var act)
+                        ? act?.ToString()
+                        : "merge";
+
+                    if (action == "remove" || action == "delete")
+                    {
+                        destination.Remove(match);
+                        continue;
+                    }
+
+                    var copy = CloneTable(sourceTable);
+                    copy.Remove("MOMIidentify");
+                    copy.Remove("MOMIaction");
+
+                    MergeTables(match, copy);
+                    continue;
+                }
+            }
+
+            destination.Add(CloneTable(sourceTable));
+        }
+    }
+
+    private static bool MatchesIdentifier(
+    TomlTable candidate,
+    TomlTable identifier)
+    {
+        foreach (var (key, expectedValue) in identifier)
+        {
+            if (!candidate.TryGetValue(key, out var actualValue))
+                return false;
+
+            if (!TomlValuesEqual(actualValue, expectedValue))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool TomlValuesEqual(
+    object? left,
+    object? right)
+    {
+        if (ReferenceEquals(left, right))
+            return true;
+
+        if (left is null || right is null)
+            return false;
+
+        if (left is TomlTable leftTable &&
+            right is TomlTable rightTable)
+        {
+            return MatchesIdentifier(leftTable, rightTable) &&
+                   MatchesIdentifier(rightTable, leftTable);
+        }
+
+        return Equals(left, right);
+    }
+
+    private static void MergeTables(
+    TomlTable destination,
+    TomlTable source)
+    {
+        foreach (var (key, sourceValue) in source)
+        {
+            // 1. Handle REMOVE TABLE
+            if (sourceValue is TomlTable sourceTable)
+        {
+            // 1. REMOVE
+            if (IsRemoveCommand(sourceTable))
+            {
+                destination.Remove(key);
+                continue;
+            }
+
+            // 2. MERGE COMMAND (custom behavior override)
+            if (IsMergeCommand(sourceTable))
+            {
+                if (destination.TryGetValue(key, out var destValue) &&
+                    destValue is TomlTable destTable)
+                {
+                    var copy = CloneTable(sourceTable);
+
+                    copy.Remove("MOMIidentify");
+                    copy.Remove("MOMIaction");
+
+                    MergeTables(destTable, copy);
+                }
+
+                continue;
+            }
+        }
+
+            if (!destination.TryGetValue(key, out var destinationValue))
+            {
+                destination[key] = CloneValue(sourceValue);
+                continue;
+            }
+
+            if (sourceValue is TomlTable sourceTable2 &&
+                destinationValue is TomlTable destinationTable)
+            {
+                MergeTables(destinationTable, sourceTable2);
+            }
+            else if (sourceValue is TomlTableArray sourceArray &&
+                     destinationValue is TomlTableArray destinationArray)
+            {
+                MergeTableArrays(destinationArray, sourceArray);
             }
             else
             {
-                destination[key] = value;
+                destination[key] = CloneValue(sourceValue);
             }
         }
     }
 
+    private static bool IsRemoveCommand(TomlTable table)
+    {
+        if (table.Count == 0)
+            return false;
+
+        if (table.TryGetValue("MOMIaction", out var action) &&
+            action?.ToString() == "remove")
+            return true;
+
+        if (table.TryGetValue("MOMI", out var momi) &&
+            momi is TomlTable inner &&
+            inner.TryGetValue("op", out var op) &&
+            op?.ToString() == "remove")
+            return true;
+
+        return false;
+    }
+
+    private static bool IsMergeCommand(TomlTable table)
+    {
+        if (table.Count == 0)
+            return false;
+
+        if (table.TryGetValue("MOMIaction", out var action) &&
+            action?.ToString() == "merge")
+            return true;
+
+        if (table.TryGetValue("MOMI", out var momi) &&
+            momi is TomlTable inner &&
+            inner.TryGetValue("op", out var op) &&
+            op?.ToString() == "merge")
+            return true;
+
+        return false;
+    }
+
     private static TomlTable CloneTable(
-        TomlTable table)
+    TomlTable table)
     {
         var clone = new TomlTable();
 
         foreach (var (key, value) in table)
         {
-            clone[key] = value switch
-            {
-                TomlTable child => CloneTable(child),
-                _ => value
-            };
+            clone[key] = CloneValue(value);
         }
 
         return clone;
+    }
+    private static object? CloneValue(object? value)
+    {
+        return value switch
+        {
+            TomlTable table => CloneTable(table),
+            _ => value
+        };
     }
 
 
