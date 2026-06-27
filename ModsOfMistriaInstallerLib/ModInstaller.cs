@@ -99,6 +99,10 @@ public class ModInstaller
         // 3. JSON (stub — no-op for now)
         new JSONInstaller(_fomLocation, manifest, fileNameUIDMapping)
             .Install(mod, reportStatus);
+
+        // 4. Install points to XML files
+        new XMLInstaller(_fomLocation, manifest, fileNameUIDMapping)
+            .Install(mod, reportStatus);
     }
 
     private bool IsFreshInstall() =>
