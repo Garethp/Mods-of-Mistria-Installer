@@ -13,12 +13,17 @@ namespace Garethp.ModsOfMistriaInstallerLib.Operations;
 // Table-array directives (on an entry inside a [[table.array]]):
 //   MOMIidentify = { key = value, ... }  → find the matching destination entry
 //   MOMIaction   = "remove"              → remove the matched entry
-//   (no action)                          → merge into the matched entry, or append if not found
+//   MOMIaction   = "replace" (default)   → overwrite plain arrays in the matched entry
+//   MOMIaction   = "merge"               → merge into matched entry, appending plain arrays
+//   MOMIremove   = { field = ["x", …] }  → remove listed items from named arrays in the matched entry
+//   (no MOMIaction)                      → same as "replace"
 public static class MOMIOperations
 {
-    // ── TOML ──────────────────────────────────────────────────────────────────
+    // TOML
 
-    public static void MergeTomlTables(TomlTable destination, TomlTable source)
+    // mergeArrays: when true, TomlArray values are appended rather than replaced.
+    // Activated when a table-array entry carries MOMIaction = "merge".
+    public static void MergeTomlTables(TomlTable destination, TomlTable source, bool mergeArrays = false)
     {
         foreach (var (key, sourceValue) in source)
         {
@@ -37,7 +42,7 @@ public static class MOMIOperations
                         var copy = CloneTable(sourceTable);
                         copy.Remove("MOMIidentify");
                         copy.Remove("MOMIaction");
-                        MergeTomlTables(destTable, copy);
+                        MergeTomlTables(destTable, copy, mergeArrays);
                     }
                     continue;
                 }
@@ -50,9 +55,12 @@ public static class MOMIOperations
             }
 
             if (sourceValue is TomlTable st && destinationValue is TomlTable dt)
-                MergeTomlTables(dt, st);
+                MergeTomlTables(dt, st, mergeArrays);
             else if (sourceValue is TomlTableArray sa && destinationValue is TomlTableArray da)
                 MergeTomlTableArrays(da, sa);
+            else if (mergeArrays && sourceValue is TomlArray srcArr && destinationValue is TomlArray destArr)
+                foreach (var item in srcArr)
+                    destArr.Add(item);
             else
                 destination[key] = CloneValue(sourceValue);
         }
@@ -79,10 +87,30 @@ public static class MOMIOperations
                         continue;
                     }
 
+                    // MOMIremove: remove listed items from named arrays before merging
+                    if (sourceEntry.TryGetValue("MOMIremove", out var removeObj) &&
+                        removeObj is TomlTable removeSpec)
+                    {
+                        foreach (var (removeKey, removeVal) in removeSpec)
+                        {
+                            if (removeVal is not TomlArray itemsToRemove) continue;
+                            if (!match.TryGetValue(removeKey, out var destArrObj) ||
+                                destArrObj is not TomlArray destArr) continue;
+
+                            foreach (var item in itemsToRemove)
+                            {
+                                var found = destArr.FirstOrDefault(x => TomlValuesEqual(x, item));
+                                if (found is not null) destArr.Remove(found);
+                            }
+                        }
+                    }
+
                     var copy = CloneTable(sourceEntry);
                     copy.Remove("MOMIidentify");
                     copy.Remove("MOMIaction");
-                    MergeTomlTables(match, copy);
+                    copy.Remove("MOMIremove");
+                    // "merge" action: TomlArray fields are appended rather than replaced
+                    MergeTomlTables(match, copy, mergeArrays: action is "merge");
                     continue;
                 }
             }
@@ -133,7 +161,7 @@ public static class MOMIOperations
     private static object? CloneValue(object? value) =>
         value is TomlTable t ? CloneTable(t) : value;
 
-    // ── JSON ──────────────────────────────────────────────────────────────────
+    // JSON
 
     public static void MergeJsonObjects(JsonObject destination, JsonObject source)
     {

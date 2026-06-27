@@ -23,6 +23,7 @@ public class TOMLCollector
         var allMeta = mod.GetAllFiles(".meta.toml");
         var allToml = mod.GetAllFiles(".toml")
                         .Where(p => !p.EndsWith(".meta.toml", StringComparison.OrdinalIgnoreCase))
+                        .Select(p => GetRelativePath(mod, p))
                         .ToList();
 
         // Map: baseName (lower) → mutable group builder
@@ -87,8 +88,15 @@ public class TOMLCollector
 
     private static string GetRelativePath(IMod mod, string absolutePath)
     {
-        var basePath = mod.GetBasePath();
-        return Path.GetRelativePath(basePath, absolutePath);
+        // Normalise both sides to forward slashes so this works for ZipMod
+        // (whose "paths" are zip entry names, not file-system paths on disk).
+        var normalizedBase = mod.GetBasePath().Replace('\\', '/').TrimEnd('/') + '/';
+        var normalizedFull = absolutePath.Replace('\\', '/');
+
+        if (normalizedFull.StartsWith(normalizedBase, StringComparison.OrdinalIgnoreCase))
+            return normalizedFull[normalizedBase.Length..];
+
+        return normalizedFull;
     }
 
     private class GroupBuilder

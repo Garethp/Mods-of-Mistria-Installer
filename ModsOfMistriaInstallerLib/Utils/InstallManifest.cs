@@ -52,7 +52,10 @@ public class InstallManifest
 
         var backupPath = Path.Combine(_backupDir, relative);
         Directory.CreateDirectory(Path.GetDirectoryName(backupPath)!);
-        File.Copy(absolutePath, backupPath, overwrite: false);
+        // If a backup already exists (e.g., from an incomplete prior install), the original
+        // is already preserved there — skip the copy rather than crashing.
+        if (!File.Exists(backupPath))
+            File.Copy(absolutePath, backupPath);
         _modified.Add(relative);
     }
 

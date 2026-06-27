@@ -32,14 +32,26 @@ public class ImageInstaller : Installer
             if (!group.HasAnimation || !group.HasPng)
                 continue;
 
-            var metaToml = Toml.LoadToml(
-                Path.Combine(mod.GetBasePath(), group.AnimationMetaRelPath!));
+            var metaToml = Toml.ParseToml(mod.ReadFile(group.AnimationMetaRelPath!));
 
             if (!TryReadAnimationMeta(metaToml, out var atlasType, out var frameWidth,
                     out var frameHeight, out var frameCount))
             {
                 reportStatus($"Skipping {group.BaseName}: missing animation metadata.", "");
                 continue;
+            }
+
+            // If the mod's animation meta already has an id, honour it instead of
+            // generating a new one.  This keeps atlas entries and meta files in sync.
+            if (metaToml.TryGetValue("meta_properties", out var mpObj) &&
+                mpObj is TomlTable mp &&
+                mp.TryGetValue("id", out var presetIdObj) &&
+                presetIdObj is string presetId &&
+                !string.IsNullOrEmpty(presetId) &&
+                !FileNameUIDMapping.ContainsKey(group.BaseName))
+            {
+                FileNameUIDMapping[group.BaseName] = presetId;
+                IDManager.RegisterId(presetId);
             }
 
             using var pngStream = mod.ReadFileAsStream(group.PngRelPath!);

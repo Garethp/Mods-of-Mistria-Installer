@@ -10,6 +10,9 @@ public static class IDManager
     // Clears all tracked IDs. Call before each fresh install session.
     public static void Reset() => AllUsedIds.Clear();
 
+    // Marks an ID as in-use without generating it (e.g., pre-existing IDs from mod files).
+    public static void RegisterId(string id) => AllUsedIds.Add(id);
+
     public static string GenerateUniqueId()
     {
         while (true)

@@ -13,6 +13,8 @@ public class AtlasUtilities
     private readonly InstallManifest _manifest;
     private readonly List<Atlas> _atlases;
     private readonly Dictionary<string, AtlasPackState> _states = new(StringComparer.OrdinalIgnoreCase);
+    // Atlas meta paths created during this session (did not exist before install).
+    private readonly HashSet<string> _newAtlasPaths = new(StringComparer.OrdinalIgnoreCase);
 
     public AtlasUtilities(string atlasDirectory, InstallManifest manifest)
     {
@@ -52,8 +54,12 @@ public class AtlasUtilities
 
             if (pos is null)
             {
-                // Current atlas is full — save and open next
-                FlushState(state);
+                // Current atlas is full — save it (if dirty) and create the next numbered one
+                int nextNumber = state.Atlas.Number + 1;
+                if (state.IsDirty) FlushState(state);
+                else state.Image.Dispose();
+                _states.Remove(atlasType);
+                CreateAtlas(atlasType, nextNumber);
                 state = OpenState(atlasType);
                 _states[atlasType] = state;
 
@@ -94,15 +100,29 @@ public class AtlasUtilities
         _states.Clear();
     }
 
-    // ── Private helpers ────────────────────────────────────────────────────────
+    // Private helpers
 
     private AtlasPackState OpenState(string atlasType)
     {
         var atlas = GetLastAtlas(atlasType);
 
-        var data   = Toml.LoadToml(atlas.MetaPath);
-        var image  = Image.Load<Rgba32>(atlas.PngPath);
-        var anims  = (TomlTableArray)((TomlTable)data["asset_properties"])["animations"];
+        var data  = Toml.LoadToml(atlas.MetaPath);
+        var image = Image.Load<Rgba32>(atlas.PngPath);
+
+        // Safely retrieve (or create) the animations array.
+        // A newly created atlas serialises an empty TomlTableArray as nothing,
+        // so the key may be absent when we read it back.
+        if (!data.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap)
+        {
+            ap = new TomlTable();
+            data["asset_properties"] = ap;
+        }
+        if (!ap.TryGetValue("animations", out var animObj) || animObj is not TomlTableArray anims)
+        {
+            anims = new TomlTableArray();
+            ap["animations"] = anims;
+        }
+
         var packer = BuildPacker(data);
 
         var state = new AtlasPackState
@@ -121,8 +141,18 @@ public class AtlasUtilities
 
     private void FlushState(AtlasPackState state)
     {
-        _manifest.TrackModified(state.Atlas.PngPath);
-        _manifest.TrackModified(state.Atlas.MetaPath);
+        // Atlases created during this session are "added" (no original to restore);
+        // pre-existing atlases are "modified" and need a backup for uninstall.
+        if (_newAtlasPaths.Contains(state.Atlas.MetaPath))
+        {
+            _manifest.TrackAdded(state.Atlas.PngPath);
+            _manifest.TrackAdded(state.Atlas.MetaPath);
+        }
+        else
+        {
+            _manifest.TrackModified(state.Atlas.PngPath);
+            _manifest.TrackModified(state.Atlas.MetaPath);
+        }
 
         state.Image.Save(state.Atlas.PngPath);
         Toml.SaveToml(state.Data, state.Atlas.MetaPath);
@@ -149,6 +179,7 @@ public class AtlasUtilities
         atlas.EnsureImageExists();
         atlas.EnsureMetaExists();
         _atlases.Add(atlas);
+        _newAtlasPaths.Add(atlas.MetaPath);
         return atlas;
     }
 
@@ -188,32 +219,44 @@ public class AtlasUtilities
     }
 
     // Reconstructs a ShelfPacker with all existing frame placements from the atlas meta.
+    // Reads actual atlas dimensions from asset_properties.dimensions so the packer
+    // correctly detects when a small atlas (e.g. 512×512) is full.
     private static ShelfPacker BuildPacker(TomlTable atlasData)
     {
-        var packer = new ShelfPacker(Atlas.DefaultSize, Atlas.DefaultSize);
+        int width  = Atlas.DefaultSize;
+        int height = Atlas.DefaultSize;
 
-        if (atlasData.TryGetValue("asset_properties", out var apObj) &&
-            apObj is TomlTable ap &&
-            ap.TryGetValue("animations", out var animObj) &&
-            animObj is TomlTableArray animations)
+        if (!atlasData.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap)
+            return new ShelfPacker(width, height);
+
+        if (ap.TryGetValue("dimensions", out var dimsObj) &&
+            dimsObj is TomlArray dims && dims.Count >= 2)
+        {
+            width  = Convert.ToInt32(dims[0]);
+            height = Convert.ToInt32(dims[1]);
+        }
+
+        var packer = new ShelfPacker(width, height);
+
+        if (ap.TryGetValue("animations", out var animObj) && animObj is TomlTableArray animations)
         {
             foreach (TomlTable anim in animations)
             {
                 if (!anim.TryGetValue("top_left_dimensions", out var dimObj) ||
-                    dimObj is not TomlArray dims || dims.Count < 4) continue;
+                    dimObj is not TomlArray d || d.Count < 4) continue;
 
                 packer.Add(
-                    Convert.ToInt32(dims[0]),
-                    Convert.ToInt32(dims[1]),
-                    Convert.ToInt32(dims[2]),
-                    Convert.ToInt32(dims[3]));
+                    Convert.ToInt32(d[0]),
+                    Convert.ToInt32(d[1]),
+                    Convert.ToInt32(d[2]),
+                    Convert.ToInt32(d[3]));
             }
         }
 
         return packer;
     }
 
-    // ── Inner types ────────────────────────────────────────────────────────────
+    // Inner types
 
     private class AtlasPackState
     {

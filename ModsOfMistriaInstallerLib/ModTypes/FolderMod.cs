@@ -193,7 +193,8 @@ public class FolderMod : IMod
 
     public string? ReadFile(string path)
     {
-        return !FileExists(path) ? "" : File.ReadAllText(path);
+        var fullPath = Path.Combine(_location, path);
+        return !File.Exists(fullPath) ? "" : File.ReadAllText(fullPath);
     }
 
     public Stream ReadFileAsStream(string path)
