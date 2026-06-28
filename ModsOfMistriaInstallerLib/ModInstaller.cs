@@ -103,6 +103,10 @@ public class ModInstaller
         // 4. Install points to XML files
         new XMLInstaller(_fomLocation, manifest, fileNameUIDMapping)
             .Install(mod, reportStatus);
+
+        // 5. Install MIST files (overwrite)
+        new MISTInstaller(_fomLocation, manifest, fileNameUIDMapping)
+            .Install(mod, reportStatus);
     }
 
     private bool IsFreshInstall() =>
