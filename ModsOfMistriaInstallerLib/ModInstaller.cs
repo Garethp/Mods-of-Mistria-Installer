@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.IO.Compression;
+using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
@@ -88,24 +89,34 @@ public class ModInstaller
         AtlasUtilities atlasUtils,
         Action<string, string> reportStatus)
     {
+        // 0. Expand momi/ compact definitions into virtual overlay files
+        var generated = new OutfitGenerator().Generate(mod);
+        IMod effectiveMod = generated.Count > 0
+            ? new GeneratedOverlayMod(mod, generated)
+            : mod;
+
         // 1. Pack images into atlases first so IDs are ready for TOML
         new ImageInstaller(_fomLocation, manifest, fileNameUIDMapping, atlasUtils)
-            .Install(mod, reportStatus);
+            .Install(effectiveMod, reportStatus);
 
         // 2. Install TOML files (uses IDs populated above)
         new TOMLInstaller(_fomLocation, manifest, fileNameUIDMapping)
-            .Install(mod, reportStatus);
+            .Install(effectiveMod, reportStatus);
 
-        // 3. JSON (stub — no-op for now)
+        // 3. Install JSON files
         new JSONInstaller(_fomLocation, manifest, fileNameUIDMapping)
-            .Install(mod, reportStatus);
+            .Install(effectiveMod, reportStatus);
 
-        // 4. Install points to XML files
+        // 4. Install XML files
         new XMLInstaller(_fomLocation, manifest, fileNameUIDMapping)
-            .Install(mod, reportStatus);
+            .Install(effectiveMod, reportStatus);
 
         // 5. Install MIST files (overwrite)
         new MISTInstaller(_fomLocation, manifest, fileNameUIDMapping)
+            .Install(effectiveMod, reportStatus);
+
+        // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
+        new OutfitInstaller(_fomLocation, manifest, fileNameUIDMapping)
             .Install(mod, reportStatus);
     }
 
