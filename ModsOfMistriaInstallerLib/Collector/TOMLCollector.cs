@@ -24,6 +24,7 @@ public class TOMLCollector
         var allToml = mod.GetAllFiles(".toml")
                         .Where(p => !p.EndsWith(".meta.toml", StringComparison.OrdinalIgnoreCase))
                         .Select(p => GetRelativePath(mod, p))
+                        .Where(p => !IsUnderMomiFolder(p))
                         .ToList();
 
         // Map: baseName (lower) → mutable group builder
@@ -33,6 +34,8 @@ public class TOMLCollector
         foreach (var absolutePath in allMeta)
         {
             var relPath  = GetRelativePath(mod, absolutePath);
+            if (IsUnderMomiFolder(relPath)) continue;
+
             var fileName = Path.GetFileName(absolutePath); // e.g. "spr_foo_idle_east.meta.toml"
 
             // Strip ".meta.toml" to get just the sprite name
@@ -85,6 +88,12 @@ public class TOMLCollector
 
         OtherTomlFiles = [.. allToml, .. ungroupedMeta];
     }
+
+    // "momi/" files are compact definitions consumed directly by their own
+    // generators/installers (outfits, furniture, locations) — they aren't
+    // game asset files and shouldn't also be copied verbatim into assets/.
+    private static bool IsUnderMomiFolder(string relativePath) =>
+        relativePath.Replace('\\', '/').StartsWith("momi/", StringComparison.OrdinalIgnoreCase);
 
     private static string GetRelativePath(IMod mod, string absolutePath)
     {

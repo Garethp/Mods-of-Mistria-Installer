@@ -150,4 +150,11 @@ public class MockMod : IMod
     {
         throw new NotImplementedException();
     }
+
+    public string GetMinimumInstallerVersion() => throw new NotImplementedException();
+
+    public List<ModRequirement> GetRequirements() => [];
+
+    public string? GetUpdateUrl()   => null;
+    public string? GetDownloadUrl() => null;
 }

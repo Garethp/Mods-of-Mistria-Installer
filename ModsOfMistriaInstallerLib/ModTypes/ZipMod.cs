@@ -27,6 +27,12 @@ public class ZipMod() : IMod
     
     private bool _isInstalled = false;
 
+    private List<ModRequirement> _requirements = [];
+
+    private string? _updateUrl;
+
+    private string? _downloadUrl;
+
     public ZipMod(ZipArchive zipFile, string basePath) : this()
     {
         var manifestFile = zipFile.GetEntry(basePath + "manifest.json");
@@ -41,6 +47,15 @@ public class ZipMod() : IMod
         _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1";
         _zipFile = zipFile;
         _basePath = basePath;
+        _requirements = (manifest["requirements"] as JArray ?? [])
+            .Select(r => new ModRequirement(
+                r["name"]?.ToString() ?? "",
+                r["author"]?.ToString() ?? "",
+                r["download_url"]?.ToString()))
+            .Where(r => !string.IsNullOrEmpty(r.Name) && !string.IsNullOrEmpty(r.Author))
+            .ToList();
+        _updateUrl   = manifest["update_url"]?.ToString();
+        _downloadUrl = manifest["download_url"]?.ToString();
     }
 
     private string readEntry(ZipArchive? zipFile, string entryName)
@@ -194,4 +209,9 @@ public class ZipMod() : IMod
 
         return entry.Open();
     }
+
+    public List<ModRequirement> GetRequirements() => _requirements;
+
+    public string? GetUpdateUrl()   => _updateUrl;
+    public string? GetDownloadUrl() => _downloadUrl;
 }

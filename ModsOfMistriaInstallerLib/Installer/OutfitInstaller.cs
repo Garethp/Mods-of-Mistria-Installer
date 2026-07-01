@@ -51,8 +51,8 @@ public class OutfitInstaller : Installer
         var entry = new TomlTable
         {
             ["name"]             = def.Name,
-            ["lut"]              = def.ResolvedLutSprite,
-            ["ui_slot"]          = def.UiSlot,
+            ["lut"]              = OutfitGenerator.GetFiddleLutSprite(def),
+            ["ui_slot"]          = OutfitGenerator.GetFiddleUiSlot(def.UiSlot),
             ["default_unlocked"] = def.DefaultUnlocked,
             ["ui_sub_category"]  = def.UiSubCategory,
         };
@@ -79,7 +79,21 @@ public class OutfitInstaller : Installer
         var dest = DestinationPath("data_files/animation/generated/outlines.json");
         Dirty(dest);
 
-        var patch = new JObject { [def.ResolvedIconSprite] = def.ResolvedOutlineSprite };
+        JObject patch;
+        if (OutfitGenerator.IsComplexSlot(def.UiSlot))
+        {
+            // Complex slots (beard/eyes/face_gear/facial_hair/hair):
+            // outlines.json maps _merged → _merged_outline
+            var mergedSprite  = $"spr_ui_item_wearable_{def.Id}_merged";
+            var outlineSprite = def.OutlineSprite ?? $"spr_ui_item_wearable_{def.Id}_merged_outline";
+            patch = new JObject { [mergedSprite] = outlineSprite };
+        }
+        else
+        {
+            // Simple slots: icon sprite (derived from ID) → outline sprite
+            var derivedIconSprite = $"spr_ui_item_wearable_{def.Id}";
+            patch = new JObject { [derivedIconSprite] = def.ResolvedOutlineSprite };
+        }
         MergeJson(dest, patch);
     }
 
@@ -90,11 +104,25 @@ public class OutfitInstaller : Installer
         var dest = DestinationPath("data_files/animation/generated/player_asset_parts.json");
         Dirty(dest);
 
-        var patch = new JObject
+        var parts = OutfitGenerator.GetParts(def.UiSlot);
+        JObject itemParts;
+        if (parts != null)
         {
-            [def.Id] = new JObject { [def.UiSlot] = def.ResolvedOutfitSprite }
-        };
-        MergeJson(dest, patch);
+            // Multi-part slot: write every part using spr_player_{id}_{part} naming
+            itemParts = new JObject();
+            foreach (var part in parts)
+                itemParts[part] = $"spr_player_{def.Id}_{part}";
+        }
+        else
+        {
+            // Single-part slot
+            itemParts = new JObject
+            {
+                [OutfitGenerator.GetFiddleSlot(def.UiSlot)] = OutfitGenerator.ResolveOutfitSprite(def)
+            };
+        }
+
+        MergeJson(dest, new JObject { [def.Id] = itemParts });
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

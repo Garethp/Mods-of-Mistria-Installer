@@ -98,6 +98,9 @@ public class GeneratedOverlayMod : IMod
     public Validation Validate()             => _inner.Validate();
     public string GetBasePath()              => _inner.GetBasePath();
     public string? CanInstall()              => _inner.CanInstall();
+    public List<ModRequirement> GetRequirements() => _inner.GetRequirements();
+    public string? GetUpdateUrl()   => _inner.GetUpdateUrl();
+    public string? GetDownloadUrl() => _inner.GetDownloadUrl();
 
     // Helpers
 

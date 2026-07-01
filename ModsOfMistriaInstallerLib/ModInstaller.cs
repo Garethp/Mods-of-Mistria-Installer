@@ -52,6 +52,10 @@ public class ModInstaller
 
         IDManager.CollectUsedIds(atlasUtils.GetAtlases());
 
+        // Location pre-pass: merges all mod locations and patches TMX destination_ids
+        // before the per-mod loop so that positional LocationIds are globally consistent.
+        new LocationInstaller(_fomLocation, manifest).Install(mods, reportStatus);
+
         foreach (var mod in mods)
         {
             var modTimer = Stopwatch.StartNew();
@@ -64,6 +68,7 @@ public class ModInstaller
         }
 
         manifest.Save();
+        GameManifestWriter.Write(mods);
         totalTime.Stop();
         reportStatus(Resources.CoreInstallCompleted, totalTime.Elapsed.ToString());
     }
@@ -91,6 +96,8 @@ public class ModInstaller
     {
         // 0. Expand momi/ compact definitions into virtual overlay files
         var generated = new OutfitGenerator().Generate(mod);
+        foreach (var kvp in new FurnitureGenerator().Generate(mod))
+            generated.TryAdd(kvp.Key, kvp.Value);
         IMod effectiveMod = generated.Count > 0
             ? new GeneratedOverlayMod(mod, generated)
             : mod;
@@ -117,6 +124,8 @@ public class ModInstaller
 
         // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
         new OutfitInstaller(_fomLocation, manifest, fileNameUIDMapping)
+            .Install(mod, reportStatus);
+        new FurnitureInstaller(_fomLocation, manifest, fileNameUIDMapping)
             .Install(mod, reportStatus);
     }
 

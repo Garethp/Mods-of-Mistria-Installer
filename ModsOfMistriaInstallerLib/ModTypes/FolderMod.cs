@@ -23,7 +23,13 @@ public class FolderMod : IMod
     private Validation _validation = new();
 
     private bool _isInstalled = false;
-    
+
+    private List<ModRequirement> _requirements = [];
+
+    private string? _updateUrl;
+
+    private string? _downloadUrl;
+
     public string Id
     {
         get
@@ -55,6 +61,11 @@ public class FolderMod : IMod
 
     public string GetId() => Id;
 
+    public List<ModRequirement> GetRequirements() => _requirements;
+
+    public string? GetUpdateUrl()   => _updateUrl;
+    public string? GetDownloadUrl() => _downloadUrl;
+
     public static FolderMod FromManifest(string manifestLocation)
     {
         if (!File.Exists(manifestLocation))
@@ -76,7 +87,16 @@ public class FolderMod : IMod
             _version = manifest["version"]?.ToString() ?? "",
             _location = Path.GetDirectoryName(manifestLocation) ?? "",
             _minimumInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1",
-            _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1"
+            _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1",
+            _requirements = (manifest["requirements"] as JArray ?? [])
+                .Select(r => new ModRequirement(
+                    r["name"]?.ToString() ?? "",
+                    r["author"]?.ToString() ?? "",
+                    r["download_url"]?.ToString()))
+                .Where(r => !string.IsNullOrEmpty(r.Name) && !string.IsNullOrEmpty(r.Author))
+                .ToList(),
+            _updateUrl   = manifest["update_url"]?.ToString(),
+            _downloadUrl = manifest["download_url"]?.ToString()
         };
 
         mod.Validate();

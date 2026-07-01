@@ -57,21 +57,41 @@ public class OutfitDefinition
     {
         try
         {
+            // Short aliases win over long forms when both are present
+            string? outfitSprite = null;
+            if (t.TryGetValue("outfit",        out var oa)) outfitSprite = oa?.ToString();
+            if (t.TryGetValue("outfit_sprite", out var ob) && outfitSprite is null) outfitSprite = ob?.ToString();
+
             string? lutSprite = null;
-            if (t.TryGetValue("lut",        out var lv)) lutSprite = lv?.ToString();
-            if (t.TryGetValue("lut_sprite",  out var ls) && lutSprite is null) lutSprite = ls?.ToString();
+            if (t.TryGetValue("lut",           out var lv)) lutSprite = lv?.ToString();
+            if (t.TryGetValue("lut_sprite",    out var ls) && lutSprite is null) lutSprite = ls?.ToString();
+
+            string? iconSprite = null;
+            if (t.TryGetValue("icon",          out var ia)) iconSprite = ia?.ToString();
+            if (t.TryGetValue("icon_sprite",   out var ib) && iconSprite is null) iconSprite = ib?.ToString();
+
+            string? outlineSprite = null;
+            if (t.TryGetValue("outline",         out var oa2)) outlineSprite = oa2?.ToString();
+            if (t.TryGetValue("outline_sprite",  out var ob2) && outlineSprite is null) outlineSprite = ob2?.ToString();
 
             int? priceOverride = null;
             if (t.TryGetValue("price_override", out var pv) && pv is not null)
                 priceOverride = Convert.ToInt32(pv);
 
             int? frameWidth = null;
-            if (t.TryGetValue("frame_width", out var fw) && fw is not null)
-                frameWidth = Convert.ToInt32(fw);
-
             int? frameHeight = null;
-            if (t.TryGetValue("frame_height", out var fh) && fh is not null)
-                frameHeight = Convert.ToInt32(fh);
+
+            // frame_size = [w, h] wins over the individual frame_width / frame_height fields
+            if (t.TryGetValue("frame_size", out var fsObj) && fsObj is TomlArray fs && fs.Count >= 2)
+            {
+                frameWidth  = Convert.ToInt32(fs[0]);
+                frameHeight = Convert.ToInt32(fs[1]);
+            }
+            else
+            {
+                if (t.TryGetValue("frame_width",  out var fw) && fw is not null) frameWidth  = Convert.ToInt32(fw);
+                if (t.TryGetValue("frame_height", out var fh) && fh is not null) frameHeight = Convert.ToInt32(fh);
+            }
 
             return new OutfitDefinition
             {
@@ -80,10 +100,10 @@ public class OutfitDefinition
                 UiSlot          = t.TryGetValue("ui_slot",          out var sl) ? sl?.ToString() ?? "" : "",
                 UiSubCategory   = t.TryGetValue("ui_sub_category",  out var sc) ? sc?.ToString() ?? "" : "",
                 DefaultUnlocked = t.TryGetValue("default_unlocked", out var du) && du is bool b && b,
-                OutfitSprite    = t.TryGetValue("outfit_sprite",    out var os) ? os?.ToString() : null,
+                OutfitSprite    = outfitSprite,
                 LutSprite       = lutSprite,
-                IconSprite      = t.TryGetValue("icon_sprite",      out var ic) ? ic?.ToString() : null,
-                OutlineSprite   = t.TryGetValue("outline_sprite",   out var ol) ? ol?.ToString() : null,
+                IconSprite      = iconSprite,
+                OutlineSprite   = outlineSprite,
                 PriceOverride   = priceOverride,
                 FrameWidth      = frameWidth,
                 FrameHeight     = frameHeight,

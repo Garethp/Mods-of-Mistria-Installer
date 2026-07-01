@@ -89,6 +89,83 @@ public class AtlasUtilities
         return id;
     }
 
+    // Removes all atlas entries whose texture_ids contain any frame of baseId
+    // (e.g. "abc123" removes "abc123", "abc123::0", "abc123::1" …).
+    // Entries that share a pixel region with other IDs are pruned rather than removed.
+    // Must be called before AddStrip so open states don't re-introduce the old entries.
+    public void RemoveById(string baseId)
+    {
+        // Strip any ::N suffix the caller may have included
+        var prefix = baseId.Contains("::") ? baseId[..baseId.IndexOf("::", StringComparison.Ordinal)] : baseId;
+
+        // 1. Modify any atlas page that is already open in _states (in-memory).
+        //    We collect their paths so we skip them in step 2.
+        var openPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var state in _states.Values)
+        {
+            openPaths.Add(state.Atlas.MetaPath);
+            bool dirty = false;
+            PruneAnimations(state.Animations, prefix, ref dirty);
+            if (dirty) state.IsDirty = true;
+        }
+
+        // 2. All other atlas pages: load → prune → backup + save.
+        foreach (var atlas in _atlases)
+        {
+            if (openPaths.Contains(atlas.MetaPath)) continue;
+            if (!File.Exists(atlas.MetaPath)) continue;
+
+            var data = Toml.LoadToml(atlas.MetaPath);
+            if (!data.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap) continue;
+            if (!ap.TryGetValue("animations", out var animObj) || animObj is not TomlTableArray anims) continue;
+
+            bool modified = false;
+            PruneAnimations(anims, prefix, ref modified);
+            if (!modified) continue;
+
+            // Backup the original before overwriting (so uninstall can restore it)
+            _manifest.TrackModified(atlas.MetaPath);
+            Toml.SaveToml(data, atlas.MetaPath);
+        }
+    }
+
+    // Removes or prunes animation entries that reference baseId (no ::N suffix).
+    // Entries with multiple IDs only have the matching ones removed; if that empties
+    // the texture_ids array the whole entry is removed.
+    private static void PruneAnimations(TomlTableArray anims, string baseId, ref bool modified)
+    {
+        for (int i = anims.Count - 1; i >= 0; i--)
+        {
+            var anim = anims[i];
+            if (!anim.TryGetValue("texture_ids", out var idsObj) || idsObj is not TomlArray ids)
+                continue;
+
+            var matching = ids
+                .Cast<string>()
+                .Select((id, idx) => (id, idx))
+                .Where(t => string.Equals(t.id, baseId, StringComparison.OrdinalIgnoreCase)
+                         || t.id.StartsWith(baseId + "::", StringComparison.OrdinalIgnoreCase))
+                .OrderByDescending(t => t.idx)
+                .ToList();
+
+            if (matching.Count == 0) continue;
+
+            if (matching.Count == ids.Count)
+            {
+                // All IDs in this slot belong to the replaced animation → drop the entry
+                anims.RemoveAt(i);
+            }
+            else
+            {
+                // Some other animations share this pixel region → remove only our IDs
+                foreach (var (_, idx) in matching)
+                    ids.RemoveAt(idx);
+            }
+
+            modified = true;
+        }
+    }
+
     // Writes all pending atlas changes to disk and marks them in the manifest.
     public void Flush()
     {

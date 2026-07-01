@@ -47,6 +47,33 @@ public class MistriaLocator
             .FirstOrDefault();
     }
 
+    /// <summary>
+    /// Returns every FieldsOfMistria AppData directory that contains a saves folder
+    /// (e.g. %LOCALAPPDATA%\FieldsOfMistria\beta\). Falls back to the root directory
+    /// if no branch subdirectory is found.
+    /// </summary>
+    public static IEnumerable<string> GetGameConfigDirectories()
+    {
+        var root = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "FieldsOfMistria");
+
+        if (!Directory.Exists(root)) yield break;
+
+        var withSaves = Directory.GetDirectories(root)
+            .Where(d => Directory.Exists(Path.Combine(d, "saves")))
+            .ToList();
+
+        if (withSaves.Count > 0)
+        {
+            foreach (var d in withSaves) yield return d;
+        }
+        else if (Directory.Exists(Path.Combine(root, "saves")))
+        {
+            yield return root;
+        }
+    }
+
     public static string? GetWineLocation()
     {
         var steamLocations = GetSteamLocations().Where(Directory.Exists).ToList();

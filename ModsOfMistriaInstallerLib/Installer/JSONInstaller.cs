@@ -21,6 +21,9 @@ public class JSONInstaller : Installer
         var jsonFiles = mod.GetAllFiles(".json")
             .Where(p => !p.EndsWith(".meta.json", StringComparison.OrdinalIgnoreCase))
             .Select(p => RelativePath(mod, p))
+            .Where(p => !p.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
+            .Where(p => !p.StartsWith("points/", StringComparison.OrdinalIgnoreCase) &&
+                        !p.StartsWith("points\\", StringComparison.OrdinalIgnoreCase))
             .ToList();
 
         foreach (var relPath in jsonFiles)

@@ -26,7 +26,13 @@ public class RarMod() : IMod
     private string _basePath = "";
     
     private bool _isInstalled = false;
-    
+
+    private List<ModRequirement> _requirements = [];
+
+    private string? _updateUrl;
+
+    private string? _downloadUrl;
+
     private RarArchiveEntry? GetEntry(RarArchive rarFile, string path)
     {
         var isDirectory = path.EndsWith('/');
@@ -56,6 +62,15 @@ public class RarMod() : IMod
         _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1";
         _rarFile = rarFile;
         _basePath = basePath;
+        _requirements = (manifest["requirements"] as JArray ?? [])
+            .Select(r => new ModRequirement(
+                r["name"]?.ToString() ?? "",
+                r["author"]?.ToString() ?? "",
+                r["download_url"]?.ToString()))
+            .Where(r => !string.IsNullOrEmpty(r.Name) && !string.IsNullOrEmpty(r.Author))
+            .ToList();
+        _updateUrl   = manifest["update_url"]?.ToString();
+        _downloadUrl = manifest["download_url"]?.ToString();
     }
 
     private string ReadEntry(RarArchive? rarFile, string entryName)
@@ -209,4 +224,9 @@ public class RarMod() : IMod
 
         return entry.OpenEntryStream();
     }
+
+    public List<ModRequirement> GetRequirements() => _requirements;
+
+    public string? GetUpdateUrl()   => _updateUrl;
+    public string? GetDownloadUrl() => _downloadUrl;
 }
