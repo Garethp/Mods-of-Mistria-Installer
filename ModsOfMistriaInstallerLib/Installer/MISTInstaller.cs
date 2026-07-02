@@ -4,14 +4,13 @@ using Garethp.ModsOfMistriaInstallerLib.Utils;
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
 // Installs .mist files from a mod by overwriting the existing game files.
-public class MISTInstaller : Installer
+public class MISTInstaller(
+    string fomLocation,
+    InstallManifest manifest,
+    Dictionary<string, string> fileNameUidMapping,
+    IFileModifier _fileModifier)
+    : Installer(fomLocation, manifest, fileNameUidMapping)
 {
-    public MISTInstaller(
-        string fomLocation,
-        InstallManifest manifest,
-        Dictionary<string, string> fileNameUIDMapping)
-        : base(fomLocation, manifest, fileNameUIDMapping) { }
-
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
         var mistFiles = mod.GetAllFiles(".mist")
@@ -27,9 +26,8 @@ public class MISTInstaller : Installer
         var dest = DestinationPath(relPath);
         Dirty(dest);
 
-        using var source = mod.ReadFileAsStream(relPath);
-        using var destStream = File.Create(dest);
-        source.CopyTo(destStream);
+        var source = mod.ReadFile(relPath);
+        _fileModifier.Write(dest, source);
 
         reportStatus($"Installed: {relPath}", "");
     }

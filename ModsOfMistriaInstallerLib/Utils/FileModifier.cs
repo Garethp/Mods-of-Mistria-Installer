@@ -1,8 +1,22 @@
-﻿namespace Garethp.ModsOfMistriaInstallerLib.Utils;
+﻿using UndertaleModLib.Compiler;
 
-public class FileModifier: IFileModifier
+namespace Garethp.ModsOfMistriaInstallerLib.Utils;
+
+public class FileModifier(string fieldsOfMistriaLocation): IFileModifier
 {
-    public string Read(string fieldsOfMistriaLocation, string file)
+    private readonly string fieldsOfMistriaLocation = fieldsOfMistriaLocation;
+
+    public bool Exists(string file)
+    {
+        return Path.Exists(Path.Combine(fieldsOfMistriaLocation, file));
+    }
+
+    public string[] FileFiles(string path, string pattern)
+    {
+        return Directory.GetFiles(Path.Combine(fieldsOfMistriaLocation, path), pattern, SearchOption.AllDirectories);
+    }
+
+    public string Read(string file)
     {
         var path = Path.Combine(fieldsOfMistriaLocation, file);
         var extension = Path.GetExtension(path);
@@ -24,12 +38,12 @@ public class FileModifier: IFileModifier
         return File.ReadAllText(backupPath);
     }
 
-    public void Write(string fieldsOfMistriaLocation, string file, string contents)
+    public void Write(string file, string contents)
     {
         File.WriteAllText(Path.Combine(fieldsOfMistriaLocation, file), contents);
     }
 
-    public bool ConditionalRestoreBackup(string fieldsOfMistriaLocation, string file, Func<bool> condition)
+    public bool ConditionalRestoreBackup(string file, Func<bool> condition)
     {
         var path = Path.Combine(fieldsOfMistriaLocation, file);
         var extension = Path.GetExtension(path);

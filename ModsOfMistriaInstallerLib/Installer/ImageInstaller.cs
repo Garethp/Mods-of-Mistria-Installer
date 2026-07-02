@@ -17,20 +17,14 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 //                        A .meta.toml alongside the PNG is optional; if present it can
 //                        override atlas type, frame_size, and frame_len (e.g. different
 //                        canvas size). The ID always comes from the game's own meta.
-public class ImageInstaller : Installer
+public class ImageInstaller(
+    string fomLocation,
+    InstallManifest manifest,
+    Dictionary<string, string> fileNameUidMapping,
+    AtlasUtilities atlasUtils,
+    IFileModifier fileModifier)
+    : Installer(fomLocation, manifest, fileNameUidMapping)
 {
-    private readonly AtlasUtilities _atlasUtils;
-
-    public ImageInstaller(
-        string fomLocation,
-        InstallManifest manifest,
-        Dictionary<string, string> fileNameUIDMapping,
-        AtlasUtilities atlasUtils)
-        : base(fomLocation, manifest, fileNameUIDMapping)
-    {
-        _atlasUtils = atlasUtils;
-    }
-
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
         // --- 1. Sprite replacements (images/replace/) ---
@@ -64,7 +58,7 @@ public class ImageInstaller : Installer
                 {
                     FileNameUIDMapping[group.BaseName] = replaceId;
                     IDManager.RegisterId(replaceId);
-                    _atlasUtils.RemoveById(replaceId);
+                    atlasUtils.RemoveById(replaceId);
                     reportStatus($"Replacing {group.BaseName} (id {replaceId})", "");
                 }
                 // id: preset ID for a new sprite.
@@ -78,13 +72,13 @@ public class ImageInstaller : Installer
             }
 
             using var pngStream = mod.ReadFileAsStream(group.PngRelPath!);
-            var id = _atlasUtils.AddStrip(atlasType, frameWidth, frameHeight, frameCount,
+            var id = atlasUtils.AddStrip(atlasType, frameWidth, frameHeight, frameCount,
                 pngStream, FileNameUIDMapping, group.BaseName);
 
             reportStatus($"Packed {group.BaseName} → {atlasType} atlas (id {id})", "");
         }
 
-        _atlasUtils.Flush();
+        atlasUtils.Flush();
     }
 
     // ── Replacement path ──────────────────────────────────────────────────────────
@@ -151,10 +145,10 @@ public class ImageInstaller : Installer
 
             FileNameUIDMapping[baseName] = replaceId;
             IDManager.RegisterId(replaceId);
-            _atlasUtils.RemoveById(replaceId);
+            atlasUtils.RemoveById(replaceId);
 
             using var pngStream = mod.ReadFileAsStream(pngPath);
-            var id = _atlasUtils.AddStrip(atlasType, frameWidth, frameHeight, frameCount,
+            var id = atlasUtils.AddStrip(atlasType, frameWidth, frameHeight, frameCount,
                 pngStream, FileNameUIDMapping, baseName);
 
             reportStatus($"Replaced {spriteName} → {atlasType} atlas (id {id})", "");
@@ -164,12 +158,10 @@ public class ImageInstaller : Installer
     // Recursively searches assets/animations/ for a meta.toml matching the sprite name.
     private string? FindGameAnimationMetaPath(string spriteName)
     {
-        var animationsDir = Path.Combine(AssetsLocation, "animations");
-        if (!Directory.Exists(animationsDir)) return null;
+        var animationsDir = DestinationPath("animations");
+        if (!fileModifier.Exists(animationsDir)) return null;
 
-        return Directory
-            .GetFiles(animationsDir, $"{spriteName}.meta.toml", SearchOption.AllDirectories)
-            .FirstOrDefault();
+        return fileModifier.FileFiles(animationsDir, $"{spriteName}.meta.toml").FirstOrDefault();
     }
 
     private static bool IsUnderReplaceFolder(string relPath) =>

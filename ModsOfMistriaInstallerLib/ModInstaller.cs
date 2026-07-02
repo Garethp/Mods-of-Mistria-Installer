@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO.Compression;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
@@ -15,6 +15,7 @@ public class ModInstaller
     private readonly string _fomLocation;
     private readonly string _assetsLocation;
     private readonly string _atlasDirectory;
+    private IFileModifier _fileModifier;
 
     public ModInstaller(string fomLocation, string modsLocation)
     {
@@ -27,22 +28,24 @@ public class ModInstaller
     {
         if (!Directory.Exists(_fomLocation))
             throw new DirectoryNotFoundException(Resources.CoreMistriaLocationDoesNotExist);
-
+        
         if (IsFreshInstall())
         {
             var zipPath = Path.Combine(_fomLocation, "assets.zip");
             if (!File.Exists(zipPath)) return;
 
-            reportStatus("Fresh install: extracting assets.zip. This may take a while.", "");
-            ZipFile.ExtractToDirectory(zipPath, _fomLocation);
-            File.Move(zipPath, Path.Combine(_fomLocation, "assets_backup.zip"));
-            reportStatus("Assets extracted.", "");
-            return;
+            File.Copy(zipPath, Path.Combine(_fomLocation, "assets.bak.zip"), true);
         }
+        
+        File.Copy(Path.Combine(_fomLocation, "assets.bak.zip"), Path.Combine(_fomLocation, "assets.zip"), true);
+
+        var zipFile = ZipFile.Open(Path.Combine(_fomLocation, "assets.zip"), ZipArchiveMode.Update);
+        _fileModifier = new ZipFileModifier(zipFile);
+        _fileModifier.Write("manifest.toml", "");
 
         var totalTime = Stopwatch.StartNew();
 
-        Uninstall();
+        // Uninstall();
 
         // Shared state across all installers for this install session
         IDManager.Reset();
@@ -54,7 +57,7 @@ public class ModInstaller
 
         // Location pre-pass: merges all mod locations and patches TMX destination_ids
         // before the per-mod loop so that positional LocationIds are globally consistent.
-        new LocationInstaller(_fomLocation, manifest).Install(mods, reportStatus);
+        new LocationInstaller(_fomLocation, manifest, _fileModifier).Install(mods, reportStatus);
 
         foreach (var mod in mods)
         {
@@ -67,6 +70,11 @@ public class ModInstaller
             reportStatus($"Finished {mod.GetName()}", modTimer.Elapsed.ToString());
         }
 
+        if (_fileModifier is ZipFileModifier zipFileModifier)
+        {
+            zipFileModifier.Close();
+        }
+        
         manifest.Save();
         GameManifestWriter.Write(mods);
         totalTime.Stop();
@@ -103,34 +111,40 @@ public class ModInstaller
             : mod;
 
         // 1. Pack images into atlases first so IDs are ready for TOML
-        new ImageInstaller(_fomLocation, manifest, fileNameUIDMapping, atlasUtils)
+        new ImageInstaller(_fomLocation, manifest, fileNameUIDMapping, atlasUtils, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 2. Install TOML files (uses IDs populated above)
-        new TOMLInstaller(_fomLocation, manifest, fileNameUIDMapping)
+        new TOMLInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 3. Install JSON files
-        new JSONInstaller(_fomLocation, manifest, fileNameUIDMapping)
+        new JSONInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 4. Install XML files
-        new XMLInstaller(_fomLocation, manifest, fileNameUIDMapping)
+        new XMLInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 5. Install MIST files (overwrite)
-        new MISTInstaller(_fomLocation, manifest, fileNameUIDMapping)
+        new MISTInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
-        new OutfitInstaller(_fomLocation, manifest, fileNameUIDMapping)
+        new OutfitInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
             .Install(mod, reportStatus);
-        new FurnitureInstaller(_fomLocation, manifest, fileNameUIDMapping)
+        new FurnitureInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
             .Install(mod, reportStatus);
     }
 
-    private bool IsFreshInstall() =>
-        !Directory.Exists(_assetsLocation);
+    private bool IsFreshInstall() {
+        var zipFile = ZipFile.Open(Path.Combine(_fomLocation, "assets.zip"), ZipArchiveMode.Read);
+
+        var fresh = zipFile.GetEntry("manifest.toml") == null;
+        
+        zipFile.Dispose();
+        return fresh;
+    }
 
     // Deletes any file in assets/ that is not present in assets_backup.zip.
     // This catches files added by older installs that had no manifest.

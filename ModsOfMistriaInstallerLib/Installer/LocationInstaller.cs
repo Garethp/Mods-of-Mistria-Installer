@@ -3,6 +3,7 @@ using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Operations;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Tomlyn;
 using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
@@ -34,15 +35,17 @@ public class LocationInstaller
 {
     private readonly string _assetsLocation;
     private readonly InstallManifest _manifest;
+    private readonly IFileModifier _fileModifier;
 
     private static readonly Regex DestinationIdRegex = new(
         @"(<property\s+name=""destination_id""\s+type=""int""\s+propertytype=""LocationId""\s+value="")(\d+)("")",
         RegexOptions.Compiled);
 
-    public LocationInstaller(string fomLocation, InstallManifest manifest)
+    public LocationInstaller(string fomLocation, InstallManifest manifest, IFileModifier fileModifier)
     {
         _assetsLocation = Path.Combine(fomLocation, "assets");
         _manifest       = manifest;
+        _fileModifier = fileModifier;
     }
 
     public void Install(IEnumerable<IMod> mods, Action<string, string> reportStatus)
@@ -50,7 +53,7 @@ public class LocationInstaller
         var modList = mods.ToList();
 
         // ── 1. Read vanilla location keys (vanilla is restored before this runs) ──
-        var vanillaTable = Toml.LoadToml(Path.Combine(_assetsLocation, "fiddle", "locations.toml"));
+        var vanillaTable = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read("assets/fiddle/locations.toml"));
         var vanillaKeys  = SortedLocationKeys(vanillaTable);
 
         // ── 2. Collect new locations from every mod ────────────────────────────
@@ -85,6 +88,8 @@ public class LocationInstaller
         foreach (var mod in modList)
         {
             var tiledDir = Path.Combine(mod.GetBasePath(), "tiled");
+            
+            // @TODO: We should not be calling Directory.Exists here
             if (!Directory.Exists(tiledDir)) continue;
 
             var thisMod = modNewLocations[mod];
@@ -108,10 +113,12 @@ public class LocationInstaller
     private static List<LocationDefinition> CollectLocationDefs(IMod mod)
     {
         var locDir = Path.Combine(mod.GetBasePath(), "momi", "locations");
+        // @TODO: We should not be calling Directory.Exists here
         if (!Directory.Exists(locDir))
             return [];
 
         var defs = new List<LocationDefinition>();
+        // @TODO: We shouldn't be reading with paths like this, we should be using the mod functions to account for zip mods
         foreach (var absPath in Directory.GetFiles(locDir, "*.toml", SearchOption.AllDirectories))
         {
             var content = File.ReadAllText(absPath);
@@ -132,9 +139,9 @@ public class LocationInstaller
         foreach (var (id, def) in newLocations)
             merged[id] = def.Data;
 
-        var dest = Path.Combine(_assetsLocation, "fiddle", "locations.toml");
+        var dest = Path.Combine("fiddle", "locations.toml");
         DirtyFile(dest);
-        Toml.SaveToml(merged, dest);
+        _fileModifier.Write(dest, TomlSerializer.Serialize(merged));
 
         reportStatus($"locations.toml: added {newLocations.Count} new location(s)", "");
     }
@@ -146,25 +153,31 @@ public class LocationInstaller
         Dictionary<string, int> nameToGlobalId,
         Action<string, string> reportStatus)
     {
+        // @TODO: We should not be calling Directory.Exists here
         foreach (var absPath in Directory.GetFiles(tiledDir, "*", SearchOption.AllDirectories))
         {
             // Relative path within the mod root: "tiled\rooms\My Room\rm_my_room.tmx"
             var relPath = Path.GetRelativePath(mod.GetBasePath(), absPath);
-            var dest    = Path.Combine(_assetsLocation, relPath);
+            var dest    = Path.Combine("assets", relPath);
 
             if (!absPath.EndsWith(".tmx", StringComparison.OrdinalIgnoreCase))
             {
                 // Non-TMX tiled asset (tileset, template, etc.) — copy verbatim.
                 DirtyFile(dest);
-                File.Copy(absPath, dest, overwrite: true);
+                // @TODO: We shouldn't be reading mod files with the system File operations, it doesn't work for zip mods
+                _fileModifier.Write(Path.Combine("assets", relPath), File.ReadAllText(absPath));
+                // File.Copy(absPath, dest, overwrite: true);
                 continue;
             }
 
+            // @TODO: We shouldn't be reading mod files with the system File operations, it doesn't work for zip mods
             var original = File.ReadAllText(absPath);
             var patched  = PatchTmx(original, localIdToName, nameToGlobalId, out int count);
 
             DirtyFile(dest);
-            File.WriteAllText(dest, patched, new System.Text.UTF8Encoding(false));
+            // @TODO: Check if we need that UTF8Encoding
+            _fileModifier.Write(dest, patched);
+            // File.WriteAllText(dest, patched, new System.Text.UTF8Encoding(false));
 
             if (count > 0)
                 reportStatus($"{Path.GetFileName(absPath)}: translated {count} destination_id(s)", "");

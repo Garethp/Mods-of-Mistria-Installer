@@ -8,14 +8,13 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 // Installs .json files from a mod by merging them with the existing game files.
 // JObject sources are deep-merged (keys added/overwritten, arrays unioned).
 // JArray sources replace the destination array outright.
-public class JSONInstaller : Installer
+public class JSONInstaller(
+    string fomLocation,
+    InstallManifest manifest,
+    Dictionary<string, string> fileNameUidMapping,
+    IFileModifier fileModifier)
+    : Installer(fomLocation, manifest, fileNameUidMapping)
 {
-    public JSONInstaller(
-        string fomLocation,
-        InstallManifest manifest,
-        Dictionary<string, string> fileNameUIDMapping)
-        : base(fomLocation, manifest, fileNameUIDMapping) { }
-
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
         var jsonFiles = mod.GetAllFiles(".json")
@@ -40,19 +39,19 @@ public class JSONInstaller : Installer
 
         Dirty(dest);
 
-        if (File.Exists(dest) && sourceToken is JObject sourceObj)
+        if (fileModifier.Exists(dest) && sourceToken is JObject sourceObj)
         {
-            var destObj = JObject.Parse(File.ReadAllText(dest));
+            var destObj = JObject.Parse(fileModifier.Read(dest));
             destObj.Merge(sourceObj, new JsonMergeSettings
             {
                 MergeArrayHandling = MergeArrayHandling.Union,
                 MergeNullValueHandling = MergeNullValueHandling.Merge
             });
-            File.WriteAllText(dest, destObj.ToString(Formatting.Indented));
+            fileModifier.Write(dest, destObj.ToString(Formatting.Indented));
         }
         else
         {
-            File.WriteAllText(dest, sourceToken.ToString(Formatting.Indented));
+            fileModifier.Write(dest, sourceToken.ToString(Formatting.Indented));
         }
 
         reportStatus($"Installed JSON: {relPath}", "");

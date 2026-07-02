@@ -2,6 +2,7 @@ using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Operations;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Tomlyn;
 using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
@@ -13,14 +14,13 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 //   • other *.meta.toml → copies/merges as plain TOML
 //
 // ImageInstaller must run first so FileNameUIDMapping is populated.
-public class TOMLInstaller : Installer
+public class TOMLInstaller(
+    string fomLocation,
+    InstallManifest manifest,
+    Dictionary<string, string> fileNameUidMapping,
+    IFileModifier modifier)
+    : Installer(fomLocation, manifest, fileNameUidMapping)
 {
-    public TOMLInstaller(
-        string fomLocation,
-        InstallManifest manifest,
-        Dictionary<string, string> fileNameUIDMapping)
-        : base(fomLocation, manifest, fileNameUIDMapping) { }
-
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
         var collector = new TOMLCollector();
@@ -120,17 +120,17 @@ public class TOMLInstaller : Installer
 
     // Merges sourceToml into the existing destination file (if it exists),
     // or writes it directly if the destination is new.
-    private static void MergeOrWriteToml(TomlTable sourceToml, string destPath)
+    private void MergeOrWriteToml(TomlTable sourceToml, string destPath)
     {
-        if (!File.Exists(destPath))
+        if (!modifier.Exists(destPath))
         {
-            Toml.SaveToml(sourceToml, destPath);
-            return;
-        }
+            modifier.Write(destPath, TomlSerializer.Serialize(sourceToml));
+        } 
 
-        var destToml = Toml.LoadToml(destPath);
+        var destToml = TomlSerializer.Deserialize<TomlTable>(modifier.Read(destPath))!;
         MOMIOperations.MergeTomlTables(destToml, sourceToml);
-        Toml.SaveToml(destToml, destPath);
+        
+        modifier.Write(destPath, TomlSerializer.Serialize(destToml));
     }
 
     private static TomlTable EnsureTable(TomlTable parent, string key)

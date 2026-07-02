@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
 
@@ -29,7 +30,7 @@ public abstract class Installer
     // Returns the absolute destination path in assets/ for a file that lives at
     // relPath inside the mod.
     protected string DestinationPath(string relPath) =>
-        Path.Combine(AssetsLocation, relPath.Replace('/', Path.DirectorySeparatorChar));
+        Path.Combine("assets", relPath.Replace('/', Path.DirectorySeparatorChar));
 
     // Ensures directories exist, then marks the destination for tracking before
     // any write occurs.  Call this before writing/copying to destPath.

@@ -3,6 +3,7 @@ using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Tomlyn;
 using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
@@ -12,14 +13,13 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 //   • fiddle/player_assets.toml  — one [id] entry per outfit
 //   • data_files/animation/generated/outlines.json  — icon → outline mapping
 //   • data_files/animation/generated/player_asset_parts.json  — id → slot → sprite
-public class OutfitInstaller : Installer
+public class OutfitInstaller(
+    string fomLocation,
+    InstallManifest manifest,
+    Dictionary<string, string> fileNameUidMapping,
+    IFileModifier _fileModifier)
+    : Installer(fomLocation, manifest, fileNameUidMapping)
 {
-    public OutfitInstaller(
-        string fomLocation,
-        InstallManifest manifest,
-        Dictionary<string, string> fileNameUIDMapping)
-        : base(fomLocation, manifest, fileNameUIDMapping) { }
-
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
         if (!mod.HasFilesInFolder("momi/outfit", ".toml"))
@@ -60,15 +60,15 @@ public class OutfitInstaller : Installer
             entry["price_override"] = def.PriceOverride.Value;
         var patch = new TomlTable { [def.Id] = entry };
 
-        if (File.Exists(dest))
+        if (_fileModifier.Exists(dest))
         {
-            var existing = Toml.LoadToml(dest);
+            var existing = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(dest));
             Operations.MOMIOperations.MergeTomlTables(existing, patch);
-            Toml.SaveToml(existing, dest);
+            _fileModifier.Write(dest, TomlSerializer.Serialize(existing));
         }
         else
         {
-            Toml.SaveToml(patch, dest);
+            _fileModifier.Write(dest, TomlSerializer.Serialize(patch));
         }
     }
 
@@ -127,21 +127,21 @@ public class OutfitInstaller : Installer
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private static void MergeJson(string destPath, JObject patch)
+    private void MergeJson(string destPath, JObject patch)
     {
-        if (File.Exists(destPath))
+        if (_fileModifier.Exists(destPath))
         {
-            var existing = JObject.Parse(File.ReadAllText(destPath));
+            var existing = JObject.Parse(_fileModifier.Read(destPath));
             existing.Merge(patch, new JsonMergeSettings
             {
                 MergeArrayHandling    = MergeArrayHandling.Union,
                 MergeNullValueHandling = MergeNullValueHandling.Merge,
             });
-            File.WriteAllText(destPath, existing.ToString(Formatting.Indented));
+            _fileModifier.Write(destPath, existing.ToString(Formatting.Indented));
         }
         else
         {
-            File.WriteAllText(destPath, patch.ToString(Formatting.Indented));
+            _fileModifier.Write(destPath, patch.ToString(Formatting.Indented));
         }
     }
 }

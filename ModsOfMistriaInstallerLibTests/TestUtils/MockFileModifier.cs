@@ -13,17 +13,31 @@ public class MockFileModifier: IFileModifier
         _resultingFiles = files.ToDictionary(x => x.Key, x => x.Value);
     }
 
-    public string Read(string fieldsOfMistriaLocation, string file)
+    public bool Exists(string file)
+    {
+        return _resultingFiles.ContainsKey(file);
+    }
+
+    public string[] FileFiles(string path, string pattern)
+    {
+        return _resultingFiles
+            .Keys
+            .Where(x => x.StartsWith(path) && x.Contains(pattern) && !x.EndsWith('/'))
+            .ToArray()
+        ;
+    }
+
+    public string Read(string file)
     {
         return _resultingFiles[file];
     }
 
-    public void Write(string fieldsOfMistriaLocation, string file, string contents)
+    public void Write(string file, string contents)
     {
         _resultingFiles[file] = contents;
     }
 
-    public bool ConditionalRestoreBackup(string fieldsOfMistriaLocation, string file, Func<bool> condition)
+    public bool ConditionalRestoreBackup(string file, Func<bool> condition)
     {
         if (condition())
         {

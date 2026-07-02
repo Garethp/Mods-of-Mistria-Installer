@@ -10,27 +10,26 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 //    1. Finds the map file that corresponds to the object name (this should correspond to the name of a room with a .tmx file)
 //    2. Finds the TrellisPoints object group in the .tmx file (creating it if it doesn't exist yet)
 //    3. Inserts the trellis point, replacing any property placeholders with the ones defined in the json file
-public class XMLInstaller : Installer
+public class XMLInstaller(
+    string fomLocation,
+    InstallManifest manifest,
+    Dictionary<string, string> fileNameUidMapping,
+    IFileModifier fileModifier)
+    : Installer(fomLocation, manifest, fileNameUidMapping)
 {
     private const string PointsFolder = "points";
     private const string IndentUnit = " ";
     private const string GroupIndent = IndentUnit;
     private const string ObjectIndent = GroupIndent + IndentUnit;
 
-    public XMLInstaller(
-        string fomLocation,
-        InstallManifest manifest,
-        Dictionary<string, string> fileNameUIDMapping)
-        : base(fomLocation, manifest, fileNameUIDMapping) { }
-
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
         if (!mod.FolderExists(PointsFolder))
             return;
 
-        string tiledDir = DestinationPath("tiled");
+        var tiledDir = DestinationPath("tiled");
 
-        List<string> jsonFilePaths = mod
+        var jsonFilePaths = mod
             .GetFilesInFolder(PointsFolder)
             .Where(path => path.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             .ToList();
@@ -38,13 +37,13 @@ public class XMLInstaller : Installer
         if (jsonFilePaths.Count == 0)
             throw new FileNotFoundException($"No .json files found in the mod's '{PointsFolder}' folder.");
 
-        foreach (string jsonFilePath in jsonFilePaths)
+        foreach (var jsonFilePath in jsonFilePaths)
         {
-            string jsonText = mod.ReadFile(jsonFilePath);
+            var jsonText = mod.ReadFile(jsonFilePath);
 
-            using JsonDocument document = JsonDocument.Parse(jsonText);
+            using var document = JsonDocument.Parse(jsonText);
 
-            foreach (JsonProperty mapEntry in document.RootElement.EnumerateObject())
+            foreach (var mapEntry in document.RootElement.EnumerateObject())
             {
                 InsertPointsForMap(mapEntry, tiledDir, reportStatus);
             }
@@ -59,7 +58,7 @@ public class XMLInstaller : Installer
             return;
 
         string tmxPath = FindMapFile(tiledDir, mapName);
-        string tmxText = File.ReadAllText(tmxPath);
+        string tmxText = fileModifier.Read(tmxPath);
         string newline = tmxText.Contains("\r\n") ? "\r\n" : "\n";
         string templatesMetaDir = Path.Combine(tiledDir, "templates", "meta");
         string tmxDir = Path.GetDirectoryName(tmxPath)!;
@@ -78,7 +77,7 @@ public class XMLInstaller : Installer
         }
 
         var objectBlocks = new List<string>();
-        foreach (JsonProperty pointEntry in pointEntries)
+        foreach (var pointEntry in pointEntries)
         {
             objectBlocks.Add(BuildObjectXml(pointEntry.Name, pointEntry.Value, nextId, relative, newline));
             nextId++;
@@ -88,15 +87,17 @@ public class XMLInstaller : Installer
             tmxText, groupExists, groupOpenMatch, newGroupId, objectBlocks, newline);
 
         Dirty(tmxPath);
-        File.WriteAllText(tmxPath, updatedTmxText, new System.Text.UTF8Encoding(false));
+        // @TODO: Check if we need the UTF8 encoding or not
+        fileModifier.Write(tmxPath, updatedTmxText);
+        // File.WriteAllText(tmxPath, updatedTmxText, new System.Text.UTF8Encoding(false));
 
         reportStatus(mapName, $"Inserted {objectBlocks.Count} trellis point(s) into '{mapName}'");
     }
 
     // Finds the .tmx file in the tiled folder
-    private static string FindMapFile(string tiledDir, string mapName)
+    private string FindMapFile(string tiledDir, string mapName)
     {
-        string[] matches = Directory.GetFiles(tiledDir, "rm_" + mapName + ".tmx", SearchOption.AllDirectories);
+        var matches = fileModifier.FileFiles(tiledDir, "rm_" + mapName + ".tmx");
 
         if (matches.Length == 0)
             throw new FileNotFoundException($"No .tmx file found for '{mapName}'.");

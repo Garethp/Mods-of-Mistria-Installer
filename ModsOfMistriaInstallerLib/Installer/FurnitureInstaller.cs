@@ -4,6 +4,7 @@ using Garethp.ModsOfMistriaInstallerLib.Operations;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Tomlyn;
 using Tomlyn.Model;
 using Toml = Garethp.ModsOfMistriaInstallerLib.Utils.Toml;
 
@@ -15,14 +16,13 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 //   • data_files/animation/generated/shadow_manifest.json — mask → shadow mapping
 //   • fiddle/items/furniture/<set>.toml                  — item definitions
 //   • fiddle/object_prototypes/furniture.toml            — object prototype entries
-public class FurnitureInstaller : Installer
+public class FurnitureInstaller(
+    string fomLocation,
+    InstallManifest manifest,
+    Dictionary<string, string> fileNameUidMapping,
+    IFileModifier fileModifier)
+    : Installer(fomLocation, manifest, fileNameUidMapping)
 {
-    public FurnitureInstaller(
-        string fomLocation,
-        InstallManifest manifest,
-        Dictionary<string, string> fileNameUIDMapping)
-        : base(fomLocation, manifest, fileNameUIDMapping) { }
-
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
         if (!mod.HasFilesInFolder("momi/furniture", ".toml"))
@@ -134,35 +134,35 @@ public class FurnitureInstaller : Installer
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private static void MergeJson(string destPath, JObject patch)
+    private void MergeJson(string destPath, JObject patch)
     {
-        if (File.Exists(destPath))
+        if (fileModifier.Exists(destPath))
         {
-            var existing = JObject.Parse(File.ReadAllText(destPath));
+            var existing = JObject.Parse(fileModifier.Read(destPath));
             existing.Merge(patch, new JsonMergeSettings
             {
                 MergeArrayHandling     = MergeArrayHandling.Union,
                 MergeNullValueHandling = MergeNullValueHandling.Merge,
             });
-            File.WriteAllText(destPath, existing.ToString(Formatting.Indented));
+            fileModifier.Write(destPath, existing.ToString(Formatting.Indented));
         }
         else
         {
-            File.WriteAllText(destPath, patch.ToString(Formatting.Indented));
+            fileModifier.Write(destPath, patch.ToString(Formatting.Indented));
         }
     }
 
-    private static void MergeToml(string destPath, TomlTable patch)
+    private void MergeToml(string destPath, TomlTable patch)
     {
-        if (File.Exists(destPath))
+        if (fileModifier.Exists(destPath))
         {
-            var existing = Toml.LoadToml(destPath);
+            var existing = TomlSerializer.Deserialize<TomlTable>(fileModifier.Read(destPath));
             MOMIOperations.MergeTomlTables(existing, patch);
-            Toml.SaveToml(existing, destPath);
+            fileModifier.Write(destPath, TomlSerializer.Serialize(existing));
         }
         else
         {
-            Toml.SaveToml(patch, destPath);
+            fileModifier.Write(destPath, TomlSerializer.Serialize(patch));
         }
     }
 }
