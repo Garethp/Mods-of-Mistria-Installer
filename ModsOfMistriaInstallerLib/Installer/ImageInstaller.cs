@@ -50,6 +50,7 @@ public class ImageInstaller(
                 reportStatus($"Skipping {group.BaseName}: missing animation metadata.", "");
                 continue;
             }
+            if (frameCount <= 0) frameCount = 1; // frame_len omitted = single frame
 
             if (metaToml.TryGetValue("meta_properties", out var mpObj) && mpObj is TomlTable mp)
             {
@@ -111,6 +112,7 @@ public class ImageInstaller(
                 reportStatus($"Skipping replacement {spriteName}: couldn't read game animation metadata.", "");
                 continue;
             }
+            if (frameCount <= 0) frameCount = 1; // frame_len omitted = single frame
 
             if (!gameMeta.TryGetValue("meta_properties", out var gmpObj) || gmpObj is not TomlTable gmp ||
                 !gmp.TryGetValue("id", out var idObj) || idObj is not string replaceId ||
@@ -199,8 +201,6 @@ public class ImageInstaller(
         if (ap.TryGetValue("frame_len", out var flObj))
             frameCount = Convert.ToInt32(flObj);
 
-        // A partial read (missing some values) is still useful for overrides —
-        // callers ignore zero/empty values when applying overrides.
-        return !string.IsNullOrEmpty(atlasType) && frameWidth > 0 && frameHeight > 0 && frameCount > 0;
+        return !string.IsNullOrEmpty(atlasType) && frameWidth > 0 && frameHeight > 0;
     }
 }
