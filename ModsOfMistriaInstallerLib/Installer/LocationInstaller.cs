@@ -139,7 +139,7 @@ public class LocationInstaller
         foreach (var (id, def) in newLocations)
             merged[id] = def.Data;
 
-        var dest = Path.Combine("fiddle", "locations.toml");
+        var dest = Path.Combine("assets", "fiddle", "locations.toml");
         DirtyFile(dest);
         _fileModifier.Write(dest, TomlSerializer.Serialize(merged));
 
