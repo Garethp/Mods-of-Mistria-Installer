@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Tomlyn;
 using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
@@ -28,13 +29,13 @@ public static class IDManager
 
     // Reads every atlas meta.toml and marks all referenced IDs as used
     // so GenerateUniqueId never produces a collision.
-    public static void CollectUsedIds(IEnumerable<Atlas> atlases)
+    public static void CollectUsedIds(IEnumerable<Atlas> atlases, IFileModifier fileModifier)
     {
         foreach (var atlas in atlases)
         {
-            if (!File.Exists(atlas.MetaPath)) continue;
+            if (!fileModifier.Exists(atlas.MetaPath)) continue;
 
-            var data = Toml.LoadToml(atlas.MetaPath);
+            var data = TomlSerializer.Deserialize<TomlTable>(fileModifier.Read(atlas.MetaPath));
 
             if (!data.TryGetValue("asset_properties", out var apObj) ||
                 apObj is not TomlTable ap) continue;

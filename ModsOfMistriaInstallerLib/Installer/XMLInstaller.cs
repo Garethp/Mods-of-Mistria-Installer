@@ -97,7 +97,7 @@ public class XMLInstaller(
     // Finds the .tmx file in the tiled folder
     private string FindMapFile(string tiledDir, string mapName)
     {
-        var matches = fileModifier.FileFiles(tiledDir, "rm_" + mapName + ".tmx");
+        var matches = fileModifier.FindFiles(tiledDir, "rm_" + mapName + ".tmx");
 
         if (matches.Length == 0)
             throw new FileNotFoundException($"No .tmx file found for '{mapName}'.");

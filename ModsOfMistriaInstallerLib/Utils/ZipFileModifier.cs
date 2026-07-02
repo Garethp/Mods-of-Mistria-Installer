@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using SixLabors.ImageSharp.Advanced;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 
@@ -9,10 +10,10 @@ public class ZipFileModifier(ZipArchive archive) : IFileModifier
     public bool Exists(string file)
     {
         file = file.Replace('\\', '/');
-        return _archive.GetEntry(file) != null;
+        return _archive.GetEntry(file) != null || _archive.GetEntry($"{file}/") != null;
     }
 
-    public string[] FileFiles(string path, string pattern)
+    public string[] FindFiles(string path, string pattern)
     {
         path = path.Replace('\\', '/');
         return _archive
@@ -27,19 +28,35 @@ public class ZipFileModifier(ZipArchive archive) : IFileModifier
 
     public string Read(string file)
     {
+        var stream = GetReadStream(file);
+        using var reader = new StreamReader(stream);
+        var contents = reader.ReadToEnd();
+        
+        reader.Close();
+
+        return contents;
+    }
+
+    public Stream GetReadStream(string file)
+    {
         file = file.Replace('\\', '/');
         var entry = _archive.GetEntry(file);
         if (entry == null)
             throw new FileNotFoundException(file);
 
-        var stream = entry.Open();
-        using var reader = new StreamReader(stream);
-        var contents = reader.ReadToEnd();
-
-        return contents;
+        return entry.Open();
     }
 
     public void Write(string file, string contents)
+    {
+        var stream = GetWriteStream(file);
+        stream.SetLength(contents.Length);
+        using var writer = new StreamWriter(stream);
+        writer.Write(contents);
+        writer.Close();
+    }
+
+    public Stream GetWriteStream(string file)
     {
         file = file.Replace('\\', '/');
         var entry = _archive.GetEntry(file);
@@ -47,10 +64,7 @@ public class ZipFileModifier(ZipArchive archive) : IFileModifier
             entry = _archive.CreateEntry(file);
         
         var stream = entry.Open();
-        stream.SetLength(contents.Length);
-        using var writer = new StreamWriter(stream);
-        writer.Write(contents);
-        writer.Close();
+        return stream;
     }
 
     public bool ConditionalRestoreBackup(string file, Func<bool> condition)

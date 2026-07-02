@@ -1,5 +1,7 @@
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
+using Tomlyn;
 using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
@@ -21,7 +23,9 @@ public class Atlas
     public int Width       { get; }
     public int Height      { get; }
 
-    public Atlas(string type, int number, string atlasDirectory, int width = DefaultSize, int height = DefaultSize)
+    private IFileModifier _fileModifier;
+
+    public Atlas(string type, int number, string atlasDirectory, IFileModifier fileModifier, int width = DefaultSize, int height = DefaultSize)
     {
         Type      = type;
         Number    = number;
@@ -29,6 +33,7 @@ public class Atlas
         PngPath   = BuildPngName(type, number, atlasDirectory);
         Width     = width;
         Height    = height;
+        _fileModifier = fileModifier;
     }
 
     // Shadow + 0 → "ShadowAtlas.meta.toml" (original unnumbered file)
@@ -58,16 +63,19 @@ public class Atlas
     // Creates the atlas image file if it doesn't exist.
     public bool EnsureImageExists()
     {
-        if (File.Exists(PngPath)) return true;
+        if (_fileModifier.Exists(PngPath)) return true;
         using var img = new Image<Rgba32>(Width, Height);
-        img.Save(PngPath);
+        var imageStream = _fileModifier.GetWriteStream(PngPath);
+        img.Save(imageStream, img.DetectEncoder(PngPath));
+        imageStream.Close();
+        
         return true;
     }
 
     // Creates the atlas meta.toml file if it doesn't exist.
     public bool EnsureMetaExists()
     {
-        if (File.Exists(MetaPath)) return true;
+        if (_fileModifier.Exists(MetaPath)) return true;
         var data = new TomlTable
         {
             ["meta_properties"] = new TomlTable
@@ -86,7 +94,8 @@ public class Atlas
                 ["atlas"]               = Type
             }
         };
-        Toml.SaveToml(data, MetaPath);
+        
+        _fileModifier.Write(MetaPath, TomlSerializer.Serialize(data));
         return true;
     }
 }

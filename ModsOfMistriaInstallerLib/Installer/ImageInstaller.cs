@@ -1,6 +1,7 @@
 using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Tomlyn;
 using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
@@ -102,7 +103,7 @@ public class ImageInstaller(
                 continue;
             }
 
-            var gameMeta = Toml.LoadToml(gameMetaPath);
+            var gameMeta = TomlSerializer.Deserialize<TomlTable>(fileModifier.Read(gameMetaPath));
 
             if (!TryReadAnimationMeta(gameMeta, out var atlasType, out var frameWidth,
                     out var frameHeight, out var frameCount))
@@ -161,7 +162,7 @@ public class ImageInstaller(
         var animationsDir = DestinationPath("animations");
         if (!fileModifier.Exists(animationsDir)) return null;
 
-        return fileModifier.FileFiles(animationsDir, $"{spriteName}.meta.toml").FirstOrDefault();
+        return fileModifier.FindFiles(animationsDir, $"{spriteName}.meta.toml").FirstOrDefault();
     }
 
     private static bool IsUnderReplaceFolder(string relPath) =>

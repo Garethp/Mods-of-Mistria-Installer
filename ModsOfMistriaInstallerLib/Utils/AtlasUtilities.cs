@@ -1,6 +1,8 @@
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Tomlyn;
 using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
@@ -13,13 +15,16 @@ public class AtlasUtilities
     private readonly InstallManifest _manifest;
     private readonly List<Atlas> _atlases;
     private readonly Dictionary<string, AtlasPackState> _states = new(StringComparer.OrdinalIgnoreCase);
+
+    private readonly IFileModifier _fileModifier;
     // Atlas meta paths created during this session (did not exist before install).
     private readonly HashSet<string> _newAtlasPaths = new(StringComparer.OrdinalIgnoreCase);
 
-    public AtlasUtilities(string atlasDirectory, InstallManifest manifest)
+    public AtlasUtilities(string atlasDirectory, InstallManifest manifest, IFileModifier fileModifier)
     {
-        _atlasDirectory = atlasDirectory;
+        _atlasDirectory = Path.Combine("assets", "atlases");
         _manifest       = manifest;
+        _fileModifier   = fileModifier;
         _atlases        = LoadAtlases();
     }
 
@@ -113,9 +118,9 @@ public class AtlasUtilities
         foreach (var atlas in _atlases)
         {
             if (openPaths.Contains(atlas.MetaPath)) continue;
-            if (!File.Exists(atlas.MetaPath)) continue;
+            if (!_fileModifier.Exists(atlas.MetaPath)) continue;
 
-            var data = Toml.LoadToml(atlas.MetaPath);
+            var data = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(atlas.MetaPath));
             if (!data.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap) continue;
             if (!ap.TryGetValue("animations", out var animObj) || animObj is not TomlTableArray anims) continue;
 
@@ -124,8 +129,9 @@ public class AtlasUtilities
             if (!modified) continue;
 
             // Backup the original before overwriting (so uninstall can restore it)
-            _manifest.TrackModified(atlas.MetaPath);
-            Toml.SaveToml(data, atlas.MetaPath);
+            // _manifest.TrackModified(atlas.MetaPath);
+            
+            _fileModifier.Write(atlas.MetaPath, TomlSerializer.Serialize(data));
         }
     }
 
@@ -183,8 +189,10 @@ public class AtlasUtilities
     {
         var atlas = GetLastAtlas(atlasType);
 
-        var data  = Toml.LoadToml(atlas.MetaPath);
-        var image = Image.Load<Rgba32>(atlas.PngPath);
+        var data  = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(atlas.MetaPath));
+        var imageStream = _fileModifier.GetReadStream(atlas.PngPath);
+        var image = Image.Load<Rgba32>(imageStream);
+        imageStream.Close();
 
         // Safely retrieve (or create) the animations array.
         // A newly created atlas serialises an empty TomlTableArray as nothing,
@@ -222,17 +230,20 @@ public class AtlasUtilities
         // pre-existing atlases are "modified" and need a backup for uninstall.
         if (_newAtlasPaths.Contains(state.Atlas.MetaPath))
         {
-            _manifest.TrackAdded(state.Atlas.PngPath);
-            _manifest.TrackAdded(state.Atlas.MetaPath);
+            // _manifest.TrackAdded(state.Atlas.PngPath);
+            // _manifest.TrackAdded(state.Atlas.MetaPath);
         }
         else
         {
-            _manifest.TrackModified(state.Atlas.PngPath);
-            _manifest.TrackModified(state.Atlas.MetaPath);
+            // _manifest.TrackModified(state.Atlas.PngPath);
+            // _manifest.TrackModified(state.Atlas.MetaPath);
         }
-
-        state.Image.Save(state.Atlas.PngPath);
-        Toml.SaveToml(state.Data, state.Atlas.MetaPath);
+        
+        var writeStream = _fileModifier.GetWriteStream(state.Atlas.PngPath);
+        state.Image.Save(writeStream, state.Image.DetectEncoder(state.Atlas.PngPath));
+        writeStream.Close();
+        
+        _fileModifier.Write(state.Atlas.MetaPath, TomlSerializer.Serialize(state.Data));
         state.Image.Dispose();
         state.IsDirty = false;
     }
@@ -252,7 +263,7 @@ public class AtlasUtilities
 
     private Atlas CreateAtlas(string type, int number)
     {
-        var atlas = new Atlas(type, number, _atlasDirectory);
+        var atlas = new Atlas(type, number, _atlasDirectory, _fileModifier);
         atlas.EnsureImageExists();
         atlas.EnsureMetaExists();
         _atlases.Add(atlas);
@@ -264,10 +275,10 @@ public class AtlasUtilities
     {
         var atlases = new List<Atlas>();
 
-        if (!Directory.Exists(_atlasDirectory))
+        if (!_fileModifier.Exists(_atlasDirectory))
             return atlases;
 
-        foreach (var metaPath in Directory.GetFiles(_atlasDirectory, "*.meta.toml"))
+        foreach (var metaPath in _fileModifier.FindFiles(_atlasDirectory, ".meta.toml"))
         {
             // Strip both extensions: file.meta.toml → file
             var stem = Path.GetFileNameWithoutExtension(
@@ -276,7 +287,7 @@ public class AtlasUtilities
             // ShadowAtlas (no number suffix) is a special case
             if (stem.Equals("ShadowAtlas", StringComparison.OrdinalIgnoreCase))
             {
-                atlases.Add(new Atlas("Shadow", 0, _atlasDirectory));
+                atlases.Add(new Atlas("Shadow", 0, _atlasDirectory, _fileModifier));
                 continue;
             }
 
@@ -286,7 +297,7 @@ public class AtlasUtilities
             if (!int.TryParse(parts[^1], out int index)) continue;
 
             var prefix = string.Join('_', parts[..^1]).Replace("Atlas", "");
-            atlases.Add(new Atlas(prefix, index, _atlasDirectory));
+            atlases.Add(new Atlas(prefix, index, _atlasDirectory, _fileModifier));
         }
 
         return atlases

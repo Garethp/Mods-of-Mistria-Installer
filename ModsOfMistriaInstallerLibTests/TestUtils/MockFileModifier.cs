@@ -18,7 +18,7 @@ public class MockFileModifier: IFileModifier
         return _resultingFiles.ContainsKey(file);
     }
 
-    public string[] FileFiles(string path, string pattern)
+    public string[] FindFiles(string path, string pattern)
     {
         return _resultingFiles
             .Keys
@@ -32,9 +32,25 @@ public class MockFileModifier: IFileModifier
         return _resultingFiles[file];
     }
 
+    public Stream GetReadStream(string file)
+    {
+        var stream = new MemoryStream();
+        var writer = new StreamWriter(stream);
+        writer.Write(_resultingFiles[file]);
+        writer.Flush();
+        stream.Position = 0;
+
+        return stream;
+    }
+
     public void Write(string file, string contents)
     {
         _resultingFiles[file] = contents;
+    }
+
+    public Stream GetWriteStream(string file)
+    {
+        throw new NotImplementedException();
     }
 
     public bool ConditionalRestoreBackup(string file, Func<bool> condition)

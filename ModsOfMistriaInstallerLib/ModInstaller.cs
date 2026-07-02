@@ -51,9 +51,9 @@ public class ModInstaller
         IDManager.Reset();
         var manifest          = InstallManifest.LoadOrCreate(_fomLocation);
         var fileNameUIDMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var atlasUtils        = new AtlasUtilities(_atlasDirectory, manifest);
+        var atlasUtils        = new AtlasUtilities(_atlasDirectory, manifest, _fileModifier);
 
-        IDManager.CollectUsedIds(atlasUtils.GetAtlases());
+        IDManager.CollectUsedIds(atlasUtils.GetAtlases(), _fileModifier);
 
         // Location pre-pass: merges all mod locations and patches TMX destination_ids
         // before the per-mod loop so that positional LocationIds are globally consistent.
