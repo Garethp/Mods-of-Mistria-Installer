@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
+using Tomlyn;
+using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
@@ -35,27 +37,30 @@ public class ZipMod() : IMod
 
     public ZipMod(ZipArchive zipFile, string basePath) : this()
     {
-        var manifestFile = zipFile.GetEntry(basePath + "manifest.json");
+        var manifestFile = zipFile.GetEntry(basePath + "manifest.json") ?? zipFile.GetEntry(basePath + "manifest.toml");
         if (manifestFile is null) return;
 
-        var manifest = JObject.Parse(readEntry(manifestFile));
-
-        _name = manifest["name"]?.ToString() ?? "";
-        _author = manifest["author"]?.ToString() ?? "";
-        _version = manifest["version"]?.ToString() ?? "";
-        _minimumInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0";
-        _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1";
+        ModManifest manifest;
+        if (manifestFile.Name.EndsWith(".json"))
+        {
+            manifest = ModManifest.FromJson(JObject.Parse(readEntry(manifestFile)));
+        } else if (manifestFile.Name.EndsWith(".toml"))
+        {
+            manifest = ModManifest.FromToml(TomlSerializer.Deserialize<TomlTable>(readEntry(manifestFile))!);
+        }
+        else return;
+        
+        _name = manifest.Name;
+        _author = manifest.Author;
+        _version = manifest.Version;
+        _minimumInstallerVersion = manifest.MinInstallerVersion;
+        _manifestVersion = manifest.ManifestVersion;
+        _requirements = manifest.Requirements;
+        _downloadUrl = manifest.DownloadUrl;
+        _updateUrl = manifest.UpdateUrl;
+        
         _zipFile = zipFile;
         _basePath = basePath;
-        _requirements = (manifest["requirements"] as JArray ?? [])
-            .Select(r => new ModRequirement(
-                r["name"]?.ToString() ?? "",
-                r["author"]?.ToString() ?? "",
-                r["download_url"]?.ToString()))
-            .Where(r => !string.IsNullOrEmpty(r.Name) && !string.IsNullOrEmpty(r.Author))
-            .ToList();
-        _updateUrl   = manifest["update_url"]?.ToString();
-        _downloadUrl = manifest["download_url"]?.ToString();
     }
 
     private string readEntry(ZipArchive? zipFile, string entryName)
@@ -80,11 +85,11 @@ public class ZipMod() : IMod
 
         var zipFile = ZipFile.OpenRead(ZipPath);
 
-        var manifestFiles = zipFile.Entries.Where(entry => entry.Name == "manifest.json").ToList();
+        var manifestFiles = zipFile.Entries.Where(entry => entry.Name is "manifest.json" or "manifest.toml").ToList();
 
         if (manifestFiles.Count() != 1) return null;
 
-        var internalLocation = manifestFiles.First().FullName.Replace("manifest.json", "");
+        var internalLocation = manifestFiles.First().FullName.Replace("manifest.json", "").Replace("manifest.toml", "");
 
         return new ZipMod(zipFile, internalLocation);
     }

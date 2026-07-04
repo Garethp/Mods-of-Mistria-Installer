@@ -3,6 +3,8 @@ using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
+using Tomlyn;
+using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
@@ -68,35 +70,41 @@ public class FolderMod : IMod
 
     public static FolderMod FromManifest(string manifestLocation)
     {
-        if (!File.Exists(manifestLocation))
+        if (File.Exists(Path.Combine(manifestLocation, "manifest.json")))
         {
-            throw new FileNotFoundException(Resources.CoreCouldNotFindModManifest);
-        }
-
-        if (!manifestLocation.EndsWith("manifest.json"))
+            manifestLocation = Path.Combine(manifestLocation, "manifest.json");
+        } else if (File.Exists(Path.Combine(manifestLocation, "manifest.toml")))
+        {
+            manifestLocation = Path.Combine(manifestLocation, "manifest.toml");
+        } else
         {
             throw new Exception(Resources.CoreManifestFileNamedIncorrectly);
         }
 
-        var manifest = JObject.Parse(File.ReadAllText(manifestLocation));
+        ModManifest manifest;
+        if (manifestLocation.EndsWith(".json"))
+        {
+            manifest = ModManifest.FromJson(JObject.Parse(File.ReadAllText(manifestLocation)));
+        } else if (manifestLocation.EndsWith(".toml"))
+        {
+            manifest = ModManifest.FromToml(TomlSerializer.Deserialize<TomlTable>(File.ReadAllText(manifestLocation))!);
+        }
+        else
+        {
+            throw new Exception(Resources.CoreManifestFileNamedIncorrectly);
+        }
 
         var mod = new FolderMod
         {
-            _name = manifest["name"]?.ToString() ?? "",
-            _author = manifest["author"]?.ToString() ?? "",
-            _version = manifest["version"]?.ToString() ?? "",
+            _name = manifest.Name,
+            _author = manifest.Author,
+            _version = manifest.Version,
             _location = Path.GetDirectoryName(manifestLocation) ?? "",
-            _minimumInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1",
-            _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1",
-            _requirements = (manifest["requirements"] as JArray ?? [])
-                .Select(r => new ModRequirement(
-                    r["name"]?.ToString() ?? "",
-                    r["author"]?.ToString() ?? "",
-                    r["download_url"]?.ToString()))
-                .Where(r => !string.IsNullOrEmpty(r.Name) && !string.IsNullOrEmpty(r.Author))
-                .ToList(),
-            _updateUrl   = manifest["update_url"]?.ToString(),
-            _downloadUrl = manifest["download_url"]?.ToString()
+            _minimumInstallerVersion = manifest.MinInstallerVersion,
+            _manifestVersion = manifest.ManifestVersion,
+            _requirements = manifest.Requirements,
+            _updateUrl   = manifest.UpdateUrl,
+            _downloadUrl = manifest.DownloadUrl
         };
 
         mod.Validate();
@@ -162,15 +170,17 @@ public class FolderMod : IMod
     public static string? GetModLocation(string pathCandidate)
     {
         if (!Directory.Exists(pathCandidate)) return null;
-        if (File.Exists(Path.Combine(pathCandidate, "manifest.json"))) return pathCandidate;
+        if (File.Exists(Path.Combine(pathCandidate, "manifest.json")) ||
+            File.Exists(Path.Combine(pathCandidate, "manifest.toml"))) return pathCandidate;
 
-        var childFiles = Directory.GetFiles(pathCandidate).Where(file => !file.EndsWith("__folder_managed_by_vortex")).ToArray();
+        var childFiles = Directory.GetFiles(pathCandidate).Where(file => !file.EndsWith("__folder_managed_by_vortex"))
+            .ToArray();
         if (childFiles.Length > 0) return null;
 
         var children = Directory.GetDirectories(pathCandidate);
         if (children.Length != 1) return null;
 
-        if (File.Exists(Path.Combine(pathCandidate, children[0], "manifest.json")))
+        if (File.Exists(Path.Combine(pathCandidate, children[0], "manifest.json")) || File.Exists(Path.Combine(pathCandidate, children[0], "manifest.toml")))
             return Path.Combine(pathCandidate, children[0]);
 
         return null;

@@ -136,7 +136,7 @@ public class MistriaLocator
         var folderMods = Directory
             .GetDirectories(modsLocation)
             .Where(folder => FolderMod.GetModLocation(folder) is not null)
-            .Select(location => FolderMod.FromManifest(Path.Combine(FolderMod.GetModLocation(location)!, "manifest.json")));
+            .Select(location => FolderMod.FromManifest(Path.Combine(FolderMod.GetModLocation(location)!)));
 
         IEnumerable<IMod> zipMods = Directory.GetFiles(modsLocation, "*.zip")
             .Select(ZipMod.FromZipFile)
