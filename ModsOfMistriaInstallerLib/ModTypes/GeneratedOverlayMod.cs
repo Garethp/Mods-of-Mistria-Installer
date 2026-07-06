@@ -14,21 +14,28 @@ public class GeneratedOverlayMod : IMod
     private readonly IMod _inner;
     // forward-slash relative path → generated file content
     private readonly IReadOnlyDictionary<string, string> _virtual;
+    private readonly IReadOnlyDictionary<string, string> _redirects;
 
-    public GeneratedOverlayMod(IMod inner, IReadOnlyDictionary<string, string> virtualFiles)
+    public GeneratedOverlayMod(
+        IMod inner,
+        IReadOnlyDictionary<string, string> virtualFiles,
+        IReadOnlyDictionary<string, string>? redirects = null)
     {
-        _inner   = inner;
-        _virtual = virtualFiles;
+        _inner     = inner;
+        _virtual   = virtualFiles;
+        _redirects = redirects ?? new Dictionary<string, string>();
     }
 
     // ── File access (augmented with virtual files) ────────────────────────────
+
+    private IEnumerable<string> OverlayKeys() => _virtual.Keys.Concat(_redirects.Keys);
 
     public List<string> GetAllFiles(string extension)
     {
         var result   = _inner.GetAllFiles(extension).ToList();
         var basePath = NormalizedBase();
 
-        foreach (var (relPath, _) in _virtual)
+        foreach (var relPath in OverlayKeys())
         {
             if (!relPath.EndsWith(extension, StringComparison.OrdinalIgnoreCase)) continue;
             // Return in the same prefixed format the inner mod uses,
@@ -41,7 +48,8 @@ public class GeneratedOverlayMod : IMod
 
     public bool FileExists(string path)
     {
-        if (_virtual.ContainsKey(ToRelative(path))) return true;
+        var rel = ToRelative(path);
+        if (_virtual.ContainsKey(rel) || _redirects.ContainsKey(rel)) return true;
         return _inner.FileExists(path);
     }
 
@@ -49,17 +57,24 @@ public class GeneratedOverlayMod : IMod
 
     public string ReadFile(string path)
     {
-        if (_virtual.TryGetValue(ToRelative(path), out var content))
+        var rel = ToRelative(path);
+        if (_virtual.TryGetValue(rel, out var content))
             return content;
+        if (_redirects.TryGetValue(rel, out var target))
+            return _inner.ReadFile(target);
         return _inner.ReadFile(path);
     }
 
-    // Streams are for PNG data — virtual files don't have streams, always delegate.
-    public Stream ReadFileAsStream(string path) => _inner.ReadFileAsStream(path);
+    public Stream ReadFileAsStream(string path)
+    {
+        if (_redirects.TryGetValue(ToRelative(path), out var target))
+            return _inner.ReadFileAsStream(target);
+        return _inner.ReadFileAsStream(path);
+    }
 
     public bool HasFilesInFolder(string folder, string extension) =>
         _inner.HasFilesInFolder(folder, extension) ||
-        _virtual.Keys.Any(k => k.StartsWith(folder.Replace('\\', '/').TrimEnd('/') + '/', StringComparison.OrdinalIgnoreCase)
+        OverlayKeys().Any(k => k.StartsWith(folder.Replace('\\', '/').TrimEnd('/') + '/', StringComparison.OrdinalIgnoreCase)
                              && k.EndsWith(extension, StringComparison.OrdinalIgnoreCase));
 
     public bool HasFilesInFolder(string folder) => HasFilesInFolder(folder, "");
@@ -70,7 +85,7 @@ public class GeneratedOverlayMod : IMod
         var prefix  = folder.Replace('\\', '/').TrimEnd('/') + '/';
         var basePath = NormalizedBase();
 
-        foreach (var (relPath, _) in _virtual)
+        foreach (var relPath in OverlayKeys())
         {
             if (!relPath.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) continue;
             if (!string.IsNullOrEmpty(extension) &&

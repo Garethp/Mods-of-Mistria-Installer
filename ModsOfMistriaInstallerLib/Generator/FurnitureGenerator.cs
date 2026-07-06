@@ -107,15 +107,9 @@ public class FurnitureGenerator
             ["meta_properties"] = new TomlTable { ["asset_kind"] = "Animation" },
             ["asset_properties"] = new TomlTable
             {
-                ["frame_size"]         = new TomlArray { w, h },
-                ["frame_len"]          = 1,
-                ["dimensions"]         = new TomlArray { w, h },
-                ["filter_kind"]        = "Nearest",
-                ["mipmap_filter_kind"] = "Nearest",
-                ["wrap"]               = "Repeat",
-                ["duration"]           = 0.0,
-                ["atlas"]              = atlas,
-                ["offset"]             = new TomlTable { ["horizontal"] = offsetH, ["vertical"] = offsetV },
+                ["frame_size"] = new TomlArray { w, h },
+                ["atlas"]      = atlas,
+                ["offset"]     = new TomlTable { ["horizontal"] = offsetH, ["vertical"] = offsetV },
             }
         };
         return Tomlyn.TomlSerializer.Serialize(t);

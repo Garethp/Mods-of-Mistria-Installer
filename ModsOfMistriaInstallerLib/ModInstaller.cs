@@ -106,8 +106,12 @@ public class ModInstaller
         var generated = new OutfitGenerator().Generate(mod);
         foreach (var kvp in new FurnitureGenerator().Generate(mod))
             generated.TryAdd(kvp.Key, kvp.Value);
-        IMod effectiveMod = generated.Count > 0
-            ? new GeneratedOverlayMod(mod, generated)
+
+        var redirects = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        new CompactFurnitureGenerator().Generate(mod, generated, redirects);
+
+        IMod effectiveMod = generated.Count > 0 || redirects.Count > 0
+            ? new GeneratedOverlayMod(mod, generated, redirects)
             : mod;
 
         // 1. Pack images into atlases first so IDs are ready for TOML

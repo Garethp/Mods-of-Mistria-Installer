@@ -25,6 +25,15 @@ public class FurnitureInstaller(
 {
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
+        InstallLegacyDefinitions(mod, reportStatus);
+        InstallCompactItemFiles(mod, reportStatus);
+        InstallCompactObjectFiles(mod, reportStatus);
+        InstallCompactOutlines(mod, reportStatus);
+    }
+
+
+    private void InstallLegacyDefinitions(IMod mod, Action<string, string> reportStatus)
+    {
         if (!mod.HasFilesInFolder("momi/furniture", ".toml"))
             return;
 
@@ -48,20 +57,100 @@ public class FurnitureInstaller(
         }
     }
 
-    // ── data_files/animation/generated/outlines.json ──────────────────────────
+
+    private static IEnumerable<string> FindTomlsRecursive(IMod mod, string folder)
+    {
+        var prefix = folder + "/";
+        return mod.GetAllFiles(".toml")
+            .Select(p => OutfitGenerator.Relativize(mod, p))
+            .Where(p => p.Replace('\\', '/').StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void InstallCompactOutlines(IMod mod, Action<string, string> reportStatus)
+    {
+        const string prefix = "momi/furniture/images/ui/";
+        var outlinePngs = mod.GetAllFiles(".png")
+            .Select(p => OutfitGenerator.Relativize(mod, p))
+            .Where(p =>
+            {
+                var norm = p.Replace('\\', '/');
+                return norm.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                    && Path.GetFileNameWithoutExtension(norm)
+                        .EndsWith("_outline", StringComparison.OrdinalIgnoreCase);
+            });
+
+        foreach (var relPath in outlinePngs)
+        {
+            var outlineSprite = Path.GetFileNameWithoutExtension(relPath);
+            var iconSprite    = outlineSprite[..^"_outline".Length];
+
+            RegisterOutline(iconSprite, outlineSprite);
+            reportStatus($"Linked outline: {iconSprite} → {outlineSprite}", "");
+        }
+    }
+
+    private void InstallCompactItemFiles(IMod mod, Action<string, string> reportStatus)
+    {
+        foreach (var relPath in FindTomlsRecursive(mod, "momi/furniture/items"))
+        {
+            var content = mod.ReadFile(relPath);
+            if (string.IsNullOrWhiteSpace(content)) continue;
+
+            TomlTable table;
+            try { table = TomlSerializer.Deserialize<TomlTable>(content); }
+            catch
+            {
+                reportStatus($"Skipping {relPath}: invalid TOML.", "");
+                continue;
+            }
+
+            var setName = Path.GetFileNameWithoutExtension(relPath);
+            var dest    = DestinationPath($"fiddle/items/furniture/{setName}.toml");
+            Dirty(dest);
+            MergeToml(dest, table);
+            reportStatus($"Installed furniture items: {setName} ({table.Count} item(s))", "");
+        }
+    }
+
+    private void InstallCompactObjectFiles(IMod mod, Action<string, string> reportStatus)
+    {
+        foreach (var relPath in FindTomlsRecursive(mod, "momi/furniture/objects"))
+        {
+            var content = mod.ReadFile(relPath);
+            if (string.IsNullOrWhiteSpace(content)) continue;
+
+            TomlTable table;
+            try { table = TomlSerializer.Deserialize<TomlTable>(content); }
+            catch
+            {
+                reportStatus($"Skipping {relPath}: invalid TOML.", "");
+                continue;
+            }
+
+            var dest = DestinationPath("fiddle/object_prototypes/furniture.toml");
+            Dirty(dest);
+            MergeToml(dest, table);
+            reportStatus($"Installed furniture prototypes from {Path.GetFileName(relPath)} ({table.Count} object(s))", "");
+        }
+    }
+
 
     private void InstallOutlines(FurnitureDefinition def)
     {
-        var dest = DestinationPath("data_files/animation/generated/outlines.json");
-        Dirty(dest);
-        MergeJson(dest, new JObject { [def.IconSprite] = def.OutlineSprite });
+        RegisterOutline(def.IconSprite, def.OutlineSprite);
     }
 
-    // ── data_files/animation/generated/shadow_manifest.json ───────────────────
+    private void RegisterOutline(string iconSprite, string outlineSprite)
+    {
+        var dest = DestinationPath("data_files/animation/outlines.json");
+        Dirty(dest);
+        MergeJson(dest, new JObject { [iconSprite] = outlineSprite });
+    }
+
 
     private void InstallShadowManifest(FurnitureDefinition def)
     {
-        var dest = DestinationPath("data_files/animation/generated/shadow_manifest.json");
+        var dest = DestinationPath("data_files/animation/shadow_manifest.json");
         Dirty(dest);
         MergeJson(dest, new JObject { [def.MaskSprite] = def.ShadowSprite });
     }

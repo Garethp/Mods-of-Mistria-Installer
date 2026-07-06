@@ -1,6 +1,7 @@
 using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
+using SixLabors.ImageSharp;
 using Tomlyn;
 using Tomlyn.Model;
 
@@ -146,16 +147,53 @@ public class ImageInstaller(
                 }
             }
 
+            byte[] pngBytes;
+            using (var src = mod.ReadFileAsStream(pngPath))
+            using (var buffer = new MemoryStream())
+            {
+                src.CopyTo(buffer);
+                pngBytes = buffer.ToArray();
+            }
+
+            var pngInfo = Image.Identify(new MemoryStream(pngBytes));
+            if (pngInfo.Width != frameWidth * frameCount || pngInfo.Height != frameHeight)
+            {
+                if (pngInfo.Width % frameCount != 0)
+                {
+                    reportStatus($"Skipping replacement {spriteName}: image width {pngInfo.Width} " +
+                                 $"is not divisible by frame count {frameCount}.", "");
+                    continue;
+                }
+
+                frameWidth  = pngInfo.Width / frameCount;
+                frameHeight = pngInfo.Height;
+
+                UpdateGameMetaDimensions(gameMeta, gameMetaPath, frameWidth, frameHeight, frameCount);
+                reportStatus($"{spriteName}: resized to {frameWidth}×{frameHeight} ({frameCount} frame(s))", "");
+            }
+
             FileNameUIDMapping[baseName] = replaceId;
             IDManager.RegisterId(replaceId);
             atlasUtils.RemoveById(replaceId);
 
-            using var pngStream = mod.ReadFileAsStream(pngPath);
+            using var pngStream = new MemoryStream(pngBytes);
             var id = atlasUtils.AddStrip(atlasType, frameWidth, frameHeight, frameCount,
                 pngStream, FileNameUIDMapping, baseName);
 
             reportStatus($"Replaced {spriteName} → {atlasType} atlas (id {id})", "");
         }
+    }
+
+    private void UpdateGameMetaDimensions(
+        TomlTable gameMeta, string gameMetaPath, int frameWidth, int frameHeight, int frameCount)
+    {
+        if (!gameMeta.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap)
+            return;
+
+        ap["frame_size"] = new TomlArray { frameWidth, frameHeight };
+        ap["dimensions"] = new TomlArray { frameWidth * frameCount, frameHeight };
+
+        fileModifier.Write(gameMetaPath, TomlSerializer.Serialize(gameMeta));
     }
 
     // Recursively searches assets/animations/ for a meta.toml matching the sprite name.

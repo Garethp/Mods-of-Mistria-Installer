@@ -29,19 +29,19 @@ public class OutfitGenerator
         ["eyes"]        = new(16, 16, 13, "Player", "Player/Eyes",             0.025f, "Left", "Top", ComplexIcons: true,              AnimationSuffix: "eyes",        FiddleSlot: "eyes",       FiddleUiSlot: "eyes"),
         ["face_gear"]   = new(32, 32, 20, "Player", "Player/Face Accessory",   0.025f, "Left", "Top", ComplexIcons: true,              AnimationSuffix: "face_gear",   FiddleSlot: "face_gear",  FiddleUiSlot: "face_gear"),
         ["facial_hair"] = new(16, 16, 22, "Player", "Player/Facial Hair",      0.025f, "Left", "Top", ComplexIcons: true,  HasLut: false, AnimationSuffix: "facial_hair", FiddleSlot: "facial_hair", FiddleUiSlot: "facial_hair", SharedLutSprite: "spr_player_hair_lut"),
-        ["hair"]        = new(40, 40, 49, "Player", "Player/Hair",             0.025f, "Left", "Top", ComplexIcons: true,              FiddleUiSlot: "hair",     Parts: ["hair_back", "hair_mid"]),
-        ["head"]        = new(32, 32, 18, "Player", "Player/Head Accessories", 0.025f, "Left", "Top"),
-        ["head_gear"]   = new(32, 32, 18, "Player", "Player/Head Accessory",   0.025f, "Left", "Top", AnimationSuffix: "head_gear",   FiddleSlot: "head_gear",  FiddleUiSlot: "head_gear"),
-        ["overalls"]    = new(32, 32, 48, "Player", "Player/Overalls",         0.025f, "Left", "Top", FiddleUiSlot: "top",      Parts: ["torso", "sleeve_left", "sleeve_right", "legs"]),
+        ["hair"]        = new(40, 40, 49, "Player", "Player/Hair",             0.025f, "Left", "Top", ComplexIcons: true,              FiddleUiSlot: "hair",     Parts: ["hair_back", "hair_mid", "hair_front"]),
+        ["head"]        = new(32, 32, 18, "Player", "Player/Head Accessory",   0.025f, "Left", "Top", FiddleSlot: "head_gear",  FiddleUiSlot: "head_gear", Parts: ["head_gear", "head_gear_back"]),
+        ["head_gear"]   = new(32, 32, 18, "Player", "Player/Head Accessory",   0.025f, "Left", "Top", FiddleSlot: "head_gear",  FiddleUiSlot: "head_gear", Parts: ["head_gear", "head_gear_back"]),
+        ["overalls"]    = new(32, 32, 48, "Player", "Player/Overalls",         0.025f, "Left", "Top", FiddleUiSlot: "top",      Parts: ["torso", "sleeve_left", "sleeve_right", "legs", "waist"]),
         ["pants"]       = new(32, 32, 48, "Player", "Player/Pants",            0.025f, "Left", "Top", AnimationSuffix: "legs",        FiddleSlot: "legs",       FiddleUiSlot: "bottom"),
-        ["robe"]        = new(32, 32, 49, "Player", "Player/Robes and Coats",  0.025f, "Left", "Top", FiddleUiSlot: "top",      Parts: ["torso", "sleeve_left", "sleeve_right", "waist"]),
+        ["robe"]        = new(32, 32, 49, "Player", "Player/Robes and Coats",  0.025f, "Left", "Top", FiddleUiSlot: "top",      Parts: ["torso", "sleeve_left", "sleeve_right", "waist", "legs"]),
         ["shoes"]       = new(32, 32, 41, "Player", "Player/Shoes",            0.025f, "Left", "Top", AnimationSuffix: "feet",        FiddleSlot: "feet",       FiddleUiSlot: "feet"),
         ["shorts"]      = new(32, 32, 48, "Player", "Player/Pants",            0.025f, "Left", "Top", AnimationSuffix: "legs",        FiddleSlot: "legs",       FiddleUiSlot: "bottom"),
         ["skirt"]       = new(32, 32, 48, "Player", "Player/Skirts",           0.025f, "Left", "Top", AnimationSuffix: "waist",       FiddleSlot: "waist",      FiddleUiSlot: "bottom"),
         ["skin"]        = new(32, 32, 49, "Player", "Player/Base",             0.025f, "Left", "Top"),
         ["suit"]        = new(32, 32, 48, "Player", "Player/Suits",            0.025f, "Left", "Top", FiddleUiSlot: "top",      Parts: ["torso", "sleeve_left", "sleeve_right", "legs"]),
-        ["top"]         = new(32, 32, 49, "Player", "Player/Tops",             0.025f, "Left", "Top", FiddleUiSlot: "top",      Parts: ["torso", "sleeve_left", "sleeve_right"]),
-        ["underwear"]   = new(32, 32, 48, "Player", "Player/Underwear",        0.025f, "Left", "Top", AnimationSuffix: "legs",        FiddleSlot: "legs",       FiddleUiSlot: "bottom"),
+        ["top"]         = new(32, 32, 49, "Player", "Player/Tops",             0.025f, "Left", "Top", FiddleUiSlot: "top",      Parts: ["torso", "sleeve_left", "sleeve_right", "waist"]),
+        ["underwear"]   = new(32, 32, 48, "Player", "Player/Underwear",        0.025f, "Left", "Top", Parts: ["torso", "legs"]),
     };
 
     // Used by OutfitInstaller to know which outlines.json pattern to write.
@@ -74,6 +74,9 @@ public class OutfitGenerator
     // Returns the parts array for multi-part slots, null for single-part slots.
     internal static string[]? GetParts(string uiSlot) =>
         SlotConfigs.TryGetValue(uiSlot, out var cfg) ? cfg.Parts : null;
+
+    internal static string? GetPlayerFolder(string uiSlot) =>
+        SlotConfigs.TryGetValue(uiSlot, out var cfg) ? cfg.PlayerFolder : null;
 
     // Builds virtual file contents from the mod's momi/outfit/ definitions.
     // Only generates files the mod hasn't already provided.
@@ -158,6 +161,8 @@ public class OutfitGenerator
             foreach (var part in parts)
             {
                 var ps = $"spr_player_{def.Id}_{part}";
+                if (!mod.FileExists($"animations/{slot.PlayerFolder}/{ps}.png")) continue;
+
                 AddIfMissing(mod, out_, $"animations/{slot.PlayerFolder}/{ps}.meta.toml",
                     AnimationMeta(frameW, frameH, multiFrameCount, slot.Atlas, slot.Duration,
                         slot.OffsetH, slot.OffsetV, includeAssetKind: true));
@@ -208,16 +213,18 @@ public class OutfitGenerator
 
         var ap = new TomlTable
         {
-            ["frame_size"]         = new TomlArray { frameWidth, frameHeight },
-            ["frame_len"]          = frameCount,
-            ["dimensions"]         = new TomlArray { frameWidth * frameCount, frameHeight },
-            ["filter_kind"]        = "Nearest",
-            ["mipmap_filter_kind"] = "Nearest",
-            ["wrap"]               = "Repeat",
-            ["duration"]           = (double)duration,
-            ["atlas"]              = atlas,
-            ["offset"]             = new TomlTable { ["horizontal"] = offsetH, ["vertical"] = offsetV },
+            ["frame_size"] = new TomlArray { frameWidth, frameHeight },
+            ["atlas"]      = atlas,
         };
+
+        if (frameCount > 1)
+        {
+            ap["frame_len"] = frameCount;
+            ap["duration"]  = (double)duration;
+        }
+
+        ap["offset"] = new TomlTable { ["horizontal"] = offsetH, ["vertical"] = offsetV };
+
         t["asset_properties"] = ap;
         return Tomlyn.TomlSerializer.Serialize(t);
     }

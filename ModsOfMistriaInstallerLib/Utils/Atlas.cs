@@ -36,21 +36,26 @@ public class Atlas
         _fileModifier = fileModifier;
     }
 
-    // Shadow + 0 → "ShadowAtlas.meta.toml" (original unnumbered file)
-    // Shadow + N → "ShadowAtlas_N.meta.toml"
-    // Everything else: "TypeAtlas_N.meta.toml"
+    private static readonly HashSet<string> UnnumberedTypes =
+        new(StringComparer.OrdinalIgnoreCase) { "Shadow", "Lut", "UI" };
+
+    public static void RegisterUnnumberedType(string type) => UnnumberedTypes.Add(type);
+
+    private static bool IsUnnumbered(string type, int number) =>
+        number == 0 && UnnumberedTypes.Contains(type);
+
     public static string BuildMetaName(string type, int number, string atlasDirectory)
     {
-        var name = (type == "Shadow" && number == 0)
-            ? "ShadowAtlas.meta.toml"
+        var name = IsUnnumbered(type, number)
+            ? $"{type}Atlas.meta.toml"
             : $"{type}Atlas_{number}.meta.toml";
         return Path.Combine(atlasDirectory, name);
     }
 
     public static string BuildPngName(string type, int number, string atlasDirectory)
     {
-        var name = (type == "Shadow" && number == 0)
-            ? "ShadowAtlas.png"
+        var name = IsUnnumbered(type, number)
+            ? $"{type}Atlas.png"
             : $"{type}Atlas_{number}.png";
         return Path.Combine(atlasDirectory, name);
     }

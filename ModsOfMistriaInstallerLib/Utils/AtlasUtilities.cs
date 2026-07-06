@@ -284,20 +284,20 @@ public class AtlasUtilities
             var stem = Path.GetFileNameWithoutExtension(
                        Path.GetFileNameWithoutExtension(metaPath));
 
-            // ShadowAtlas (no number suffix) is a special case
-            if (stem.Equals("ShadowAtlas", StringComparison.OrdinalIgnoreCase))
+            var parts = stem.Split('_');
+            if (parts.Length >= 2 && int.TryParse(parts[^1], out int index))
             {
-                atlases.Add(new Atlas("Shadow", 0, _atlasDirectory, _fileModifier));
+                var prefix = string.Join('_', parts[..^1]).Replace("Atlas", "");
+                atlases.Add(new Atlas(prefix, index, _atlasDirectory, _fileModifier));
                 continue;
             }
 
-            // Expected pattern: TypeAtlas_N
-            var parts = stem.Split('_');
-            if (parts.Length < 2) continue;
-            if (!int.TryParse(parts[^1], out int index)) continue;
+            if (!stem.EndsWith("Atlas", StringComparison.OrdinalIgnoreCase)) continue;
+            var type = stem[..^"Atlas".Length];
+            if (type.Length == 0) continue;
 
-            var prefix = string.Join('_', parts[..^1]).Replace("Atlas", "");
-            atlases.Add(new Atlas(prefix, index, _atlasDirectory, _fileModifier));
+            Atlas.RegisterUnnumberedType(type);
+            atlases.Add(new Atlas(type, 0, _atlasDirectory, _fileModifier));
         }
 
         return atlases

@@ -35,7 +35,7 @@ public class OutfitInstaller(
             {
                 InstallFiddle(def, reportStatus);
                 InstallOutlines(def, reportStatus);
-                InstallPlayerAssetParts(def, reportStatus);
+                InstallPlayerAssetParts(mod, def, reportStatus);
                 reportStatus($"Generated outfit data for: {def.Id}", "");
             }
         }
@@ -72,11 +72,10 @@ public class OutfitInstaller(
         }
     }
 
-    // ── data_files/animation/generated/outlines.json ─────────────────────────
 
     private void InstallOutlines(OutfitDefinition def, Action<string, string> reportStatus)
     {
-        var dest = DestinationPath("data_files/animation/generated/outlines.json");
+        var dest = DestinationPath("data_files/animation/outlines.json");
         Dirty(dest);
 
         JObject patch;
@@ -97,21 +96,24 @@ public class OutfitInstaller(
         MergeJson(dest, patch);
     }
 
-    // ── data_files/animation/generated/player_asset_parts.json ───────────────
 
-    private void InstallPlayerAssetParts(OutfitDefinition def, Action<string, string> reportStatus)
+    private void InstallPlayerAssetParts(IMod mod, OutfitDefinition def, Action<string, string> reportStatus)
     {
-        var dest = DestinationPath("data_files/animation/generated/player_asset_parts.json");
+        var dest = DestinationPath("data_files/animation/player_asset_parts.json");
         Dirty(dest);
 
         var parts = OutfitGenerator.GetParts(def.UiSlot);
         JObject itemParts;
         if (parts != null)
         {
-            // Multi-part slot: write every part using spr_player_{id}_{part} naming
+            var folder = OutfitGenerator.GetPlayerFolder(def.UiSlot);
             itemParts = new JObject();
             foreach (var part in parts)
-                itemParts[part] = $"spr_player_{def.Id}_{part}";
+            {
+                var sprite = $"spr_player_{def.Id}_{part}";
+                if (folder != null && !mod.FileExists($"animations/{folder}/{sprite}.png")) continue;
+                itemParts[part] = sprite;
+            }
         }
         else
         {
