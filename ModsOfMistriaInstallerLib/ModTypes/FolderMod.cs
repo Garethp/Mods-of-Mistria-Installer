@@ -137,6 +137,11 @@ public class FolderMod : IMod
         {
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"), canInstall));
         }
+
+        if (new Version(_minimumInstallerVersion).Equals(new Version("1.0.0")))
+        {
+            _validation.Warnings.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"), Resources.CoreModRequiresIncorrectVersion));
+        }
         
         return _validation;
     }
@@ -157,7 +162,8 @@ public class FolderMod : IMod
                 return Resources.CoreManifestHasNoMinimunInstallerVersion;
             }
             
-            if (requiredVersion.CompareTo(currentVersion) > 0)
+            // TODO: Remove the workaround for 1.0.0 after the 12th of July
+            if (requiredVersion.CompareTo(currentVersion) > 0 && !requiredVersion.Equals(new Version("1.0.0")))
             {
                 return Resources.CoreModRequiresNewerInstaller;
             }

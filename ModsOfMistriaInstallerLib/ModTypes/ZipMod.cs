@@ -146,6 +146,11 @@ public class ZipMod() : IMod
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), canInstall));
         }
 
+        if (new Version(_minimumInstallerVersion).Equals(new Version("1.0.0")))
+        {
+            _validation.Warnings.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), Resources.CoreModRequiresIncorrectVersion));
+        }
+        
         return _validation;
     }
 
@@ -165,7 +170,8 @@ public class ZipMod() : IMod
                 return Resources.CoreManifestHasNoMinimunInstallerVersion;
             }
 
-            if (requiredVersion.CompareTo(currentVersion) > 0)
+            // TODO: Remove the workaround for 1.0.0 after the 12th of July
+            if (requiredVersion.CompareTo(currentVersion) > 0 && !requiredVersion.Equals(new Version("1.0.0")))
             {
                 return Resources.CoreModRequiresNewerInstaller;
             }

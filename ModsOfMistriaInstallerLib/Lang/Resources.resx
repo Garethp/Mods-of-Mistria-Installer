@@ -426,4 +426,7 @@
   <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve">
     <value>Due to an engine update, this mod cannot be installed in its current version.</value>
   </data>
+  <data name="CoreModRequiresIncorrectVersion" xml:space="preserve">
+    <value>The mod requires an incorrect minimum version of MOMI.</value>
+  </data>
 </root>
