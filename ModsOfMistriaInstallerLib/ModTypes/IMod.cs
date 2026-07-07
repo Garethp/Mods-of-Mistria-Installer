@@ -12,7 +12,7 @@ public interface IMod
 
     public string GetLocation();
 
-    public string GetMinimunInstallerVersion();
+    public string GetMinimumInstallerVersion();
 
     public string GetManifestVersion();
     
@@ -45,6 +45,15 @@ public interface IMod
     public bool FolderExists(string path);
     
     public string ReadFile(string path);
-    
+
     public Stream ReadFileAsStream(string path);
+
+    public List<ModRequirement> GetRequirements();
+
+    // URL used to check for updates (GitHub repo URL or custom JSON endpoint).
+    // Null means no update checking for this mod.
+    public string? GetUpdateUrl();
+
+    // Page where users can download this mod (shown in update notifications).
+    public string? GetDownloadUrl();
 }

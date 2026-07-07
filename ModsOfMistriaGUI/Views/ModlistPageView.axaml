@@ -1,4 +1,4 @@
-﻿<UserControl xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,11 +6,12 @@
              xmlns:lang="clr-namespace:Garethp.ModsOfMistriaInstallerLib.Lang;assembly=ModsOfMistriaInstallerLib"
              xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
              xmlns:i="https://github.com/projektanker/icons.avalonia"
-
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Garethp.ModsOfMistriaGUI.Views.ModlistPageView"
              d:DataContext="{x:Static models:DesignData.ModlistPageViewModel}">
     <DockPanel LastChildFill="True">
+
+        <!-- Bottom toolbar: settings menu + install buttons -->
         <DockPanel DockPanel.Dock="Bottom" Height="50" Margin="0 10 0 0">
             <Menu>
                 <MenuItem>
@@ -38,11 +39,13 @@
         </DockPanel>
 
         <DockPanel LastChildFill="True">
+            <!-- Error panel -->
             <StackPanel IsVisible="{Binding Exception.Length}" DockPanel.Dock="Top">
                 <SelectableTextBlock Text="{Binding Exception}" />
             </StackPanel>
 
             <StackPanel IsVisible="{Binding !Exception.Length}" DockPanel.Dock="Top">
+                <!-- Greeting / location info -->
                 <TextBlock Text="{Binding GreetingText}" />
                 <TextBlock></TextBlock>
                 <WrapPanel>
@@ -51,15 +54,60 @@
                     <TextBlock Text="{Binding MistriaLocation}" />
                 </WrapPanel>
                 <TextBlock Text="{Binding ModsWillBeInstalledText}" />
+
+                <!-- Profile selector -->
+                <WrapPanel Margin="0 8 0 0" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center" Margin="0 0 6 0" Text="Profile:" />
+                    <ComboBox ItemsSource="{Binding Profiles}"
+                              SelectedItem="{Binding CurrentProfile, Mode=OneWay}"
+                              MinWidth="140"
+                              SelectionChanged="OnProfileSelectionChanged" />
+                    <Button Margin="6 0 0 0" ToolTip.Tip="New profile"
+                            Command="{Binding CreateProfileCommand}">+</Button>
+                    <Button Margin="4 0 0 0" ToolTip.Tip="Delete current profile"
+                            Command="{Binding DeleteCurrentProfileCommand}">-</Button>
+                </WrapPanel>
             </StackPanel>
 
+            <!-- Mod list -->
             <ScrollViewer Margin="15 5 0 0" IsVisible="{Binding !Exception.Length}">
-                <ItemsRepeater ItemsSource="{Binding Mods}">
+                <ItemsRepeater ItemsSource="{Binding Mods}" x:Name="ModRepeater">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>
-                            <WrapPanel>
-                                <controls:ModlistCheckbox DataContext="{Binding }" />
-                            </WrapPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0 2 0 2">
+                                <!-- Load-order controls -->
+                                <StackPanel Orientation="Vertical" Width="22" Margin="0 0 4 0"
+                                            VerticalAlignment="Center">
+                                    <Button Padding="2 0"
+                                            FontSize="10"
+                                            Command="{Binding $parent[ItemsRepeater].DataContext.MoveModUpCommand}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip.Tip="Move up in load order">▲</Button>
+                                    <Button Padding="2 0"
+                                            FontSize="10"
+                                            Command="{Binding $parent[ItemsRepeater].DataContext.MoveModDownCommand}"
+                                            CommandParameter="{Binding}"
+                                            ToolTip.Tip="Move down in load order">▼</Button>
+                                </StackPanel>
+                                <!-- Position number -->
+                                <TextBlock Width="24" VerticalAlignment="Center"
+                                           Text="{Binding Position}"
+                                           HorizontalAlignment="Right"
+                                           Margin="0 0 6 0"
+                                           Foreground="Gray" />
+                                <!-- Mod checkbox + warnings -->
+                                <controls:ModlistCheckbox DataContext="{Binding}" />
+                                <!-- Update available badge -->
+                                <Button IsVisible="{Binding UpdateAvailable}"
+                                        Command="{Binding OpenUpdateUrlCommand}"
+                                        Margin="6 0 0 0"
+                                        Padding="5 1"
+                                        Background="#2e7d32"
+                                        Foreground="White"
+                                        CornerRadius="4"
+                                        VerticalAlignment="Center"
+                                        ToolTip.Tip="{Binding UpdateTooltip}">↑ Update</Button>
+                            </StackPanel>
                         </DataTemplate>
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>

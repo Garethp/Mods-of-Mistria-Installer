@@ -3,6 +3,8 @@ using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
+using Tomlyn;
+using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
@@ -16,14 +18,20 @@ public class FolderMod : IMod
 
     private string _location;
 
-    private string _minimunInstallerVersion;
+    private string _minimumInstallerVersion;
 
     private string _manifestVersion;
 
     private Validation _validation = new();
 
     private bool _isInstalled = false;
-    
+
+    private List<ModRequirement> _requirements = [];
+
+    private string? _updateUrl;
+
+    private string? _downloadUrl;
+
     public string Id
     {
         get
@@ -41,7 +49,7 @@ public class FolderMod : IMod
 
     public string GetLocation() => _location;
 
-    public string GetMinimunInstallerVersion() => _minimunInstallerVersion;
+    public string GetMinimumInstallerVersion() => _minimumInstallerVersion;
 
     public string GetManifestVersion() => _manifestVersion;
 
@@ -55,28 +63,48 @@ public class FolderMod : IMod
 
     public string GetId() => Id;
 
+    public List<ModRequirement> GetRequirements() => _requirements;
+
+    public string? GetUpdateUrl()   => _updateUrl;
+    public string? GetDownloadUrl() => _downloadUrl;
+
     public static FolderMod FromManifest(string manifestLocation)
     {
-        if (!File.Exists(manifestLocation))
+        if (File.Exists(Path.Combine(manifestLocation, "manifest.json")))
         {
-            throw new FileNotFoundException(Resources.CoreCouldNotFindModManifest);
-        }
-
-        if (!manifestLocation.EndsWith("manifest.json"))
+            manifestLocation = Path.Combine(manifestLocation, "manifest.json");
+        } else if (File.Exists(Path.Combine(manifestLocation, "manifest.toml")))
+        {
+            manifestLocation = Path.Combine(manifestLocation, "manifest.toml");
+        } else
         {
             throw new Exception(Resources.CoreManifestFileNamedIncorrectly);
         }
 
-        var manifest = JObject.Parse(File.ReadAllText(manifestLocation));
+        ModManifest manifest;
+        if (manifestLocation.EndsWith(".json"))
+        {
+            manifest = ModManifest.FromJson(JObject.Parse(File.ReadAllText(manifestLocation)));
+        } else if (manifestLocation.EndsWith(".toml"))
+        {
+            manifest = ModManifest.FromToml(TomlSerializer.Deserialize<TomlTable>(File.ReadAllText(manifestLocation))!);
+        }
+        else
+        {
+            throw new Exception(Resources.CoreManifestFileNamedIncorrectly);
+        }
 
         var mod = new FolderMod
         {
-            _name = manifest["name"]?.ToString() ?? "",
-            _author = manifest["author"]?.ToString() ?? "",
-            _version = manifest["version"]?.ToString() ?? "",
+            _name = manifest.Name,
+            _author = manifest.Author,
+            _version = manifest.Version,
             _location = Path.GetDirectoryName(manifestLocation) ?? "",
-            _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0",
-            _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1"
+            _minimumInstallerVersion = manifest.MinInstallerVersion,
+            _manifestVersion = manifest.ManifestVersion,
+            _requirements = manifest.Requirements,
+            _updateUrl   = manifest.UpdateUrl,
+            _downloadUrl = manifest.DownloadUrl
         };
 
         mod.Validate();
@@ -104,6 +132,12 @@ public class FolderMod : IMod
                 Resources.CoreManifestHasNoVersion));
         }
 
+        var canInstall = CanInstall();
+        if (!string.IsNullOrEmpty(canInstall))
+        {
+            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"), canInstall));
+        }
+        
         return _validation;
     }
 
@@ -115,8 +149,14 @@ public class FolderMod : IMod
             var currentVersionString =
                 currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
             var currentVersion = new Version(currentVersionString);
-            var requiredVersion = new Version(_minimunInstallerVersion);
-
+            var requiredVersion = new Version(_minimumInstallerVersion);
+            var newEngineVersion = new Version("0.12.0");
+            
+            if (requiredVersion.CompareTo(newEngineVersion) < 0)
+            {
+                return Resources.CoreManifestHasNoMinimunInstallerVersion;
+            }
+            
             if (requiredVersion.CompareTo(currentVersion) > 0)
             {
                 return Resources.CoreModRequiresNewerInstaller;
@@ -133,15 +173,17 @@ public class FolderMod : IMod
     public static string? GetModLocation(string pathCandidate)
     {
         if (!Directory.Exists(pathCandidate)) return null;
-        if (File.Exists(Path.Combine(pathCandidate, "manifest.json"))) return pathCandidate;
+        if (File.Exists(Path.Combine(pathCandidate, "manifest.json")) ||
+            File.Exists(Path.Combine(pathCandidate, "manifest.toml"))) return pathCandidate;
 
-        var childFiles = Directory.GetFiles(pathCandidate).Where(file => !file.EndsWith("__folder_managed_by_vortex")).ToArray();
+        var childFiles = Directory.GetFiles(pathCandidate).Where(file => !file.EndsWith("__folder_managed_by_vortex"))
+            .ToArray();
         if (childFiles.Length > 0) return null;
 
         var children = Directory.GetDirectories(pathCandidate);
         if (children.Length != 1) return null;
 
-        if (File.Exists(Path.Combine(pathCandidate, children[0], "manifest.json")))
+        if (File.Exists(Path.Combine(pathCandidate, children[0], "manifest.json")) || File.Exists(Path.Combine(pathCandidate, children[0], "manifest.toml")))
             return Path.Combine(pathCandidate, children[0]);
 
         return null;
@@ -184,7 +226,8 @@ public class FolderMod : IMod
 
     public string? ReadFile(string path)
     {
-        return !FileExists(path) ? "" : File.ReadAllText(path);
+        var fullPath = Path.Combine(_location, path);
+        return !File.Exists(fullPath) ? "" : File.ReadAllText(fullPath);
     }
 
     public Stream ReadFileAsStream(string path)

@@ -10,29 +10,17 @@ public class MistriaLocator
     public static string? GetMistriaLocation()
     {
         var steamLocations = GetSteamLocations();
-        steamLocations
-            .Select(location => Path.Combine(location, "common", "Fields of Mistria"))
-            .ToList()
-            .ForEach(location =>
-            {
-                Logger.Log(Resources.CoreLookingForMistriaAt, Path.Combine(location, "data.win"));
-            });
-
         Logger.Log(Directory.GetCurrentDirectory());
 
         var mistriaLocation = steamLocations
             .Where(Path.Exists)
             .Select(location => Path.Combine(location, "common", "Fields of Mistria"))
-            .FirstOrDefault(location => Directory.Exists(location) && File.Exists(Path.Combine(location, "data.win")));
+            .FirstOrDefault(location => Directory.Exists(location));
         
         if (mistriaLocation is null)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
-            if (File.Exists(Path.Combine(currentDirectory, "data.win")))
-            {
-                Logger.Log(Resources.CoreMistriaNotFoundFallback);
-                return currentDirectory;
-            }
+          
             
             return mistriaLocation;
         }
@@ -43,7 +31,7 @@ public class MistriaLocator
     public static string? GetModsLocation(string? mistriaLocation)
     {
         var possibleLocations = new List<string>();
-        if (mistriaLocation is not null && File.Exists(Path.Combine(mistriaLocation, "data.win")))
+        if (mistriaLocation is not null)
         {
             possibleLocations.Add(Path.Combine(mistriaLocation, "mods"));
             possibleLocations.Add(Path.Combine(mistriaLocation, "Mods"));
@@ -57,6 +45,33 @@ public class MistriaLocator
             .Where(location => !RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || !new FileInfo(location).Attributes.HasFlag(FileAttributes.ReparsePoint))
             .Select(location => Path.GetFullPath(location))
             .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Returns every FieldsOfMistria AppData directory that contains a saves folder
+    /// (e.g. %LOCALAPPDATA%\FieldsOfMistria\beta\). Falls back to the root directory
+    /// if no branch subdirectory is found.
+    /// </summary>
+    public static IEnumerable<string> GetGameConfigDirectories()
+    {
+        var root = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "FieldsOfMistria");
+
+        if (!Directory.Exists(root)) yield break;
+
+        var withSaves = Directory.GetDirectories(root)
+            .Where(d => Directory.Exists(Path.Combine(d, "saves")))
+            .ToList();
+
+        if (withSaves.Count > 0)
+        {
+            foreach (var d in withSaves) yield return d;
+        }
+        else if (Directory.Exists(Path.Combine(root, "saves")))
+        {
+            yield return root;
+        }
     }
 
     public static string? GetWineLocation()
@@ -121,7 +136,7 @@ public class MistriaLocator
         var folderMods = Directory
             .GetDirectories(modsLocation)
             .Where(folder => FolderMod.GetModLocation(folder) is not null)
-            .Select(location => FolderMod.FromManifest(Path.Combine(FolderMod.GetModLocation(location)!, "manifest.json")));
+            .Select(location => FolderMod.FromManifest(Path.Combine(FolderMod.GetModLocation(location)!)));
 
         IEnumerable<IMod> zipMods = Directory.GetFiles(modsLocation, "*.zip")
             .Select(ZipMod.FromZipFile)
@@ -142,19 +157,7 @@ public class MistriaLocator
         {
             var installedMods = new List<string>();
 
-            var checksums = JObject.Parse(File.ReadAllText(Path.Combine(mistriaLocation, "checksums.json")));
-            if (checksums["mods"] is null) return mods;
-            
-            foreach (var mod in checksums["mods"]!)
-            {
-                if (mod["id"] is null) continue;
-                installedMods.Add(mod["id"]!.Value<string>());
-            }
-
-            foreach (var mod in mods.Where(mod => installedMods.Contains(mod.GetId())))
-            {
-                mod.SetInstalled(true);
-            }
+            // I might just be dum but I don't think we have a checksums.json anymore.
         }
         catch (Exception e)
         {

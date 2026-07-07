@@ -2,9 +2,17 @@
 
 public interface IFileModifier
 {
-    public string Read(string fieldsOfMistriaLocation, string file);
-
-    public void Write(string fieldsOfMistriaLocation, string file, string contents);
+    public bool Exists(string file);
     
-    public bool ConditionalRestoreBackup(string fieldsOfMistriaLocation, string file, Func<bool> condition);
+    public string Read(string file);
+
+    public Stream GetReadStream(string file);
+
+    public void Write(string file, string contents);
+
+    public Stream GetWriteStream(string file);
+
+    public string[] FindFiles(string path, string pattern);
+    
+    public bool ConditionalRestoreBackup(string file, Func<bool> condition);
 }

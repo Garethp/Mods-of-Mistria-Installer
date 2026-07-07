@@ -1,198 +1,183 @@
 ﻿using System.Diagnostics;
+using System.IO.Compression;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
-using Newtonsoft.Json.Linq;
+using Garethp.ModsOfMistriaInstallerLib.Utils;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
-public class ModInstaller(string fieldsOfMistriaLocation, string modsLocation)
+// Coordinates mod installation and uninstallation.
+// Delegates file-type-specific work to Installer subclasses.
+public class ModInstaller
 {
-    private readonly List<List<string>> _filesToBackup =
-    [
-        ["__fiddle__.json"],
-        ["__mist__.json"],
-        ["t2_input.json"],
-        ["t2_output.json"],
-        ["localization.json"],
-        ["macro_lines.json"],
-        ["animation", "generated", "outlines.json"],
-        ["animation", "generated", "player_asset_parts.json"],
-        ["animation", "generated", "player_tools.json"],
-        ["animation", "generated", "shadow_manifest.json"],
-        ["room_data", "points.json"],
-        ["data.win"],
-        ["FieldsOfMistria.exe"]
-    ];
+    private readonly string _fomLocation;
+    private readonly string _assetsLocation;
+    private readonly string _atlasDirectory;
+    private IFileModifier _fileModifier;
 
-    public void ValidateMods(List<IMod> mods)
+    public ModInstaller(string fomLocation, string modsLocation)
     {
-        var desiredGenerators = GetGenerators();
-        mods.ForEach(mod =>
-        {
-            desiredGenerators.ForEach(generator => { mod.GetValidation().Merge(generator.Validate(mod)); });
-        });
-    }
-
-    public List<string> PreinstallInformation(List<IMod> mods)
-    {
-        var information = new List<string>();
-
-        var generatedInformation = new GeneratedInformation();
-
-        var desiredGenerators = GetGenerators();
-        var desiredInstallers = GetInstallers();
-
-        foreach (var mod in mods)
-        {
-            foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
-            {
-                generatedInformation.Merge(generator.Generate(mod));
-            }
-        }
-
-        foreach (var installer in desiredInstallers)
-        {
-            if (installer is not IPreinstallInfo preinstallChecker) continue;
-
-            information.AddRange(preinstallChecker.GetPreinstallInformation(generatedInformation));
-        }
-
-        return information;
-    }
-
-    public List<string> PreUninstallInformation()
-    {
-        var information = new List<string>();
-
-        var desiredInstallers = GetInstallers();
-
-        foreach (var installer in desiredInstallers)
-        {
-            if (installer is not IPreUninstallInfo preUninstallInfo) continue;
-
-            information.AddRange(preUninstallInfo.GetPreUninstallInformation());
-        }
-
-        return information;
+        _fomLocation    = fomLocation;
+        _assetsLocation = Path.Combine(fomLocation, "assets");
+        _atlasDirectory = Path.Combine(_assetsLocation, "atlases");
     }
 
     public void InstallMods(List<IMod> mods, Action<string, string> reportStatus)
     {
-        var totalTime = new Stopwatch();
-        totalTime.Start();
-        if (!Directory.Exists(fieldsOfMistriaLocation))
-        {
+        if (!Directory.Exists(_fomLocation))
             throw new DirectoryNotFoundException(Resources.CoreMistriaLocationDoesNotExist);
-        }
-
+        
         if (IsFreshInstall())
         {
-            _filesToBackup.ForEach(filePath =>
-            {
-                var path = Path.Combine(new List<string> { fieldsOfMistriaLocation }.Concat(filePath).ToArray());
-                if (!File.Exists(path)) return;
+            var zipPath = Path.Combine(_fomLocation, "assets.zip");
+            if (!File.Exists(zipPath)) return;
 
-                var extension = Path.GetExtension(path);
-                var backupPath = path.Replace(extension, ".bak" + extension);
-
-                if (File.Exists(backupPath))
-                {
-                    File.Delete(backupPath);
-                }
-            });
+            File.Copy(zipPath, Path.Combine(_fomLocation, "assets.bak.zip"), true);
         }
+        
+        File.Copy(Path.Combine(_fomLocation, "assets.bak.zip"), Path.Combine(_fomLocation, "assets.zip"), true);
 
-        var generatedInformation = new List<GeneratedInformationWithMod>();
+        var zipFile = ZipFile.Open(Path.Combine(_fomLocation, "assets.zip"), ZipArchiveMode.Update);
+        _fileModifier = new ZipFileModifier(zipFile);
+        _fileModifier.Write("manifest.toml", "");
 
-        var desiredGenerators = GetGenerators();
-        var desiredInstallers = GetInstallers();
+        var totalTime = Stopwatch.StartNew();
+
+        // Uninstall();
+
+        // Shared state across all installers for this install session
+        IDManager.Reset();
+        var manifest          = InstallManifest.LoadOrCreate(_fomLocation);
+        var fileNameUIDMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var atlasUtils        = new AtlasUtilities(_atlasDirectory, manifest, _fileModifier);
+
+        IDManager.CollectUsedIds(atlasUtils.GetAtlases(), _fileModifier);
+
+        // Location pre-pass: merges all mod locations and patches TMX destination_ids
+        // before the per-mod loop so that positional LocationIds are globally consistent.
+        new LocationInstaller(_fomLocation, manifest, _fileModifier).Install(mods, reportStatus);
 
         foreach (var mod in mods)
         {
-            var informationWithMod = new GeneratedInformationWithMod(mod);
+            var modTimer = Stopwatch.StartNew();
+            reportStatus($"Installing {mod.GetName()} {mod.GetVersion()} by {mod.GetAuthor()}", "");
 
-            reportStatus(string.Format(Resources.CoreGeneratingInformationForMod, mod.GetId()), "");
-            foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
-            {
-                informationWithMod.Merge(generator.Generate(mod));
-            }
+            RunInstallers(mod, manifest, fileNameUIDMapping, atlasUtils, reportStatus);
 
-            generatedInformation.Add(informationWithMod);
+            modTimer.Stop();
+            reportStatus($"Finished {mod.GetName()}", modTimer.Elapsed.ToString());
         }
 
-        var finalizedInformation = new GeneratedInformation();
-        foreach (var information in generatedInformation)
+        if (_fileModifier is ZipFileModifier zipFileModifier)
         {
-            finalizedInformation.Merge(information);
+            zipFileModifier.Close();
         }
-
-        var timer = new Stopwatch();
-
-        foreach (var installer in desiredInstallers)
-        {
-            reportStatus(string.Format(Resources.CoreRunningInstaller, installer.GetType().Name), "");
-            timer.Restart();
-            installer.Install(fieldsOfMistriaLocation, modsLocation, finalizedInformation, reportStatus);
-            timer.Stop();
-            reportStatus(installer.GetType().Name, timer.ToString());
-        }
-
-        new ChecksumInstaller().Install(fieldsOfMistriaLocation, modsLocation, generatedInformation, reportStatus);
+        
+        manifest.Save();
+        GameManifestWriter.Write(mods);
         totalTime.Stop();
-
-        reportStatus(Resources.CoreInstallCompleted, totalTime.ToString());
-    }
-
-    private bool IsFreshInstall()
-    {
-        var checksums = JObject.Parse(File.ReadAllText(Path.Combine(fieldsOfMistriaLocation, "checksums.json")));
-
-        return checksums["mods_installed"]?.Value<bool>() != true;
-    }
-
-    private List<IGenerator> GetGenerators()
-    {
-        return (from app in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
-            from type in app.GetTypes()
-            where type.GetInterface(nameof(IGenerator)) is not null && !type.IsAbstract
-            let attributes = type.GetCustomAttributes(typeof(InformationGenerator), true)
-            where attributes is { Length: > 0 } &&
-                  attributes.Any(attribute => (InformationGenerator)attribute is { ManifestVersion: 1 })
-            select Activator.CreateInstance(type) as IGenerator).ToList();
-    }
-
-    private List<IModuleInstaller> GetInstallers()
-    {
-        return (from app in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
-            from type in app.GetTypes()
-            where type.GetInterface(nameof(IModuleInstaller)) is not null && !type.IsAbstract
-            let attributes = type.GetCustomAttributes(typeof(InformationInstaller), true)
-            where attributes is { Length: > 0 } &&
-                  attributes.Any(attribute => (InformationInstaller)attribute is { ManifestVersion: 1 })
-            select Activator.CreateInstance(type) as IModuleInstaller).ToList();
+        reportStatus(Resources.CoreInstallCompleted, totalTime.Elapsed.ToString());
     }
 
     public void Uninstall()
     {
-        _filesToBackup.ForEach(filePath =>
+        var manifest = InstallManifest.LoadOrCreate(_fomLocation);
+
+        // If a manifest exists, use it for a clean targeted restore
+        manifest.Restore();
+
+        // Also sweep assets/ and remove any files absent from assets_backup.zip
+        // to handle installs that predate the manifest
+        RemoveModdedFiles();
+    }
+
+    // ── Private helpers ────────────────────────────────────────────────────────
+
+    private void RunInstallers(
+        IMod mod,
+        InstallManifest manifest,
+        Dictionary<string, string> fileNameUIDMapping,
+        AtlasUtilities atlasUtils,
+        Action<string, string> reportStatus)
+    {
+        // 0. Expand momi/ compact definitions into virtual overlay files
+        var generated = new OutfitGenerator().Generate(mod);
+        foreach (var kvp in new FurnitureGenerator().Generate(mod))
+            generated.TryAdd(kvp.Key, kvp.Value);
+
+        var redirects = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        new CompactFurnitureGenerator().Generate(mod, generated, redirects);
+
+        IMod effectiveMod = generated.Count > 0 || redirects.Count > 0
+            ? new GeneratedOverlayMod(mod, generated, redirects)
+            : mod;
+
+        // 1. Pack images into atlases first so IDs are ready for TOML
+        new ImageInstaller(_fomLocation, manifest, fileNameUIDMapping, atlasUtils, _fileModifier)
+            .Install(effectiveMod, reportStatus);
+
+        // 2. Install TOML files (uses IDs populated above)
+        new TOMLInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+            .Install(effectiveMod, reportStatus);
+
+        // 3. Install JSON files
+        new JSONInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+            .Install(effectiveMod, reportStatus);
+
+        // 4. Install XML files
+        new XMLInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+            .Install(effectiveMod, reportStatus);
+
+        // 5. Install MIST files (overwrite)
+        new MISTInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+            .Install(effectiveMod, reportStatus);
+
+        // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
+        new OutfitInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+            .Install(mod, reportStatus);
+        new FurnitureInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+            .Install(mod, reportStatus);
+    }
+
+    private bool IsFreshInstall() {
+        var zipFile = ZipFile.Open(Path.Combine(_fomLocation, "assets.zip"), ZipArchiveMode.Read);
+
+        var fresh = zipFile.GetEntry("manifest.toml") == null;
+        
+        zipFile.Dispose();
+        return fresh;
+    }
+
+    // Deletes any file in assets/ that is not present in assets_backup.zip.
+    // This catches files added by older installs that had no manifest.
+    private void RemoveModdedFiles()
+    {
+        var backupZipPath = Path.Combine(_fomLocation, "assets_backup.zip");
+        if (!File.Exists(backupZipPath) || !Directory.Exists(_assetsLocation))
+            return;
+
+        using var zip = ZipFile.OpenRead(backupZipPath);
+
+        var zipFiles = new HashSet<string>(
+            zip.Entries
+               .Where(e => !string.IsNullOrEmpty(e.Name))
+               .Select(e =>
+               {
+                   var path = e.FullName.Replace('/', Path.DirectorySeparatorChar);
+                   const string prefix = "assets" + "\\";
+                   return path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                       ? path[prefix.Length..]
+                       : path;
+               }),
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var file in Directory.GetFiles(_assetsLocation, "*", SearchOption.AllDirectories))
         {
-            var path = Path.Combine(new List<string> { fieldsOfMistriaLocation }.Concat(filePath).ToArray());
-            if (!File.Exists(path)) return;
-
-            var extension = Path.GetExtension(path);
-            var backupPath = path.Replace(extension, ".bak" + extension);
-
-            if (File.Exists(backupPath))
-            {
-                File.Delete(path);
-                File.Copy(backupPath, path);
-                File.Delete(backupPath);
-            }
-        });
-
-        new ChecksumInstaller().Uninstall(fieldsOfMistriaLocation);
-        new AurieInstaller().Uninstall(fieldsOfMistriaLocation);
+            var relative = Path.GetRelativePath(_assetsLocation, file);
+            if (!zipFiles.Contains(relative))
+                File.Delete(file);
+        }
     }
 }

@@ -4,6 +4,8 @@ using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
+using Tomlyn;
+using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
@@ -15,7 +17,7 @@ public class ZipMod() : IMod
 
     private string _version = "";
 
-    private string _minimunInstallerVersion = "";
+    private string _minimumInstallerVersion = "";
 
     private string _manifestVersion = "";
 
@@ -27,18 +29,36 @@ public class ZipMod() : IMod
     
     private bool _isInstalled = false;
 
+    private List<ModRequirement> _requirements = [];
+
+    private string? _updateUrl;
+
+    private string? _downloadUrl;
+
     public ZipMod(ZipArchive zipFile, string basePath) : this()
     {
-        var manifestFile = zipFile.GetEntry(basePath + "manifest.json");
+        var manifestFile = zipFile.GetEntry(basePath + "manifest.json") ?? zipFile.GetEntry(basePath + "manifest.toml");
         if (manifestFile is null) return;
 
-        var manifest = JObject.Parse(readEntry(manifestFile));
-
-        _name = manifest["name"]?.ToString() ?? "";
-        _author = manifest["author"]?.ToString() ?? "";
-        _version = manifest["version"]?.ToString() ?? "";
-        _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0";
-        _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1";
+        ModManifest manifest;
+        if (manifestFile.Name.EndsWith(".json"))
+        {
+            manifest = ModManifest.FromJson(JObject.Parse(readEntry(manifestFile)));
+        } else if (manifestFile.Name.EndsWith(".toml"))
+        {
+            manifest = ModManifest.FromToml(TomlSerializer.Deserialize<TomlTable>(readEntry(manifestFile))!);
+        }
+        else return;
+        
+        _name = manifest.Name;
+        _author = manifest.Author;
+        _version = manifest.Version;
+        _minimumInstallerVersion = manifest.MinInstallerVersion;
+        _manifestVersion = manifest.ManifestVersion;
+        _requirements = manifest.Requirements;
+        _downloadUrl = manifest.DownloadUrl;
+        _updateUrl = manifest.UpdateUrl;
+        
         _zipFile = zipFile;
         _basePath = basePath;
     }
@@ -65,11 +85,11 @@ public class ZipMod() : IMod
 
         var zipFile = ZipFile.OpenRead(ZipPath);
 
-        var manifestFiles = zipFile.Entries.Where(entry => entry.Name == "manifest.json").ToList();
+        var manifestFiles = zipFile.Entries.Where(entry => entry.Name is "manifest.json" or "manifest.toml").ToList();
 
         if (manifestFiles.Count() != 1) return null;
 
-        var internalLocation = manifestFiles.First().FullName.Replace("manifest.json", "");
+        var internalLocation = manifestFiles.First().FullName.Replace("manifest.json", "").Replace("manifest.toml", "");
 
         return new ZipMod(zipFile, internalLocation);
     }
@@ -82,7 +102,7 @@ public class ZipMod() : IMod
 
     public string GetLocation() => "";
 
-    public string GetMinimunInstallerVersion() => _minimunInstallerVersion;
+    public string GetMinimumInstallerVersion() => _minimumInstallerVersion;
 
     public string GetManifestVersion() => _manifestVersion;
 
@@ -119,6 +139,12 @@ public class ZipMod() : IMod
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"),
                 Resources.CoreManifestHasNoVersion));
         }
+        
+        var canInstall = CanInstall();
+        if (!string.IsNullOrEmpty(canInstall))
+        {
+            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), canInstall));
+        }
 
         return _validation;
     }
@@ -131,7 +157,13 @@ public class ZipMod() : IMod
             var currentVersionString =
                 currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
             var currentVersion = new Version(currentVersionString);
-            var requiredVersion = new Version(GetMinimunInstallerVersion());
+            var requiredVersion = new Version(GetMinimumInstallerVersion());
+            var newEngineVersion = new Version("0.12.0");
+            
+            if (requiredVersion.CompareTo(newEngineVersion) < 0)
+            {
+                return Resources.CoreManifestHasNoMinimunInstallerVersion;
+            }
 
             if (requiredVersion.CompareTo(currentVersion) > 0)
             {
@@ -194,4 +226,9 @@ public class ZipMod() : IMod
 
         return entry.Open();
     }
+
+    public List<ModRequirement> GetRequirements() => _requirements;
+
+    public string? GetUpdateUrl()   => _updateUrl;
+    public string? GetDownloadUrl() => _downloadUrl;
 }

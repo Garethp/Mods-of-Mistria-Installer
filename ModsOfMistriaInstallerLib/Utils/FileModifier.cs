@@ -1,8 +1,22 @@
-﻿namespace Garethp.ModsOfMistriaInstallerLib.Utils;
+﻿using UndertaleModLib.Compiler;
 
-public class FileModifier: IFileModifier
+namespace Garethp.ModsOfMistriaInstallerLib.Utils;
+
+public class FileModifier(string fieldsOfMistriaLocation): IFileModifier
 {
-    public string Read(string fieldsOfMistriaLocation, string file)
+    private readonly string fieldsOfMistriaLocation = fieldsOfMistriaLocation;
+
+    public bool Exists(string file)
+    {
+        return Path.Exists(Path.Combine(fieldsOfMistriaLocation, file)) || Directory.Exists(Path.Combine(fieldsOfMistriaLocation, file));
+    }
+
+    public string[] FindFiles(string path, string pattern)
+    {
+        return Directory.GetFiles(Path.Combine(fieldsOfMistriaLocation, path), pattern, SearchOption.AllDirectories);
+    }
+
+    public string Read(string file)
     {
         var path = Path.Combine(fieldsOfMistriaLocation, file);
         var extension = Path.GetExtension(path);
@@ -24,12 +38,39 @@ public class FileModifier: IFileModifier
         return File.ReadAllText(backupPath);
     }
 
-    public void Write(string fieldsOfMistriaLocation, string file, string contents)
+    public Stream GetReadStream(string file)
+    {
+        var path = Path.Combine(fieldsOfMistriaLocation, file);
+        var extension = Path.GetExtension(path);
+        var backupPath = path.Replace(extension, ".bak" + extension);
+        
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException($"Could not find {file} in Fields of Mistria folder");
+        }
+
+        if (!File.Exists(backupPath))
+        {
+            File.Copy(
+                path,
+                backupPath
+            );
+        }
+
+        return File.OpenRead(path);
+    }
+
+    public void Write(string file, string contents)
     {
         File.WriteAllText(Path.Combine(fieldsOfMistriaLocation, file), contents);
     }
 
-    public bool ConditionalRestoreBackup(string fieldsOfMistriaLocation, string file, Func<bool> condition)
+    public Stream GetWriteStream(string file)
+    {
+        return File.OpenWrite(Path.Combine(fieldsOfMistriaLocation, file));
+    }
+
+    public bool ConditionalRestoreBackup(string file, Func<bool> condition)
     {
         var path = Path.Combine(fieldsOfMistriaLocation, file);
         var extension = Path.GetExtension(path);

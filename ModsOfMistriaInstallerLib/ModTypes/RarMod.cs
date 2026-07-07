@@ -4,6 +4,8 @@ using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
 using SharpCompress.Archives.Rar;
+using Tomlyn;
+using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
@@ -15,7 +17,7 @@ public class RarMod() : IMod
 
     private string _version = "";
 
-    private string _minimunInstallerVersion = "0.1.0";
+    private string _minimumInstallerVersion = "0.1.0";
 
     private string _manifestVersion = "1";
 
@@ -26,7 +28,13 @@ public class RarMod() : IMod
     private string _basePath = "";
     
     private bool _isInstalled = false;
-    
+
+    private List<ModRequirement> _requirements = [];
+
+    private string? _updateUrl;
+
+    private string? _downloadUrl;
+
     private RarArchiveEntry? GetEntry(RarArchive rarFile, string path)
     {
         var isDirectory = path.EndsWith('/');
@@ -44,16 +52,28 @@ public class RarMod() : IMod
 
     private RarMod(RarArchive rarFile, string basePath) : this()
     {
-        var manifestFile = GetEntry(rarFile, basePath + "manifest.json");
+        var manifestFile = GetEntry(rarFile, basePath + "manifest.json") ?? GetEntry(rarFile, basePath + "manifest.toml");
         if (manifestFile is null) return;
 
-        var manifest = JObject.Parse(ReadEntry(manifestFile));
+        ModManifest manifest;
+        if (manifestFile.Key.EndsWith(".json"))
+        {
+            manifest = ModManifest.FromJson(JObject.Parse(ReadEntry(manifestFile)));
+        } else if (manifestFile.Key.EndsWith(".toml"))
+        {
+            manifest = ModManifest.FromToml(TomlSerializer.Deserialize<TomlTable>(ReadEntry(manifestFile))!);
+        }
+        else return;
 
-        _name = manifest["name"]?.ToString() ?? "";
-        _author = manifest["author"]?.ToString() ?? "";
-        _version = manifest["version"]?.ToString() ?? "1.0.0";
-        _minimunInstallerVersion = manifest["minInstallerVersion"]?.ToString() ?? "0.1.0";
-        _manifestVersion = manifest["manifestVersion"]?.ToString() ?? "1";
+        _name = manifest.Name;
+        _author = manifest.Author;
+        _version = manifest.Version;
+        _minimumInstallerVersion = manifest.MinInstallerVersion;
+        _manifestVersion = manifest.ManifestVersion;
+        _requirements = manifest.Requirements;
+        _downloadUrl = manifest.DownloadUrl;
+        _updateUrl = manifest.UpdateUrl;
+        
         _rarFile = rarFile;
         _basePath = basePath;
     }
@@ -80,11 +100,11 @@ public class RarMod() : IMod
 
         var rarFile = RarArchive.Open(rarPath);
 
-        var manifestFiles = rarFile.Entries.Where(entry => entry.Key.EndsWith("manifest.json")).ToList();
+        var manifestFiles = rarFile.Entries.Where(entry => entry.Key.EndsWith("manifest.json") || entry.Key.EndsWith("manifest.toml")).ToList();
 
         if (manifestFiles.Count != 1) return null;
 
-        var internalLocation = manifestFiles.First().Key.Replace("manifest.json", "");
+        var internalLocation = manifestFiles.First().Key.Replace("manifest.json", "").Replace("manifest.toml", "");
 
         return new RarMod(rarFile, internalLocation);
     }
@@ -97,7 +117,7 @@ public class RarMod() : IMod
 
     public string GetLocation() => "";
 
-    public string GetMinimunInstallerVersion() => _minimunInstallerVersion;
+    public string GetMinimumInstallerVersion() => _minimumInstallerVersion;
 
     public string GetManifestVersion() => _manifestVersion;
 
@@ -134,6 +154,12 @@ public class RarMod() : IMod
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"),
                 Resources.CoreManifestHasNoVersion));
         }
+        
+        var canInstall = CanInstall();
+        if (!string.IsNullOrEmpty(canInstall))
+        {
+            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), canInstall));
+        }
 
         return _validation;
     }
@@ -146,7 +172,13 @@ public class RarMod() : IMod
             var currentVersionString =
                 currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
             var currentVersion = new Version(currentVersionString);
-            var requiredVersion = new Version(GetMinimunInstallerVersion());
+            var requiredVersion = GetMinimumInstallerVersion();
+            var newEngineVersion = new Version("0.12.0");
+            
+            if (requiredVersion.CompareTo(newEngineVersion) < 0)
+            {
+                return Resources.CoreManifestHasNoMinimunInstallerVersion;
+            }
 
             if (requiredVersion.CompareTo(currentVersion) > 0)
             {
@@ -209,4 +241,9 @@ public class RarMod() : IMod
 
         return entry.OpenEntryStream();
     }
+
+    public List<ModRequirement> GetRequirements() => _requirements;
+
+    public string? GetUpdateUrl()   => _updateUrl;
+    public string? GetDownloadUrl() => _downloadUrl;
 }

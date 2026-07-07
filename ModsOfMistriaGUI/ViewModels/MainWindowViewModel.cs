@@ -13,16 +13,18 @@ internal enum Pages
 public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly Settings _settings = new();
-    
+
     private readonly Dictionary<Pages, PageViewBase> _pages;
-    
+
+    private GameRestartMonitor? _restartMonitor;
+
     [ObservableProperty] private PageViewBase _currentPage;
 
     public MainWindowViewModel()
     {
         _settings.MistriaLocation = MistriaLocator.GetMistriaLocation() ?? "";
         _settings.ModsLocation = MistriaLocator.GetModsLocation(_settings.MistriaLocation) ?? "";
-        
+
         _pages = new Dictionary<Pages, PageViewBase>
         {
             { Pages.GettingStarted , new GettingStartedPageViewModel(_settings) },
@@ -42,6 +44,17 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             if (!_settings.ValidMistriaLocation() || !_settings.ValidModsLocation()) return;
             CurrentPage = _pages[Pages.Modlist];
+            StartRestartMonitor();
         };
+
+        StartRestartMonitor();
+    }
+
+    private void StartRestartMonitor()
+    {
+        _restartMonitor?.Stop();
+        if (string.IsNullOrEmpty(_settings.MistriaLocation)) return;
+        _restartMonitor = new GameRestartMonitor(_settings.MistriaLocation);
+        _restartMonitor.Start();
     }
 }
