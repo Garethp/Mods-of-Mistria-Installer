@@ -131,21 +131,18 @@ public class FolderMod : IMod
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
                 Resources.CoreManifestHasNoVersion));
         }
-        var version = new Version(_minimumInstallerVersion);
-        if (string.IsNullOrEmpty(_minimumInstallerVersion) || version.Major < 1.0)
+
+        var canInstall = CanInstall();
+        if (!string.IsNullOrEmpty(canInstall))
         {
-            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
-            Resources.CoreManifestHasNoMinimunInstallerVersion));
+            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"), canInstall));
         }
-
-
+        
         return _validation;
     }
 
     public string? CanInstall()
     {
-        // TODO: fix this. Idk what I did wrong am doing wrong but I dont care anymore.
-        return null;
         try
         {
             var currentExe = Assembly.GetEntryAssembly();
@@ -153,7 +150,13 @@ public class FolderMod : IMod
                 currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
             var currentVersion = new Version(currentVersionString);
             var requiredVersion = new Version(_minimumInstallerVersion);
-
+            var newEngineVersion = new Version("0.12.0");
+            
+            if (requiredVersion.CompareTo(newEngineVersion) < 0)
+            {
+                return Resources.CoreManifestHasNoMinimunInstallerVersion;
+            }
+            
             if (requiredVersion.CompareTo(currentVersion) > 0)
             {
                 return Resources.CoreModRequiresNewerInstaller;

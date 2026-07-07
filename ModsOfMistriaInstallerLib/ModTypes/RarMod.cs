@@ -154,6 +154,12 @@ public class RarMod() : IMod
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"),
                 Resources.CoreManifestHasNoVersion));
         }
+        
+        var canInstall = CanInstall();
+        if (!string.IsNullOrEmpty(canInstall))
+        {
+            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), canInstall));
+        }
 
         return _validation;
     }
@@ -167,6 +173,12 @@ public class RarMod() : IMod
                 currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
             var currentVersion = new Version(currentVersionString);
             var requiredVersion = GetMinimumInstallerVersion();
+            var newEngineVersion = new Version("0.12.0");
+            
+            if (requiredVersion.CompareTo(newEngineVersion) < 0)
+            {
+                return Resources.CoreManifestHasNoMinimunInstallerVersion;
+            }
 
             if (requiredVersion.CompareTo(currentVersion) > 0)
             {
