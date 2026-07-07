@@ -161,7 +161,7 @@ public class RarMod() : IMod
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), canInstall));
         }
         
-        if (new Version(_minimumInstallerVersion).Equals(new Version("1.0.0")))
+        if (new Version(_minimumInstallerVersion).CompareTo(new Version("1.0")) > -1)
         {
             _validation.Warnings.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), Resources.CoreModRequiresIncorrectVersion));
         }
@@ -178,7 +178,7 @@ public class RarMod() : IMod
                 currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
             var currentVersion = new Version(currentVersionString);
             var requiredVersion = new Version(GetMinimumInstallerVersion());
-            var newEngineVersion = new Version("0.12.0");
+            var newEngineVersion = new Version("0.12");
             
             if (requiredVersion.CompareTo(newEngineVersion) < 0)
             {
@@ -186,7 +186,7 @@ public class RarMod() : IMod
             }
 
             // TODO: Remove the workaround for 1.0.0 after the 12th of July
-            if (requiredVersion.CompareTo(currentVersion) > 0 && !requiredVersion.Equals(new Version("1.0.0")))
+            if (requiredVersion.CompareTo(currentVersion) > 0 && requiredVersion.CompareTo(new Version("1.0")) < 0)
             {
                 return Resources.CoreModRequiresNewerInstaller;
             }
