@@ -38,12 +38,6 @@ public static class Standalone
         allMods = allMods
             .Where(mod =>
             {
-                if (mod.CanInstall() is {} cannotInstall)
-                {
-                    Logger.Log(cannotInstall);
-                    return false;
-                }
-
                 if (mod.GetValidation().Status == ValidationStatus.Invalid)
                 {
                     Logger.Log(Resources.CoreSkippingModBecauseErrors, mod.GetId());

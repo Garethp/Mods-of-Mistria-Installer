@@ -140,22 +140,6 @@ public class ZipMod() : IMod
                 Resources.CoreManifestHasNoVersion));
         }
         
-        var canInstall = CanInstall();
-        if (!string.IsNullOrEmpty(canInstall))
-        {
-            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), canInstall));
-        }
-
-        if (new Version(_minimumInstallerVersion).CompareTo(new Version("1.0")) > -1)
-        {
-            _validation.Warnings.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), Resources.CoreModRequiresIncorrectVersion));
-        }
-        
-        return _validation;
-    }
-
-    public string? CanInstall()
-    {
         try
         {
             var currentExe = Assembly.GetEntryAssembly();
@@ -167,21 +151,26 @@ public class ZipMod() : IMod
             
             if (requiredVersion.CompareTo(newEngineVersion) < 0)
             {
-                return Resources.CoreManifestHasNoMinimunInstallerVersion;
+                _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), Resources.CoreManifestHasNoMinimunInstallerVersion));
             }
 
             // TODO: Remove the workaround for 1.0.0 after the 12th of July
             if (requiredVersion.CompareTo(currentVersion) > 0 && requiredVersion.CompareTo(new Version("1.0")) < 0)
             {
-                return Resources.CoreModRequiresNewerInstaller;
+                _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), Resources.CoreModRequiresNewerInstaller));
             }
         }
         catch (Exception)
         {
-            return string.Format(Resources.CoreErrorReadingVersionForMod, GetId());
+            _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), string.Format(Resources.CoreErrorReadingVersionForMod, GetId())));
         }
-
-        return null;
+        
+        if (new Version(_minimumInstallerVersion).CompareTo(new Version("1.0")) > -1)
+        {
+            _validation.Warnings.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), Resources.CoreModRequiresIncorrectVersion));
+        }
+        
+        return _validation;
     }
 
     public bool HasFilesInFolder(string folder) => HasFilesInFolder(folder, "");

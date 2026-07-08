@@ -9,9 +9,7 @@ namespace Garethp.ModsOfMistriaGUI.Models;
 public partial class ModModel : ObservableObject
 {
     public readonly IMod Mod;
-
-    public readonly string? CanInstall;
-
+    
     private bool _enabledBacking;
 
     [ObservableProperty] private int _position;
@@ -24,14 +22,12 @@ public partial class ModModel : ObservableObject
     public ModModel(IMod mod)
     {
         Mod = mod;
-        CanInstall = mod.CanInstall();
         _enabledBacking = mod.IsInstalled();
     }
 
     public ModModel()
     {
         Mod = new FolderMod();
-        CanInstall = Mod.CanInstall();
     }
 
     public bool Enabled

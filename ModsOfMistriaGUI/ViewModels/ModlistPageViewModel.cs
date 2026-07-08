@@ -363,8 +363,6 @@ public partial class ModlistPageViewModel : PageViewBase
                 InstallStatus = Resources.GUICouldNotFindMods;
             else if (Mods.Count == 0)
                 InstallStatus = NoModsToInstallText;
-            else if (Mods.Any(mod => mod.CanInstall is not null))
-                InstallStatus = Resources.GUIModsRequireNewerVersion;
         });
 
         _updating = false;
@@ -525,6 +523,5 @@ public partial class ModlistPageViewModel : PageViewBase
     private bool CanRemove()  => !MistriaLocation.Equals("") && !IsInstalling;
 
     private bool CanInstall() =>
-        !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 &&
-        !IsInstalling && Mods.All(mod => mod.CanInstall is null);
+        !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !IsInstalling;
 }
