@@ -83,14 +83,10 @@ public class ModInstaller
 
     public void Uninstall()
     {
-        var manifest = InstallManifest.LoadOrCreate(_fomLocation);
-
-        // If a manifest exists, use it for a clean targeted restore
-        manifest.Restore();
-
-        // Also sweep assets/ and remove any files absent from assets_backup.zip
-        // to handle installs that predate the manifest
-        RemoveModdedFiles();
+        if (File.Exists(Path.Combine(_fomLocation, "assets.bak.zip")))
+        {
+            File.Copy(Path.Combine(_fomLocation, "assets.bak.zip"), Path.Combine(_fomLocation, "assets.zip"), true);
+        }
     }
 
     // ── Private helpers ────────────────────────────────────────────────────────
@@ -148,36 +144,5 @@ public class ModInstaller
         
         zipFile.Dispose();
         return fresh;
-    }
-
-    // Deletes any file in assets/ that is not present in assets_backup.zip.
-    // This catches files added by older installs that had no manifest.
-    private void RemoveModdedFiles()
-    {
-        var backupZipPath = Path.Combine(_fomLocation, "assets_backup.zip");
-        if (!File.Exists(backupZipPath) || !Directory.Exists(_assetsLocation))
-            return;
-
-        using var zip = ZipFile.OpenRead(backupZipPath);
-
-        var zipFiles = new HashSet<string>(
-            zip.Entries
-               .Where(e => !string.IsNullOrEmpty(e.Name))
-               .Select(e =>
-               {
-                   var path = e.FullName.Replace('/', Path.DirectorySeparatorChar);
-                   const string prefix = "assets" + "\\";
-                   return path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-                       ? path[prefix.Length..]
-                       : path;
-               }),
-            StringComparer.OrdinalIgnoreCase);
-
-        foreach (var file in Directory.GetFiles(_assetsLocation, "*", SearchOption.AllDirectories))
-        {
-            var relative = Path.GetRelativePath(_assetsLocation, file);
-            if (!zipFiles.Contains(relative))
-                File.Delete(file);
-        }
     }
 }
