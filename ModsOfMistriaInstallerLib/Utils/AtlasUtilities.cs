@@ -110,11 +110,15 @@ public class AtlasUtilities
         {
             openPaths.Add(state.Atlas.MetaPath);
             bool dirty = false;
-            PruneAnimations(state.Animations, prefix, ref dirty);
-            if (dirty) state.IsDirty = true;
+            var cleared = new List<Rectangle>();
+            PruneAnimations(state.Animations, prefix, ref dirty, cleared);
+            // Wipe the freed pixels in-memory; the state flushes to disk later.
+            foreach (var region in cleared)
+                ClearRegion(state.Image, region);
+            if (dirty || cleared.Count > 0) state.IsDirty = true;
         }
 
-        // 2. All other atlas pages: load → prune → backup + save.
+        // 2. All other atlas pages: load → prune → save (meta, and png if pixels freed).
         foreach (var atlas in _atlases)
         {
             if (openPaths.Contains(atlas.MetaPath)) continue;
@@ -125,20 +129,42 @@ public class AtlasUtilities
             if (!ap.TryGetValue("animations", out var animObj) || animObj is not TomlTableArray anims) continue;
 
             bool modified = false;
-            PruneAnimations(anims, prefix, ref modified);
+            var cleared = new List<Rectangle>();
+            PruneAnimations(anims, prefix, ref modified, cleared);
             if (!modified) continue;
 
             // Backup the original before overwriting (so uninstall can restore it)
             // _manifest.TrackModified(atlas.MetaPath);
-            
+
             _fileModifier.Write(atlas.MetaPath, TomlSerializer.Serialize(data));
+
+            // Sanitise the freed pixel regions in the atlas image so later packs
+            // can't reveal the removed art through their transparent areas.
+            if (cleared.Count > 0)
+            {
+                var readStream = _fileModifier.GetReadStream(atlas.PngPath);
+                using var image = Image.Load<Rgba32>(readStream);
+                readStream.Close();
+
+                foreach (var region in cleared)
+                    ClearRegion(image, region);
+
+                var writeStream = _fileModifier.GetWriteStream(atlas.PngPath);
+                image.Save(writeStream, image.DetectEncoder(atlas.PngPath));
+                writeStream.Close();
+            }
         }
     }
 
     // Removes or prunes animation entries that reference baseId (no ::N suffix).
     // Entries with multiple IDs only have the matching ones removed; if that empties
     // the texture_ids array the whole entry is removed.
-    private static void PruneAnimations(TomlTableArray anims, string baseId, ref bool modified)
+    // When an entry is fully removed its pixel region is added to `cleared` so the
+    // caller can wipe those pixels from the atlas image — otherwise the slot is freed
+    // for the packer while the old art stays behind, and a later sprite packed there
+    // shows the stale pixels through its transparent areas.
+    private static void PruneAnimations(TomlTableArray anims, string baseId, ref bool modified,
+                                        List<Rectangle> cleared)
     {
         for (int i = anims.Count - 1; i >= 0; i--)
         {
@@ -159,17 +185,47 @@ public class AtlasUtilities
             if (matching.Count == ids.Count)
             {
                 // All IDs in this slot belong to the replaced animation → drop the entry
+                // and remember its region so the pixels get sanitised.
+                if (TryReadRegion(anim, out var region))
+                    cleared.Add(region);
                 anims.RemoveAt(i);
             }
             else
             {
-                // Some other animations share this pixel region → remove only our IDs
+                // Some other animations share this pixel region → remove only our IDs.
+                // The region stays in use, so it must NOT be cleared.
                 foreach (var (_, idx) in matching)
                     ids.RemoveAt(idx);
             }
 
             modified = true;
         }
+    }
+
+    // Reads an animation entry's [x, y, width, height] placement rectangle.
+    private static bool TryReadRegion(TomlTable anim, out Rectangle region)
+    {
+        region = default;
+        if (!anim.TryGetValue("top_left_dimensions", out var dObj) ||
+            dObj is not TomlArray d || d.Count < 4)
+            return false;
+        region = new Rectangle(
+            Convert.ToInt32(d[0]), Convert.ToInt32(d[1]),
+            Convert.ToInt32(d[2]), Convert.ToInt32(d[3]));
+        return true;
+    }
+
+    // Overwrites a rectangular region of the atlas with fully transparent pixels.
+    private static void ClearRegion(Image<Rgba32> image, Rectangle region)
+    {
+        var r = Rectangle.Intersect(region, new Rectangle(0, 0, image.Width, image.Height));
+        if (r.Width <= 0 || r.Height <= 0) return;
+
+        image.ProcessPixelRows(accessor =>
+        {
+            for (int y = r.Top; y < r.Bottom; y++)
+                accessor.GetRowSpan(y).Slice(r.Left, r.Width).Clear();
+        });
     }
 
     // Writes all pending atlas changes to disk and marks them in the manifest.
