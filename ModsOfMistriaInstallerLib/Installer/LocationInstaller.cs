@@ -34,17 +34,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 public class LocationInstaller
 {
     private readonly string _assetsLocation;
-    private readonly InstallManifest _manifest;
     private readonly IFileModifier _fileModifier;
 
     private static readonly Regex DestinationIdRegex = new(
         @"(<property\s+name=""destination_id""\s+type=""int""\s+propertytype=""LocationId""\s+value="")(\d+)("")",
         RegexOptions.Compiled);
 
-    public LocationInstaller(string fomLocation, InstallManifest manifest, IFileModifier fileModifier)
+    public LocationInstaller(string fomLocation, IFileModifier fileModifier)
     {
         _assetsLocation = Path.Combine(fomLocation, "assets");
-        _manifest       = manifest;
         _fileModifier = fileModifier;
     }
 
@@ -140,7 +138,6 @@ public class LocationInstaller
             merged[id] = def.Data;
 
         var dest = Path.Combine("assets", "fiddle", "locations.toml");
-        DirtyFile(dest);
         _fileModifier.Write(dest, TomlSerializer.Serialize(merged));
 
         reportStatus($"locations.toml: added {newLocations.Count} new location(s)", "");
@@ -163,7 +160,6 @@ public class LocationInstaller
             if (!absPath.EndsWith(".tmx", StringComparison.OrdinalIgnoreCase))
             {
                 // Non-TMX tiled asset (tileset, template, etc.) — copy verbatim.
-                DirtyFile(dest);
                 // @TODO: We shouldn't be reading mod files with the system File operations, it doesn't work for zip mods
                 _fileModifier.Write(Path.Combine("assets", relPath), File.ReadAllText(absPath));
                 // File.Copy(absPath, dest, overwrite: true);
@@ -174,7 +170,6 @@ public class LocationInstaller
             var original = File.ReadAllText(absPath);
             var patched  = PatchTmx(original, localIdToName, nameToGlobalId, out int count);
 
-            DirtyFile(dest);
             // @TODO: Check if we need that UTF8Encoding
             _fileModifier.Write(dest, patched);
             // File.WriteAllText(dest, patched, new System.Text.UTF8Encoding(false));
@@ -207,15 +202,6 @@ public class LocationInstaller
 
         replacementCount = count;
         return result;
-    }
-
-    private void DirtyFile(string destPath)
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-        if (File.Exists(destPath))
-            _manifest.TrackModified(destPath);
-        else
-            _manifest.TrackAdded(destPath);
     }
 
     private static List<string> SortedLocationKeys(TomlTable table) =>

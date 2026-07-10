@@ -15,11 +15,9 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 //
 // ImageInstaller must run first so FileNameUIDMapping is populated.
 public class TOMLInstaller(
-    string fomLocation,
-    InstallManifest manifest,
     Dictionary<string, string> fileNameUidMapping,
     IFileModifier modifier)
-    : Installer(fomLocation, manifest, fileNameUidMapping)
+    : Installer(fileNameUidMapping)
 {
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
@@ -69,7 +67,6 @@ public class TOMLInstaller(
             meta["id"] = id;
         }
 
-        Dirty(dest);
         MergeOrWriteToml(toml, dest);
         reportStatus($"Installed animation meta: {relPath}", "");
     }
@@ -99,7 +96,6 @@ public class TOMLInstaller(
             meta["required_assets"] = new TomlArray { animId };
         }
 
-        Dirty(dest);
         MergeOrWriteToml(toml, dest);
         reportStatus($"Installed shape meta: {relPath}", "");
     }
@@ -111,7 +107,6 @@ public class TOMLInstaller(
         var dest       = DestinationPath(relPath);
         var sourceToml = Toml.ParseToml(mod.ReadFile(relPath));
 
-        Dirty(dest);
         MergeOrWriteToml(sourceToml, dest);
         reportStatus($"Installed TOML: {relPath}", "");
     }

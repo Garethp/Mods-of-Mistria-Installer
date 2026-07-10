@@ -1,6 +1,4 @@
-using System.IO.Compression;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
-using Garethp.ModsOfMistriaInstallerLib.Utils;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
@@ -9,19 +7,10 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 // filename→UID mapping that lets related files (spr_ + poly_) share IDs.
 public abstract class Installer
 {
-    protected readonly string FomLocation;
-    protected readonly string AssetsLocation;
-    protected readonly InstallManifest Manifest;
     protected readonly Dictionary<string, string> FileNameUIDMapping;
 
-    protected Installer(
-        string fomLocation,
-        InstallManifest manifest,
-        Dictionary<string, string> fileNameUIDMapping)
+    protected Installer(Dictionary<string, string> fileNameUIDMapping)
     {
-        FomLocation        = fomLocation;
-        AssetsLocation     = Path.Combine(fomLocation, "assets");
-        Manifest           = manifest;
         FileNameUIDMapping = fileNameUIDMapping;
     }
 
@@ -31,16 +20,4 @@ public abstract class Installer
     // relPath inside the mod.
     protected string DestinationPath(string relPath) =>
         Path.Combine("assets", relPath.Replace('/', Path.DirectorySeparatorChar));
-
-    // Ensures directories exist, then marks the destination for tracking before
-    // any write occurs.  Call this before writing/copying to destPath.
-    protected void Dirty(string destPath)
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-
-        if (File.Exists(destPath))
-            Manifest.TrackModified(destPath);
-        else
-            Manifest.TrackAdded(destPath);
-    }
 }

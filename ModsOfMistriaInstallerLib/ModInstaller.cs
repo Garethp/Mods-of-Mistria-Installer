@@ -44,27 +44,24 @@ public class ModInstaller
         _fileModifier.Write("manifest.toml", "");
 
         var totalTime = Stopwatch.StartNew();
-
-        // Uninstall();
-
+        
         // Shared state across all installers for this install session
         IDManager.Reset();
-        var manifest          = InstallManifest.LoadOrCreate(_fomLocation);
         var fileNameUIDMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        var atlasUtils        = new AtlasUtilities(_atlasDirectory, manifest, _fileModifier);
+        var atlasUtils        = new AtlasUtilities(_atlasDirectory, _fileModifier);
 
         IDManager.CollectUsedIds(atlasUtils.GetAtlases(), _fileModifier);
 
         // Location pre-pass: merges all mod locations and patches TMX destination_ids
         // before the per-mod loop so that positional LocationIds are globally consistent.
-        new LocationInstaller(_fomLocation, manifest, _fileModifier).Install(mods, reportStatus);
+        new LocationInstaller(_fomLocation, _fileModifier).Install(mods, reportStatus);
 
         foreach (var mod in mods)
         {
             var modTimer = Stopwatch.StartNew();
             reportStatus($"Installing {mod.GetName()} {mod.GetVersion()} by {mod.GetAuthor()}", "");
 
-            RunInstallers(mod, manifest, fileNameUIDMapping, atlasUtils, reportStatus);
+            RunInstallers(mod, fileNameUIDMapping, atlasUtils, reportStatus);
 
             modTimer.Stop();
             reportStatus($"Finished {mod.GetName()}", modTimer.Elapsed.ToString());
@@ -75,7 +72,6 @@ public class ModInstaller
             zipFileModifier.Close();
         }
         
-        manifest.Save();
         GameManifestWriter.Write(mods);
         totalTime.Stop();
         reportStatus(Resources.CoreInstallCompleted, totalTime.Elapsed.ToString());
@@ -93,7 +89,6 @@ public class ModInstaller
 
     private void RunInstallers(
         IMod mod,
-        InstallManifest manifest,
         Dictionary<string, string> fileNameUIDMapping,
         AtlasUtilities atlasUtils,
         Action<string, string> reportStatus)
@@ -111,29 +106,30 @@ public class ModInstaller
             : mod;
 
         // 1. Pack images into atlases first so IDs are ready for TOML
-        new ImageInstaller(_fomLocation, manifest, fileNameUIDMapping, atlasUtils, _fileModifier)
+        new ImageInstaller(fileNameUIDMapping, atlasUtils, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 2. Install TOML files (uses IDs populated above)
-        new TOMLInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+        new TOMLInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 3. Install JSON files
-        new JSONInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+        new JSONInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 4. Install XML files
-        new XMLInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+        new XMLInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 5. Install MIST files (overwrite)
-        new MISTInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+        new MISTInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
-        new OutfitInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+        new OutfitInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, reportStatus);
-        new FurnitureInstaller(_fomLocation, manifest, fileNameUIDMapping, _fileModifier)
+        
+        new FurnitureInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, reportStatus);
     }
 

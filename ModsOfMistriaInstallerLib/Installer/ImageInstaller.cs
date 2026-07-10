@@ -20,12 +20,10 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 //                        override atlas type, frame_size, and frame_len (e.g. different
 //                        canvas size). The ID always comes from the game's own meta.
 public class ImageInstaller(
-    string fomLocation,
-    InstallManifest manifest,
     Dictionary<string, string> fileNameUidMapping,
     AtlasUtilities atlasUtils,
     IFileModifier fileModifier)
-    : Installer(fomLocation, manifest, fileNameUidMapping)
+    : Installer(fileNameUidMapping)
 {
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {

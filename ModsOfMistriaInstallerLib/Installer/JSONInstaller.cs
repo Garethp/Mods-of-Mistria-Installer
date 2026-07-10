@@ -9,11 +9,9 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 // JObject sources are deep-merged (keys added/overwritten, arrays unioned).
 // JArray sources replace the destination array outright.
 public class JSONInstaller(
-    string fomLocation,
-    InstallManifest manifest,
     Dictionary<string, string> fileNameUidMapping,
     IFileModifier fileModifier)
-    : Installer(fomLocation, manifest, fileNameUidMapping)
+    : Installer(fileNameUidMapping)
 {
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
@@ -36,9 +34,7 @@ public class JSONInstaller(
 
         var sourceToken = JToken.Parse(content);
         var dest = DestinationPath(relPath);
-
-        Dirty(dest);
-
+        
         if (fileModifier.Exists(dest) && sourceToken is JObject sourceObj)
         {
             var destObj = JObject.Parse(fileModifier.Read(dest));

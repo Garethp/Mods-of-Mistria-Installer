@@ -14,11 +14,9 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 //   • data_files/animation/generated/outlines.json  — icon → outline mapping
 //   • data_files/animation/generated/player_asset_parts.json  — id → slot → sprite
 public class OutfitInstaller(
-    string fomLocation,
-    InstallManifest manifest,
     Dictionary<string, string> fileNameUidMapping,
     IFileModifier _fileModifier)
-    : Installer(fomLocation, manifest, fileNameUidMapping)
+    : Installer(fileNameUidMapping)
 {
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
@@ -46,7 +44,6 @@ public class OutfitInstaller(
     private void InstallFiddle(OutfitDefinition def, Action<string, string> reportStatus)
     {
         var dest = DestinationPath("fiddle/player_assets.toml");
-        Dirty(dest);
 
         var entry = new TomlTable
         {
@@ -76,7 +73,6 @@ public class OutfitInstaller(
     private void InstallOutlines(OutfitDefinition def, Action<string, string> reportStatus)
     {
         var dest = DestinationPath("data_files/animation/outlines.json");
-        Dirty(dest);
 
         JObject patch;
         if (OutfitGenerator.IsComplexSlot(def.UiSlot))
@@ -100,7 +96,6 @@ public class OutfitInstaller(
     private void InstallPlayerAssetParts(IMod mod, OutfitDefinition def, Action<string, string> reportStatus)
     {
         var dest = DestinationPath("data_files/animation/player_asset_parts.json");
-        Dirty(dest);
 
         var parts = OutfitGenerator.GetParts(def.UiSlot);
         JObject itemParts;
