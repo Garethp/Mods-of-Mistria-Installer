@@ -153,6 +153,8 @@ public class MistriaLocator
 
         mods = mods.OrderBy(mod => mod.GetName()).ToList();
         
+        mods.ForEach(mod => mod.Validate());
+        
         try
         {
             var installedMods = new List<string>();
