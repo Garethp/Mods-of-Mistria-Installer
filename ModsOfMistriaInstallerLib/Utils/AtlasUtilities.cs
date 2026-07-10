@@ -12,7 +12,6 @@ namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 public class AtlasUtilities
 {
     private readonly string _atlasDirectory;
-    private readonly InstallManifest _manifest;
     private readonly List<Atlas> _atlases;
     private readonly Dictionary<string, AtlasPackState> _states = new(StringComparer.OrdinalIgnoreCase);
 
@@ -20,10 +19,9 @@ public class AtlasUtilities
     // Atlas meta paths created during this session (did not exist before install).
     private readonly HashSet<string> _newAtlasPaths = new(StringComparer.OrdinalIgnoreCase);
 
-    public AtlasUtilities(string atlasDirectory, InstallManifest manifest, IFileModifier fileModifier)
+    public AtlasUtilities(string atlasDirectory, IFileModifier fileModifier)
     {
         _atlasDirectory = Path.Combine("assets", "atlases");
-        _manifest       = manifest;
         _fileModifier   = fileModifier;
         _atlases        = LoadAtlases();
     }

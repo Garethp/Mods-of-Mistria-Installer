@@ -17,11 +17,9 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 //   • fiddle/items/furniture/<set>.toml                  — item definitions
 //   • fiddle/object_prototypes/furniture.toml            — object prototype entries
 public class FurnitureInstaller(
-    string fomLocation,
-    InstallManifest manifest,
     Dictionary<string, string> fileNameUidMapping,
     IFileModifier fileModifier)
-    : Installer(fomLocation, manifest, fileNameUidMapping)
+    : Installer(fileNameUidMapping)
 {
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
@@ -106,7 +104,6 @@ public class FurnitureInstaller(
 
             var setName = Path.GetFileNameWithoutExtension(relPath);
             var dest    = DestinationPath($"fiddle/items/furniture/{setName}.toml");
-            Dirty(dest);
             MergeToml(dest, table);
             reportStatus($"Installed furniture items: {setName} ({table.Count} item(s))", "");
         }
@@ -128,7 +125,6 @@ public class FurnitureInstaller(
             }
 
             var dest = DestinationPath("fiddle/object_prototypes/furniture.toml");
-            Dirty(dest);
             MergeToml(dest, table);
             reportStatus($"Installed furniture prototypes from {Path.GetFileName(relPath)} ({table.Count} object(s))", "");
         }
@@ -143,7 +139,6 @@ public class FurnitureInstaller(
     private void RegisterOutline(string iconSprite, string outlineSprite)
     {
         var dest = DestinationPath("data_files/animation/outlines.json");
-        Dirty(dest);
         MergeJson(dest, new JObject { [iconSprite] = outlineSprite });
     }
 
@@ -151,7 +146,6 @@ public class FurnitureInstaller(
     private void InstallShadowManifest(FurnitureDefinition def)
     {
         var dest = DestinationPath("data_files/animation/shadow_manifest.json");
-        Dirty(dest);
         MergeJson(dest, new JObject { [def.MaskSprite] = def.ShadowSprite });
     }
 
@@ -160,7 +154,6 @@ public class FurnitureInstaller(
     private void InstallItemFiddle(FurnitureDefinition def)
     {
         var dest = DestinationPath($"fiddle/items/furniture/{def.SourceFileName}.toml");
-        Dirty(dest);
 
         var entry = new TomlTable
         {
@@ -197,7 +190,6 @@ public class FurnitureInstaller(
     private void InstallObjectPrototype(FurnitureDefinition def)
     {
         var dest = DestinationPath("fiddle/object_prototypes/furniture.toml");
-        Dirty(dest);
 
         var entry = new TomlTable
         {

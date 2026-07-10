@@ -24,4 +24,8 @@
       <ProjectReference Include="..\ModsOfMistriaInstallerLib\ModsOfMistriaInstallerLib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="EndToEndTests\" />
+    </ItemGroup>
+
 </Project>

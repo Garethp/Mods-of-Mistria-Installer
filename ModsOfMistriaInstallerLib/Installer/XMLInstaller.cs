@@ -11,11 +11,9 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 //    2. Finds the TrellisPoints object group in the .tmx file (creating it if it doesn't exist yet)
 //    3. Inserts the trellis point, replacing any property placeholders with the ones defined in the json file
 public class XMLInstaller(
-    string fomLocation,
-    InstallManifest manifest,
     Dictionary<string, string> fileNameUidMapping,
     IFileModifier fileModifier)
-    : Installer(fomLocation, manifest, fileNameUidMapping)
+    : Installer(fileNameUidMapping)
 {
     private const string PointsFolder = "points";
     private const string IndentUnit = " ";
@@ -86,7 +84,6 @@ public class XMLInstaller(
         string updatedTmxText = InsertObjectsIntoGroup(
             tmxText, groupExists, groupOpenMatch, newGroupId, objectBlocks, newline);
 
-        Dirty(tmxPath);
         // @TODO: Check if we need the UTF8 encoding or not
         fileModifier.Write(tmxPath, updatedTmxText);
         // File.WriteAllText(tmxPath, updatedTmxText, new System.Text.UTF8Encoding(false));
