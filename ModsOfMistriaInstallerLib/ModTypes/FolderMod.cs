@@ -94,7 +94,7 @@ public class FolderMod : IMod
             throw new Exception(Resources.CoreManifestFileNamedIncorrectly);
         }
 
-        var mod = new FolderMod
+        return new FolderMod
         {
             _name = manifest.Name,
             _author = manifest.Author,
@@ -106,10 +106,6 @@ public class FolderMod : IMod
             _updateUrl   = manifest.UpdateUrl,
             _downloadUrl = manifest.DownloadUrl
         };
-
-        mod.Validate();
-
-        return mod;
     }
 
     public Validation Validate()
