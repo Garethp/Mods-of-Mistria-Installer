@@ -53,76 +53,88 @@ public class AtlasUtilities
 
         using var stripImage = Image.Load<Rgba32>(pngStream);
 
-        for (int i = 0; i < frameCount; i++)
+        using (InstallProfiler.Measure("AtlasUtilities.AddStrip"))
         {
-            var pos = state.Packer.FindPosition(frameWidth, frameHeight);
-
-            if (pos is null)
+            for (int i = 0; i < frameCount; i++)
             {
-                // Current atlas is full — save it (if dirty) and create the next numbered one
-                int nextNumber = state.Atlas.Number + 1;
-                if (state.IsDirty) FlushState(state);
-                else state.Image.Dispose();
-                _states.Remove(atlasType);
-                CreateAtlas(atlasType, nextNumber);
-                state = OpenState(atlasType);
-                _states[atlasType] = state;
+                if (!_states.TryGetValue(atlasType, out state))
+                    state = OpenState(atlasType);
 
-                pos = state.Packer.FindPosition(frameWidth, frameHeight);
+                var pos = state.Packer.FindPosition(frameWidth, frameHeight);
+
                 if (pos is null)
-                    throw new InvalidOperationException(
-                        $"Frame ({frameWidth}×{frameHeight}) is too large for a blank atlas.");
+                {
+                    int nextNumber = state.Atlas.Number + 1;
+                    if (state.IsDirty) FlushState(state);
+                    else state.Image.Dispose();
+                    _states.Remove(atlasType);
+                    CreateAtlas(atlasType, nextNumber);
+                    state = OpenState(atlasType);
+                    _states[atlasType] = state;
+
+                    pos = state.Packer.FindPosition(frameWidth, frameHeight);
+                    if (pos is null)
+                        throw new InvalidOperationException(
+                            $"Frame ({frameWidth}×{frameHeight}) is too large for a blank atlas.");
+                }
+
+                var (x, y) = pos.Value;
+
+                using var frame = stripImage.Clone(ctx =>
+                    ctx.Crop(new Rectangle(i * frameWidth, 0, frameWidth, frameHeight)));
+
+                state.Image.Mutate(ctx => ctx.DrawImage(frame, new Point(x, y), 1f));
+                state.Packer.Add(x, y, frameWidth, frameHeight);
+
+                state.Animations.Add(new TomlTable
+                {
+                    ["texture_ids"]         = new TomlArray { $"{id}::{i}" },
+                    ["top_left_dimensions"] = new TomlArray { x, y, frameWidth, frameHeight }
+                });
+
+                state.IsDirty = true;
             }
-
-            var (x, y) = pos.Value;
-
-            using var frame = stripImage.Clone(ctx =>
-                ctx.Crop(new Rectangle(i * frameWidth, 0, frameWidth, frameHeight)));
-
-            state.Image.Mutate(ctx => ctx.DrawImage(frame, new Point(x, y), 1f));
-            state.Packer.Add(x, y, frameWidth, frameHeight);
-
-            state.Animations.Add(new TomlTable
-            {
-                ["texture_ids"]        = new TomlArray { $"{id}::{i}" },
-                ["top_left_dimensions"] = new TomlArray { x, y, frameWidth, frameHeight }
-            });
-
-            state.IsDirty = true;
         }
+
+        InstallProfiler.AddCount("AtlasUtilities.AddStrip.sprites");
+        InstallProfiler.AddCount("AtlasUtilities.AddStrip.frames", frameCount);
 
         return id;
     }
 
-    // Removes all atlas entries whose texture_ids contain any frame of baseId
-    // (e.g. "abc123" removes "abc123", "abc123::0", "abc123::1" …).
-    // Entries that share a pixel region with other IDs are pruned rather than removed.
-    // Must be called before AddStrip so open states don't re-introduce the old entries.
-    public void RemoveById(string baseId)
-    {
-        // Strip any ::N suffix the caller may have included
-        var prefix = baseId.Contains("::") ? baseId[..baseId.IndexOf("::", StringComparison.Ordinal)] : baseId;
+    public void RemoveById(string baseId) => RemoveByIds([baseId]);
 
-        // 1. Modify any atlas page that is already open in _states (in-memory).
-        //    We collect their paths so we skip them in step 2.
+    public void RemoveByIds(IEnumerable<string> baseIds)
+    {
+        var prefixes = baseIds
+            .Select(NormalizeBaseId)
+            .Where(id => !string.IsNullOrEmpty(id))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (prefixes.Count == 0) return;
+
+        using var _ = InstallProfiler.Measure("AtlasUtilities.RemoveByIds");
+        InstallProfiler.AddCount("AtlasUtilities.RemoveByIds.calls");
+
         var openPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var state in _states.Values)
         {
             openPaths.Add(state.Atlas.MetaPath);
             bool dirty = false;
             var cleared = new List<Rectangle>();
-            PruneAnimations(state.Animations, prefix, ref dirty, cleared);
-            // Wipe the freed pixels in-memory; the state flushes to disk later.
+            PruneAnimations(state.Animations, prefixes, ref dirty, cleared);
             foreach (var region in cleared)
                 ClearRegion(state.Image, region);
             if (dirty || cleared.Count > 0) state.IsDirty = true;
         }
 
-        // 2. All other atlas pages: load → prune → save (meta, and png if pixels freed).
         foreach (var atlas in _atlases)
         {
             if (openPaths.Contains(atlas.MetaPath)) continue;
             if (!_fileModifier.Exists(atlas.MetaPath)) continue;
+
+            using var pageScope = InstallProfiler.Measure("AtlasUtilities.RemoveByIds.AtlasPage");
 
             var data = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(atlas.MetaPath));
             if (!data.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap) continue;
@@ -130,18 +142,16 @@ public class AtlasUtilities
 
             bool modified = false;
             var cleared = new List<Rectangle>();
-            PruneAnimations(anims, prefix, ref modified, cleared);
+            PruneAnimations(anims, prefixes, ref modified, cleared);
             if (!modified) continue;
-
-            // Backup the original before overwriting (so uninstall can restore it)
-            // _manifest.TrackModified(atlas.MetaPath);
 
             _fileModifier.Write(atlas.MetaPath, TomlSerializer.Serialize(data));
 
-            // Sanitise the freed pixel regions in the atlas image so later packs
-            // can't reveal the removed art through their transparent areas.
             if (cleared.Count > 0)
             {
+                using var pngScope = InstallProfiler.Measure("AtlasUtilities.RemoveByIds.AtlasPngLoadSave");
+                InstallProfiler.AddCount("AtlasUtilities.RemoveByIds.AtlasPngLoadSave");
+
                 var readStream = _fileModifier.GetReadStream(atlas.PngPath);
                 using var image = Image.Load<Rgba32>(readStream);
                 readStream.Close();
@@ -156,6 +166,9 @@ public class AtlasUtilities
         }
     }
 
+    private static string NormalizeBaseId(string baseId) =>
+        baseId.Contains("::") ? baseId[..baseId.IndexOf("::", StringComparison.Ordinal)] : baseId;
+
     // Removes or prunes animation entries that reference baseId (no ::N suffix).
     // Entries with multiple IDs only have the matching ones removed; if that empties
     // the texture_ids array the whole entry is removed.
@@ -163,7 +176,7 @@ public class AtlasUtilities
     // caller can wipe those pixels from the atlas image — otherwise the slot is freed
     // for the packer while the old art stays behind, and a later sprite packed there
     // shows the stale pixels through its transparent areas.
-    private static void PruneAnimations(TomlTableArray anims, string baseId, ref bool modified,
+    private static void PruneAnimations(TomlTableArray anims, IReadOnlyList<string> baseIds, ref bool modified,
                                         List<Rectangle> cleared)
     {
         for (int i = anims.Count - 1; i >= 0; i--)
@@ -175,8 +188,9 @@ public class AtlasUtilities
             var matching = ids
                 .Cast<string>()
                 .Select((id, idx) => (id, idx))
-                .Where(t => string.Equals(t.id, baseId, StringComparison.OrdinalIgnoreCase)
-                         || t.id.StartsWith(baseId + "::", StringComparison.OrdinalIgnoreCase))
+                .Where(t => baseIds.Any(baseId =>
+                    string.Equals(t.id, baseId, StringComparison.OrdinalIgnoreCase)
+                    || t.id.StartsWith(baseId + "::", StringComparison.OrdinalIgnoreCase)))
                 .OrderByDescending(t => t.idx)
                 .ToList();
 
@@ -184,16 +198,12 @@ public class AtlasUtilities
 
             if (matching.Count == ids.Count)
             {
-                // All IDs in this slot belong to the replaced animation → drop the entry
-                // and remember its region so the pixels get sanitised.
                 if (TryReadRegion(anim, out var region))
                     cleared.Add(region);
                 anims.RemoveAt(i);
             }
             else
             {
-                // Some other animations share this pixel region → remove only our IDs.
-                // The region stays in use, so it must NOT be cleared.
                 foreach (var (_, idx) in matching)
                     ids.RemoveAt(idx);
             }

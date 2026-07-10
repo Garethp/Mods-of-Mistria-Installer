@@ -6,6 +6,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 public class ZipFileModifier(ZipArchive archive) : IFileModifier
 {
     private ZipArchive _archive = archive;
+    private string[]? _entryNames;
 
     public bool Exists(string file)
     {
@@ -15,15 +16,28 @@ public class ZipFileModifier(ZipArchive archive) : IFileModifier
 
     public string[] FindFiles(string path, string pattern)
     {
+        using var _ = InstallProfiler.Measure("ZipFileModifier.FindFiles");
         path = path.Replace('\\', '/');
-        return _archive
-                .Entries
-                .Select(entry => entry.FullName)
-                .Where(name => 
-                    name.StartsWith(path) && name.Contains(pattern) && !name.EndsWith('/')
-                )
-                .ToArray()
-            ;
+        InstallProfiler.AddCount("ZipFileModifier.FindFiles.calls");
+
+        var names = GetEntryNames();
+        return names
+            .Where(name => name.StartsWith(path, StringComparison.OrdinalIgnoreCase)
+                           && name.Contains(pattern, StringComparison.OrdinalIgnoreCase)
+                           && !name.EndsWith('/'))
+            .ToArray();
+    }
+
+    private string[] GetEntryNames()
+    {
+        if (_entryNames is not null)
+            return _entryNames;
+
+        using var _ = InstallProfiler.Measure("ZipFileModifier.BuildEntryIndex");
+        _entryNames = _archive.Entries
+            .Select(entry => entry.FullName.Replace('\\', '/'))
+            .ToArray();
+        return _entryNames;
     }
 
     public string Read(string file)

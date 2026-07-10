@@ -7,18 +7,6 @@ using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
-// Handles image strips: reads each spr_*.png from the mod, packs its frames
-// into the correct game atlas, and populates FileNameUIDMapping with the
-// assigned ID so TOMLInstaller can reference it.
-//
-// Two installation modes:
-//   • images/            New sprites — auto-generates a unique ID (or uses preset id).
-//   • images/replace/    Sprite replacements — looks up the existing game texture_id by
-//                        filename, removes old atlas entries, then repacks the replacement
-//                        using the same ID so all game references remain valid.
-//                        A .meta.toml alongside the PNG is optional; if present it can
-//                        override atlas type, frame_size, and frame_len (e.g. different
-//                        canvas size). The ID always comes from the game's own meta.
 public class ImageInstaller(
     string fomLocation,
     InstallManifest manifest,
@@ -27,20 +15,21 @@ public class ImageInstaller(
     IFileModifier fileModifier)
     : Installer(fomLocation, manifest, fileNameUidMapping)
 {
+    private Dictionary<string, string>? _spriteMetaIndex;
+
     public override void Install(IMod mod, Action<string, string> reportStatus)
     {
-        // --- 1. Sprite replacements (images/replace/) ---
         InstallReplacements(mod, reportStatus);
 
-        // --- 2. New sprites (images/, excluding the replace/ subfolder) ---
         var collector = new TOMLCollector();
         collector.Collect(mod);
+
+        var newSpriteReplaceIds = new List<string>();
+        var newSpriteJobs = new List<(AnimationGroup Group, string AtlasType, int FrameWidth, int FrameHeight, int FrameCount)>();
 
         foreach (var group in collector.Groups)
         {
             if (!group.HasAnimation || !group.HasPng) continue;
-
-            // Skip anything that lives inside a replace/ subfolder
             if (IsUnderReplaceFolder(group.PngRelPath!)) continue;
 
             var metaToml = Toml.ParseToml(mod.ReadFile(group.AnimationMetaRelPath!));
@@ -51,20 +40,18 @@ public class ImageInstaller(
                 reportStatus($"Skipping {group.BaseName}: missing animation metadata.", "");
                 continue;
             }
-            if (frameCount <= 0) frameCount = 1; // frame_len omitted = single frame
+            if (frameCount <= 0) frameCount = 1;
 
             if (metaToml.TryGetValue("meta_properties", out var mpObj) && mpObj is TomlTable mp)
             {
-                // replace_id: reuse an existing game texture_id and remove the old atlas entries.
                 if (mp.TryGetValue("replace_id", out var repObj) &&
                     repObj is string replaceId && !string.IsNullOrEmpty(replaceId))
                 {
                     FileNameUIDMapping[group.BaseName] = replaceId;
                     IDManager.RegisterId(replaceId);
-                    atlasUtils.RemoveById(replaceId);
+                    newSpriteReplaceIds.Add(replaceId);
                     reportStatus($"Replacing {group.BaseName} (id {replaceId})", "");
                 }
-                // id: preset ID for a new sprite.
                 else if (mp.TryGetValue("id", out var presetIdObj) &&
                          presetIdObj is string presetId && !string.IsNullOrEmpty(presetId) &&
                          !FileNameUIDMapping.ContainsKey(group.BaseName))
@@ -74,6 +61,14 @@ public class ImageInstaller(
                 }
             }
 
+            newSpriteJobs.Add((group, atlasType, frameWidth, frameHeight, frameCount));
+        }
+
+        if (newSpriteReplaceIds.Count > 0)
+            atlasUtils.RemoveByIds(newSpriteReplaceIds);
+
+        foreach (var (group, atlasType, frameWidth, frameHeight, frameCount) in newSpriteJobs)
+        {
             using var pngStream = mod.ReadFileAsStream(group.PngRelPath!);
             var id = atlasUtils.AddStrip(atlasType, frameWidth, frameHeight, frameCount,
                 pngStream, FileNameUIDMapping, group.BaseName);
@@ -84,11 +79,13 @@ public class ImageInstaller(
         atlasUtils.Flush();
     }
 
-    // ── Replacement path ──────────────────────────────────────────────────────────
-
     private void InstallReplacements(IMod mod, Action<string, string> reportStatus)
     {
         if (!mod.HasFilesInFolder("images/replace", ".png")) return;
+
+        var spriteMetaIndex = BuildSpriteMetaIndex();
+        var jobs = new List<ReplacementJob>();
+        var replaceIds = new List<string>();
 
         foreach (var pngPath in mod.GetFilesInFolder("images/replace", ".png"))
         {
@@ -97,9 +94,10 @@ public class ImageInstaller(
             var baseName   = spriteName.StartsWith("spr_", StringComparison.OrdinalIgnoreCase)
                              ? spriteName[4..] : spriteName;
 
-            // Find the game's own animation meta — provides id, atlas, frame_size, frame_len
-            var gameMetaPath = FindGameAnimationMetaPath(spriteName);
-            if (gameMetaPath is null)
+            using var findScope = InstallProfiler.Measure("ImageInstaller.FindGameAnimationMetaPath");
+            InstallProfiler.AddCount("ImageInstaller.FindGameAnimationMetaPath.calls");
+
+            if (!spriteMetaIndex.TryGetValue(spriteName, out var gameMetaPath))
             {
                 reportStatus($"Skipping replacement {spriteName}: no matching game sprite found.", "");
                 continue;
@@ -113,7 +111,7 @@ public class ImageInstaller(
                 reportStatus($"Skipping replacement {spriteName}: couldn't read game animation metadata.", "");
                 continue;
             }
-            if (frameCount <= 0) frameCount = 1; // frame_len omitted = single frame
+            if (frameCount <= 0) frameCount = 1;
 
             if (!gameMeta.TryGetValue("meta_properties", out var gmpObj) || gmpObj is not TomlTable gmp ||
                 !gmp.TryGetValue("id", out var idObj) || idObj is not string replaceId ||
@@ -123,9 +121,6 @@ public class ImageInstaller(
                 continue;
             }
 
-            // Optional mod meta.toml: can override atlas type, frame_size, frame_len.
-            // Also accepts an explicit replace_id to target a different texture_id than
-            // the one the game file names (edge case; rarely needed).
             var modMetaRelPath = $"images/replace/{spriteName}.meta.toml";
             if (mod.FileExists(modMetaRelPath))
             {
@@ -172,16 +167,61 @@ public class ImageInstaller(
                 reportStatus($"{spriteName}: resized to {frameWidth}×{frameHeight} ({frameCount} frame(s))", "");
             }
 
-            FileNameUIDMapping[baseName] = replaceId;
-            IDManager.RegisterId(replaceId);
-            atlasUtils.RemoveById(replaceId);
-
-            using var pngStream = new MemoryStream(pngBytes);
-            var id = atlasUtils.AddStrip(atlasType, frameWidth, frameHeight, frameCount,
-                pngStream, FileNameUIDMapping, baseName);
-
-            reportStatus($"Replaced {spriteName} → {atlasType} atlas (id {id})", "");
+            jobs.Add(new ReplacementJob(
+                spriteName,
+                baseName,
+                atlasType,
+                frameWidth,
+                frameHeight,
+                frameCount,
+                replaceId,
+                pngBytes));
         }
+
+        if (jobs.Count == 0) return;
+
+        replaceIds.AddRange(jobs.Select(job => job.ReplaceId));
+        atlasUtils.RemoveByIds(replaceIds);
+
+        foreach (var job in jobs)
+        {
+            FileNameUIDMapping[job.BaseName] = job.ReplaceId;
+            IDManager.RegisterId(job.ReplaceId);
+
+            using var pngStream = new MemoryStream(job.PngBytes);
+            var id = atlasUtils.AddStrip(job.AtlasType, job.FrameWidth, job.FrameHeight, job.FrameCount,
+                pngStream, FileNameUIDMapping, job.BaseName);
+
+            reportStatus($"Replaced {job.SpriteName} → {job.AtlasType} atlas (id {id})", "");
+        }
+    }
+
+    private Dictionary<string, string> BuildSpriteMetaIndex()
+    {
+        if (_spriteMetaIndex is not null)
+            return _spriteMetaIndex;
+
+        using var _ = InstallProfiler.Measure("ImageInstaller.BuildSpriteMetaIndex");
+
+        var animationsDir = DestinationPath("animations");
+        var index = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        if (!fileModifier.Exists(animationsDir))
+        {
+            _spriteMetaIndex = index;
+            return index;
+        }
+
+        foreach (var metaPath in fileModifier.FindFiles(animationsDir, ".meta.toml"))
+        {
+            var spriteName = Path.GetFileNameWithoutExtension(
+                Path.GetFileNameWithoutExtension(metaPath.Replace('\\', '/')));
+            index.TryAdd(spriteName, metaPath);
+        }
+
+        _spriteMetaIndex = index;
+        InstallProfiler.AddCount("ImageInstaller.BuildSpriteMetaIndex.entries", index.Count);
+        return index;
     }
 
     private void UpdateGameMetaDimensions(
@@ -196,20 +236,9 @@ public class ImageInstaller(
         fileModifier.Write(gameMetaPath, TomlSerializer.Serialize(gameMeta));
     }
 
-    // Recursively searches assets/animations/ for a meta.toml matching the sprite name.
-    private string? FindGameAnimationMetaPath(string spriteName)
-    {
-        var animationsDir = DestinationPath("animations");
-        if (!fileModifier.Exists(animationsDir)) return null;
-
-        return fileModifier.FindFiles(animationsDir, $"{spriteName}.meta.toml").FirstOrDefault();
-    }
-
     private static bool IsUnderReplaceFolder(string relPath) =>
         relPath.Replace('\\', '/').Contains("/replace/", StringComparison.OrdinalIgnoreCase) ||
         relPath.StartsWith("replace/", StringComparison.OrdinalIgnoreCase);
-
-    // ── Shared helpers ────────────────────────────────────────────────────────────
 
     private static bool TryReadAnimationMeta(
         TomlTable meta,
@@ -241,4 +270,14 @@ public class ImageInstaller(
 
         return !string.IsNullOrEmpty(atlasType) && frameWidth > 0 && frameHeight > 0;
     }
+
+    private sealed record ReplacementJob(
+        string SpriteName,
+        string BaseName,
+        string AtlasType,
+        int FrameWidth,
+        int FrameHeight,
+        int FrameCount,
+        string ReplaceId,
+        byte[] PngBytes);
 }

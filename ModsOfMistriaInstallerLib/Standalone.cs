@@ -3,21 +3,25 @@
 using System.Diagnostics;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Utils;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
 public static class Standalone
 {
-    public static void Run()
+    public static void Run(string? gamePath = null, string? modsPath = null, string? modFilter = null)
     {
-        var mistriaLocation = MistriaLocator.GetMistriaLocation();
+        InstallProfiler.ConfigureFromEnvironment();
+        InstallProfiler.Reset();
+
+        var mistriaLocation = ResolveGamePath(gamePath);
         if (mistriaLocation == null)
         {
             Logger.Log(Resources.CoreMistriaNotFound);
             return;
         }
         
-        var modsLocation = MistriaLocator.GetModsLocation(mistriaLocation);
+        var modsLocation = ResolveModsPath(mistriaLocation, modsPath);
 
         if (modsLocation is null || !Directory.Exists(modsLocation))
         {
@@ -33,8 +37,14 @@ public static class Standalone
         var installer = new ModInstaller(mistriaLocation, modsLocation);
 
         var allMods = MistriaLocator.GetMods(mistriaLocation, modsLocation);
-        //installer.ValidateMods(allMods);
-        
+        if (!string.IsNullOrWhiteSpace(modFilter))
+        {
+            allMods = allMods
+                .Where(mod => string.Equals(mod.GetName(), modFilter, StringComparison.OrdinalIgnoreCase)
+                              || string.Equals(mod.GetId(), modFilter, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
         allMods = allMods
             .Where(mod =>
             {
@@ -69,11 +79,16 @@ public static class Standalone
         
         totalTime.Stop();
         Logger.Log(Resources.CoreModsInstalledInTime, totalTime);
+
+        if (InstallProfiler.Enabled)
+        {
+            Logger.Log(InstallProfiler.FormatReport());
+        }
     }
 
-    public static void UnInstall()
+    public static void UnInstall(string? gamePath = null)
     {
-        var mistriaLocation = MistriaLocator.GetMistriaLocation();
+        var mistriaLocation = ResolveGamePath(gamePath);
         if (mistriaLocation == null)
         {
             Logger.Log(Resources.CoreMistriaNotFound);
@@ -82,5 +97,21 @@ public static class Standalone
         
         var installer = new ModInstaller(mistriaLocation, "");
         installer.Uninstall();
+    }
+
+    private static string? ResolveGamePath(string? gamePath)
+    {
+        if (!string.IsNullOrWhiteSpace(gamePath) && Directory.Exists(gamePath))
+            return Path.GetFullPath(gamePath);
+
+        return MistriaLocator.GetMistriaLocation();
+    }
+
+    private static string? ResolveModsPath(string mistriaLocation, string? modsPath)
+    {
+        if (!string.IsNullOrWhiteSpace(modsPath) && Directory.Exists(modsPath))
+            return Path.GetFullPath(modsPath);
+
+        return MistriaLocator.GetModsLocation(mistriaLocation);
     }
 }

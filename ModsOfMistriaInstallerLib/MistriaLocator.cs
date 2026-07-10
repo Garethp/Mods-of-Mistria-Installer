@@ -9,6 +9,10 @@ public class MistriaLocator
 {
     public static string? GetMistriaLocation()
     {
+        var overridePath = Environment.GetEnvironmentVariable("MOMI_GAME_PATH");
+        if (!string.IsNullOrWhiteSpace(overridePath) && Directory.Exists(overridePath))
+            return Path.GetFullPath(overridePath);
+
         var steamLocations = GetSteamLocations();
         Logger.Log(Directory.GetCurrentDirectory());
 
@@ -20,9 +24,10 @@ public class MistriaLocator
         if (mistriaLocation is null)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
-          
-            
-            return mistriaLocation;
+            if (File.Exists(Path.Combine(currentDirectory, "assets.zip")))
+                return Path.GetFullPath(currentDirectory);
+
+            return null;
         }
 
         return Path.GetFullPath(mistriaLocation);
@@ -30,6 +35,10 @@ public class MistriaLocator
     
     public static string? GetModsLocation(string? mistriaLocation)
     {
+        var overridePath = Environment.GetEnvironmentVariable("MOMI_MODS_PATH");
+        if (!string.IsNullOrWhiteSpace(overridePath) && Directory.Exists(overridePath))
+            return Path.GetFullPath(overridePath);
+
         var possibleLocations = new List<string>();
         if (mistriaLocation is not null)
         {
@@ -133,10 +142,23 @@ public class MistriaLocator
 
     public static List<IMod> GetMods(string mistriaLocation, string modsLocation)
     {
-        var folderMods = Directory
-            .GetDirectories(modsLocation)
-            .Where(folder => FolderMod.GetModLocation(folder) is not null)
-            .Select(location => FolderMod.FromManifest(Path.Combine(FolderMod.GetModLocation(location)!)));
+        var mods = new List<IMod>();
+
+        foreach (var folder in Directory.GetDirectories(modsLocation))
+        {
+            var modLocation = FolderMod.GetModLocation(folder);
+            if (modLocation is null) continue;
+
+            var mod = FolderMod.TryFromManifest(modLocation, out var failureReason);
+            if (mod is null)
+            {
+                var folderName = Path.GetFileName(folder);
+                Logger.Log("Skipping mod folder \"{0}\": {1}", folderName, failureReason ?? "unknown error");
+                continue;
+            }
+
+            mods.Add(mod);
+        }
 
         IEnumerable<IMod> zipMods = Directory.GetFiles(modsLocation, "*.zip")
             .Select(ZipMod.FromZipFile)
@@ -145,9 +167,6 @@ public class MistriaLocator
         IEnumerable<IMod> rarMods = Directory.GetFiles(modsLocation, "*.rar")
             .Select(RarMod.FromRarFile)
             .Where(mod => mod is not null)!;
-
-        var mods = new List<IMod>();
-        mods.AddRange(folderMods);
         mods.AddRange(zipMods);
         mods.AddRange(rarMods);
 

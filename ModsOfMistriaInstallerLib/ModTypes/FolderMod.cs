@@ -70,28 +70,79 @@ public class FolderMod : IMod
 
     public static FolderMod FromManifest(string manifestLocation)
     {
+        var mod = TryFromManifest(manifestLocation, out var failureReason);
+        if (mod is not null) return mod;
+
+        throw new Exception(failureReason ?? Resources.CoreManifestFileNamedIncorrectly);
+    }
+
+    /// <summary>
+    /// Loads a folder mod when the manifest is readable. Returns null (with reason) instead of
+    /// crashing the whole install when a manifest is missing, empty, or malformed.
+    /// </summary>
+    public static FolderMod? TryFromManifest(string manifestLocation, out string? failureReason)
+    {
+        failureReason = null;
+
         if (File.Exists(Path.Combine(manifestLocation, "manifest.json")))
         {
             manifestLocation = Path.Combine(manifestLocation, "manifest.json");
-        } else if (File.Exists(Path.Combine(manifestLocation, "manifest.toml")))
+        }
+        else if (File.Exists(Path.Combine(manifestLocation, "manifest.toml")))
         {
             manifestLocation = Path.Combine(manifestLocation, "manifest.toml");
-        } else
-        {
-            throw new Exception(Resources.CoreManifestFileNamedIncorrectly);
-        }
-
-        ModManifest manifest;
-        if (manifestLocation.EndsWith(".json"))
-        {
-            manifest = ModManifest.FromJson(JObject.Parse(File.ReadAllText(manifestLocation)));
-        } else if (manifestLocation.EndsWith(".toml"))
-        {
-            manifest = ModManifest.FromToml(TomlSerializer.Deserialize<TomlTable>(File.ReadAllText(manifestLocation))!);
         }
         else
         {
-            throw new Exception(Resources.CoreManifestFileNamedIncorrectly);
+            failureReason = Resources.CoreManifestFileNamedIncorrectly;
+            return null;
+        }
+
+        string contents;
+        try
+        {
+            contents = File.ReadAllText(manifestLocation);
+        }
+        catch (Exception ex)
+        {
+            failureReason = $"Could not read manifest: {ex.Message}";
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(contents))
+        {
+            failureReason = $"Manifest is empty: {manifestLocation}";
+            return null;
+        }
+
+        ModManifest manifest;
+        try
+        {
+            if (manifestLocation.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                manifest = ModManifest.FromJson(JObject.Parse(contents));
+            }
+            else if (manifestLocation.EndsWith(".toml", StringComparison.OrdinalIgnoreCase))
+            {
+                var table = TomlSerializer.Deserialize<TomlTable>(contents);
+                if (table is null)
+                {
+                    failureReason = $"Manifest TOML is empty or invalid: {manifestLocation}";
+                    return null;
+                }
+
+                manifest = ModManifest.FromToml(table);
+            }
+            else
+            {
+                failureReason = Resources.CoreManifestFileNamedIncorrectly;
+                return null;
+            }
+        }
+        catch (Exception ex) when (ex is Newtonsoft.Json.JsonException or TomlException)
+        {
+            failureReason = $"Invalid manifest ({manifestLocation}): {ex.Message}";
+            return null;
         }
 
         var mod = new FolderMod
@@ -108,7 +159,6 @@ public class FolderMod : IMod
         };
 
         mod.Validate();
-
         return mod;
     }
 
