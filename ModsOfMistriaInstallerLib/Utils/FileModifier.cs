@@ -1,6 +1,4 @@
-﻿using UndertaleModLib.Compiler;
-
-namespace Garethp.ModsOfMistriaInstallerLib.Utils;
+﻿namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 
 public class FileModifier(string fieldsOfMistriaLocation): IFileModifier
 {

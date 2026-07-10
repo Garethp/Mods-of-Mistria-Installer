@@ -28,12 +28,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Reference Include="UndertaleModLib">
-        <HintPath>packages\UndertaleModLib.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
       <EmbeddedResource Update="Lang\Resources.resx">
         <Generator>PublicResXFileCodeGenerator</Generator>
         <LastGenOutput>Resources.Designer.cs</LastGenOutput>
