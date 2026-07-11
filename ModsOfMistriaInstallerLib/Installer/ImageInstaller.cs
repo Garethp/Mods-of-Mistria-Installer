@@ -43,43 +43,46 @@ public class ImageInstaller(
             // Skip anything that lives inside a replace/ subfolder
             if (IsUnderReplaceFolder(group.PngRelPath!)) continue;
 
-            var metaToml = Toml.ParseToml(mod.ReadFile(group.AnimationMetaRelPath!));
+            var metaToml = TomlSerializer.Deserialize<SpriteMetaFile>(mod.ReadFile(group.AnimationMetaRelPath!))!;
 
-            if (!TryReadAnimationMeta(metaToml, out var atlasType, out var frameWidth,
-                    out var frameHeight, out var frameCount))
+            if (string.IsNullOrEmpty(metaToml.Asset?.Atlas) || metaToml.Asset.FrameWidth == 0 || metaToml.Asset.FrameHeight == 0)
             {
                 reportStatus($"Skipping {group.BaseName}: missing animation metadata.", "");
                 continue;
             }
-            if (frameCount <= 0) frameCount = 1; // frame_len omitted = single frame
-            atlasType = Atlas.CanonicalType(atlasType);
-
-            if (metaToml.TryGetValue("meta_properties", out var mpObj) && mpObj is TomlTable mp)
+            if (metaToml.Asset.FrameCount <= 0) metaToml.Asset.FrameCount = 1; // frame_len omitted = single frame
+            metaToml.Asset.Atlas = Atlas.CanonicalType(metaToml.Asset.Atlas);
+            
+            if (metaToml.Meta is not null)
             {
                 // replace_id: reuse an existing game texture_id and remove the old atlas entries.
-                if (mp.TryGetValue("replace_id", out var repObj) &&
-                    repObj is string replaceId && !string.IsNullOrEmpty(replaceId))
+                if (!string.IsNullOrEmpty(metaToml.Meta.ReplaceId))
                 {
-                    FileNameUIDMapping[group.BaseName] = replaceId;
-                    IDManager.RegisterId(replaceId);
-                    atlasUtils.RemoveById(replaceId);
-                    reportStatus($"Replacing {group.BaseName} (id {replaceId})", "");
+                    FileNameUIDMapping[group.BaseName] = metaToml.Meta.ReplaceId;
+                    IDManager.RegisterId(metaToml.Meta.ReplaceId);
+                    atlasUtils.RemoveById(metaToml.Meta.ReplaceId);
+                    reportStatus($"Replacing {group.BaseName} (id {metaToml.Meta.ReplaceId})", "");
                 }
                 // id: preset ID for a new sprite.
-                else if (mp.TryGetValue("id", out var presetIdObj) &&
-                         presetIdObj is string presetId && !string.IsNullOrEmpty(presetId) &&
-                         !FileNameUIDMapping.ContainsKey(group.BaseName))
+                else if (!string.IsNullOrEmpty(metaToml.Meta.Id) && !FileNameUIDMapping.ContainsKey(group.BaseName))
                 {
-                    FileNameUIDMapping[group.BaseName] = presetId;
-                    IDManager.RegisterId(presetId);
+                    FileNameUIDMapping[group.BaseName] = metaToml.Meta.Id;
+                    IDManager.RegisterId(metaToml.Meta.Id);
                 }
             }
 
             using var pngStream = mod.ReadFileAsStream(group.PngRelPath!);
-            var id = atlasUtils.AddStrip(atlasType, frameWidth, frameHeight, frameCount,
-                pngStream, FileNameUIDMapping, group.BaseName);
+            var id = atlasUtils.AddStrip(
+                metaToml.Asset.Atlas, 
+                metaToml.Asset.FrameWidth, 
+                metaToml.Asset.FrameHeight, 
+                metaToml.Asset.FrameCount, 
+                pngStream, 
+                FileNameUIDMapping, 
+                group.BaseName
+            );
 
-            reportStatus($"Packed {group.BaseName} → {atlasType} atlas (id {id})", "");
+            reportStatus($"Packed {group.BaseName} → {metaToml.Asset.Atlas} atlas (id {id})", "");
         }
     }
 
@@ -129,7 +132,7 @@ public class ImageInstaller(
                 gameMeta.Merge(modMeta);
             }
 
-            atlasType = Atlas.CanonicalType(atlasType);
+            gameMeta.Asset.Atlas = Atlas.CanonicalType(gameMeta.Asset.Atlas);
 
             byte[] pngBytes;
             using (var src = mod.ReadFileAsStream(pngPath))
@@ -152,10 +155,11 @@ public class ImageInstaller(
                 gameMeta.Asset.FrameWidth  = pngInfo.Width / gameMeta.Asset.FrameCount;
                 gameMeta.Asset.FrameHeight = pngInfo.Height;
 
-                UpdateGameMetaDimensions(gameMeta, gameMetaPath);
+                gameMeta.Asset.Dimensions = [gameMeta.Asset.FrameWidth * gameMeta.Asset.FrameCount, gameMeta.Asset.FrameHeight];
                 reportStatus($"{spriteName}: resized to {gameMeta.Asset.FrameWidth}×{gameMeta.Asset.FrameHeight} ({gameMeta.Asset.FrameCount} frame(s))", "");
             }
 
+            fileModifier.Write(gameMetaPath, TomlSerializer.Serialize(gameMeta));
             FileNameUIDMapping[baseName] = gameMeta.Meta.Id;
             IDManager.RegisterId(gameMeta.Meta.Id);
             atlasUtils.RemoveById(gameMeta.Meta.Id);
@@ -166,16 +170,6 @@ public class ImageInstaller(
 
             reportStatus($"Replaced {spriteName} → {gameMeta.Asset.Atlas} atlas (id {id})", "");
         }
-    }
-    
-    private void UpdateGameMetaDimensions(SpriteMetaFile gameMeta, string gameMetaPath)
-    {
-        if (gameMeta.Asset is null)
-            return;
-
-        gameMeta.Asset.Dimensions = [gameMeta.Asset.FrameWidth * gameMeta.Asset.FrameCount, gameMeta.Asset.FrameHeight];
-
-        fileModifier.Write(gameMetaPath, TomlSerializer.Serialize(gameMeta));
     }
 
     // Recursively searches assets/animations/ for a meta.toml matching the sprite name.

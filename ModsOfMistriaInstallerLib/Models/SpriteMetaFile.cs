@@ -42,7 +42,6 @@ public class SpriteMetaFileProperties
         if (!string.IsNullOrEmpty(newProperties.ReplaceId))
         {
             Id = newProperties.ReplaceId;
-            ReplaceId = newProperties.ReplaceId;
         }
 
         if (!string.IsNullOrEmpty(newProperties.AssetKind))
@@ -54,12 +53,14 @@ public class SpriteMetaFileAssetProperties
 {
     [TomlPropertyName("atlas")] public string? Atlas { get; set; }
 
+    [TomlIgnore]
     public int FrameWidth
     {
         get => FrameSize[0];
         set => FrameSize[0] = value;
     }
 
+    [TomlIgnore]
     public int FrameHeight
     {
         get => FrameSize[1];
@@ -72,7 +73,7 @@ public class SpriteMetaFileAssetProperties
 
     [TomlPropertyName("frame_len")] public int FrameCount { get; set; } = 0;
     
-    [TomlPropertyName("duration")] public List<float>? Duration { get; set; }
+    [TomlPropertyName("duration")] public List<double>? Duration { get; set; }
 
     [TomlPropertyName("offset")] public SpriteMetaFileAssetOffset? Offset { get; set; }
 
