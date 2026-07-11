@@ -10,17 +10,29 @@ public class MistriaLocator
     public static string? GetMistriaLocation()
     {
         var steamLocations = GetSteamLocations();
+        steamLocations
+            .Select(location => Path.Combine(location, "common", "Fields of Mistria"))
+            .ToList()
+            .ForEach(location =>
+            {
+                Logger.Log(Resources.CoreLookingForMistriaAt, Path.Combine(location, "FieldsOfMistria.exe"));
+            });
+        
         Logger.Log(Directory.GetCurrentDirectory());
 
         var mistriaLocation = steamLocations
             .Where(Path.Exists)
             .Select(location => Path.Combine(location, "common", "Fields of Mistria"))
-            .FirstOrDefault(location => Directory.Exists(location));
+            .FirstOrDefault(location => Directory.Exists(location) && File.Exists(Path.Combine(location, "FieldsOfMistria.exe")));
         
         if (mistriaLocation is null)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
-          
+            if (File.Exists(Path.Combine(currentDirectory, "FieldsOfMistria.exe")))
+            {
+                Logger.Log(Resources.CoreMistriaNotFoundFallback);
+                return currentDirectory;
+            }
             
             return mistriaLocation;
         }
@@ -31,7 +43,7 @@ public class MistriaLocator
     public static string? GetModsLocation(string? mistriaLocation)
     {
         var possibleLocations = new List<string>();
-        if (mistriaLocation is not null)
+        if (mistriaLocation is not null && File.Exists(Path.Combine(mistriaLocation, "FieldsOfMistria.exe")))
         {
             possibleLocations.Add(Path.Combine(mistriaLocation, "mods"));
             possibleLocations.Add(Path.Combine(mistriaLocation, "Mods"));
