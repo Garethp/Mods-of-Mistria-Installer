@@ -272,9 +272,6 @@ public class AtlasUtilities
     // Writes all pending atlas changes to disk and marks them in the manifest.
     public void Flush()
     {
-        var flushTimer = new Stopwatch();
-        flushTimer.Start();
-        
         foreach (var state in _states.Values)
         {
             if (!state.IsDirty) continue;
@@ -285,6 +282,7 @@ public class AtlasUtilities
         foreach (var atlas in _atlases.Where(atlas => atlas.Data is not null))
         {
             _fileModifier.Write(atlas.MetaPath, TomlSerializer.Serialize(atlas.Data));
+            atlas.Data = null;
         }
 
         foreach (var atlas in _atlases.Where(atlas => atlas.Image is not null))
@@ -292,10 +290,22 @@ public class AtlasUtilities
             var writeStream = _fileModifier.GetWriteStream(atlas.PngPath);
             atlas.Image!.Save(writeStream, atlas.Image!.DetectEncoder(atlas.PngPath));
             writeStream.Close();
+            
+            atlas.Image.Dispose();
+            atlas.Image = null;
         }
+    }
 
-        flushTimer.Stop();
-        Console.WriteLine($"Atlas Flush took {flushTimer.ElapsedMilliseconds}ms");
+    // This is just to stop memory from running out of control if there's a large number of mods replacing or adding
+    // massive numbers of images over a large number of Atlases. We want to keep Atlases open for as long as we can,
+    // since we might need to remove items from them at any point, but we don't want to go overboard with how many
+    // we have.
+    public void SemiFlush()
+    {
+        if (_atlases.Count(atlas => atlas.Image is not null) >= 10)
+        {
+            Flush();
+        }
     }
 
     // Private helpers

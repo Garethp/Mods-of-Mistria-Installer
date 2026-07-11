@@ -67,6 +67,8 @@ public class ModInstaller
             reportStatus($"Finished {mod.GetName()}", modTimer.Elapsed.ToString());
         }
 
+        atlasUtils.Flush();
+        
         if (_fileModifier is ZipFileModifier zipFileModifier)
         {
             zipFileModifier.Close();
@@ -131,6 +133,8 @@ public class ModInstaller
         
         new FurnitureInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, reportStatus);
+        
+        atlasUtils.SemiFlush();
     }
 
     private bool IsFreshInstall() {

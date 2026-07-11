@@ -78,8 +78,6 @@ public class ImageInstaller(
 
             reportStatus($"Packed {group.BaseName} → {atlasType} atlas (id {id})", "");
         }
-
-        atlasUtils.Flush();
     }
 
     // ── Replacement path ──────────────────────────────────────────────────────────
