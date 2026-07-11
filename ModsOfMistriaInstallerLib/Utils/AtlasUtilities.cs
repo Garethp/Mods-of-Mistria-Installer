@@ -60,14 +60,7 @@ public class AtlasUtilities
             {
                 // Current atlas is full — save it (if dirty) and create the next numbered one
                 int nextNumber = state.Atlas.Number + 1;
-                // if (state.IsDirty) FlushState(state);
-                // else
-                // {
-                //     state.Image.Dispose();
-                //     state.Atlas.Image?.Dispose();
-                //     state.Atlas.Image = null;
-                //     state.Atlas.Data = null;
-                // }
+                
                 _states.Remove(atlasType);
                 CreateAtlas(atlasType, nextNumber);
                 state = OpenState(atlasType);
@@ -105,21 +98,12 @@ public class AtlasUtilities
     // Must be called before AddStrip so open states don't re-introduce the old entries.
     public void RemoveById(string baseId)
     {
-        var timer = new Stopwatch();
-        timer.Start();
-        
-        var inStateTimer = new Stopwatch();
-        var allTimer = new Stopwatch();
-        var tomlTimer = new Stopwatch();
-        var diskTimer = new Stopwatch();
-        
         // Strip any ::N suffix the caller may have included
         var prefix = baseId.Contains("::") ? baseId[..baseId.IndexOf("::", StringComparison.Ordinal)] : baseId;
 
         // 1. Modify any atlas page that is already open in _states (in-memory).
         //    We collect their paths so we skip them in step 2.
         var openPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        inStateTimer.Start();
         foreach (var state in _states.Values)
         {
             openPaths.Add(state.Atlas.MetaPath);
@@ -131,13 +115,10 @@ public class AtlasUtilities
                 ClearRegion(state.Image, region);
             if (dirty || cleared.Count > 0) state.IsDirty = true;
         }
-        inStateTimer.Stop();
 
         // 2. All other atlas pages: load → prune → save (meta, and png if pixels freed).
-        allTimer.Start();
         foreach (var atlas in _atlases)
         {
-            tomlTimer.Start();
             if (openPaths.Contains(atlas.MetaPath)) continue;
             if (!_fileModifier.Exists(atlas.MetaPath)) continue;
 
@@ -153,24 +134,13 @@ public class AtlasUtilities
             bool modified = false;
             var cleared = new List<Rectangle>();
             PruneAnimations(anims, prefix, ref modified, cleared);
-            tomlTimer.Stop();
 
             if (!modified) continue;
 
             // Sanitise the freed pixel regions in the atlas image so later packs
             // can't reveal the removed art through their transparent areas.
-            diskTimer.Start();
             if (cleared.Count > 0)
             {
-                if (atlas.Type.Contains("Default"))
-                {
-                    var a = 1 + 1;
-                }
-                else
-                {
-                    var b = 1 + 1;
-                }
-                
                 if (atlas.Image is not { } image)
                 {
                     var readStream = _fileModifier.GetReadStream(atlas.PngPath);
@@ -182,19 +152,9 @@ public class AtlasUtilities
 
                 foreach (var region in cleared)
                     ClearRegion(image, region);
-
-                // var writeStream = _fileModifier.GetWriteStream(atlas.PngPath);
-                // image.Save(writeStream, image.DetectEncoder(atlas.PngPath));
-                // writeStream.Close();
             }
 
-            diskTimer.Stop();
         }
-        allTimer.Stop();
-        
-        timer.Stop();
-        // Console.WriteLine($"RemoveById took {timer.ElapsedMilliseconds}ms. Spent {tomlTimer.ElapsedMilliseconds}ms working with TOML and {diskTimer.ElapsedMilliseconds}ms on image manipulation");
-
     }
 
     // Removes or prunes animation entries that reference baseId (no ::N suffix).
@@ -361,19 +321,6 @@ public class AtlasUtilities
 
     private void FlushState(AtlasPackState state)
     {
-        // Atlases created during this session are "added" (no original to restore);
-        // pre-existing atlases are "modified" and need a backup for uninstall.
-        if (_newAtlasPaths.Contains(state.Atlas.MetaPath))
-        {
-            // _manifest.TrackAdded(state.Atlas.PngPath);
-            // _manifest.TrackAdded(state.Atlas.MetaPath);
-        }
-        else
-        {
-            // _manifest.TrackModified(state.Atlas.PngPath);
-            // _manifest.TrackModified(state.Atlas.MetaPath);
-        }
-        
         var writeStream = _fileModifier.GetWriteStream(state.Atlas.PngPath);
         state.Image.Save(writeStream, state.Image.DetectEncoder(state.Atlas.PngPath));
         writeStream.Close();
