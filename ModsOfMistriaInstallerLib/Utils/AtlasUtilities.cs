@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
@@ -59,8 +60,14 @@ public class AtlasUtilities
             {
                 // Current atlas is full — save it (if dirty) and create the next numbered one
                 int nextNumber = state.Atlas.Number + 1;
-                if (state.IsDirty) FlushState(state);
-                else state.Image.Dispose();
+                // if (state.IsDirty) FlushState(state);
+                // else
+                // {
+                //     state.Image.Dispose();
+                //     state.Atlas.Image?.Dispose();
+                //     state.Atlas.Image = null;
+                //     state.Atlas.Data = null;
+                // }
                 _states.Remove(atlasType);
                 CreateAtlas(atlasType, nextNumber);
                 state = OpenState(atlasType);
@@ -98,12 +105,21 @@ public class AtlasUtilities
     // Must be called before AddStrip so open states don't re-introduce the old entries.
     public void RemoveById(string baseId)
     {
+        var timer = new Stopwatch();
+        timer.Start();
+        
+        var inStateTimer = new Stopwatch();
+        var allTimer = new Stopwatch();
+        var tomlTimer = new Stopwatch();
+        var diskTimer = new Stopwatch();
+        
         // Strip any ::N suffix the caller may have included
         var prefix = baseId.Contains("::") ? baseId[..baseId.IndexOf("::", StringComparison.Ordinal)] : baseId;
 
         // 1. Modify any atlas page that is already open in _states (in-memory).
         //    We collect their paths so we skip them in step 2.
         var openPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        inStateTimer.Start();
         foreach (var state in _states.Values)
         {
             openPaths.Add(state.Atlas.MetaPath);
@@ -115,43 +131,70 @@ public class AtlasUtilities
                 ClearRegion(state.Image, region);
             if (dirty || cleared.Count > 0) state.IsDirty = true;
         }
+        inStateTimer.Stop();
 
         // 2. All other atlas pages: load → prune → save (meta, and png if pixels freed).
+        allTimer.Start();
         foreach (var atlas in _atlases)
         {
+            tomlTimer.Start();
             if (openPaths.Contains(atlas.MetaPath)) continue;
             if (!_fileModifier.Exists(atlas.MetaPath)) continue;
 
-            var data = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(atlas.MetaPath));
+            if (atlas.Data is not { } data)
+            {
+                data = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(atlas.MetaPath))!;
+                atlas.Data = data;
+            }
+
             if (!data.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap) continue;
             if (!ap.TryGetValue("animations", out var animObj) || animObj is not TomlTableArray anims) continue;
 
             bool modified = false;
             var cleared = new List<Rectangle>();
             PruneAnimations(anims, prefix, ref modified, cleared);
+            tomlTimer.Stop();
+
             if (!modified) continue;
-
-            // Backup the original before overwriting (so uninstall can restore it)
-            // _manifest.TrackModified(atlas.MetaPath);
-
-            _fileModifier.Write(atlas.MetaPath, TomlSerializer.Serialize(data));
 
             // Sanitise the freed pixel regions in the atlas image so later packs
             // can't reveal the removed art through their transparent areas.
+            diskTimer.Start();
             if (cleared.Count > 0)
             {
-                var readStream = _fileModifier.GetReadStream(atlas.PngPath);
-                using var image = Image.Load<Rgba32>(readStream);
-                readStream.Close();
+                if (atlas.Type.Contains("Default"))
+                {
+                    var a = 1 + 1;
+                }
+                else
+                {
+                    var b = 1 + 1;
+                }
+                
+                if (atlas.Image is not { } image)
+                {
+                    var readStream = _fileModifier.GetReadStream(atlas.PngPath);
+                    image = Image.Load<Rgba32>(readStream);
+                    readStream.Close();
+
+                    atlas.Image = image;
+                }
 
                 foreach (var region in cleared)
                     ClearRegion(image, region);
 
-                var writeStream = _fileModifier.GetWriteStream(atlas.PngPath);
-                image.Save(writeStream, image.DetectEncoder(atlas.PngPath));
-                writeStream.Close();
+                // var writeStream = _fileModifier.GetWriteStream(atlas.PngPath);
+                // image.Save(writeStream, image.DetectEncoder(atlas.PngPath));
+                // writeStream.Close();
             }
+
+            diskTimer.Stop();
         }
+        allTimer.Stop();
+        
+        timer.Stop();
+        // Console.WriteLine($"RemoveById took {timer.ElapsedMilliseconds}ms. Spent {tomlTimer.ElapsedMilliseconds}ms working with TOML and {diskTimer.ElapsedMilliseconds}ms on image manipulation");
+
     }
 
     // Removes or prunes animation entries that reference baseId (no ::N suffix).
@@ -229,12 +272,30 @@ public class AtlasUtilities
     // Writes all pending atlas changes to disk and marks them in the manifest.
     public void Flush()
     {
+        var flushTimer = new Stopwatch();
+        flushTimer.Start();
+        
         foreach (var state in _states.Values)
         {
             if (!state.IsDirty) continue;
             FlushState(state);
         }
         _states.Clear();
+
+        foreach (var atlas in _atlases.Where(atlas => atlas.Data is not null))
+        {
+            _fileModifier.Write(atlas.MetaPath, TomlSerializer.Serialize(atlas.Data));
+        }
+
+        foreach (var atlas in _atlases.Where(atlas => atlas.Image is not null))
+        {
+            var writeStream = _fileModifier.GetWriteStream(atlas.PngPath);
+            atlas.Image!.Save(writeStream, atlas.Image!.DetectEncoder(atlas.PngPath));
+            writeStream.Close();
+        }
+
+        flushTimer.Stop();
+        Console.WriteLine($"Atlas Flush took {flushTimer.ElapsedMilliseconds}ms");
     }
 
     // Private helpers
@@ -243,11 +304,21 @@ public class AtlasUtilities
     {
         var atlas = GetLastAtlas(atlasType);
 
-        var data  = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(atlas.MetaPath));
-        var imageStream = _fileModifier.GetReadStream(atlas.PngPath);
-        var image = Image.Load<Rgba32>(imageStream);
-        imageStream.Close();
+        if (atlas.Data is not { } data)
+        {
+            data = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(atlas.MetaPath));
+            atlas.Data = data;
+        }
 
+        if (atlas.Image is not { } image)
+        {
+            var imageStream = _fileModifier.GetReadStream(atlas.PngPath);
+            image = Image.Load<Rgba32>(imageStream);
+            imageStream.Close();
+            
+            atlas.Image = image;
+        }
+        
         // Safely retrieve (or create) the animations array.
         // A newly created atlas serialises an empty TomlTableArray as nothing,
         // so the key may be absent when we read it back.
@@ -299,6 +370,9 @@ public class AtlasUtilities
         
         _fileModifier.Write(state.Atlas.MetaPath, TomlSerializer.Serialize(state.Data));
         state.Image.Dispose();
+        state.Atlas.Image?.Dispose();
+        state.Atlas.Image = null;
+        state.Atlas.Data = null;
         state.IsDirty = false;
     }
 
