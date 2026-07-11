@@ -1,7 +1,9 @@
 using Garethp.ModsOfMistriaInstallerLib.Collector;
+using Garethp.ModsOfMistriaInstallerLib.Models;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 using Tomlyn;
 using Tomlyn.Model;
 
@@ -102,19 +104,16 @@ public class ImageInstaller(
                 continue;
             }
 
-            var gameMeta = TomlSerializer.Deserialize<TomlTable>(fileModifier.Read(gameMetaPath));
+            var gameMeta = TomlSerializer.Deserialize<SpriteMetaFile>(fileModifier.Read(gameMetaPath));
 
-            if (!TryReadAnimationMeta(gameMeta, out var atlasType, out var frameWidth,
-                    out var frameHeight, out var frameCount))
+            if (gameMeta?.Asset is null)
             {
                 reportStatus($"Skipping replacement {spriteName}: couldn't read game animation metadata.", "");
                 continue;
             }
-            if (frameCount <= 0) frameCount = 1; // frame_len omitted = single frame
+            if (gameMeta.Asset.FrameCount <= 0) gameMeta.Asset.FrameCount = 1; // frame_len omitted = single frame
 
-            if (!gameMeta.TryGetValue("meta_properties", out var gmpObj) || gmpObj is not TomlTable gmp ||
-                !gmp.TryGetValue("id", out var idObj) || idObj is not string replaceId ||
-                string.IsNullOrEmpty(replaceId))
+            if (string.IsNullOrEmpty(gameMeta.Meta?.Id))
             {
                 reportStatus($"Skipping replacement {spriteName}: game meta has no id field.", "");
                 continue;
@@ -126,22 +125,8 @@ public class ImageInstaller(
             var modMetaRelPath = $"images/replace/{spriteName}.meta.toml";
             if (mod.FileExists(modMetaRelPath))
             {
-                var modMeta = Toml.ParseToml(mod.ReadFile(modMetaRelPath));
-
-                if (TryReadAnimationMeta(modMeta, out var oAtlas, out var oW, out var oH, out var oCount))
-                {
-                    if (!string.IsNullOrEmpty(oAtlas)) atlasType   = oAtlas;
-                    if (oW     > 0)                    frameWidth  = oW;
-                    if (oH     > 0)                    frameHeight = oH;
-                    if (oCount > 0)                    frameCount  = oCount;
-                }
-
-                if (modMeta.TryGetValue("meta_properties", out var mmpObj) && mmpObj is TomlTable mmp &&
-                    mmp.TryGetValue("replace_id", out var repObj) && repObj is string overrideId &&
-                    !string.IsNullOrEmpty(overrideId))
-                {
-                    replaceId = overrideId;
-                }
+                var modMeta = TomlSerializer.Deserialize<SpriteMetaFile>(mod.ReadFile(modMetaRelPath));
+                gameMeta.Merge(modMeta);
             }
 
             atlasType = Atlas.CanonicalType(atlasType);
@@ -155,42 +140,40 @@ public class ImageInstaller(
             }
 
             var pngInfo = Image.Identify(new MemoryStream(pngBytes));
-            if (pngInfo.Width != frameWidth * frameCount || pngInfo.Height != frameHeight)
+            if (pngInfo.Width != gameMeta.Asset.FrameWidth * gameMeta.Asset.FrameCount || pngInfo.Height != gameMeta.Asset.FrameHeight)
             {
-                if (pngInfo.Width % frameCount != 0)
+                if (pngInfo.Width % gameMeta.Asset.FrameCount != 0)
                 {
                     reportStatus($"Skipping replacement {spriteName}: image width {pngInfo.Width} " +
-                                 $"is not divisible by frame count {frameCount}.", "");
+                                 $"is not divisible by frame count {gameMeta.Asset.FrameCount}.", "");
                     continue;
                 }
 
-                frameWidth  = pngInfo.Width / frameCount;
-                frameHeight = pngInfo.Height;
+                gameMeta.Asset.FrameWidth  = pngInfo.Width / gameMeta.Asset.FrameCount;
+                gameMeta.Asset.FrameHeight = pngInfo.Height;
 
-                UpdateGameMetaDimensions(gameMeta, gameMetaPath, frameWidth, frameHeight, frameCount);
-                reportStatus($"{spriteName}: resized to {frameWidth}×{frameHeight} ({frameCount} frame(s))", "");
+                UpdateGameMetaDimensions(gameMeta, gameMetaPath);
+                reportStatus($"{spriteName}: resized to {gameMeta.Asset.FrameWidth}×{gameMeta.Asset.FrameHeight} ({gameMeta.Asset.FrameCount} frame(s))", "");
             }
 
-            FileNameUIDMapping[baseName] = replaceId;
-            IDManager.RegisterId(replaceId);
-            atlasUtils.RemoveById(replaceId);
+            FileNameUIDMapping[baseName] = gameMeta.Meta.Id;
+            IDManager.RegisterId(gameMeta.Meta.Id);
+            atlasUtils.RemoveById(gameMeta.Meta.Id);
 
             using var pngStream = new MemoryStream(pngBytes);
-            var id = atlasUtils.AddStrip(atlasType, frameWidth, frameHeight, frameCount,
+            var id = atlasUtils.AddStrip(gameMeta.Asset.Atlas!, gameMeta.Asset.FrameWidth, gameMeta.Asset.FrameHeight, gameMeta.Asset.FrameCount,
                 pngStream, FileNameUIDMapping, baseName);
 
-            reportStatus($"Replaced {spriteName} → {atlasType} atlas (id {id})", "");
+            reportStatus($"Replaced {spriteName} → {gameMeta.Asset.Atlas} atlas (id {id})", "");
         }
     }
-
-    private void UpdateGameMetaDimensions(
-        TomlTable gameMeta, string gameMetaPath, int frameWidth, int frameHeight, int frameCount)
+    
+    private void UpdateGameMetaDimensions(SpriteMetaFile gameMeta, string gameMetaPath)
     {
-        if (!gameMeta.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap)
+        if (gameMeta.Asset is null)
             return;
 
-        ap["frame_size"] = new TomlArray { frameWidth, frameHeight };
-        ap["dimensions"] = new TomlArray { frameWidth * frameCount, frameHeight };
+        gameMeta.Asset.Dimensions = [gameMeta.Asset.FrameWidth * gameMeta.Asset.FrameCount, gameMeta.Asset.FrameHeight];
 
         fileModifier.Write(gameMetaPath, TomlSerializer.Serialize(gameMeta));
     }

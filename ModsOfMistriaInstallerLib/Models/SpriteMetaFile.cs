@@ -39,6 +39,12 @@ public class SpriteMetaFileProperties
         if (!string.IsNullOrEmpty(newProperties.Id))
             Id = newProperties.Id;
 
+        if (!string.IsNullOrEmpty(newProperties.ReplaceId))
+        {
+            Id = newProperties.ReplaceId;
+            ReplaceId = newProperties.ReplaceId;
+        }
+
         if (!string.IsNullOrEmpty(newProperties.AssetKind))
             AssetKind = newProperties.AssetKind;
     }
@@ -62,7 +68,9 @@ public class SpriteMetaFileAssetProperties
 
     [TomlPropertyName("frame_size")] public List<int> FrameSize { get; set; } = [0, 0];
 
-    [TomlPropertyName("frame_len")] public int FrameLength { get; set; } = 0;
+    [TomlPropertyName("dimensions")] public List<int>? Dimensions { get; set; }
+
+    [TomlPropertyName("frame_len")] public int FrameCount { get; set; } = 0;
     
     [TomlPropertyName("duration")] public List<float>? Duration { get; set; }
 
@@ -73,10 +81,11 @@ public class SpriteMetaFileAssetProperties
         if (newProperties is null) return;
         
         if (!string.IsNullOrEmpty(newProperties.Atlas)) Atlas = newProperties.Atlas;
-        if (newProperties.FrameLength > 1) FrameLength = newProperties.FrameLength;
+        if (newProperties.FrameCount > 1) FrameCount = newProperties.FrameCount;
         if (newProperties.FrameWidth > 0) FrameWidth = newProperties.FrameWidth;
         if (newProperties.FrameHeight > 0) FrameHeight = newProperties.FrameHeight;
         if (newProperties.Duration is not null) Duration = newProperties.Duration;
+        if (newProperties.Dimensions is not null) Dimensions = newProperties.Dimensions;
 
         if (Offset is null)
             Offset = newProperties.Offset;
