@@ -23,6 +23,10 @@ public class Atlas
     public int Width       { get; }
     public int Height      { get; }
 
+    public TomlTable? Data;
+
+    public Image<Rgba32>? Image;
+
     private IFileModifier _fileModifier;
 
     public Atlas(string type, int number, string atlasDirectory, IFileModifier fileModifier, int width = DefaultSize, int height = DefaultSize)
