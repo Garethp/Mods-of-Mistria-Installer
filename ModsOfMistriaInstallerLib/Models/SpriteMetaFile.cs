@@ -41,7 +41,7 @@ public class SpriteMetaFileProperties
 
         if (!string.IsNullOrEmpty(newProperties.ReplaceId))
         {
-            Id = newProperties.ReplaceId;
+            ReplaceId = newProperties.ReplaceId;
         }
 
         if (!string.IsNullOrEmpty(newProperties.AssetKind))

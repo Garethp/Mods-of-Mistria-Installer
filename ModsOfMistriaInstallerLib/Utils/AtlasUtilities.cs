@@ -53,6 +53,7 @@ public class AtlasUtilities
         }
 
         using var stripImage = Image.Load<Rgba32>(pngStream);
+        pngStream.Close();
 
         for (int i = 0; i < frameCount; i++)
         {

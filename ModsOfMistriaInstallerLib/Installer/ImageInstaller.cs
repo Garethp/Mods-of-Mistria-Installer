@@ -158,9 +158,10 @@ public class ImageInstaller(
             }
 
             fileModifier.Write(gameMetaPath, TomlSerializer.Serialize(gameMeta));
-            FileNameUIDMapping[baseName] = gameMeta.Meta.Id;
-            IDManager.RegisterId(gameMeta.Meta.Id);
-            atlasUtils.RemoveById(gameMeta.Meta.Id);
+            
+            FileNameUIDMapping[baseName] = gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id;
+            IDManager.RegisterId(gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id);
+            atlasUtils.RemoveById(gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id);
 
             using var pngStream = new MemoryStream(pngBytes);
             var id = atlasUtils.AddStrip(
