@@ -1,4 +1,5 @@
-﻿using Tomlyn.Serialization;
+﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Tomlyn.Serialization;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Models;
 
@@ -73,6 +74,7 @@ public class SpriteMetaFileAssetProperties
 
     [TomlPropertyName("frame_len")] public int? FrameCount { get; set; }
     
+    [TomlConverter(typeof(TomlSingleOrArrayConverter))]
     [TomlSingleOrArray]
     [TomlPropertyName("duration")] public List<double>? Duration { get; set; }
 
