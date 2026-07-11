@@ -3,9 +3,7 @@ using Garethp.ModsOfMistriaInstallerLib.Models;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 using Tomlyn;
-using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
@@ -50,7 +48,7 @@ public class ImageInstaller(
                 reportStatus($"Skipping {group.BaseName}: missing animation metadata.", "");
                 continue;
             }
-            if (metaToml.Asset.FrameCount <= 0) metaToml.Asset.FrameCount = 1; // frame_len omitted = single frame
+            if (metaToml.Asset.FrameCount is null or <= 0) metaToml.Asset.FrameCount = 1; // frame_len omitted = single frame
             metaToml.Asset.Atlas = Atlas.CanonicalType(metaToml.Asset.Atlas);
             
             if (metaToml.Meta is not null)
@@ -76,7 +74,7 @@ public class ImageInstaller(
                 metaToml.Asset.Atlas, 
                 metaToml.Asset.FrameWidth, 
                 metaToml.Asset.FrameHeight, 
-                metaToml.Asset.FrameCount, 
+                metaToml.Asset.FrameCount ?? 1, 
                 pngStream, 
                 FileNameUIDMapping, 
                 group.BaseName
@@ -114,7 +112,7 @@ public class ImageInstaller(
                 reportStatus($"Skipping replacement {spriteName}: couldn't read game animation metadata.", "");
                 continue;
             }
-            if (gameMeta.Asset.FrameCount <= 0) gameMeta.Asset.FrameCount = 1; // frame_len omitted = single frame
+            if (gameMeta.Asset.FrameCount is null or <= 0) gameMeta.Asset.FrameCount = 1; // frame_len omitted = single frame
 
             if (string.IsNullOrEmpty(gameMeta.Meta?.Id))
             {
@@ -152,10 +150,10 @@ public class ImageInstaller(
                     continue;
                 }
 
-                gameMeta.Asset.FrameWidth  = pngInfo.Width / gameMeta.Asset.FrameCount;
+                gameMeta.Asset.FrameWidth  = pngInfo.Width / (gameMeta.Asset.FrameCount ?? 1);
                 gameMeta.Asset.FrameHeight = pngInfo.Height;
 
-                gameMeta.Asset.Dimensions = [gameMeta.Asset.FrameWidth * gameMeta.Asset.FrameCount, gameMeta.Asset.FrameHeight];
+                gameMeta.Asset.Dimensions = [gameMeta.Asset.FrameWidth * (gameMeta.Asset.FrameCount ?? 1), gameMeta.Asset.FrameHeight];
                 reportStatus($"{spriteName}: resized to {gameMeta.Asset.FrameWidth}×{gameMeta.Asset.FrameHeight} ({gameMeta.Asset.FrameCount} frame(s))", "");
             }
 
@@ -165,8 +163,15 @@ public class ImageInstaller(
             atlasUtils.RemoveById(gameMeta.Meta.Id);
 
             using var pngStream = new MemoryStream(pngBytes);
-            var id = atlasUtils.AddStrip(gameMeta.Asset.Atlas!, gameMeta.Asset.FrameWidth, gameMeta.Asset.FrameHeight, gameMeta.Asset.FrameCount,
-                pngStream, FileNameUIDMapping, baseName);
+            var id = atlasUtils.AddStrip(
+                gameMeta.Asset.Atlas!, 
+                gameMeta.Asset.FrameWidth, 
+                gameMeta.Asset.FrameHeight, 
+                gameMeta.Asset.FrameCount ?? 1,
+                pngStream, 
+                FileNameUIDMapping, 
+                baseName
+            );
 
             reportStatus($"Replaced {spriteName} → {gameMeta.Asset.Atlas} atlas (id {id})", "");
         }
@@ -184,37 +189,4 @@ public class ImageInstaller(
     private static bool IsUnderReplaceFolder(string relPath) =>
         relPath.Replace('\\', '/').Contains("/replace/", StringComparison.OrdinalIgnoreCase) ||
         relPath.StartsWith("replace/", StringComparison.OrdinalIgnoreCase);
-
-    // ── Shared helpers ────────────────────────────────────────────────────────────
-
-    private static bool TryReadAnimationMeta(
-        TomlTable meta,
-        out string atlasType,
-        out int frameWidth,
-        out int frameHeight,
-        out int frameCount)
-    {
-        atlasType   = "";
-        frameWidth  = 0;
-        frameHeight = 0;
-        frameCount  = 0;
-
-        if (!meta.TryGetValue("asset_properties", out var apObj) ||
-            apObj is not TomlTable ap) return false;
-
-        if (ap.TryGetValue("atlas", out var atlasObj))
-            atlasType = atlasObj?.ToString() ?? "";
-
-        if (ap.TryGetValue("frame_size", out var fsObj) &&
-            fsObj is TomlArray frameSize && frameSize.Count >= 2)
-        {
-            frameWidth  = Convert.ToInt32(frameSize[0]);
-            frameHeight = Convert.ToInt32(frameSize[1]);
-        }
-
-        if (ap.TryGetValue("frame_len", out var flObj))
-            frameCount = Convert.ToInt32(flObj);
-
-        return !string.IsNullOrEmpty(atlasType) && frameWidth > 0 && frameHeight > 0;
-    }
 }

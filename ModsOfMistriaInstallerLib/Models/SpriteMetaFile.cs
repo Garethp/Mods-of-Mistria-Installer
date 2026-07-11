@@ -71,11 +71,20 @@ public class SpriteMetaFileAssetProperties
 
     [TomlPropertyName("dimensions")] public List<int>? Dimensions { get; set; }
 
-    [TomlPropertyName("frame_len")] public int FrameCount { get; set; } = 0;
+    [TomlPropertyName("frame_len")] public int? FrameCount { get; set; }
     
+    [TomlSingleOrArray]
     [TomlPropertyName("duration")] public List<double>? Duration { get; set; }
 
     [TomlPropertyName("offset")] public SpriteMetaFileAssetOffset? Offset { get; set; }
+    
+    [TomlPropertyName("filter_kind")] public string? Filter { get; set; }
+    
+    [TomlPropertyName("mipmap_filter_kind")] public string? MipmapFilter { get; set; }
+    
+    [TomlPropertyName("wrap")] public string? Wrap { get; set; }
+    
+    [TomlPropertyName("tags")] public List<string>? Tags { get; set; }
 
     public void Merge(SpriteMetaFileAssetProperties? newProperties)
     {
@@ -87,6 +96,10 @@ public class SpriteMetaFileAssetProperties
         if (newProperties.FrameHeight > 0) FrameHeight = newProperties.FrameHeight;
         if (newProperties.Duration is not null) Duration = newProperties.Duration;
         if (newProperties.Dimensions is not null) Dimensions = newProperties.Dimensions;
+        if (newProperties.Filter is not null) Filter = newProperties.Filter;
+        if (newProperties.MipmapFilter is not null) MipmapFilter = newProperties.MipmapFilter;
+        if (newProperties.Wrap is not null) Wrap = newProperties.Wrap;
+        if (newProperties.Tags is not null) Tags = newProperties.Tags;
 
         if (Offset is null)
             Offset = newProperties.Offset;
