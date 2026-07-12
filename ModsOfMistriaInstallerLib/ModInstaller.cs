@@ -127,7 +127,11 @@ public class ModInstaller
         new MISTInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
-        // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
+        // 6. Apply manifest-declared, anchor-validated GML source patches
+        new GMLPatchInstaller(fileNameUIDMapping, _fileModifier)
+            .Install(mod, reportStatus);
+
+        // 7. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
         new OutfitInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, reportStatus);
         

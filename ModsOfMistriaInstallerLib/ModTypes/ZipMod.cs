@@ -31,6 +31,8 @@ public class ZipMod() : IMod
 
     private List<ModRequirement> _requirements = [];
 
+    private List<GmlPatchDefinition> _gmlPatches = [];
+
     private string? _updateUrl;
 
     private string? _downloadUrl;
@@ -56,6 +58,7 @@ public class ZipMod() : IMod
         _minimumInstallerVersion = manifest.MinInstallerVersion;
         _manifestVersion = manifest.ManifestVersion;
         _requirements = manifest.Requirements;
+        _gmlPatches = manifest.GmlPatches;
         _downloadUrl = manifest.DownloadUrl;
         _updateUrl = manifest.UpdateUrl;
         
@@ -223,6 +226,8 @@ public class ZipMod() : IMod
     }
 
     public List<ModRequirement> GetRequirements() => _requirements;
+
+    public List<GmlPatchDefinition> GetGmlPatches() => _gmlPatches;
 
     public string? GetUpdateUrl()   => _updateUrl;
     public string? GetDownloadUrl() => _downloadUrl;

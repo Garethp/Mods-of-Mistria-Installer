@@ -1,5 +1,5 @@
 ﻿using System.IO.Compression;
-using SixLabors.ImageSharp.Advanced;
+using System.Text;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 
@@ -49,11 +49,10 @@ public class ZipFileModifier(ZipArchive archive) : IFileModifier
 
     public void Write(string file, string contents)
     {
-        var stream = GetWriteStream(file);
-        stream.SetLength(contents.Length);
-        using var writer = new StreamWriter(stream);
+        using var stream = GetWriteStream(file);
+        stream.SetLength(0);
+        using var writer = new StreamWriter(stream, new UTF8Encoding(false));
         writer.Write(contents);
-        writer.Close();
     }
 
     public Stream GetWriteStream(string file)

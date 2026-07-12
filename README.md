@@ -69,6 +69,33 @@ new enough to install the mod and tell the user if they're unable to install the
 The `manifestVersion` field isn't used yet, but will allow for backwards compatibility in future versions of the installer
 if large changes are made to how mods are structured.
 
+### GML source patches
+
+Behavior mods can declare exact-text patches for existing GML files in `assets.zip`. Each patch references an anchor file
+and a content file shipped with the mod; MOMI does not scan or execute standalone installer scripts.
+
+```json
+{
+  "gmlPatches": [
+    {
+      "id": "author.mod.consume_hook",
+      "target": "gml/scripts/Player/AriFsm.gml",
+      "operation": "insert_after",
+      "anchorFile": "patches/consume.anchor.gml",
+      "contentFile": "patches/consume_hook.gml",
+      "expectedMatches": 1
+    }
+  ]
+}
+```
+
+Supported operations are `insert_before`, `insert_after`, and `replace_exact`. Patch IDs must be unique within the mod.
+Targets must be `.gml` files below `gml/`, while anchor and content paths must be safe relative paths inside the mod.
+MOMI normalizes line endings for matching, preserves the target's original line endings, and writes identifiable begin/end
+markers around inserted content. If an anchor does not match exactly `expectedMatches` times, or any declared patch is
+invalid, MOMI refuses the entire GML patch set before writing any target. Set `minInstallerVersion` to the first MOMI
+release that includes GML patch support.
+
 ### `fiddle/`
 JSON files in the `fiddle/` folder will get merged into the game's `__fiddle__.json` file. You can name the files however
 you want and have multiple JSON values in one file or split them up into multiple files as you see fit.

@@ -48,6 +48,8 @@ public interface IMod
 
     public List<ModRequirement> GetRequirements();
 
+    public List<GmlPatchDefinition> GetGmlPatches() => [];
+
     // URL used to check for updates (GitHub repo URL or custom JSON endpoint).
     // Null means no update checking for this mod.
     public string? GetUpdateUrl();

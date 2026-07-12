@@ -11,6 +11,7 @@ public class ModManifest
     public readonly string MinInstallerVersion;
     public readonly string ManifestVersion;
     public List<ModRequirement> Requirements;
+    public List<GmlPatchDefinition> GmlPatches;
     public readonly string? DownloadUrl;
     public readonly string? UpdateUrl;
 
@@ -22,7 +23,8 @@ public class ModManifest
         string manifestVersion,
         List<ModRequirement> requirements, 
         string? downloadUrl, 
-        string? updateUrl
+        string? updateUrl,
+        List<GmlPatchDefinition>? gmlPatches = null
     ) {
         Name = name;
         Author = author;
@@ -30,6 +32,7 @@ public class ModManifest
         MinInstallerVersion = minInstallerVersion;
         ManifestVersion = manifestVersion;
         Requirements = requirements;
+        GmlPatches = gmlPatches ?? [];
         DownloadUrl = downloadUrl;
         UpdateUrl = updateUrl;
     }
@@ -50,7 +53,11 @@ public class ModManifest
             .Where(r => !string.IsNullOrEmpty(r.Name) && !string.IsNullOrEmpty(r.Author))
             .ToList(),
             json["download_url"]?.ToString(),
-            json["update_url"]?.ToString()
+            json["update_url"]?.ToString(),
+            (json["gmlPatches"] as JArray ?? [])
+                .OfType<JObject>()
+                .Select(ParseJsonGmlPatch)
+                .ToList()
         );
     }
 
@@ -62,6 +69,7 @@ public class ModManifest
         toml.TryGetValue("minInstallerVersion", out var minInstallerVersion);
         toml.TryGetValue("manifestVersion", out var manifestVersion);
         toml.TryGetValue("requirements", out var requirementsObject);
+        toml.TryGetValue("gmlPatches", out var gmlPatchesObject);
         toml.TryGetValue("download_url", out var downloadUrl);
         toml.TryGetValue("update_url", out var updateUrl);
 
@@ -93,7 +101,50 @@ public class ModManifest
             manifestVersion?.ToString() ?? "1",
             requirements,
             downloadUrl?.ToString(),
-            updateUrl?.ToString()
+            updateUrl?.ToString(),
+            GetTomlTables(gmlPatchesObject)
+                .Select(ParseTomlGmlPatch)
+                .ToList()
         );
     }
+
+    private static GmlPatchDefinition ParseJsonGmlPatch(JObject patch) => new(
+        patch["id"]?.ToString() ?? "",
+        patch["target"]?.ToString() ?? "",
+        patch["operation"]?.ToString() ?? "",
+        patch["anchorFile"]?.ToString() ?? "",
+        patch["contentFile"]?.ToString() ?? "",
+        ParseExpectedMatches(patch["expectedMatches"]?.ToString()));
+
+    private static GmlPatchDefinition ParseTomlGmlPatch(TomlTable patch)
+    {
+        patch.TryGetValue("id", out var id);
+        patch.TryGetValue("target", out var target);
+        patch.TryGetValue("operation", out var operation);
+        patch.TryGetValue("anchorFile", out var anchorFile);
+        patch.TryGetValue("contentFile", out var contentFile);
+        patch.TryGetValue("expectedMatches", out var expectedMatches);
+
+        return new GmlPatchDefinition(
+            id?.ToString() ?? "",
+            target?.ToString() ?? "",
+            operation?.ToString() ?? "",
+            anchorFile?.ToString() ?? "",
+            contentFile?.ToString() ?? "",
+            ParseExpectedMatches(expectedMatches?.ToString()));
+    }
+
+    private static IEnumerable<TomlTable> GetTomlTables(object? value)
+    {
+        if (value is IList<object?> unknownList)
+            return unknownList.OfType<TomlTable>();
+
+        if (value is IList<TomlTable> knownList)
+            return knownList;
+
+        return [];
+    }
+
+    private static int ParseExpectedMatches(string? value) =>
+        int.TryParse(value, out var expectedMatches) ? expectedMatches : 1;
 }
