@@ -39,8 +39,6 @@ public class RarMod() : IMod
 
     private bool _requiredHooksValid = true;
 
-    private bool _hasMistweaveKey;
-
     private RarArchiveEntry? GetEntry(RarArchive rarFile, string path)
     {
         var isDirectory = path.EndsWith('/');
@@ -81,7 +79,6 @@ public class RarMod() : IMod
         _updateUrl = manifest.UpdateUrl;
         _requiredHooks = manifest.RequiresHooks;
         _requiredHooksValid = manifest.RequiresHooksValid;
-        _hasMistweaveKey = manifest.HasMistweaveKey;
 
         _rarFile = rarFile;
         _basePath = basePath;
@@ -196,7 +193,7 @@ public class RarMod() : IMod
         }
 
         FolderMod.ValidateGmlManifestFields(_validation, this, Path.Combine(GetLocation(), "manifest.json"),
-            _requiredHooksValid, _hasMistweaveKey);
+            _requiredHooksValid);
 
         return _validation;
     }

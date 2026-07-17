@@ -21,9 +21,6 @@ public class ModManifest
     // False when requires_hooks is not an array of strings
     public readonly bool RequiresHooksValid;
 
-    // The retired tool's version field, read and ignored with a warning
-    public readonly bool HasMistweaveKey;
-
     public ModManifest(
         string name,
         string author,
@@ -34,8 +31,7 @@ public class ModManifest
         string? downloadUrl,
         string? updateUrl,
         List<string>? requiresHooks = null,
-        bool requiresHooksValid = true,
-        bool hasMistweaveKey = false
+        bool requiresHooksValid = true
     ) {
         Name = name;
         Author = author;
@@ -47,7 +43,6 @@ public class ModManifest
         UpdateUrl = updateUrl;
         RequiresHooks = requiresHooks ?? [];
         RequiresHooksValid = requiresHooksValid;
-        HasMistweaveKey = hasMistweaveKey;
     }
 
     public static ModManifest FromJson(JObject json)
@@ -75,8 +70,7 @@ public class ModManifest
             requiresHooksValid
                 ? (requiresHooksToken as JArray ?? []).Select(h => h.ToString().Trim()).ToList()
                 : [],
-            requiresHooksValid,
-            json["mistweave"] is not null
+            requiresHooksValid
         );
     }
 
@@ -129,8 +123,7 @@ public class ModManifest
             downloadUrl?.ToString(),
             updateUrl?.ToString(),
             requiresHooks,
-            requiresHooksValid,
-            toml.ContainsKey("mistweave")
+            requiresHooksValid
         );
     }
 }

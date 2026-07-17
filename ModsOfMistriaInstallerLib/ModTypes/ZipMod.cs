@@ -39,8 +39,6 @@ public class ZipMod() : IMod
 
     private bool _requiredHooksValid = true;
 
-    private bool _hasMistweaveKey;
-
     public ZipMod(ZipArchive zipFile, string basePath) : this()
     {
         var manifestFile = zipFile.GetEntry(basePath + "manifest.json") ?? zipFile.GetEntry(basePath + "manifest.toml");
@@ -66,7 +64,6 @@ public class ZipMod() : IMod
         _updateUrl = manifest.UpdateUrl;
         _requiredHooks = manifest.RequiresHooks;
         _requiredHooksValid = manifest.RequiresHooksValid;
-        _hasMistweaveKey = manifest.HasMistweaveKey;
 
         _zipFile = zipFile;
         _basePath = basePath;
@@ -180,7 +177,7 @@ public class ZipMod() : IMod
         }
 
         FolderMod.ValidateGmlManifestFields(_validation, this, Path.Combine(GetLocation(), "manifest.json"),
-            _requiredHooksValid, _hasMistweaveKey);
+            _requiredHooksValid);
 
         return _validation;
     }

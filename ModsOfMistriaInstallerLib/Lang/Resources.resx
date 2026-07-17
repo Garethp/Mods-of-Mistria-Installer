@@ -468,9 +468,6 @@
   <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve">
     <value>The manifest's requires_hooks must be an array of hook-name strings.</value>
   </data>
-  <data name="CoreManifestMistweaveIgnored" xml:space="preserve">
-    <value>The manifest's mistweave field is ignored. minInstallerVersion decides the required installer version.</value>
-  </data>
   <data name="CoreSkippedModReason" xml:space="preserve">
     <value>Skipped {0}: {1}</value>
   </data>

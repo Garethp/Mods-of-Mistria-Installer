@@ -85,18 +85,6 @@ public class GmlModCollectorTest
     }
 
     [Test]
-    public void ShouldWarnAndIgnoreTheMistweaveKey()
-    {
-        var mod = ModWithManifest(
-            """{"name": "Mod", "version": "1", "author": "t", "minInstallerVersion": "0.12", "mistweave": ">=0.1.0"}""");
-
-        var validation = mod.Validate();
-
-        Assert.That(validation.Warnings.Any(w => w.Message.Contains("mistweave")), Is.True);
-        Assert.That(validation.Errors.Any(e => e.Message.Contains("mistweave")), Is.False);
-    }
-
-    [Test]
     public void ShouldReadRequiredHooksFromTheManifest()
     {
         var mod = ModWithManifest(

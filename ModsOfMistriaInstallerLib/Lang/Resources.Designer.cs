@@ -1095,15 +1095,6 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to The manifest&apos;s mistweave field is ignored. minInstallerVersion decides the required installer version.
-        /// </summary>
-        public static string CoreManifestMistweaveIgnored {
-            get {
-                return ResourceManager.GetString("CoreManifestMistweaveIgnored", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to Skipped {0}: {1}.
         /// </summary>
         public static string CoreSkippedModReason {

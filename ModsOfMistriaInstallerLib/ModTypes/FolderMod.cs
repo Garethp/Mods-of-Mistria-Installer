@@ -36,8 +36,6 @@ public class FolderMod : IMod
 
     private bool _requiredHooksValid = true;
 
-    private bool _hasMistweaveKey;
-
     public string Id
     {
         get
@@ -114,8 +112,7 @@ public class FolderMod : IMod
             _updateUrl   = manifest.UpdateUrl,
             _downloadUrl = manifest.DownloadUrl,
             _requiredHooks = manifest.RequiresHooks,
-            _requiredHooksValid = manifest.RequiresHooksValid,
-            _hasMistweaveKey = manifest.HasMistweaveKey
+            _requiredHooksValid = manifest.RequiresHooksValid
         };
     }
 
@@ -170,23 +167,18 @@ public class FolderMod : IMod
         }
 
         ValidateGmlManifestFields(_validation, this, Path.Combine(_location, "manifest.json"),
-            _requiredHooksValid, _hasMistweaveKey);
+            _requiredHooksValid);
 
         return _validation;
     }
 
-    // Shared by the three containers: the requires_hooks shape check and the
-    // ignored-mistweave-key warning.
+    // Shared by the three containers: the requires_hooks shape check.
     internal static void ValidateGmlManifestFields(Validation validation, IMod mod, string manifestPath,
-        bool requiredHooksValid, bool hasMistweaveKey)
+        bool requiredHooksValid)
     {
         if (!requiredHooksValid)
             validation.Errors.Add(new ValidationMessage(mod, manifestPath,
                 Resources.CoreManifestRequiresHooksInvalid));
-
-        if (hasMistweaveKey)
-            validation.Warnings.Add(new ValidationMessage(mod, manifestPath,
-                Resources.CoreManifestMistweaveIgnored));
     }
 
     public static string? GetModLocation(string pathCandidate)
