@@ -365,7 +365,7 @@ hooks you can register on live in the seam catalog at
 Before anything is written, MOMI checks that your mod's GML compiles and doesn't clash with the game or with other
 mods. A mod that fails those checks is skipped whole, items and cosmetics included, and the reasons are shown in the
 installer, so a broken behavioural mod can never leave the game unable to start. If you use `gml/`, please set
-`minInstallerVersion` in your `manifest.json` to no lower than `0.13.0`.
+`minInstallerVersion` in your `manifest.json` to no lower than `0.14.0`.
 
 One optional `manifest.json` field matters for behavioural mods: `requires_hooks`, a list of hook names your mod
 needs, for example `["game.day_started"]`. If the user's MOMI doesn't provide one of them, your mod is skipped with

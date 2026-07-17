@@ -12,7 +12,7 @@ This page explains building `my_first_mod`, which displays an in-game notificati
 ## Requirements
 
 - Fields of Mistria, the game.
-- MOMI version 0.13.0 or newer. That is the first version that ships the GML layer.
+- MOMI version 0.14.0 or newer. That is the first version that ships the GML layer.
 - A text editor. There is no compiler or build step necessary. A mod is plain GML source.
 
 ## (MOVE) Naming Conventions
@@ -48,7 +48,7 @@ The full folder paths for each file should look like:
     "author": "you",
     "version": "1.0.0",
     "description": "Shows a notification when a new day starts.",
-    "minInstallerVersion": "0.13.0",
+    "minInstallerVersion": "0.14.0",
     "manifestVersion": 1,
     "requires_hooks": ["game.day_started"]
 }

@@ -10,7 +10,7 @@ Every mod ships a `manifest.json` at its root. It identifies the mod, states the
     "author": "you",
     "version": "1.0.0",
     "description": "Shows a notification when a new day starts.",
-    "minInstallerVersion": "0.13.0",
+    "minInstallerVersion": "0.14.0",
     "manifestVersion": 1,
     "requires_hooks": ["game.day_started"]
 }
@@ -24,7 +24,7 @@ Every mod ships a `manifest.json` at its root. It identifies the mod, states the
 | `author` | The author name. |
 | `version` | The mod's own version string. |
 | `description` | A one-line summary shown in MOMI. |
-| `minInstallerVersion` | The minimum MOMI version the mod requires. Any mod shipping a `gml/` folder should set this no lower than `0.13.0`. |
+| `minInstallerVersion` | The minimum MOMI version the mod requires. Any mod shipping a `gml/` folder should set this no lower than `0.14.0`. |
 | `manifestVersion` | The manifest schema version. |
 | `requires_hooks` | The hook names the mod cannot run without, as an array of strings. |
 
