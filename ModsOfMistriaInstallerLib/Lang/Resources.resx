@@ -466,7 +466,7 @@
     <value>{0} mod(s) installed</value>
   </data>
   <data name="CoreInstallSummaryWithSkipped" xml:space="preserve">
-    <value>{0} mod(s) installed, {1} skipped ({2})</value>
+    <value>{0} mod(s) installed, {1} skipped</value>
   </data>
   <data name="CoreGameGmlChanged" xml:space="preserve">
     <value>Game GML changed. Unable to install.</value>

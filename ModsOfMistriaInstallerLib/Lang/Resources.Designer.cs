@@ -1086,7 +1086,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to {0} mod(s) installed, {1} skipped ({2}).
+        ///   Looks up a localized string similar to {0} mod(s) installed, {1} skipped.
         /// </summary>
         public static string CoreInstallSummaryWithSkipped {
             get {

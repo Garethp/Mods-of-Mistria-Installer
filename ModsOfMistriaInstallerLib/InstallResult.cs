@@ -17,9 +17,9 @@ public class InstallResult
 
     public List<SkippedMod> Skipped { get; } = [];
 
-    // The status-line summary, e.g. "3 mod(s) installed, 1 skipped (example.mod)"
+    // The status-line summary, e.g. "3 mod(s) installed, 1 skipped". The
+    // per-mod icons and expanders name which mods were skipped and why.
     public string Summary() => Skipped.Count > 0
-        ? string.Format(Resources.CoreInstallSummaryWithSkipped, Installed.Count, Skipped.Count,
-            string.Join(", ", Skipped.Select(s => s.Id)))
+        ? string.Format(Resources.CoreInstallSummaryWithSkipped, Installed.Count, Skipped.Count)
         : string.Format(Resources.CoreInstallSummary, Installed.Count);
 }

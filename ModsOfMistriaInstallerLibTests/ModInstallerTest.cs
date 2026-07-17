@@ -85,7 +85,7 @@ public class ModInstallerTest
         Assert.That(result.Skipped, Has.Count.EqualTo(1));
         Assert.That(result.Skipped[0].Id, Is.EqualTo("othermod"));
         Assert.That(result.Skipped[0].Reasons, Has.Some.Contains("absent.hook"));
-        Assert.That(result.Summary(), Is.EqualTo("1 mod(s) installed, 1 skipped (othermod)"));
+        Assert.That(result.Summary(), Is.EqualTo("1 mod(s) installed, 1 skipped"));
 
         // The reasons also land as Validation errors on the mod itself
         Assert.That(bad.GetValidation().Errors.Any(e => e.Message.Contains("absent.hook")), Is.True);
