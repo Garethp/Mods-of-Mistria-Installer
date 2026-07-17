@@ -49,8 +49,8 @@ public class ImageInstaller(
                 continue;
             }
             if (metaToml.Asset.FrameCount is null or <= 0) metaToml.Asset.FrameCount = 1; // frame_len omitted = single frame
-            metaToml.Asset.Atlas = Atlas.CanonicalType(metaToml.Asset.Atlas ?? "");
-            
+            metaToml.Asset.Atlas = Atlas.CanonicalType(metaToml.Asset.Atlas);
+
             if (metaToml.Meta is not null)
             {
                 // replace_id: reuse an existing game texture_id and remove the old atlas entries.
@@ -129,8 +129,8 @@ public class ImageInstaller(
                 var modMeta = TomlSerializer.Deserialize<SpriteMetaFile>(mod.ReadFile(modMetaRelPath));
                 gameMeta.Merge(modMeta);
             }
-
-            gameMeta.Asset.Atlas = Atlas.CanonicalType(gameMeta.Asset.Atlas ?? "");
+            
+            gameMeta.Asset.Atlas = Atlas.CanonicalType(gameMeta.Asset.Atlas);
 
             byte[] pngBytes;
             using (var src = mod.ReadFileAsStream(pngPath))

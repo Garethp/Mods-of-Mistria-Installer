@@ -72,7 +72,7 @@ public class TOMLInstaller(
         if (toml.TryGetValue("asset_properties", out var apObj) && apObj is TomlTable ap &&
             ap.TryGetValue("atlas", out var atlasObj) && atlasObj is string atlasName)
         {
-            ap["atlas"] = Atlas.CanonicalType(atlasName);
+            ap["atlas"] = Atlas.CanonicalType(atlasName)!;
         }
 
         MergeOrWriteToml(toml, dest);
