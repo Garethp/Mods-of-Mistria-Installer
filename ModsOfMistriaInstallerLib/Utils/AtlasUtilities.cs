@@ -40,6 +40,8 @@ public class AtlasUtilities
         Dictionary<string, string> fileNameUIDMapping,
         string baseName)
     {
+        atlasType = Atlas.CanonicalType(atlasType);
+
         if (!_states.TryGetValue(atlasType, out var state))
             state = OpenState(atlasType);
 
@@ -54,36 +56,43 @@ public class AtlasUtilities
 
         for (int i = 0; i < frameCount; i++)
         {
-            var pos = state.Packer.FindPosition(frameWidth, frameHeight);
+            using var frame = stripImage.Clone(ctx =>
+                ctx.Crop(new Rectangle(i * frameWidth, 0, frameWidth, frameHeight)));
+
+            // The game stores frames trimmed: only the opaque bounding box lands
+            // in the atlas, and placement carries the authored frame size plus
+            // the trim offset so the frame reconstructs at its full size.
+            var trim = OpaqueBounds(frame);
+
+            var pos = state.Packer.FindPosition(trim.Width, trim.Height);
 
             if (pos is null)
             {
                 // Current atlas is full — save it (if dirty) and create the next numbered one
                 int nextNumber = state.Atlas.Number + 1;
-                
+
                 _states.Remove(atlasType);
                 CreateAtlas(atlasType, nextNumber);
                 state = OpenState(atlasType);
                 _states[atlasType] = state;
 
-                pos = state.Packer.FindPosition(frameWidth, frameHeight);
+                pos = state.Packer.FindPosition(trim.Width, trim.Height);
                 if (pos is null)
                     throw new InvalidOperationException(
-                        $"Frame ({frameWidth}×{frameHeight}) is too large for a blank atlas.");
+                        $"Frame ({trim.Width}×{trim.Height}) is too large for a blank atlas.");
             }
 
             var (x, y) = pos.Value;
 
-            using var frame = stripImage.Clone(ctx =>
-                ctx.Crop(new Rectangle(i * frameWidth, 0, frameWidth, frameHeight)));
-
-            state.Image.Mutate(ctx => ctx.DrawImage(frame, new Point(x, y), 1f));
-            state.Packer.Add(x, y, frameWidth, frameHeight);
+            using var trimmed = frame.Clone(ctx => ctx.Crop(trim));
+            state.Image.Mutate(ctx => ctx.DrawImage(trimmed, new Point(x, y), 1f));
+            state.Packer.Add(x, y, trim.Width, trim.Height);
 
             state.Animations.Add(new TomlTable
             {
-                ["texture_ids"]        = new TomlArray { $"{id}::{i}" },
-                ["top_left_dimensions"] = new TomlArray { x, y, frameWidth, frameHeight }
+                ["texture_ids"] = new TomlArray { $"{id}::{i}" },
+                ["placement"]   = new TomlArray { x, y, trim.Width, trim.Height,
+                                                  frameWidth, frameHeight, trim.X, trim.Y }
             });
 
             state.IsDirty = true;
@@ -203,17 +212,47 @@ public class AtlasUtilities
         }
     }
 
-    // Reads an animation entry's [x, y, width, height] placement rectangle.
+    // Reads an animation entry's stored atlas rectangle: the first four values
+    // of `placement` (the trimmed box).
     private static bool TryReadRegion(TomlTable anim, out Rectangle region)
     {
         region = default;
-        if (!anim.TryGetValue("top_left_dimensions", out var dObj) ||
-            dObj is not TomlArray d || d.Count < 4)
+        if (!anim.TryGetValue("placement", out var dObj) || dObj is not TomlArray d || d.Count < 4)
+        {
             return false;
+        }
+
         region = new Rectangle(
             Convert.ToInt32(d[0]), Convert.ToInt32(d[1]),
             Convert.ToInt32(d[2]), Convert.ToInt32(d[3]));
         return true;
+    }
+
+    // The smallest rectangle holding every pixel with non-zero alpha.
+    // A fully transparent frame keeps a single pixel.
+    private static Rectangle OpaqueBounds(Image<Rgba32> frame)
+    {
+        int minX = frame.Width, minY = frame.Height, maxX = -1, maxY = -1;
+
+        frame.ProcessPixelRows(accessor =>
+        {
+            for (int y = 0; y < accessor.Height; y++)
+            {
+                var row = accessor.GetRowSpan(y);
+                for (int x = 0; x < row.Length; x++)
+                {
+                    if (row[x].A == 0) continue;
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                    if (y < minY) minY = y;
+                    maxY = y;
+                }
+            }
+        });
+
+        return maxX < 0
+            ? new Rectangle(0, 0, 1, 1)
+            : new Rectangle(minX, minY, maxX - minX + 1, maxY - minY + 1);
     }
 
     // Overwrites a rectangular region of the atlas with fully transparent pixels.
@@ -415,14 +454,8 @@ public class AtlasUtilities
         {
             foreach (TomlTable anim in animations)
             {
-                if (!anim.TryGetValue("top_left_dimensions", out var dimObj) ||
-                    dimObj is not TomlArray d || d.Count < 4) continue;
-
-                packer.Add(
-                    Convert.ToInt32(d[0]),
-                    Convert.ToInt32(d[1]),
-                    Convert.ToInt32(d[2]),
-                    Convert.ToInt32(d[3]));
+                if (!TryReadRegion(anim, out var region)) continue;
+                packer.Add(region.X, region.Y, region.Width, region.Height);
             }
         }
 

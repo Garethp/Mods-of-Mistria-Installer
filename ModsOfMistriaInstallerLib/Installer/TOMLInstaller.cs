@@ -67,6 +67,14 @@ public class TOMLInstaller(
             meta["id"] = id;
         }
 
+        // The installed meta names the atlas the frames actually landed in:
+        // retired categories fold to Default exactly as the packer folds them.
+        if (toml.TryGetValue("asset_properties", out var apObj) && apObj is TomlTable ap &&
+            ap.TryGetValue("atlas", out var atlasObj) && atlasObj is string atlasName)
+        {
+            ap["atlas"] = Atlas.CanonicalType(atlasName);
+        }
+
         MergeOrWriteToml(toml, dest);
         reportStatus($"Installed animation meta: {relPath}", "");
     }

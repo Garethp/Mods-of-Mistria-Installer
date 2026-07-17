@@ -50,6 +50,7 @@ public class ImageInstaller(
                 continue;
             }
             if (frameCount <= 0) frameCount = 1; // frame_len omitted = single frame
+            atlasType = Atlas.CanonicalType(atlasType);
 
             if (metaToml.TryGetValue("meta_properties", out var mpObj) && mpObj is TomlTable mp)
             {
@@ -142,6 +143,8 @@ public class ImageInstaller(
                     replaceId = overrideId;
                 }
             }
+
+            atlasType = Atlas.CanonicalType(atlasType);
 
             byte[] pngBytes;
             using (var src = mod.ReadFileAsStream(pngPath))

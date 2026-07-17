@@ -85,10 +85,7 @@ public class MockMod : IMod
         throw new NotImplementedException();
     }
 
-    public string GetBasePath()
-    {
-        throw new NotImplementedException();
-    }
+    public string GetBasePath() => "";
 
     public string? CanInstall()
     {
@@ -124,10 +121,10 @@ public class MockMod : IMod
         return _files[folder].Keys.ToList();
     }
 
-    public List<string> GetAllFiles(string extension)
-    {
-        throw new NotImplementedException();
-    }
+    public List<string> GetAllFiles(string extension) => _files.Values
+        .SelectMany(files => files.Keys)
+        .Where(file => file.EndsWith(extension))
+        .ToList();
 
     public bool FileExists(string path) => _files.Values.Any(files => files.Keys.Contains(path));
 
