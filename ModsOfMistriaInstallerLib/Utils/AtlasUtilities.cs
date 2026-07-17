@@ -213,17 +213,13 @@ public class AtlasUtilities
     }
 
     // Reads an animation entry's stored atlas rectangle: the first four values
-    // of `placement` (the trimmed box), or the pre-update 4-value
-    // `top_left_dimensions` so an old-format archive still reads.
+    // of `placement` (the trimmed box).
     private static bool TryReadRegion(TomlTable anim, out Rectangle region)
     {
         region = default;
         if (!anim.TryGetValue("placement", out var dObj) || dObj is not TomlArray d || d.Count < 4)
         {
-            if (!anim.TryGetValue("top_left_dimensions", out dObj) ||
-                dObj is not TomlArray legacy || legacy.Count < 4)
-                return false;
-            d = legacy;
+            return false;
         }
 
         region = new Rectangle(
