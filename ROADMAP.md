@@ -16,6 +16,12 @@
 * [x] Allow creating a mods folder automatically
 * [ ] Add converting old sprite mods
 
+## 0.13.0
+* [x] Absorb Mistweave: behavioural mods (`gml/`), the mmapi framework and its in-game debugger
+* [x] Compile-check staged GML before writing, and skip mods that would break the game's boot
+* [x] Read-only seam verify in the CLI (`--verify`), for pre-checking a game update
+* [x] A settings toggle for the mmapi debugger
+
 ## Future/Unknown
 * [ ] Allow all "localised" text in easy JSON structures to be multi-lingual
 * [ ] Add Validators for Simple Conversations

@@ -35,6 +35,12 @@ public class ZipMod() : IMod
 
     private string? _downloadUrl;
 
+    private List<string> _requiredHooks = [];
+
+    private bool _requiredHooksValid = true;
+
+    private bool _hasMistweaveKey;
+
     public ZipMod(ZipArchive zipFile, string basePath) : this()
     {
         var manifestFile = zipFile.GetEntry(basePath + "manifest.json") ?? zipFile.GetEntry(basePath + "manifest.toml");
@@ -58,7 +64,10 @@ public class ZipMod() : IMod
         _requirements = manifest.Requirements;
         _downloadUrl = manifest.DownloadUrl;
         _updateUrl = manifest.UpdateUrl;
-        
+        _requiredHooks = manifest.RequiresHooks;
+        _requiredHooksValid = manifest.RequiresHooksValid;
+        _hasMistweaveKey = manifest.HasMistweaveKey;
+
         _zipFile = zipFile;
         _basePath = basePath;
     }
@@ -169,7 +178,10 @@ public class ZipMod() : IMod
         {
             _validation.Warnings.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"), Resources.CoreModRequiresIncorrectVersion));
         }
-        
+
+        FolderMod.ValidateGmlManifestFields(_validation, this, Path.Combine(GetLocation(), "manifest.json"),
+            _requiredHooksValid, _hasMistweaveKey);
+
         return _validation;
     }
 
@@ -223,6 +235,8 @@ public class ZipMod() : IMod
     }
 
     public List<ModRequirement> GetRequirements() => _requirements;
+
+    public List<string> GetRequiredHooks() => _requiredHooks;
 
     public string? GetUpdateUrl()   => _updateUrl;
     public string? GetDownloadUrl() => _downloadUrl;

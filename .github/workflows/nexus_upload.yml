@@ -6,7 +6,43 @@ on:
   workflow_dispatch:
 
 jobs:
+  # This workflow is its own run, so it cannot reach compile.yml's artifacts:
+  # it builds the checkers it needs. Three arches, since the publish steps
+  # below cover Windows, Linux and OSX from the one job. Only momi-gml-check
+  # is built: momi-gml-probe executes GML and never ships.
+  checker:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: win-x64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - arch: linux-x64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - arch: osx-x64
+            os: macos-latest
+            target: x86_64-apple-darwin
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add the Rust target
+        run: rustup target add ${{ matrix.target }}
+      - name: Build momi-gml-check
+        run: cargo build --release --manifest-path tools/checker/Cargo.toml --target ${{ matrix.target }} --bin momi-gml-check
+      - name: Upload the ${{ matrix.arch }} checker
+        uses: actions/upload-artifact@v4
+        with:
+          name: checker-${{ matrix.arch }}
+          path: tools/checker/target/${{ matrix.target }}/release/momi-gml-check*
+          if-no-files-found: error
+
   nexus_upload:
+    needs: checker
 
     strategy:
       fail-fast: false
@@ -27,7 +63,20 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
-          
+
+      - name: Download the checkers
+        uses: actions/download-artifact@v4
+        with:
+          pattern: checker-*
+          path: tools/checker/staged
+      - name: Lay the checkers out per RID
+        run: |
+          for arch in win-x64 linux-x64 osx-x64; do
+            mkdir -p tools/checker/dist/$arch
+            cp tools/checker/staged/checker-$arch/momi-gml-check* tools/checker/dist/$arch/
+          done
+          ls -lR tools/checker/dist
+
       - name: Restore
         run: dotnet restore
       - name: Build

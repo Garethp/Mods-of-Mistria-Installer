@@ -506,13 +506,20 @@ public partial class ModlistPageViewModel : PageViewBase
             var installer     = new ModInstaller(MistriaLocation, ModsLocation);
             var modsToInstall = Mods.Where(m => m.Enabled).Select(m => m.Mod).ToList();
 
-            installer.InstallMods(modsToInstall, (message, _) =>
+            var result = installer.InstallMods(modsToInstall, (message, _) =>
             {
                 Logger.Log(message);
                 InstallStatus = message;
             });
 
-            Dispatcher.UIThread.InvokeAsync(() => { IsInstalling = false; });
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                IsInstalling  = false;
+                InstallStatus = result.Summary();
+                // a skipped mod's reasons landed as validation errors; the
+                // per-mod expander shows them once refreshed
+                foreach (var mod in Mods) mod.RefreshValidation();
+            });
         }
         catch (Exception e)
         {

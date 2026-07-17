@@ -2,13 +2,16 @@
 
 using System.Diagnostics;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.GmlMods;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Tools;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
 public static class Standalone
 {
-    public static void Run()
+    public static void Run(GmlLayerOptions? gmlOptions = null,
+        CompileGateMode gateMode = CompileGateMode.Auto)
     {
         var mistriaLocation = MistriaLocator.GetMistriaLocation();
         if (mistriaLocation == null)
@@ -62,11 +65,20 @@ public static class Standalone
             })
             .ToList();
         
-        installer.InstallMods(allMods, (message, timeTaken) =>
+        var result = installer.InstallMods(allMods, (message, timeTaken) =>
         {
             Logger.Log(Resources.CoreInstalledInReporter, message, timeTaken);
-        });
-        
+        }, gmlOptions, gateMode);
+
+        Logger.Log(result.Summary());
+        foreach (var skipped in result.Skipped)
+        {
+            foreach (var reason in skipped.Reasons)
+            {
+                Logger.Log(Resources.CoreSkippedModReason, skipped.Id, reason);
+            }
+        }
+
         totalTime.Stop();
         Logger.Log(Resources.CoreModsInstalledInTime, totalTime);
     }

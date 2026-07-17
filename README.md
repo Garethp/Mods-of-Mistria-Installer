@@ -353,6 +353,41 @@ If you have Aurie DLLs as part of your mod, put them in the `aurie/` folder of y
 install Aurie onto the players setup, register the keys necessary and copy your DLL into the correct Aurie folder. If
 you do this, please set `minInstallerVersion` in your `manifest.json` to no lower than `0.2.0`.
 
+### `gml/` (behavioural mods)
+If you want your mod to change how the game behaves, put GML files in a `gml/` folder. MOMI installs them into the
+game's scripts under a folder named after your mod's ID (with dots and dashes turned into underscores), alongside the
+`mmapi` framework your code talks to: declare your mod with `mmapi_mod_declare`, queue an installer function with
+`mmapi_register`, and hook into the game with `mmapi_on`, `mmapi_filter`, `mmapi_guard` or `mmapi_override`. The
+hooks you can register on live in the seam catalog at
+[`ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`](ModsOfMistriaInstallerLib/Seam/Payload/seams.toml), where each
+`[[hook]]` entry carries a `doc` line saying when it fires and what it can do.
+
+Before anything is written, MOMI checks that your mod's GML compiles and doesn't clash with the game or with other
+mods. A mod that fails those checks is skipped whole, items and cosmetics included, and the reasons are shown in the
+installer, so a broken behavioural mod can never leave the game unable to start. If you use `gml/`, please set
+`minInstallerVersion` in your `manifest.json` to no lower than `0.13.0`.
+
+One optional `manifest.json` field matters for behavioural mods: `requires_hooks`, a list of hook names your mod
+needs, for example `["game.day_started"]`. If the user's MOMI doesn't provide one of them, your mod is skipped with
+a message telling them to update MOMI, instead of installing a mod that can't work.
+
+Your mod's ID is always derived from the author and name fields, and it decides your scripts folder and so your
+GML namespace — renaming your mod moves both.
+
+**Coming from Mistweave:** MOMI has absorbed Mistweave, and Mistweave is retired. Mods built for it keep working,
+with four notes:
+
+* The `mistweave` manifest field is read and ignored, with a warning. `minInstallerVersion` is the one version gate,
+  so state your required installer version there.
+* Your `gml/` tree and `requires_hooks` work unchanged, and the `mmapi_*` API, the hook names and the in-game
+  debugger are the same ones.
+* The `id` manifest field is no longer read: your mod's ID always derives from the author and name fields. A mod
+  that pinned a different `id` installs under the derived name instead, and its scripts folder and expected GML
+  prefix move with it.
+* MOMI keeps the game's assets in the compressed archive rather than the loose `assets/` folder Mistweave used. An
+  existing loose-tree install is migrated automatically the first time MOMI installs or uninstalls; there is nothing
+  to change in your mod.
+
 ## Contributing Translations
 
 If you're interested in contributing translations of MOMI into other languages, that would be super appreciated! Here's

@@ -129,6 +129,12 @@
   <data name="CLIWarning32Bit" xml:space="preserve">
     <value>You're running a 64-bit operating system, but have accidently downloaded the 32-bit version of MOMI. Please download the version of MOMI that does not include "-x86".</value>
   </data>
+  <data name="CLICompileCheckUsage" xml:space="preserve">
+    <value>--compile-check must be "on", "off" or "require".</value>
+  </data>
+  <data name="CLILintUsage" xml:space="preserve">
+    <value>--lint requires a mod folder: --lint &lt;mod folder&gt; [pristine zip]</value>
+  </data>
   <data name="CoreLookingForMistriaAt" xml:space="preserve">
     <value>Looking for Mistria at {0}</value>
   </data>
@@ -428,5 +434,47 @@
   </data>
   <data name="CoreModRequiresIncorrectVersion" xml:space="preserve">
     <value>The mod requires an incorrect minimum version of MOMI.</value>
+  </data>
+  <data name="CoreStoreRebuildFailed" xml:space="preserve">
+    <value>Could not rebuild {0}. Is Fields of Mistria running? Close it and try again; the previous install is untouched.</value>
+  </data>
+  <data name="CoreStoreFlushFailed" xml:space="preserve">
+    <value>Could not finish writing {0}. Check for a full disk or another program holding the file (such as an antivirus scan), then run the installer again.</value>
+  </data>
+  <data name="CoreStoreRestoreFailed" xml:space="preserve">
+    <value>Could not restore {0}. Is Fields of Mistria running? Close it and try again.</value>
+  </data>
+  <data name="CoreStoreBackupMissing" xml:space="preserve">
+    <value>{0} contains a previous install, but the backup {1} is missing. Please verify the game files through Steam and try again.</value>
+  </data>
+  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve">
+    <value>{0} is not a readable archive and the backup {1} is missing. Please verify the game files through Steam and try again.</value>
+  </data>
+  <data name="CoreStoreNoArchives" xml:space="preserve">
+    <value>Could not find {0} or {1}. Run the game once, or verify the game files through Steam.</value>
+  </data>
+  <data name="CoreStoreNothingToUninstall" xml:space="preserve">
+    <value>No assets store was found, so there is nothing to restore.</value>
+  </data>
+  <data name="CoreInstallSummary" xml:space="preserve">
+    <value>{0} mod(s) installed</value>
+  </data>
+  <data name="CoreInstallSummaryWithSkipped" xml:space="preserve">
+    <value>{0} mod(s) installed, {1} skipped ({2})</value>
+  </data>
+  <data name="CoreModRequiresMissingHooks" xml:space="preserve">
+    <value>The mod requires hooks this version of MOMI does not provide: {0}. Update MOMI, or use an older version of the mod.</value>
+  </data>
+  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve">
+    <value>The manifest's requires_hooks must be an array of hook-name strings.</value>
+  </data>
+  <data name="CoreManifestMistweaveIgnored" xml:space="preserve">
+    <value>The manifest's mistweave field is ignored. minInstallerVersion decides the required installer version.</value>
+  </data>
+  <data name="CoreSkippedModReason" xml:space="preserve">
+    <value>Skipped {0}: {1}</value>
+  </data>
+  <data name="CoreVerifyNoBackup" xml:space="preserve">
+    <value>No pristine backup was found in {0}. Run the installer once to create it, or verify against a build zip directly.</value>
   </data>
 </root>

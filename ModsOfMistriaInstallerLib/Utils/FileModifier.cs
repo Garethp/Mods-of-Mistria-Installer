@@ -63,6 +63,11 @@ public class FileModifier(string fieldsOfMistriaLocation): IFileModifier
         File.WriteAllText(Path.Combine(fieldsOfMistriaLocation, file), contents);
     }
 
+    public void Write(string file, byte[] contents)
+    {
+        File.WriteAllBytes(Path.Combine(fieldsOfMistriaLocation, file), contents);
+    }
+
     public Stream GetWriteStream(string file)
     {
         return File.OpenWrite(Path.Combine(fieldsOfMistriaLocation, file));

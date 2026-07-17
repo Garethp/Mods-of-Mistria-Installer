@@ -56,6 +56,15 @@ public class ZipFileModifier(ZipArchive archive) : IFileModifier
         writer.Close();
     }
 
+    public void Write(string file, byte[] contents)
+    {
+        // Update mode opens existing entries in place, so truncate first or a
+        // shorter write keeps the old entry's tail
+        using var stream = GetWriteStream(file);
+        stream.SetLength(0);
+        stream.Write(contents);
+    }
+
     public Stream GetWriteStream(string file)
     {
         file = file.Replace('\\', '/');

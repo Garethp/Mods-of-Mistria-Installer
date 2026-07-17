@@ -88,4 +88,13 @@
         <UpToDateCheckInput Remove="Assets\icon.ico" />
     </ItemGroup>
 
+    <!-- The compile gate's binary, built per RID by CI and downloaded to
+         tools/checker/dist/<rid>/. Only the checker is bundled: the probe
+         executes GML and never ships. Conditioned on existence so a dev build
+         without it still compiles; the gate then reports no backend. -->
+    <ItemGroup Condition="Exists('..\tools\checker\dist\$(RuntimeIdentifier)')">
+        <None Include="..\tools\checker\dist\$(RuntimeIdentifier)\momi-gml-check*"
+              CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
+    </ItemGroup>
+
 </Project>

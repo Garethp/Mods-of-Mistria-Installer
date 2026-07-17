@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Headless.NUnit;
 using Garethp.ModsOfMistriaGUI;
 using Garethp.ModsOfMistriaGUI.ViewModels;

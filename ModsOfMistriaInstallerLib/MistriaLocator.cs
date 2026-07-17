@@ -66,6 +66,15 @@ public class MistriaLocator
     /// </summary>
     public static IEnumerable<string> GetGameConfigDirectories()
     {
+        // The MOMI_GAME_CONFIG_DIR override when set, otherwise the AppData scan.
+        // Tests point it at a temp dir to keep writes off a real install.
+        var overrideDir = Environment.GetEnvironmentVariable("MOMI_GAME_CONFIG_DIR");
+        if (!string.IsNullOrEmpty(overrideDir))
+        {
+            yield return overrideDir;
+            yield break;
+        }
+
         var root = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "FieldsOfMistria");

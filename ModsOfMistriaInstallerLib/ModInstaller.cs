@@ -1,9 +1,12 @@
 ﻿using System.Diagnostics;
-using System.IO.Compression;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.GmlMods;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Garethp.ModsOfMistriaInstallerLib.Seam;
+using Garethp.ModsOfMistriaInstallerLib.Store;
+using Garethp.ModsOfMistriaInstallerLib.Tools;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
@@ -24,27 +27,50 @@ public class ModInstaller
         _atlasDirectory = Path.Combine(_assetsLocation, "atlases");
     }
 
-    public void InstallMods(List<IMod> mods, Action<string, string> reportStatus)
+    public InstallResult InstallMods(List<IMod> mods, Action<string, string> reportStatus,
+        GmlLayerOptions? gmlOptions = null, CompileGateMode gateMode = CompileGateMode.Auto)
     {
         if (!Directory.Exists(_fomLocation))
             throw new DirectoryNotFoundException(Resources.CoreMistriaLocationDoesNotExist);
-        
-        if (IsFreshInstall())
+
+        var store = new AssetsStore(_fomLocation);
+        store.EnsureBackup();
+
+        // Stage the GML layer before the rebuild, so a stale catalog aborts
+        // with the previous install still live and a failed stage costs no
+        // copy. The layer stages only when at least one mod ships gml.
+        var result = new InstallResult();
+        GmlLayerPlan? plan = null;
+        var installMods = mods;
+        var gmlMods = mods.Select(GmlModCollector.Collect).OfType<GmlModCode>().ToList();
+        if (gmlMods.Count > 0)
         {
-            var zipPath = Path.Combine(_fomLocation, "assets.zip");
-            if (!File.Exists(zipPath)) return;
+            plan = StageGmlLayer(store, gmlMods, gmlOptions, gateMode);
 
-            File.Copy(zipPath, Path.Combine(_fomLocation, "assets.bak.zip"), true);
+            // D12: one mod, one fate - an excluded mod's content is excluded too
+            foreach (var excluded in plan.Excluded)
+            {
+                var mod = excluded.Mod.Mod;
+                foreach (var reason in excluded.Reasons)
+                    mod.GetValidation().AddError(mod, "gml", reason);
+                result.Skipped.Add(new SkippedMod(excluded.Mod.Id, excluded.Mod.Version, excluded.Reasons));
+            }
+
+            var excludedMods = plan.Excluded.Select(e => e.Mod.Mod).ToHashSet();
+            installMods = mods.Where(m => !excludedMods.Contains(m)).ToList();
         }
-        
-        File.Copy(Path.Combine(_fomLocation, "assets.bak.zip"), Path.Combine(_fomLocation, "assets.zip"), true);
 
-        var zipFile = ZipFile.Open(Path.Combine(_fomLocation, "assets.zip"), ZipArchiveMode.Update);
-        _fileModifier = new ZipFileModifier(zipFile);
+        _fileModifier = store.BeginRebuild();
         _fileModifier.Write("manifest.toml", "");
 
+        if (plan is not null)
+        {
+            foreach (var (rel, bytes) in plan.Added) _fileModifier.Write(rel, bytes);
+            foreach (var (rel, staged) in plan.Seamed) _fileModifier.Write(rel, staged.Encode());
+        }
+
         var totalTime = Stopwatch.StartNew();
-        
+
         // Shared state across all installers for this install session
         IDManager.Reset();
         var fileNameUIDMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -54,9 +80,9 @@ public class ModInstaller
 
         // Location pre-pass: merges all mod locations and patches TMX destination_ids
         // before the per-mod loop so that positional LocationIds are globally consistent.
-        new LocationInstaller(_fomLocation, _fileModifier).Install(mods, reportStatus);
+        new LocationInstaller(_fomLocation, _fileModifier).Install(installMods, reportStatus);
 
-        foreach (var mod in mods)
+        foreach (var mod in installMods)
         {
             var modTimer = Stopwatch.StartNew();
             reportStatus($"Installing {mod.GetName()} {mod.GetVersion()} by {mod.GetAuthor()}", "");
@@ -68,22 +94,36 @@ public class ModInstaller
         }
 
         atlasUtils.Flush();
-        
-        if (_fileModifier is ZipFileModifier zipFileModifier)
-        {
-            zipFileModifier.Close();
-        }
-        
-        GameManifestWriter.Write(mods);
+
+        store.Commit();
+
+        // After the archive commits, so the Mods tab never describes an
+        // archive that failed to land. The Mods tab lists exactly what runs (D12).
+        GameManifestWriter.Write(installMods);
+
         totalTime.Stop();
         reportStatus(Resources.CoreInstallCompleted, totalTime.Elapsed.ToString());
+
+        result.Installed.AddRange(installMods);
+        return result;
+    }
+
+    private GmlLayerPlan StageGmlLayer(AssetsStore store, List<GmlModCode> gmlMods,
+        GmlLayerOptions? gmlOptions, CompileGateMode gateMode)
+    {
+        var (catalogName, catalogBytes) = PayloadResolver.SeamCatalog();
+        var catalog = SeamCatalogLoader.Load(catalogBytes, catalogName);
+
+        using var pristine = new ZipPristineSource(store.BackupPath);
+        return GmlLayer.Stage(catalog, pristine, gmlMods, GmlCompileGate.Resolve(gateMode), gmlOptions);
     }
 
     public void Uninstall()
     {
-        if (File.Exists(Path.Combine(_fomLocation, "assets.bak.zip")))
+        if (new AssetsStore(_fomLocation).Uninstall())
         {
-            File.Copy(Path.Combine(_fomLocation, "assets.bak.zip"), Path.Combine(_fomLocation, "assets.zip"), true);
+            // The Mods tab matches the store again
+            GameManifestWriter.Write([]);
         }
     }
 
@@ -133,16 +173,7 @@ public class ModInstaller
         
         new FurnitureInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, reportStatus);
-        
+
         atlasUtils.SemiFlush();
-    }
-
-    private bool IsFreshInstall() {
-        var zipFile = ZipFile.Open(Path.Combine(_fomLocation, "assets.zip"), ZipArchiveMode.Read);
-
-        var fresh = zipFile.GetEntry("manifest.toml") == null;
-        
-        zipFile.Dispose();
-        return fresh;
     }
 }

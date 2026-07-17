@@ -1,0 +1,6 @@
+# Normalize all text files to LF in the repo and on checkout, so C# raw-string
+# literals and multiline TOML anchors keep exact \n regardless of core.autocrlf.
+* text=auto eol=lf
+
+# The seam catalog and mmapi payload install byte-exact: never convert them.
+ModsOfMistriaInstallerLib/Seam/Payload/** -text

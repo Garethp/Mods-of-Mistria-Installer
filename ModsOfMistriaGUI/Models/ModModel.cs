@@ -49,6 +49,18 @@ public partial class ModModel : ObservableObject
     public string Warnings => string.Join("\r\n", Mod.GetValidation().Warnings.Select(w => w.Message));
     public string Errors   => string.Join("\r\n", Mod.GetValidation().Errors.Select(w => w.Message));
 
+    // An install can add validation messages (a skipped mod's reasons land as
+    // errors); the expander re-reads them when told
+    public void RefreshValidation()
+    {
+        OnPropertyChanged(nameof(InWarning));
+        OnPropertyChanged(nameof(InError));
+        OnPropertyChanged(nameof(IsValid));
+        OnPropertyChanged(nameof(Warnings));
+        OnPropertyChanged(nameof(Errors));
+        OnPropertyChanged(nameof(Enabled));
+    }
+
     public string Full => string.Format(Resources.GUIModByAuthorWithVersion, Mod.GetName(), Mod.GetAuthor(), Mod.GetVersion());
 
     public string UpdateTooltip =>
