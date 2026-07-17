@@ -45,6 +45,18 @@ public class Atlas
 
     public static void RegisterUnnumberedType(string type) => UnnumberedTypes.Add(type);
 
+    // The game's atlas consolidation retired these categories: their sprites
+    // and atlas files live in Default now. Mod metas naming them keep working.
+    private static readonly HashSet<string> RetiredTypes =
+        new(StringComparer.OrdinalIgnoreCase) { "Shadow", "Animals", "Player", "Lut" };
+
+    public static string? CanonicalType(string? type)
+    {
+        if (type is null) return null;
+        
+        return RetiredTypes.Contains(type) ? "Default" : type;
+    }
+
     private static bool IsUnnumbered(string type, int number) =>
         number == 0 && UnnumberedTypes.Contains(type);
 

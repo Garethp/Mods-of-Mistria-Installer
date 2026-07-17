@@ -145,26 +145,21 @@ public class OutfitGenerator
 
         if (slot.Parts is { } parts)
         {
-            // Multi-part slot: generate a meta for every declared part.
-            // Frame count is detected from the first part PNG found in the mod,
-            // then shared across all parts (they all have the same animation length).
-            var multiFrameCount = slot.DefaultFrameCount;
-            foreach (var part in parts)
-            {
-                var ps = $"spr_player_{def.Id}_{part}";
-                if (mod.FileExists($"animations/{slot.PlayerFolder}/{ps}.png"))
-                {
-                    multiFrameCount = DetectFrameCount(mod, slot, ps, frameW);
-                    break;
-                }
-            }
+            // Multi-part slot (torso / sleeves / waist / legs …).  Each part is an
+            // independent animation strip with its OWN frame count — vanilla tops,
+            // for example, pair a 14-frame torso with a 48-frame waist and a
+            // 49-frame sleeve — so the frame count is detected per part from that
+            // part's own PNG width. Sharing one count across parts (e.g. the
+            // torso's) truncates the longer strips when they are packed.
+            // Only parts the mod actually uses get a meta.
             foreach (var part in parts)
             {
                 var ps = $"spr_player_{def.Id}_{part}";
                 if (!mod.FileExists($"animations/{slot.PlayerFolder}/{ps}.png")) continue;
 
+                var partFrameCount = DetectFrameCount(mod, slot, ps, frameW);
                 AddIfMissing(mod, out_, $"animations/{slot.PlayerFolder}/{ps}.meta.toml",
-                    AnimationMeta(frameW, frameH, multiFrameCount, slot.Atlas, slot.Duration,
+                    AnimationMeta(frameW, frameH, partFrameCount, slot.Atlas, slot.Duration,
                         slot.OffsetH, slot.OffsetV, includeAssetKind: true));
                 AddIfMissing(mod, out_, $"shapes/{slot.PlayerFolder}/poly_{ps[4..]}.meta.toml",
                     ShapeMeta(frameW, frameH, 0, 0));
