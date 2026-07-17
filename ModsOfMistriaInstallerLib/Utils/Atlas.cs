@@ -50,8 +50,12 @@ public class Atlas
     private static readonly HashSet<string> RetiredTypes =
         new(StringComparer.OrdinalIgnoreCase) { "Shadow", "Animals", "Player", "Lut" };
 
-    public static string CanonicalType(string type) =>
-        RetiredTypes.Contains(type) ? "Default" : type;
+    public static string? CanonicalType(string? type)
+    {
+        if (type is null) return null;
+        
+        return RetiredTypes.Contains(type) ? "Default" : type;
+    }
 
     private static bool IsUnnumbered(string type, int number) =>
         number == 0 && UnnumberedTypes.Contains(type);

@@ -40,7 +40,7 @@ public class AtlasUtilities
         Dictionary<string, string> fileNameUIDMapping,
         string baseName)
     {
-        atlasType = Atlas.CanonicalType(atlasType);
+        atlasType = Atlas.CanonicalType(atlasType)!;
 
         if (!_states.TryGetValue(atlasType, out var state))
             state = OpenState(atlasType);
@@ -53,6 +53,7 @@ public class AtlasUtilities
         }
 
         using var stripImage = Image.Load<Rgba32>(pngStream);
+        pngStream.Close();
 
         for (int i = 0; i < frameCount; i++)
         {
