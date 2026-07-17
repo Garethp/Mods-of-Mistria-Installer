@@ -841,6 +841,24 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
                 return ResourceManager.GetString("GUIModHasWarnings", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Installed successfully..
+        /// </summary>
+        public static string GUIModInstalled {
+            get {
+                return ResourceManager.GetString("GUIModInstalled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This mod was skipped during install.
+        /// </summary>
+        public static string GUIModSkipped {
+            get {
+                return ResourceManager.GetString("GUIModSkipped", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Some mods require a newer version of the installer. Please update the installer..
@@ -1073,6 +1091,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string CoreInstallSummaryWithSkipped {
             get {
                 return ResourceManager.GetString("CoreInstallSummaryWithSkipped", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Game GML changed. Unable to install..
+        /// </summary>
+        public static string CoreGameGmlChanged {
+            get {
+                return ResourceManager.GetString("CoreGameGmlChanged", resourceCulture);
             }
         }
 

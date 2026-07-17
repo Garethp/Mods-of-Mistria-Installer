@@ -357,6 +357,12 @@
   <data name="GUIModHasErrors" xml:space="preserve">
     <value>This mod has errors and will not install</value>
   </data>
+  <data name="GUIModInstalled" xml:space="preserve">
+    <value>Installed successfully.</value>
+  </data>
+  <data name="GUIModSkipped" xml:space="preserve">
+    <value>This mod was skipped during install</value>
+  </data>
   <data name="GUIUpdateNagTitle" xml:space="preserve">
     <value>New Version Available</value>
   </data>
@@ -461,6 +467,9 @@
   </data>
   <data name="CoreInstallSummaryWithSkipped" xml:space="preserve">
     <value>{0} mod(s) installed, {1} skipped ({2})</value>
+  </data>
+  <data name="CoreGameGmlChanged" xml:space="preserve">
+    <value>Game GML changed. Unable to install.</value>
   </data>
   <data name="CoreModRequiresMissingHooks" xml:space="preserve">
     <value>The mod requires hooks this version of MOMI does not provide: {0}. Update MOMI, or use an older version of the mod.</value>

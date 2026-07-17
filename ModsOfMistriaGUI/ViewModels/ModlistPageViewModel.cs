@@ -434,6 +434,9 @@ public partial class ModlistPageViewModel : PageViewBase
         // Auto-save profile state before installing so load order is persisted
         SaveCurrentProfileState();
 
+        // The icons describe the install that is about to run, not the last one
+        foreach (var mod in Mods) mod.SetInstallOutcome(ModInstallState.None);
+
         InstallStatus = InstallInProgressText;
         IsInstalling  = true;
         Task.Run(BackgroundInstall);
@@ -490,6 +493,8 @@ public partial class ModlistPageViewModel : PageViewBase
                 {
                     IsInstalling  = false;
                     InstallStatus = "Uninstall Complete";
+                    // Nothing is installed any more; the outcome icons are stale
+                    foreach (var mod in Mods) mod.SetInstallOutcome(ModInstallState.None);
                 });
             }
             catch (Exception e)
@@ -506,19 +511,31 @@ public partial class ModlistPageViewModel : PageViewBase
             var installer     = new ModInstaller(MistriaLocation, ModsLocation);
             var modsToInstall = Mods.Where(m => m.Enabled).Select(m => m.Mod).ToList();
 
-            var result = installer.InstallMods(modsToInstall, (message, _) =>
-            {
-                Logger.Log(message);
-                InstallStatus = message;
-            });
+            // Per-file messages go to the log only; the status line follows
+            // the coarse mod + phase channel so it doesn't redraw per file
+            var result = installer.InstallMods(modsToInstall,
+                (message, _) => Logger.Log(message),
+                reportPhase: (mod, phaseText) =>
+                    InstallStatus = mod.Length == 0 ? phaseText : $"{mod} - {phaseText}");
 
             Dispatcher.UIThread.InvokeAsync(() =>
             {
                 IsInstalling  = false;
                 InstallStatus = result.Summary();
-                // a skipped mod's reasons landed as validation errors; the
-                // per-mod expander shows them once refreshed
-                foreach (var mod in Mods) mod.RefreshValidation();
+
+                // Checkmark for what landed, red X with the reasons for what
+                // was skipped; a skipped mod's reasons also landed as
+                // validation errors, so refresh the expander bindings too
+                var installed = result.Installed.ToHashSet();
+                var skipped   = result.Skipped.ToDictionary(s => s.Id, StringComparer.OrdinalIgnoreCase);
+                foreach (var mod in Mods)
+                {
+                    if (skipped.TryGetValue(mod.Mod.GetId(), out var skip))
+                        mod.SetInstallOutcome(ModInstallState.Skipped, string.Join("\r\n", skip.Reasons));
+                    else if (installed.Contains(mod.Mod))
+                        mod.SetInstallOutcome(ModInstallState.Installed, Resources.GUIModInstalled);
+                    mod.RefreshValidation();
+                }
             });
         }
         catch (Exception e)

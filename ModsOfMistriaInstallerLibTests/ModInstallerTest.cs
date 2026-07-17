@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using Garethp.ModsOfMistriaInstallerLib;
+using Garethp.ModsOfMistriaInstallerLib.GmlMods;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
 using Garethp.ModsOfMistriaInstallerLib.Store;
@@ -119,19 +120,63 @@ public class ModInstallerTest
     }
 
     [Test]
-    public void ShouldLeaveTheLiveArchiveUntouchedWhenStagingFails()
+    public void ShouldSkipEveryGmlModWhenTheGameGmlChanged()
     {
-        // The engine updated: pristine Game.gml no longer matches the anchor
+        // The engine updated: pristine Game.gml no longer matches the anchor.
+        // The GML mods are skipped whole and the content-only install proceeds.
+        WriteLiveArchive("function step_begin() {\n    NEW_ENGINE_LINE();\n}\n");
+        var gmlMod = GmlMod("testmod");
+        var contentMod = ContentMod("contentmod");
+
+        var result = new ModInstaller(_fom, "").InstallMods([gmlMod, contentMod], (_, _) => { },
+            gateMode: CompileGateMode.Off);
+
+        Assert.That(result.Installed, Is.EqualTo(new IMod[] { contentMod }));
+        Assert.That(result.Skipped, Has.Count.EqualTo(1));
+        Assert.That(result.Skipped[0].Id, Is.EqualTo("testmod"));
+        Assert.That(result.Skipped[0].Reasons, Has.Some.Contains("Game GML changed"));
+        Assert.That(gmlMod.GetValidation().Errors.Any(e => e.Message.Contains("Game GML changed")), Is.True);
+
+        using (var live = ZipFile.OpenRead(new AssetsStore(_fom).LivePath))
+        {
+            Assert.That(live.GetEntry("assets/gml/scripts/mmapi/mmapi.gml"), Is.Null,
+                "the layer must not stage against a moved game build");
+            Assert.That(live.Entries.Any(e => e.FullName.StartsWith("assets/gml/scripts/testmod/")), Is.False);
+            Assert.That(live.GetEntry("manifest.toml"), Is.Not.Null);
+        }
+
+        Assert.That(GameManifestIds(), Is.EqualTo(new[] { "contentmod" }));
+    }
+
+    [Test]
+    public void ShouldLeaveTheLiveArchiveUntouchedWhenFailOnSkipIsSet()
+    {
+        // fail-on-skip keeps the hard stop: the stage aborts before the
+        // rebuild, so a failed stage costs no copy
         WriteLiveArchive("function step_begin() {\n    NEW_ENGINE_LINE();\n}\n");
         var livePath = new AssetsStore(_fom).LivePath;
         var before = File.ReadAllBytes(livePath);
 
         Assert.Throws<SeamStagingException>(() =>
             new ModInstaller(_fom, "").InstallMods([GmlMod("testmod")], (_, _) => { },
-                gateMode: CompileGateMode.Off));
+                new GmlLayerOptions { FailOnSkip = true }, CompileGateMode.Off));
 
-        // A failed stage costs no copy: the rebuild never began
         Assert.That(File.ReadAllBytes(livePath), Is.EqualTo(before));
+    }
+
+    [Test]
+    public void ShouldReportTheModAndPhaseOnTheCoarseChannel()
+    {
+        var phases = new List<(string Mod, string Phase)>();
+
+        new ModInstaller(_fom, "").InstallMods([GmlMod("testmod")], (_, _) => { },
+            gateMode: CompileGateMode.Off,
+            reportPhase: (mod, phaseText) => phases.Add((mod, phaseText)));
+
+        // Whole-install steps carry no mod name; per-mod steps carry the mod's
+        Assert.That(phases, Has.Some.EqualTo(("", "Preparing GML layer")));
+        Assert.That(phases, Has.Some.EqualTo(("testmod", "Installing Images")));
+        Assert.That(phases, Has.Some.EqualTo(("", "Writing game archive")));
     }
 
     [Test]

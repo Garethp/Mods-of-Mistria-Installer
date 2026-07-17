@@ -28,25 +28,56 @@ public class ModInstaller
     }
 
     public InstallResult InstallMods(List<IMod> mods, Action<string, string> reportStatus,
-        GmlLayerOptions? gmlOptions = null, CompileGateMode gateMode = CompileGateMode.Auto)
+        GmlLayerOptions? gmlOptions = null, CompileGateMode gateMode = CompileGateMode.Auto,
+        Action<string, string>? reportPhase = null)
     {
         if (!Directory.Exists(_fomLocation))
             throw new DirectoryNotFoundException(Resources.CoreMistriaLocationDoesNotExist);
 
+        // Coarse progress for a status line: the current mod (or "" for a
+        // whole-install step) and the phase it is in. reportStatus stays the
+        // verbose per-file channel.
+        var phase = reportPhase ?? ((_, _) => { });
+
         var store = new AssetsStore(_fomLocation);
         store.EnsureBackup();
 
-        // Stage the GML layer before the rebuild, so a stale catalog aborts
-        // with the previous install still live and a failed stage costs no
-        // copy. The layer stages only when at least one mod ships gml.
+        // Stage the GML layer before the rebuild. The layer stages only when
+        // at least one mod ships gml; a mod-content failure excludes that one
+        // mod. When the game build itself moved under the catalog, every GML
+        // mod is skipped whole and the content-only install proceeds.
         var result = new InstallResult();
         GmlLayerPlan? plan = null;
         var installMods = mods;
         var gmlMods = mods.Select(GmlModCollector.Collect).OfType<GmlModCode>().ToList();
         if (gmlMods.Count > 0)
         {
-            plan = StageGmlLayer(store, gmlMods, gmlOptions, gateMode);
+            phase("", "Preparing GML layer");
+            try
+            {
+                plan = StageGmlLayer(store, gmlMods, gmlOptions, gateMode);
+            }
+            catch (SeamStagingException exception)
+            {
+                // fail-on-skip keeps its CI meaning: a stale catalog is a hard stop
+                if (gmlOptions?.FailOnSkip == true) throw;
 
+                // The full anchor report goes to the log; the mods carry the
+                // short reason
+                Logger.Log(exception.Message);
+                foreach (var gmlMod in gmlMods)
+                {
+                    gmlMod.Mod.GetValidation().AddError(gmlMod.Mod, "gml", Resources.CoreGameGmlChanged);
+                    result.Skipped.Add(new SkippedMod(gmlMod.Id, gmlMod.Version, [Resources.CoreGameGmlChanged]));
+                }
+
+                var gmlModSet = gmlMods.Select(g => g.Mod).ToHashSet();
+                installMods = mods.Where(m => !gmlModSet.Contains(m)).ToList();
+            }
+        }
+
+        if (plan is not null)
+        {
             // D12: one mod, one fate - an excluded mod's content is excluded too
             foreach (var excluded in plan.Excluded)
             {
@@ -80,6 +111,7 @@ public class ModInstaller
 
         // Location pre-pass: merges all mod locations and patches TMX destination_ids
         // before the per-mod loop so that positional LocationIds are globally consistent.
+        phase("", "Merging locations");
         new LocationInstaller(_fomLocation, _fileModifier).Install(installMods, reportStatus);
 
         foreach (var mod in installMods)
@@ -87,14 +119,16 @@ public class ModInstaller
             var modTimer = Stopwatch.StartNew();
             reportStatus($"Installing {mod.GetName()} {mod.GetVersion()} by {mod.GetAuthor()}", "");
 
-            RunInstallers(mod, fileNameUIDMapping, atlasUtils, reportStatus);
+            RunInstallers(mod, fileNameUIDMapping, atlasUtils, reportStatus, phase);
 
             modTimer.Stop();
             reportStatus($"Finished {mod.GetName()}", modTimer.Elapsed.ToString());
         }
 
+        phase("", "Saving atlases");
         atlasUtils.Flush();
 
+        phase("", "Writing game archive");
         store.Commit();
 
         // After the archive commits, so the Mods tab never describes an
@@ -133,9 +167,13 @@ public class ModInstaller
         IMod mod,
         Dictionary<string, string> fileNameUIDMapping,
         AtlasUtilities atlasUtils,
-        Action<string, string> reportStatus)
+        Action<string, string> reportStatus,
+        Action<string, string> reportPhase)
     {
+        var modName = mod.GetName();
+
         // 0. Expand momi/ compact definitions into virtual overlay files
+        reportPhase(modName, "Preparing");
         var generated = new OutfitGenerator().Generate(mod);
         foreach (var kvp in new FurnitureGenerator().Generate(mod))
             generated.TryAdd(kvp.Key, kvp.Value);
@@ -148,29 +186,36 @@ public class ModInstaller
             : mod;
 
         // 1. Pack images into atlases first so IDs are ready for TOML
+        reportPhase(modName, "Installing Images");
         new ImageInstaller(fileNameUIDMapping, atlasUtils, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 2. Install TOML files (uses IDs populated above)
+        reportPhase(modName, "Installing TOML");
         new TOMLInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 3. Install JSON files
+        reportPhase(modName, "Installing JSON");
         new JSONInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 4. Install XML files
+        reportPhase(modName, "Installing XML");
         new XMLInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 5. Install MIST files (overwrite)
+        reportPhase(modName, "Installing Mist");
         new MISTInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
+        reportPhase(modName, "Installing Outfits");
         new OutfitInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, reportStatus);
-        
+
+        reportPhase(modName, "Installing Furniture");
         new FurnitureInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, reportStatus);
 
