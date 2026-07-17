@@ -38,11 +38,11 @@ switch (FlagValue(args, "--compile-check"))
         break;
 }
 
-// Verify runs before the console subscribes to Logger, so its report (JSON
-// included) is the only thing on stdout.
-if (args.Contains("--verify") || args.Contains("--verify-json"))
+// The seam check runs before the console subscribes to Logger, so its report
+// (JSON included) is the only thing on stdout.
+if (args.Contains("--seam-check") || args.Contains("--seam-check-json"))
 {
-    Environment.Exit(RunVerify(args));
+    Environment.Exit(RunSeamCheck(args));
 }
 
 // Lint likewise: the stage's own log lines stay internal and the report is
@@ -110,13 +110,13 @@ static string? FlagValue(string[] args, string flag)
     return index + 1 < args.Length ? args[index + 1] : "";
 }
 
-// --verify [zip] / --verify-json [zip]: the located install's backup when no
-// zip is given. Exit 0 when every anchor holds, 1 when any broke, 2 when
-// there is nothing to verify against.
-static int RunVerify(string[] args)
+// --seam-check [zip] / --seam-check-json [zip]: the located install's backup
+// when no zip is given. Exit 0 when every anchor holds, 1 when any broke, 2
+// when there is nothing to check against.
+static int RunSeamCheck(string[] args)
 {
-    var zipPath = FlagValue(args, "--verify");
-    if (IsMissing(zipPath)) zipPath = FlagValue(args, "--verify-json");
+    var zipPath = FlagValue(args, "--seam-check");
+    if (IsMissing(zipPath)) zipPath = FlagValue(args, "--seam-check-json");
 
     if (IsMissing(zipPath))
     {
@@ -150,7 +150,7 @@ static int RunVerify(string[] args)
         return 2;
     }
 
-    Console.WriteLine(args.Contains("--verify-json")
+    Console.WriteLine(args.Contains("--seam-check-json")
         ? SeamVerifier.ToJson(result, zipPath!)
         : SeamVerifier.RenderText(result, zipPath!));
     return result.ExitCode;
@@ -171,7 +171,7 @@ static int RunLint(string[] args, CompileGateMode gateMode)
         return 2;
     }
 
-    // the optional pristine zip rides as a second positional, --verify style
+    // the optional pristine zip rides as a second positional, --seam-check style
     var lintIndex = Array.IndexOf(args, "--lint");
     var zipPath = lintIndex + 2 < args.Length && !args[lintIndex + 2].StartsWith("--")
         ? args[lintIndex + 2]

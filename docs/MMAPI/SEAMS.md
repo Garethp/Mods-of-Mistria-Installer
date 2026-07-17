@@ -43,9 +43,9 @@ Because every install re-derives the modified scripts from pristine data, the op
 A game update rewrites engine scripts, so every seam anchor must be re-checked against the new build. Two protections cover this:
 
 - **Install-time**: Staging fails closed on the first anchor that no longer matches, so MOMI never writes against a build the catalog does not fit.
-- **On demand**: The MOMI command line has a read-only check, `--verify` (or `--verify-json` for machine-readable output), that reports whether every seam still anchors cleanly against a build and writes nothing. Exit code `0` means all anchors hold.
+- **On demand**: The MOMI command line has a read-only check, `--seam-check` (or `--seam-check-json` for machine-readable output), that reports whether every seam still anchors cleanly against a build and writes nothing. Exit code `0` means all anchors hold.
 
-When a game update breaks anchors, the fix is a MOMI update carrying a re-verified catalog. Your mod's code and manifest do not change unless absolutely necessary. That is the point of hooks being the supported surface.
+When a game update breaks anchors, the fix is a MOMI update carrying a re-checked catalog. Your mod's code and manifest do not change unless absolutely necessary. That is the point of hooks being the supported surface.
 
 ## What This Means For Your Mod
 

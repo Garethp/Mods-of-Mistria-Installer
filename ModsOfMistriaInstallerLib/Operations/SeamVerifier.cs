@@ -57,9 +57,9 @@ public static class SeamVerifier
             catalog.CallRewrites.Count, catalog.Files.Count, problems);
     }
 
-    // The install's pristine backup, for a verify with no explicit zip. Verify
-    // never migrates (D14), so a not-yet-migrated install's legacy backup name
-    // is accepted as it stands; MOMI's own name wins when both exist.
+    // The install's pristine backup, for a seam check with no explicit zip. The
+    // seam check never migrates (D14), so a not-yet-migrated install's legacy
+    // backup name is accepted as it stands; MOMI's own name wins when both exist.
     public static string LocateBackup(string fomLocation)
     {
         var backup = new AssetsStore(fomLocation).BackupPath;
@@ -100,7 +100,7 @@ public static class SeamVerifier
     {
         List<string> lines =
         [
-            $"verify {source}",
+            $"seam-check {source}",
             $"  catalog: {result.SeamCount} seams + {result.EngineFixCount} fixes + "
             + $"{result.CallRewriteCount} call-rewrite(s), {result.EngineFileCount} engine files",
         ];

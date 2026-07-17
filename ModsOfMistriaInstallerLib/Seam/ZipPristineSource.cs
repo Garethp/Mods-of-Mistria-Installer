@@ -3,7 +3,7 @@ using System.IO.Compression;
 namespace Garethp.ModsOfMistriaInstallerLib.Seam;
 
 // Read-only accessor over a pristine assets zip (`assets.bak.zip`, or any
-// build zip for verify). The central directory is read once into a
+// build zip for the seam check). The central directory is read once into a
 // name → entry map, so a batch of reads parses it once, not once per entry.
 public class ZipPristineSource : IPristineSource, IDisposable
 {

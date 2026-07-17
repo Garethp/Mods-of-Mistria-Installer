@@ -1,7 +1,7 @@
 namespace Garethp.ModsOfMistriaInstallerLib.Seam;
 
 // One abstraction over every pristine read: the backup archive, an arbitrary
-// build zip for verify, and the in-memory trees the tests use. Entries are
+// build zip for the seam check, and the in-memory trees the tests use. Entries are
 // "assets/"-prefixed, matching seam-catalog `file` values, so an entry path
 // round-trips 1:1.
 public interface IPristineSource

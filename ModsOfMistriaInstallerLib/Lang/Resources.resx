@@ -481,6 +481,6 @@
     <value>Skipped {0}: {1}</value>
   </data>
   <data name="CoreVerifyNoBackup" xml:space="preserve">
-    <value>No pristine backup was found in {0}. Run the installer once to create it, or verify against a build zip directly.</value>
+    <value>No pristine backup was found in {0}. Run the installer once to create it, or run a seam check against a build zip directly.</value>
   </data>
 </root>

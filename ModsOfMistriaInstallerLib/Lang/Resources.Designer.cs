@@ -1131,7 +1131,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to No pristine backup was found in {0}. Run the installer once to create it, or verify against a build zip directly.
+        ///   Looks up a localized string similar to No pristine backup was found in {0}. Run the installer once to create it, or run a seam check against a build zip directly.
         /// </summary>
         public static string CoreVerifyNoBackup {
             get {

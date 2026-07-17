@@ -13,8 +13,8 @@ public enum SeamProblemKind
 
 public static class SeamProblemKinds
 {
-    // The fixed wire names verify's JSON renders, so the enum spelling and
-    // the JSON contract cannot drift apart.
+    // The fixed wire names the seam check's JSON renders, so the enum spelling
+    // and the JSON contract cannot drift apart.
     public static string WireName(this SeamProblemKind kind) => kind switch
     {
         SeamProblemKind.Anchor => "anchor",
@@ -28,7 +28,7 @@ public static class SeamProblemKinds
     };
 }
 
-// One staging problem, carrying the structured fields verify surfaces
+// One staging problem, carrying the structured fields the seam check surfaces
 // alongside the human-readable message the batched report lists.
 public record SeamProblem(
     string Message,
