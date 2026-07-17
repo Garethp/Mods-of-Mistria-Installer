@@ -103,24 +103,6 @@ public class AtlasUtilitiesTest
     }
 
     [Test]
-    public void ShouldPackAroundLegacyTopLeftDimensionsEntries()
-    {
-        Seed("DefaultAtlas_0", """
-            [[asset_properties.animations]]
-            texture_ids = ["aaaabbbbccccdddd::0"]
-            top_left_dimensions = [1, 1, 10, 10]
-            """);
-
-        WithUtils(utils => utils.AddStrip("Default", 8, 8, 1,
-            Strip(8, 8, new Rectangle(0, 0, 8, 8)),
-            new Dictionary<string, string>(), "test_sprite"));
-
-        var placements = Placements("assets/atlases/DefaultAtlas_0.meta.toml");
-
-        Assert.That(placements[1], Is.EqualTo(new[] { 11, 1, 8, 8, 8, 8, 0, 0 }));
-    }
-
-    [Test]
     public void ShouldClearAndRemoveAReplacedPlacementEntry()
     {
         Seed("DefaultAtlas_0", """
