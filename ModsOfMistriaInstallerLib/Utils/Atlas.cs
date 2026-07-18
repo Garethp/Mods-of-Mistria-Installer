@@ -22,11 +22,7 @@ public class Atlas
     public string PngPath  { get; }
     public int Width       { get; }
     public int Height      { get; }
-
-    public TomlTable? Data;
-
-    public Image<Rgba32>? Image;
-
+    
     private IFileModifier _fileModifier;
 
     public Atlas(string type, int number, string atlasDirectory, IFileModifier fileModifier, int width = DefaultSize, int height = DefaultSize)
@@ -118,5 +114,21 @@ public class Atlas
         
         _fileModifier.Write(MetaPath, TomlSerializer.Serialize(data));
         return true;
+    }
+
+    public TomlTable LoadData()
+    {
+        EnsureMetaExists();
+        return TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(MetaPath))!;
+    }
+
+    public Image<Rgba32> LoadImage()
+    {
+        EnsureImageExists();
+        var imageStream = _fileModifier.GetReadStream(PngPath);
+        var image = Image.Load<Rgba32>(imageStream);
+        imageStream.Close();
+
+        return image;
     }
 }

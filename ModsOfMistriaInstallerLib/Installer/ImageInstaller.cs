@@ -164,6 +164,13 @@ public class ImageInstaller(
             atlasUtils.RemoveById(gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id);
 
             using var pngStream = new MemoryStream(pngBytes);
+
+            if (gameMeta.Asset.Atlas is null)
+            {
+                // Not all animations live in an Atlas file.
+                // @TODO: Write the replacements directly to the file instead? Or should we always do that?
+                continue;
+            }
             var id = atlasUtils.AddStrip(
                 gameMeta.Asset.Atlas!, 
                 gameMeta.Asset.FrameWidth, 
