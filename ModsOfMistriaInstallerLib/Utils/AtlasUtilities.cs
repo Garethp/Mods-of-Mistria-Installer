@@ -14,17 +14,16 @@ public class AtlasUtilities
 {
     private readonly string _atlasDirectory;
     private readonly List<Atlas> _atlases;
-    private readonly Dictionary<string, AtlasPackState> _states = new(StringComparer.OrdinalIgnoreCase);
 
     private readonly IFileModifier _fileModifier;
-    // Atlas meta paths created during this session (did not exist before install).
-    private readonly HashSet<string> _newAtlasPaths = new(StringComparer.OrdinalIgnoreCase);
+    private readonly AtlasStateManager _stateManager;
 
     public AtlasUtilities(string atlasDirectory, IFileModifier fileModifier)
     {
         _atlasDirectory = Path.Combine("assets", "atlases");
         _fileModifier   = fileModifier;
         _atlases        = LoadAtlases();
+        _stateManager = new AtlasStateManager(_atlases, _atlasDirectory, _fileModifier);
     }
 
     public IReadOnlyList<Atlas> GetAtlases() => _atlases;
@@ -42,8 +41,7 @@ public class AtlasUtilities
     {
         atlasType = Atlas.CanonicalType(atlasType)!;
 
-        if (!_states.TryGetValue(atlasType, out var state))
-            state = OpenState(atlasType);
+        var state = _stateManager.OpenState(atlasType);
 
         // Reuse ID if this animation was already mapped (e.g., replacing a previous mod's version)
         if (!fileNameUIDMapping.TryGetValue(baseName, out var id))
@@ -70,12 +68,7 @@ public class AtlasUtilities
             if (pos is null)
             {
                 // Current atlas is full — save it (if dirty) and create the next numbered one
-                int nextNumber = state.Atlas.Number + 1;
-
-                _states.Remove(atlasType);
-                CreateAtlas(atlasType, nextNumber);
-                state = OpenState(atlasType);
-                _states[atlasType] = state;
+                state = _stateManager.GetNextAtlas(atlasType);
 
                 pos = state.Packer.FindPosition(trim.Width, trim.Height);
                 if (pos is null)
@@ -86,7 +79,7 @@ public class AtlasUtilities
             var (x, y) = pos.Value;
 
             using var trimmed = frame.Clone(ctx => ctx.Crop(trim));
-            state.Image.Mutate(ctx => ctx.DrawImage(trimmed, new Point(x, y), 1f));
+            state.GetImage().Mutate(ctx => ctx.DrawImage(trimmed, new Point(x, y), 1f));
             state.Packer.Add(x, y, trim.Width, trim.Height);
 
             state.Animations.Add(new TomlTable
@@ -111,32 +104,11 @@ public class AtlasUtilities
         // Strip any ::N suffix the caller may have included
         var prefix = baseId.Contains("::") ? baseId[..baseId.IndexOf("::", StringComparison.Ordinal)] : baseId;
 
-        // 1. Modify any atlas page that is already open in _states (in-memory).
-        //    We collect their paths so we skip them in step 2.
-        var openPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var state in _states.Values)
+        foreach (var atlas in _stateManager.GetAtlases())
         {
-            openPaths.Add(state.Atlas.MetaPath);
-            bool dirty = false;
-            var cleared = new List<Rectangle>();
-            PruneAnimations(state.Animations, prefix, ref dirty, cleared);
-            // Wipe the freed pixels in-memory; the state flushes to disk later.
-            foreach (var region in cleared)
-                ClearRegion(state.Image, region);
-            if (dirty || cleared.Count > 0) state.IsDirty = true;
-        }
-
-        // 2. All other atlas pages: load → prune → save (meta, and png if pixels freed).
-        foreach (var atlas in _atlases)
-        {
-            if (openPaths.Contains(atlas.MetaPath)) continue;
-            if (!_fileModifier.Exists(atlas.MetaPath)) continue;
-
-            if (atlas.Data is not { } data)
-            {
-                data = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(atlas.MetaPath))!;
-                atlas.Data = data;
-            }
+            var state = _stateManager.GetAtlas(atlas.PngPath);
+            if (state is null) continue;
+            var data = state.Data;
 
             if (!data.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap) continue;
             if (!ap.TryGetValue("animations", out var animObj) || animObj is not TomlTableArray anims) continue;
@@ -149,21 +121,11 @@ public class AtlasUtilities
 
             // Sanitise the freed pixel regions in the atlas image so later packs
             // can't reveal the removed art through their transparent areas.
-            if (cleared.Count > 0)
-            {
-                if (atlas.Image is not { } image)
-                {
-                    var readStream = _fileModifier.GetReadStream(atlas.PngPath);
-                    image = Image.Load<Rgba32>(readStream);
-                    readStream.Close();
+            if (cleared.Count <= 0) continue;
+            var image = state.GetImage();
 
-                    atlas.Image = image;
-                }
-
-                foreach (var region in cleared)
-                    ClearRegion(image, region);
-            }
-
+            foreach (var region in cleared)
+                ClearRegion(image, region);
         }
     }
 
@@ -272,28 +234,7 @@ public class AtlasUtilities
     // Writes all pending atlas changes to disk and marks them in the manifest.
     public void Flush()
     {
-        foreach (var state in _states.Values)
-        {
-            if (!state.IsDirty) continue;
-            FlushState(state);
-        }
-        _states.Clear();
-
-        foreach (var atlas in _atlases.Where(atlas => atlas.Data is not null))
-        {
-            _fileModifier.Write(atlas.MetaPath, TomlSerializer.Serialize(atlas.Data));
-            atlas.Data = null;
-        }
-
-        foreach (var atlas in _atlases.Where(atlas => atlas.Image is not null))
-        {
-            var writeStream = _fileModifier.GetWriteStream(atlas.PngPath);
-            atlas.Image!.Save(writeStream, atlas.Image!.DetectEncoder(atlas.PngPath));
-            writeStream.Close();
-            
-            atlas.Image.Dispose();
-            atlas.Image = null;
-        }
+        _stateManager.Flush();
     }
 
     // This is just to stop memory from running out of control if there's a large number of mods replacing or adding
@@ -302,100 +243,9 @@ public class AtlasUtilities
     // we have.
     public void SemiFlush()
     {
-        if (_atlases.Count(atlas => atlas.Image is not null) >= 10)
-        {
-            Flush();
-        }
+        _stateManager.SemiFlush();
     }
-
-    // Private helpers
-
-    private AtlasPackState OpenState(string atlasType)
-    {
-        var atlas = GetLastAtlas(atlasType);
-
-        if (atlas.Data is not { } data)
-        {
-            data = TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(atlas.MetaPath));
-            atlas.Data = data;
-        }
-
-        if (atlas.Image is not { } image)
-        {
-            var imageStream = _fileModifier.GetReadStream(atlas.PngPath);
-            image = Image.Load<Rgba32>(imageStream);
-            imageStream.Close();
-            
-            atlas.Image = image;
-        }
-        
-        // Safely retrieve (or create) the animations array.
-        // A newly created atlas serialises an empty TomlTableArray as nothing,
-        // so the key may be absent when we read it back.
-        if (!data.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap)
-        {
-            ap = new TomlTable();
-            data["asset_properties"] = ap;
-        }
-        if (!ap.TryGetValue("animations", out var animObj) || animObj is not TomlTableArray anims)
-        {
-            anims = new TomlTableArray();
-            ap["animations"] = anims;
-        }
-
-        var packer = BuildPacker(data);
-
-        var state = new AtlasPackState
-        {
-            Atlas      = atlas,
-            Data       = data,
-            Image      = image,
-            Packer     = packer,
-            Animations = anims,
-            IsDirty    = false
-        };
-
-        _states[atlasType] = state;
-        return state;
-    }
-
-    private void FlushState(AtlasPackState state)
-    {
-        var writeStream = _fileModifier.GetWriteStream(state.Atlas.PngPath);
-        state.Image.Save(writeStream, state.Image.DetectEncoder(state.Atlas.PngPath));
-        writeStream.Close();
-        
-        _fileModifier.Write(state.Atlas.MetaPath, TomlSerializer.Serialize(state.Data));
-        state.Image.Dispose();
-        state.Atlas.Image?.Dispose();
-        state.Atlas.Image = null;
-        state.Atlas.Data = null;
-        state.IsDirty = false;
-    }
-
-    private Atlas GetLastAtlas(string type)
-    {
-        var last = _atlases
-            .Where(a => string.Equals(a.Type, type, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(a => a.Number)
-            .LastOrDefault();
-
-        if (last is not null)
-            return last;
-
-        return CreateAtlas(type, 0);
-    }
-
-    private Atlas CreateAtlas(string type, int number)
-    {
-        var atlas = new Atlas(type, number, _atlasDirectory, _fileModifier);
-        atlas.EnsureImageExists();
-        atlas.EnsureMetaExists();
-        _atlases.Add(atlas);
-        _newAtlasPaths.Add(atlas.MetaPath);
-        return atlas;
-    }
-
+    
     private List<Atlas> LoadAtlases()
     {
         var atlases = new List<Atlas>();
@@ -465,20 +315,185 @@ public class AtlasUtilities
 
     // Inner types
 
-    private class AtlasPackState
+    private class AtlasStateManager(List<Atlas> atlases, string atlasDirectory, IFileModifier fileModifier)
     {
-        public required Atlas           Atlas;
-        public required TomlTable       Data;
-        public required Image<Rgba32>   Image;
-        public required ShelfPacker     Packer;
-        public required TomlTableArray  Animations;
-        public          bool            IsDirty;
+        // This represents our dictionary of all Atlas' currently open, with the PngPath as the key and the AtlasPackState
+        // as the value
+        private Dictionary<string, AtlasPackState> _openAtlases = new();
+        
+        // This is our list of our pointers to the current Atlas per type. The type is the key, the value is the PngPath,
+        // which should then be used as the key for `_openAtlases`
+        private Dictionary<string, string> _currentAtlasTypes = new();
+        private List<Atlas> _atlases = atlases;
+        private string _atlasDirectory = atlasDirectory;
+        private IFileModifier _fileModifier = fileModifier;
+        
+        public List<Atlas> GetAtlases() => _atlases;
+        
+        private Atlas GetLastAtlas(string type)
+        {
+            var last = _atlases
+                .Where(a => string.Equals(a.Type, type, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(a => a.Number)
+                .LastOrDefault();
+
+            if (last is not null)
+                return last;
+
+            return CreateAtlas(type, 0);
+        }
+        
+        private Atlas CreateAtlas(string type, int number)
+        {
+            var atlas = new Atlas(type, number, _atlasDirectory, _fileModifier);
+            atlas.EnsureImageExists();
+            atlas.EnsureMetaExists();
+            _atlases.Add(atlas);
+            return atlas;
+        }
+
+        public AtlasPackState OpenState(string atlasType)
+        {
+            if (_currentAtlasTypes.ContainsKey(atlasType))
+            {
+                return _openAtlases[_currentAtlasTypes[atlasType]];
+            }
+
+            var lastAtlas = GetLastAtlas(atlasType);
+            var state = GetAtlas(lastAtlas.PngPath)!;
+            
+            _currentAtlasTypes[atlasType] = state.Atlas.PngPath;
+            return state;
+        }
+
+        public AtlasPackState? GetAtlas(string pngPath)
+        {
+            if (_openAtlases.ContainsKey(pngPath))
+            {
+                return _openAtlases[pngPath];
+            }
+            
+            var atlas = _atlases.FirstOrDefault(atlas => atlas.PngPath == pngPath);
+            if (atlas is null)
+            {
+                return null;
+            }
+            
+            var data = atlas.LoadData();
+            
+            // Safely retrieve (or create) the animations array.
+            // A newly created atlas serialises an empty TomlTableArray as nothing,
+            // so the key may be absent when we read it back.
+            if (!data.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap)
+            {
+                ap = new TomlTable();
+                data["asset_properties"] = ap;
+            }
+            if (!ap.TryGetValue("animations", out var animObj) || animObj is not TomlTableArray anims)
+            {
+                anims = new TomlTableArray();
+                ap["animations"] = anims;
+            }
+
+            var packer = BuildPacker(data);
+
+            var state = new AtlasPackState
+            {
+                Atlas      = atlas,
+                Data       = data,
+                Packer     = packer,
+                Animations = anims,
+                IsDirty    = false
+            };
+
+            _openAtlases[atlas.PngPath] = state;
+            return state;
+        }
+
+        public AtlasPackState GetNextAtlas(string atlasType)
+        {
+            if (!_currentAtlasTypes.ContainsKey(atlasType))
+            {
+                return OpenState(atlasType);
+            }
+
+            var last = _atlases
+                .Where(a => string.Equals(a.Type, atlasType, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(a => a.Number)
+                .LastOrDefault()!;
+
+            CreateAtlas(atlasType, last.Number + 1);
+            _currentAtlasTypes.Remove(atlasType);
+            return OpenState(atlasType);
+        }
+
+        // Writes all pending atlas changes to disk and marks them in the manifest.
+        public void Flush()
+        {
+            foreach (var state in _openAtlases.Values)
+            {
+                FlushState(state);
+            }
+
+            _currentAtlasTypes.Clear();
+            _openAtlases.Clear();
+        }
+
+        // This is just to stop memory from running out of control if there's a large number of mods replacing or adding
+        // massive numbers of images over a large number of Atlases. We want to keep Atlases open for as long as we can,
+        // since we might need to remove items from them at any point, but we don't want to go overboard with how many
+        // we have.
+        public void SemiFlush()
+        {
+            if (_openAtlases.Count >= 10)
+            {
+                Flush();
+            }
+        }
+        
+        private void FlushState(AtlasPackState state)
+        {
+            if (state.IsLoaded())
+            {
+                var writeStream = _fileModifier.GetWriteStream(state.Atlas.PngPath);
+                state.GetImage().Save(writeStream, state.GetImage().DetectEncoder(state.Atlas.PngPath));
+                writeStream.Close();
+                
+                state.GetImage().Dispose();
+            }
+        
+            _fileModifier.Write(state.Atlas.MetaPath, TomlSerializer.Serialize(state.Data));
+            state.IsDirty = false;
+        }
+    }
+    
+    public class AtlasPackState
+    {
+        public  required Atlas           Atlas;
+        public  required TomlTable       Data;
+        private          Image<Rgba32>?  Image;
+        public  required ShelfPacker     Packer;
+        public  required TomlTableArray  Animations;
+        public           bool            IsDirty;
+
+        public Image<Rgba32> GetImage()
+        {
+            if (Image is not null) return Image;
+            
+            Image = Atlas.LoadImage();
+            return Image;
+        }
+
+        public bool IsLoaded()
+        {
+            return Image is not null;
+        }
     }
 
     // Shelf packer: places rectangles into an atlas without overlap.
     // Groups existing items by row (same y) and tries to append to the right.
     // Falls back to a new row below all content.
-    internal sealed class ShelfPacker
+    public sealed class ShelfPacker
     {
         private readonly int _width;
         private readonly int _height;
