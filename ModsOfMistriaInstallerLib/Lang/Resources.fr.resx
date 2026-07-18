@@ -163,7 +163,7 @@
     <value>L'emplacement du mod n'existe pas.</value>
   </data>
   <data name="CoreGeneratingInformationForMod" xml:space="preserve">
-    <value>Génération d'informations  {0}</value>
+    <value>Génération d'informations pour {0}</value>
   </data>
   <data name="CoreInstallCompleted" xml:space="preserve">
     <value>Terminé</value>
@@ -205,7 +205,7 @@
     <value>{0} pointe vers un dossier de sprites dans {1} mais ce dossier est vide</value>
   </data>
   <data name="CoreCouldNotParseJSON" xml:space="preserve">
-    <value>Impossible de paster le fichier avec message&#160;: {0}</value>
+    <value>Impossible d'analyser le fichier avec le message&#160;: {0}</value>
   </data>
   <data name="CoreNoDataInJSON" xml:space="preserve">
     <value>Aucune donnée trouvée dans le fichier</value>
@@ -250,13 +250,13 @@
     <value>La catégorie n'a aucun nom d'icone.</value>
   </data>
   <data name="CoreErrorShadowHasNoLocation" xml:space="preserve">
-    <value>Le fichier ombre {0} na aucune valeur Location renseignée.</value>
+    <value>Le fichier shadows {0} na aucune valeur Location renseignée.</value>
   </data>
   <data name="CoreWarningShadowFileNoShadows" xml:space="preserve">
-    <value>Le fichier ombre ne comporte aucune ombre.</value>
+    <value>Le fichier shadows ne comporte aucune ombre.</value>
   </data>
   <data name="CoreErrorShadowHasNoSprite" xml:space="preserve">
-    <value>Le fichier ombre {0} ne contient pas de regular_sprite_name</value>
+    <value>Le fichier shadows {0} ne contient pas de regular_sprite_name</value>
   </data>
   <data name="CoreErrorModRequiresWindows" xml:space="preserve">
     <value>Ce mod ne fonctionne que sur Windows et ne sera pas installé.</value>
@@ -349,7 +349,7 @@
     <value>Installation des mods...</value>
   </data>
   <data name="GUIModHasWarnings" xml:space="preserve">
-    <value>Ce mod a des avertissements qui ne peuvent pas être ignorés</value>
+    <value>Ce mod a des avertissements qui peuvent être ignorés</value>
   </data>
   <data name="GUIModHasErrors" xml:space="preserve">
     <value>Ce mod comporte des erreurs et ne sera pas installé</value>
@@ -382,7 +382,7 @@
     <value>Dossier mods&#160;:</value>
   </data>
   <data name="GUICanCreateModsFolder" xml:space="preserve">
-    <value>Aucun dossier mods n'a été détecté, il a par conséquent été créé automatiquement.</value>
+    <value>Le dossier mods n'a pas été détecté, mais il peut être créé automatiquement pour vous.</value>
   </data>
   <data name="GUISaveLogFile" xml:space="preserve">
     <value>Enregistrer le fichier de logs</value>
@@ -400,16 +400,16 @@
     <value>Rafraichir la liste des mods</value>
   </data>
   <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve">
-    <value>L'animal {0} pour le magasin {1} n'a aucune cosométique définie.</value>
+    <value>L'animal {0} pour le magasin {1} n'a aucun cosmétique défini.</value>
   </data>
   <data name="GUIGreetingText_April" xml:space="preserve">
-    <value>Le saviez-vous&#160;? Un coup de pioche savant est une excellente façon d'installer n'importe quel mod que vous avez téléchargé.</value>
+    <value>Le saviez-vous&#160;? Un coup de pioche bien pensé est une excellente façon d'installer n'importe quel mod que vous avez téléchargé.</value>
   </data>
   <data name="GUIInstallButtonText_April" xml:space="preserve">
-    <value>Piocher savamment</value>
+    <value>Donner un coup de pioche bien pensé</value>
   </data>
   <data name="GUIInstallInProgress_April" xml:space="preserve">
-    <value>Piochage savant en cours...</value>
+    <value>Coup de pioche bien pensé en cours...</value>
   </data>
   <data name="GUINoModsToInstall_April" xml:space="preserve">
     <value>Aucun mod trouvé à piocher</value>
@@ -418,7 +418,7 @@
     <value>Cochez les cases pour tous les mods que vous voulez piocher&#160;:</value>
   </data>
   <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve">
-    <value>La surcharge du prix de la tenue {0} doit être un nombre positif.</value>
+    <value>Le remplacement du prix de la tenue {0} doit être un nombre positif.</value>
   </data>
   <data name="CoreRunningInstaller" xml:space="preserve">
     <value>Lancement de {0}</value>
