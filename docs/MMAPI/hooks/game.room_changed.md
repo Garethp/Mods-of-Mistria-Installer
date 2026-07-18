@@ -25,7 +25,7 @@ Fires from the begin_step derived-events poll when `room()` changes, after `room
 ## Usage
 
 ```gml
-// game.room_changed is an EVENT: mmapi calls you after it happens.
+// game.room_changed is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function travel_journal_game_room_changed(_ctx) {
     // _ctx is { previous, current }.
@@ -40,7 +40,7 @@ mmapi_on("game.room_changed", travel_journal_game_room_changed);
 
 ## Engine Wiring
 
-- This event is emitted by the mmapi framework itself. No engine seam sits behind it. `mmapi_events_poll()` in `mmapi\mmapi_events.gml` compares `room()` against the last poll once per frame from the Game begin_step lifecycle drain (installed by the [`game_step_begin_installs`](../seams/game_step_begin_installs.md) engine fix) and emits on a change. The first poll only records the baseline.
+- This event is emitted by the MMAPI framework itself. No engine seam sits behind it. `mmapi_events_poll()` in `mmapi/mmapi_events.gml` compares `room()` against the last poll once per frame from the Game begin_step lifecycle drain (installed by the [`game_step_begin_installs`](../seams/game_step_begin_installs.md) engine fix) and emits on a change. The first poll only records the baseline.
 
 ## See Also
 

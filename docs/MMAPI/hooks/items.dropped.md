@@ -25,7 +25,7 @@ Fires in `drop_item()` before the dropped items spawn into the world. ctx is `{ 
 ## Usage
 
 ```gml
-// items.dropped is an EVENT: mmapi calls you after it happens.
+// items.dropped is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function magpie_items_dropped(_ctx) {
     // _ctx is { value, items, x, y, z_offset }.

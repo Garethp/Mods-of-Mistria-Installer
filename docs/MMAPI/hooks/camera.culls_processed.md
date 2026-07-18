@@ -8,7 +8,7 @@ React the instant culling reactivates on-screen renderers, before they draw.
 
 Fires at the end of `Camera.process_culls()`, immediately after `instance_activate_region()` has deactivated all node renderers (`obj_node_renderer` / `obj_assetobject`) and reactivated only the ones inside the cull region, i.e. after off-screen instances that just scrolled into view are active again and before the frame draws. ctx is the `Camera` struct. Fires every frame culling runs for the room. This hook is observation only.
 
-The intended use is to re-apply per-instance sprite/visual state to the just-reactivated renderers before they draw, so a mod's sprite override does not lag a frame on scroll-in. A reactivated instance carries its last `sprite_index`, which the mmapi begin_step tick (running before this cull, at `Game.gml` step_begin) cannot have refreshed yet.
+The intended use is to re-apply per-instance sprite/visual state to the just-reactivated renderers before they draw, so a mod's sprite override does not lag a frame on scroll-in. A reactivated instance carries its last `sprite_index`, which the MMAPI begin_step tick (running before this cull, at `Game.gml` step_begin) cannot have refreshed yet.
 
 Plainly: if your mod changes what world renderers look like, a renderer that scrolls into view was deactivated while you changed things, so it wakes up wearing whatever sprite it had when it scrolled out. Your begin_step code cannot fix it. Deactivated instances are invisible to it, and this frame's cull happens after begin_step already ran. This hook is the one moment the instance is active again but has not drawn yet: sweep the just-reactivated renderers and re-apply your sprite state here, and the override is correct on the very first visible frame.
 
@@ -28,7 +28,7 @@ Plainly: if your mod changes what world renderers look like, a renderer that scr
 ## Usage
 
 ```gml
-// camera.culls_processed is an EVENT: mmapi calls you after it happens.
+// camera.culls_processed is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function crop_timers_camera_culls_processed(_ctx) {
     // _ctx is the Camera struct whose process_culls() just ran.

@@ -15,7 +15,7 @@ Guard on the tarball's `target` (`CombatTarget.Player` is an incoming hit on the
 | **Fires** | At the top of `obj_damage_tarball`'s step, inside the `can_hurt` block, before the grid pick/chop/destroy blocks and the receiver-collision enqueue. |
 | **Value** | The `obj_damage_tarball` instance, mutated in place. |
 | **ctx** | `undefined`. |
-| **Kind contract** | The callback receives the current value and returns a replacement, or `undefined` to keep the current value. |
+| **Kind contract** | In-place filter. Mutate the tarball; the dispatcher discards every return value. |
 
 ### The value
 

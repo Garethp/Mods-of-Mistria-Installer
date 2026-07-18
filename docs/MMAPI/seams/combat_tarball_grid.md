@@ -14,6 +14,7 @@ Hands every active swing's tarball to mods before the grid pick/chop/destroy blo
 | **Feeds** | [`combat.tarball_grid`](../hooks/combat.tarball_grid.md) |
 | **Value filtered** | `self` - the tarball instance, mutated in place |
 | **ctx built** | `undefined` |
+| **Marker** | `mmapi_combat_tarball_grid` |
 
 ## The Edit
 

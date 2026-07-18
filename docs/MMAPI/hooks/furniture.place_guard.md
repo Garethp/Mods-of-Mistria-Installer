@@ -6,7 +6,7 @@ Veto a furniture placement before it is written.
 
 ## Contract
 
-Fires at the top of `write_furniture_to_location(grid, xx, yy, proto, stack_count, rotation)`, before the placement is validated or written. ctx is `{ grid, x, y, proto, stack_count, rotation }`. `proto` is the furniture `NODE_PROTOTYPE` (`proto.object_id` identifies which furniture). Return `false` to veto the placement. `write_furniture_to_location` returns `undefined`, so nothing is placed and the item stays in the player's hand. `undefined` or `true` allows.
+Fires at the top of `write_furniture_to_location(grid, xx, yy, proto, stack_count, rotation)`, before the placement is validated or written. ctx is `{ grid, x, y, proto, stack_count, rotation }`. `proto` is the furniture `NODE_PROTOTYPE` (`proto.object_id` identifies which furniture). Return `false` to veto the placement. `write_furniture_to_location` returns `undefined`, so nothing is placed and the item stays in the player's hand. Every other return allows.
 
 `stack_count > 0` indicates a recursive child-grid placement (furniture on furniture). Use the guard to cap or forbid placing a mod's furniture under mod-specific conditions.
 
@@ -14,7 +14,7 @@ Fires at the top of `write_furniture_to_location(grid, xx, yy, proto, stack_coun
 | --- | --- |
 | **Fires** | At the top of `write_furniture_to_location()`, before the placement is validated or written. |
 | **ctx** | `{ grid, x, y, proto, stack_count, rotation }` |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx struct
 

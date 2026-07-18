@@ -34,7 +34,7 @@ Every field is filled best-effort: a failed read leaves the field absent (not `u
 ## Usage
 
 ```gml
-// dungeon.room_build_begin is an EVENT: mmapi calls you after it happens.
+// dungeon.room_build_begin is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function room_planner_dungeon_room_build_begin(_ctx) {
     // _ctx is { runner, floor, biome, room_id, grid, level, gm_room, impl }.

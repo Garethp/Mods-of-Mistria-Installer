@@ -24,7 +24,7 @@ Fires at the top of `save_game()`, after [game.save_guard](game.save_guard.md) a
 ## Usage
 
 ```gml
-// save.game_saving is an EVENT: mmapi calls you after it happens.
+// save.game_saving is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function backup_buddy_save_game_saving(_ctx) {
     // _ctx is { save_path }.

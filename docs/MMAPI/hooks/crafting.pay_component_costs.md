@@ -12,7 +12,7 @@ Fires at the top of `pay_component_costs(components, item_id, quantity, context)
 | --- | --- |
 | **Fires** | At the top of `pay_component_costs()`, before a recipe's materials are deducted. |
 | **ctx** | `{ item_id, quantity, context }` |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx struct
 

@@ -6,14 +6,14 @@ Adjust UI item slots as they are populated.
 
 ## Contract
 
-Fires when a UI item node is populated: in `item_node.set_to_item()` with the struct `{ node, item, count }`, and in the crafting menu grid with `{ node, item, count, source: "crafting_menu" }`. Both dispatch sites call `mmapi_apply_filters` and discard the return value, so handlers must mutate the ctx struct in place. The struct rides in the value position and the second argument is `undefined`.
+Fires when a UI item node is populated: in `item_node.set_to_item()` with the struct `{ node, item, count }`, and in the crafting menu grid with `{ node, item, count, source: "crafting_menu" }`. Both dispatch sites call `mmapi_apply_filters` and discard the return value, so handlers must mutate the value struct in place. The struct is the second argument to the dispatcher; the third, `ctx`, argument is `undefined`.
 
 | | |
 | --- | --- |
 | **Fires** | When a UI item node is populated: `item_node.set_to_item()` and the crafting menu grid. |
 | **Value** | The `{ node, item, count }` struct. The crafting site adds `source: "crafting_menu"`. |
 | **ctx** | `undefined` - the struct rides in the value position. |
-| **Kind contract** | The callback receives the current value and returns a replacement, or `undefined` to keep the current value. |
+| **Kind contract** | In-place filter. Mutate `_value`; the dispatcher discards every return value. |
 
 ### The value struct
 

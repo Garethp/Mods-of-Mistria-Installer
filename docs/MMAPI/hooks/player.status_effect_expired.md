@@ -36,7 +36,7 @@ The vitals HUD removes its icon on its own poll up to a frame later, so it may s
 ## Usage
 
 ```gml
-// player.status_effect_expired is an EVENT: mmapi calls you after it happens.
+// player.status_effect_expired is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function second_wind_player_status_effect_expired(_ctx) {
     // _ctx is { type, effect, manager }.

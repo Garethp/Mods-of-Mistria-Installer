@@ -21,7 +21,7 @@ Fires after the player eats an item, right after the `items_eaten` stat is recor
 ## Usage
 
 ```gml
-// items.consumed is an EVENT: mmapi calls you after it happens.
+// items.consumed is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function snack_journal_items_consumed(_ctx) {
     // _ctx is the consumed LiveItem.

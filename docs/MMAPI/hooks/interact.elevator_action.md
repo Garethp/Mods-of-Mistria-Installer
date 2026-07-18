@@ -6,7 +6,7 @@ Block the dungeon elevator before its menu opens.
 
 ## Contract
 
-Fires when the player actually activates the dungeon elevator, the interaction action, not the per-frame interactability poll. ctx is `{ subject, key: "dungeon_elevator" }`. Return `false` to veto opening the elevator menu (`Menu.Elevator` never spawns). `undefined` or `true` allows.
+Fires when the player actually activates the dungeon elevator, the interaction action, not the per-frame interactability poll. ctx is `{ subject, key: "dungeon_elevator" }`. Return `false` to veto opening the elevator menu (`Menu.Elevator` never spawns). Every other return allows.
 
 This is an action guard by design. A registered interaction carries an action (the third `register_interaction` argument) and an interactability condition (the fourth), and the condition is polled every frame for every in-range interactable (`par_interactable`'s `has_potential_interactions`). A side effect on the condition side fired on any Interact press near the elevator, for example using the ladder at the mines entrance. On the action side, the engine's facing and selection have already routed the press to the faced interactable, so your callback runs only on a real elevator press.
 
@@ -14,7 +14,7 @@ This is an action guard by design. A registered interaction carries an action (t
 | --- | --- |
 | **Fires** | Inside the dungeon elevator's interaction action, just before the elevator menu spawns. |
 | **ctx** | `{ subject, key: "dungeon_elevator" }` |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx struct
 

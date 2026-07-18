@@ -17,7 +17,7 @@ Hands every populated UI item node to mods, right after its icon is set.
 
 ## The Edit
 
-`set_to_item` is the shared populate method UI item nodes go through. The generated dispatch calls `mmapi_apply_filters("ui.item_node", { node: self, item: item, count: count }, undefined)` in the uniform try/catch shape and discards the return: this is an in-place dispatch, so the struct rides in the value position (the second argument is `undefined`) and handlers mutate `node` (the live item node) directly. A returned replacement would land nowhere.
+`set_to_item` is the shared populate method UI item nodes go through. The generated dispatch calls `mmapi_apply_filters("ui.item_node", { node: self, item: item, count: count }, undefined)` in the uniform try/catch shape and discards the return: this is an in-place dispatch, so the struct rides in the value position (the second argument) while the third, `ctx`, argument is `undefined`. Handlers mutate `node` (the live item node) directly. A returned replacement would land nowhere.
 
 It runs after the node's sprite has been set from `item.get_ui_icon()` and before the count-label logic, so a handler sees the node fully iconed and can restyle it before the stack count renders.
 

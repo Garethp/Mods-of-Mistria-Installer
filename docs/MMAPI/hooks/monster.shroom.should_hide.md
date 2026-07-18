@@ -6,7 +6,7 @@ Stop shroom monsters from hiding.
 
 ## Contract
 
-Fires at the top of the shroom monster's `should_hide()` check. ctx is the shroom instance. Return `false` to veto hiding (`should_hide` returns `false`). `undefined` or `true` falls through to the normal distance check.
+Fires at the top of the shroom monster's `should_hide()` check. ctx is the shroom instance. Return `false` to veto hiding (`should_hide` returns `false`). Every return other than Boolean `false` falls through to the normal distance check.
 
 Note the polarity: this guard vetoes the *hide*, not the shroom. A veto forces `should_hide()` to answer `false`, so the shroom stays visible. It cannot force a shroom to hide.
 
@@ -14,7 +14,7 @@ Note the polarity: this guard vetoes the *hide*, not the shroom. A veto forces `
 | --- | --- |
 | **Fires** | At the top of the shroom monster's `should_hide()` check. |
 | **ctx** | The shroom instance (`obj_monster_shroom`). |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx parameter
 

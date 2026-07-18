@@ -26,7 +26,7 @@ ctx is the `obj_player_animal` world instance, not the `Animal` data struct. Its
 ## Usage
 
 ```gml
-// animal.pet is an EVENT: mmapi calls you after it happens.
+// animal.pet is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function pet_parade_animal_pet(_ctx) {
     // _ctx is the obj_player_animal instance (not the Animal data struct).

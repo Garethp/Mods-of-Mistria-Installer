@@ -6,13 +6,13 @@ Block the player's heal sparkle before it plays.
 
 ## Contract
 
-Fires at the top of `play_heal_vfx()`. ctx is `{ color, sprite }`. Return `false` to veto the heal vfx (`play_heal_vfx` returns immediately and nothing is spawned). `undefined` or `true` allows.
+Fires at the top of `play_heal_vfx()`. ctx is `{ color, sprite }`. Return `false` to veto the heal vfx (`play_heal_vfx` returns immediately and nothing is spawned). Every other return allows.
 
 | | |
 | --- | --- |
 | **Fires** | At the top of `play_heal_vfx()`, before the vfx spawns. |
 | **ctx** | `{ color, sprite }` |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx struct
 
@@ -22,8 +22,8 @@ Fires at the top of `play_heal_vfx()`. ctx is `{ color, sprite }`. Return `false
 ## Usage
 
 ```gml
-// player.heal_vfx is a GUARD: return false to block it, undefined (or true)
-// to allow. Guards fail OPEN - if your handler crashes, the action happens.
+// player.heal_vfx is a GUARD: return Boolean false to block it;
+// every other return allows. Guards fail OPEN - if your handler crashes, the action happens.
 function subtle_heals_player_heal_vfx(_ctx) {
     // _ctx is { color, sprite }.
     //   .color  - the vfx color play_heal_vfx received.

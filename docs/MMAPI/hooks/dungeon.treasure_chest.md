@@ -23,7 +23,7 @@ Fires in the dungeon breakables logic when a treasure chest starts its drop chai
 ## Usage
 
 ```gml
-// dungeon.treasure_chest is an EVENT: mmapi calls you after it happens.
+// dungeon.treasure_chest is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function chest_counter_dungeon_treasure_chest(_ctx) {
     // _ctx is { node, object_id, x, y }.

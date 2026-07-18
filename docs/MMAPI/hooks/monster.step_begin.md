@@ -26,7 +26,7 @@ The emit sits immediately after `self.aggro = self.patience.aggro();`, so `ctx.a
 ## Usage
 
 ```gml
-// monster.step_begin is an EVENT: mmapi calls you after it happens.
+// monster.step_begin is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function hive_mind_monster_step_begin(_ctx) {
     // _ctx is the monster instance (a par_monster child).

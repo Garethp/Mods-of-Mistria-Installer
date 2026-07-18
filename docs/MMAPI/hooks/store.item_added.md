@@ -24,7 +24,7 @@ Adding more from a handler via `menu.basket.add` does not re-fire this event (th
 ## Usage
 
 ```gml
-// store.item_added is an EVENT: mmapi calls you after it happens.
+// store.item_added is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function bulk_buyer_store_item_added(_ctx) {
     // _ctx is { menu, item }.

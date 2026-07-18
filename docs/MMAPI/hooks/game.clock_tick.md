@@ -24,7 +24,7 @@ Fires at the top of `Clock.update()` every frame, before game seconds are buffer
 ## Usage
 
 ```gml
-// game.clock_tick is an EVENT: mmapi calls you after it happens.
+// game.clock_tick is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function clock_watcher_game_clock_tick(_ctx) {
     // _ctx is the Clock struct whose update() is running.

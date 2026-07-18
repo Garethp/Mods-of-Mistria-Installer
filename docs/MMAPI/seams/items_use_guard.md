@@ -18,7 +18,7 @@ Puts a veto check in front of every item use, right after the LiveItem coercion.
 
 ## The Edit
 
-The structural target places the generated dispatch immediately *after* the coercion line `if !is_struct(item) { item = new LiveItem(item); }` inside `use_item()` (deliberately, so ctx is always a `LiveItem` whether the caller passed a struct or a bare item id) and before any use logic runs. The dispatch calls `mmapi_check_guards("items.use_guard", item)` in the uniform try/catch shape (catch var `__mmapi_item_use`). When any guard returns `false`, the injected line runs `return false;`, so `use_item` reports the use as not having happened. `undefined` or `true` allows.
+The structural target places the generated dispatch immediately *after* the coercion line `if !is_struct(item) { item = new LiveItem(item); }` inside `use_item()` (deliberately, so ctx is always a `LiveItem` whether the caller passed a struct or a bare item id) and before any use logic runs. The dispatch calls `mmapi_check_guards("items.use_guard", item)` in the uniform try/catch shape (catch var `__mmapi_item_use`). When any guard returns `false`, the injected line runs `return false;`, so `use_item` reports the use as not having happened. Every other return allows.
 
 The locator is matched token-wise inside `use_item`, immune to whitespace and comment drift. With zero handlers the guard check early-outs on an empty registry, leaving pristine behavior.
 

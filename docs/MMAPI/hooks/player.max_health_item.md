@@ -23,7 +23,7 @@ Fires right after an item's `max_health_modifier` raises `ARI.base_health`, befo
 ## Usage
 
 ```gml
-// player.max_health_item is an EVENT: mmapi calls you after it happens.
+// player.max_health_item is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function vital_feast_player_max_health_item(_ctx) {
     // _ctx is { player, amount, live_item }.

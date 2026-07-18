@@ -23,7 +23,7 @@ The callback runs inside the same GUI draw pass, after the anchor has drawn the 
 ## Usage
 
 ```gml
-// ui.draw_gui is an EVENT: mmapi calls you after it happens.
+// ui.draw_gui is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function hud_painter_ui_draw_gui(_ctx) {
     // _ctx is the display's asset_resize() value - the same argument

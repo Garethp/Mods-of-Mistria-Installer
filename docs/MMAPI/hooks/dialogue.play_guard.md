@@ -6,13 +6,13 @@ Block a conversation before it starts.
 
 ## Contract
 
-Fires at the top of `play_conversation()`, before [dialogue.path](dialogue.path.md) runs. ctx is `{ npc_id, path, close_callback, args }`. Return `false` to veto the conversation (`play_conversation` returns `undefined`). `undefined` or `true` allows.
+Fires at the top of `play_conversation()`, before [dialogue.path](dialogue.path.md) runs. ctx is `{ npc_id, path, close_callback, args }`. Return `false` to veto the conversation (`play_conversation` returns `undefined`). Every other return allows.
 
 | | |
 | --- | --- |
 | **Fires** | At the top of `play_conversation()`, before `dialogue.path` runs. |
 | **ctx** | `{ npc_id, path, close_callback, args }` |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx struct
 
@@ -24,8 +24,8 @@ Fires at the top of `play_conversation()`, before [dialogue.path](dialogue.path.
 ## Usage
 
 ```gml
-// dialogue.play_guard is a GUARD: return false to block it, undefined (or true)
-// to allow. Guards fail OPEN - if your handler crashes, the action happens.
+// dialogue.play_guard is a GUARD: return Boolean false to block it;
+// every other return allows. Guards fail OPEN - if your handler crashes, the action happens.
 function quiet_town_dialogue_play_guard(_ctx) {
     // _ctx is { npc_id, path, close_callback, args }.
     //   .npc_id         - the NPC the conversation belongs to.

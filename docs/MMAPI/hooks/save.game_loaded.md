@@ -24,7 +24,7 @@ Fires at the start of loading a save, right after the save path is recorded. ctx
 ## Usage
 
 ```gml
-// save.game_loaded is an EVENT: mmapi calls you after it happens.
+// save.game_loaded is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function fresh_start_save_game_loaded(_ctx) {
     // _ctx is { save_path }.

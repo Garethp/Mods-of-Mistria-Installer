@@ -21,7 +21,7 @@ Fires every toolbar tick, after the subscriber pull and update and before press-
 ## Usage
 
 ```gml
-// ui.toolbar_tick is an EVENT: mmapi calls you after it happens.
+// ui.toolbar_tick is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function quick_swap_ui_toolbar_tick(_ctx) {
     // _ctx is the ToolbarMenu.

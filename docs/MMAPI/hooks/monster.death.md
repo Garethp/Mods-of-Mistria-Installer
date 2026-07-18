@@ -23,7 +23,7 @@ Fires when a monster dies, just before its instance is destroyed. ctx is `{ mons
 ## Usage
 
 ```gml
-// monster.death is an EVENT: mmapi calls you after it happens.
+// monster.death is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function trophy_hunter_monster_death(_ctx) {
     // _ctx is { monster, monster_id, x, y }.

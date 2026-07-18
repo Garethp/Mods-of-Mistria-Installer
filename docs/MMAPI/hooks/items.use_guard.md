@@ -6,13 +6,13 @@ Block an item from being used.
 
 ## Contract
 
-Fires at the top of `use_item()`, after the item is coerced to a `LiveItem` and before any use logic. ctx is the `LiveItem` being used. Return `false` to veto the use (`use_item` returns `false`). `undefined` or `true` allows.
+Fires at the top of `use_item()`, after the item is coerced to a `LiveItem` and before any use logic. ctx is the `LiveItem` being used. Return `false` to veto the use (`use_item` returns `false`). Every other return allows.
 
 | | |
 | --- | --- |
 | **Fires** | At the top of `use_item()`, after the `LiveItem` coercion and before any use logic. |
 | **ctx** | The `LiveItem` being used. |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx parameter
 
@@ -21,8 +21,8 @@ Fires at the top of `use_item()`, after the item is coerced to a `LiveItem` and 
 ## Usage
 
 ```gml
-// items.use_guard is a GUARD: return false to block it, undefined (or true)
-// to allow. Guards fail OPEN - if your handler crashes, the action happens.
+// items.use_guard is a GUARD: return Boolean false to block it;
+// every other return allows. Guards fail OPEN - if your handler crashes, the action happens.
 function sealed_relics_items_use_guard(_ctx) {
     // _ctx is the LiveItem being used (always a LiveItem - raw ids are
     // coerced before the guard runs).

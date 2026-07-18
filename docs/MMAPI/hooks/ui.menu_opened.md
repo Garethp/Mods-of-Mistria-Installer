@@ -22,7 +22,7 @@ Fires right after `ANCHOR` spawns a menu and pushes it onto `open_menus`. ctx is
 ## Usage
 
 ```gml
-// ui.menu_opened is an EVENT: mmapi calls you after it happens.
+// ui.menu_opened is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function menu_greeter_ui_menu_opened(_ctx) {
     // _ctx is { menu, kind }.

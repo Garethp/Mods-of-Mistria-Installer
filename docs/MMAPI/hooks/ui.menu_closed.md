@@ -24,7 +24,7 @@ At both sites the menu has already been freed (`free()` in the drain, `on_free()
 ## Usage
 
 ```gml
-// ui.menu_closed is an EVENT: mmapi calls you after it happens.
+// ui.menu_closed is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function menu_janitor_ui_menu_closed(_ctx) {
     // _ctx is { menu, kind }.

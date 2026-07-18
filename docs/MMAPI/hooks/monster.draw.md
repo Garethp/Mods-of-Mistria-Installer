@@ -26,7 +26,7 @@ Because the emit sits after the sprite and status-overlay pass, anything you dra
 ## Usage
 
 ```gml
-// monster.draw is an EVENT: mmapi calls you after it happens.
+// monster.draw is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function health_bars_monster_draw(_ctx) {
     // _ctx is the monster instance (a par_monster child).

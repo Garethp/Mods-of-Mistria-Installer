@@ -6,13 +6,13 @@ Block an interactable's press before the interaction runs.
 
 ## Contract
 
-Fires in `par_interactable` when a registered interaction's input reads as pressed, before the interaction runs. ctx is `{ subject, input_id, local_key, interaction }`. Return `false` to veto the press (a `force_press` still goes through). `undefined` or `true` allows.
+Fires in `par_interactable` when a registered interaction's input reads as pressed, before the interaction runs. ctx is `{ subject, input_id, local_key, interaction }`. Return `false` to veto the press (a `force_press` still goes through). Every other return allows.
 
 | | |
 | --- | --- |
 | **Fires** | In `par_interactable`, when a registered interaction's input reads as pressed. |
 | **ctx** | `{ subject, input_id, local_key, interaction }` |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx struct
 
@@ -24,8 +24,8 @@ Fires in `par_interactable` when a registered interaction's input reads as press
 ## Usage
 
 ```gml
-// input.take_press is a GUARD: return false to block it, undefined (or true)
-// to allow. Guards fail OPEN - if your handler crashes, the action happens.
+// input.take_press is a GUARD: return Boolean false to block it;
+// every other return allows. Guards fail OPEN - if your handler crashes, the action happens.
 function careful_hands_input_take_press(_ctx) {
     // _ctx is { subject, input_id, local_key, interaction }.
     //   .subject     - the par_interactable instance whose interaction fired.

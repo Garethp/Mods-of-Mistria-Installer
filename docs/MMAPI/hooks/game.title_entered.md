@@ -24,7 +24,7 @@ Fires from the begin_step derived-events poll when the room changes into the tit
 ## Usage
 
 ```gml
-// game.title_entered is an EVENT: mmapi calls you after it happens.
+// game.title_entered is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function session_stats_game_title_entered(_ctx) {
     // _ctx is {} - an empty struct, the moment carries no data.
@@ -38,7 +38,7 @@ mmapi_on("game.title_entered", session_stats_game_title_entered);
 
 ## Engine Wiring
 
-- This event is emitted by the mmapi framework itself. No engine seam sits behind it. `mmapi_events_poll()` in `mmapi\mmapi_events.gml` runs once per frame from the Game begin_step lifecycle drain (installed by the [`game_step_begin_installs`](../seams/game_step_begin_installs.md) engine fix). When a room change lands in the title room and the previous room was not the title, it emits this event right after `game.room_changed`. The first poll of a session only records the baseline.
+- This event is emitted by the MMAPI framework itself. No engine seam sits behind it. `mmapi_events_poll()` in `mmapi/mmapi_events.gml` runs once per frame from the Game begin_step lifecycle drain (installed by the [`game_step_begin_installs`](../seams/game_step_begin_installs.md) engine fix). When a room change lands in the title room and the previous room was not the title, it emits this event right after `game.room_changed`. The first poll of a session only records the baseline.
 
 ## See Also
 

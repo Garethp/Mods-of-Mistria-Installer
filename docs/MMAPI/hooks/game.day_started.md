@@ -24,7 +24,7 @@ Fires from the begin_step derived-events poll when `total_days()` changes. ctx i
 ## Usage
 
 ```gml
-// game.day_started is an EVENT: mmapi calls you after it happens.
+// game.day_started is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function morning_briefing_game_day_started(_ctx) {
     // _ctx is { total_days }.
@@ -39,7 +39,7 @@ mmapi_on("game.day_started", morning_briefing_game_day_started);
 
 ## Engine Wiring
 
-- This event is emitted by the mmapi framework itself. No engine seam sits behind it. `mmapi_events_poll()` in `mmapi\mmapi_events.gml` reads `total_days()` once per frame from the Game begin_step lifecycle drain (installed by the [`game_step_begin_installs`](../seams/game_step_begin_installs.md) engine fix) and emits when the value changes. The first poll only records the baseline.
+- This event is emitted by the MMAPI framework itself. No engine seam sits behind it. `mmapi_events_poll()` in `mmapi/mmapi_events.gml` reads `total_days()` once per frame from the Game begin_step lifecycle drain (installed by the [`game_step_begin_installs`](../seams/game_step_begin_installs.md) engine fix) and emits when the value changes. The first poll only records the baseline.
 
 ## See Also
 

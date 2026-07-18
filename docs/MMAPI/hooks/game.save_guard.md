@@ -6,13 +6,13 @@ Block a game save before anything is written.
 
 ## Contract
 
-Fires at the top of `save_game()`, before the saver is created. ctx is `{ save_path }`. Return `false` to veto the save. `undefined` or `true` allows.
+Fires at the top of `save_game()`, before the saver is created. ctx is `{ save_path }`. Return `false` to veto the save. Every other return allows.
 
 | | |
 | --- | --- |
 | **Fires** | At the top of `save_game()`, before the saver is created. |
 | **ctx** | `{ save_path }` |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx struct
 
@@ -24,8 +24,8 @@ Fires at the top of `save_game()`, before the saver is created. ctx is `{ save_p
 ## Usage
 
 ```gml
-// game.save_guard is a GUARD: return false to block it, undefined (or true)
-// to allow. Guards fail OPEN - if your handler crashes, the action happens.
+// game.save_guard is a GUARD: return Boolean false to block it;
+// every other return allows. Guards fail OPEN - if your handler crashes, the action happens.
 function ironman_rules_game_save_guard(_ctx) {
     // _ctx is { save_path }.
     //   .save_path - the path save_game() was asked to write to.

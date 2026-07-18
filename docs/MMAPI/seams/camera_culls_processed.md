@@ -20,7 +20,7 @@ The injected emit is the last thing `Camera.process_culls()` runs: immediately a
 
 This is a text seam rather than a structural `target`/`at = "after"` because the anchor is the multi-line `instance_activate_region(...)` call itself: `instance_activate_region` is unique to this function, so the call plus the closing brace anchor exactly once.
 
-The placement is the point. A renderer that just scrolled into view is reactivated carrying its last `sprite_index`, and the mmapi begin_step tick (which runs before this cull, at `Game.gml` `step_begin`) cannot have refreshed it yet. Re-applying per-instance sprite and visual state from this hook closes that 1-frame scroll-in lag (the catalog's example: `crop_timers` re-skins its badges here), so a mod's sprite override never lags a frame on scroll-in.
+The placement is the point. A renderer that just scrolled into view is reactivated carrying its last `sprite_index`, and the MMAPI begin_step tick (which runs before this cull, at `Game.gml` `step_begin`) cannot have refreshed it yet. Re-applying per-instance sprite and visual state from this hook closes that 1-frame scroll-in lag (the catalog's example: `crop_timers` re-skins its badges here), so a mod's sprite override never lags a frame on scroll-in.
 
 ## See Also
 

@@ -31,7 +31,7 @@ This is the same struct object the pre event dispatched, with the destination fi
 ## Usage
 
 ```gml
-// game.room_transition_post is an EVENT: mmapi calls you after it happens.
+// game.room_transition_post is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function arrival_bell_game_room_transition_post(_ctx) {
     // _ctx is { taxi, itinerary, from_room, to_room, gm_room, instant }.

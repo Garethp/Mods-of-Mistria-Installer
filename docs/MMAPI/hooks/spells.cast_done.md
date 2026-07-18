@@ -21,7 +21,7 @@ Fires when a spell cast completes: at the end of the engine's `cast_spell()`, an
 ## Usage
 
 ```gml
-// spells.cast_done is an EVENT: mmapi calls you after it happens.
+// spells.cast_done is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function spell_tally_spells_cast_done(_ctx) {
     // _ctx is the spell id that just finished casting. Fires for engine

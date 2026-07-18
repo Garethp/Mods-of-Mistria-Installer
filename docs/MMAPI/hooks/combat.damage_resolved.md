@@ -26,7 +26,7 @@ Hits that resolve to nothing never fire: an `UntimedInvulnerable` receiver and a
 ## Usage
 
 ```gml
-// combat.damage_resolved is an EVENT: mmapi calls you after it happens.
+// combat.damage_resolved is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function combo_counter_combat_damage_resolved(_ctx) {
     // _ctx is { receiver, tarball, status, successful }.

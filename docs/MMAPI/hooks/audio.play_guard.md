@@ -6,13 +6,13 @@ Block any sound effect before it plays.
 
 ## Contract
 
-Fires at the top of `TANGO.play(asset_name, ...)`, before a sound effect starts. Return `false` to suppress the sound (`play` returns `undefined`). `undefined` or `true` allows. Runs for every SFX the game plays through TANGO, so keep handlers cheap.
+Fires at the top of `TANGO.play(asset_name, ...)`, before a sound effect starts. Return `false` to suppress the sound (`play` returns `undefined`). Every other return allows. Runs for every SFX the game plays through TANGO, so keep handlers cheap.
 
 | | |
 | --- | --- |
 | **Fires** | At the top of `TANGO.play(asset_name, ...)`, before a sound effect starts. |
 | **ctx** | `{ asset_name }` |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx struct
 
@@ -24,8 +24,8 @@ Fires at the top of `TANGO.play(asset_name, ...)`, before a sound effect starts.
 ## Usage
 
 ```gml
-// audio.play_guard is a GUARD: return false to block it, undefined (or true)
-// to allow. Guards fail OPEN - if your handler crashes, the action happens.
+// audio.play_guard is a GUARD: return Boolean false to block it;
+// every other return allows. Guards fail OPEN - if your handler crashes, the action happens.
 function quiet_farm_audio_play_guard(_ctx) {
     // _ctx is { asset_name }.
     //   .asset_name - the sound's TANGO asset path.

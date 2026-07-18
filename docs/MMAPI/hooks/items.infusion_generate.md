@@ -6,13 +6,13 @@ Stop a recipe from rolling infusions.
 
 ## Contract
 
-Fires at the top of `Recipe.generate_infusions()`. ctx is the recipe struct. Return `false` to veto infusion generation (an empty list is returned). `undefined` or `true` allows.
+Fires at the top of `Recipe.generate_infusions()`. ctx is the recipe struct. Return `false` to veto infusion generation (an empty list is returned). Every other return allows.
 
 | | |
 | --- | --- |
 | **Fires** | At the top of `Recipe.generate_infusions()`. |
 | **ctx** | The recipe struct. |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx parameter
 
@@ -21,8 +21,8 @@ Fires at the top of `Recipe.generate_infusions()`. ctx is the recipe struct. Ret
 ## Usage
 
 ```gml
-// items.infusion_generate is a GUARD: return false to block it, undefined (or true)
-// to allow. Guards fail OPEN - if your handler crashes, the action happens.
+// items.infusion_generate is a GUARD: return Boolean false to block it;
+// every other return allows. Guards fail OPEN - if your handler crashes, the action happens.
 function pure_craft_items_infusion_generate(_ctx) {
     // _ctx is the Recipe struct whose infusions are being generated.
     // if (<your condition>) {

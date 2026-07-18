@@ -13,6 +13,7 @@ Announces every gift the moment an NPC receives it.
 | **Op** | `emit` |
 | **Feeds** | [`npc.gift_received`](../hooks/npc.gift_received.md) |
 | **ctx built** | `{ npc: self, item: item }` |
+| **Marker** | `mmapi_npc_receive_gift` |
 
 ## The Edit
 

@@ -26,7 +26,7 @@ This is the real trash signal: the generic slot `pop()`/`drain()` are shared by 
 ## Usage
 
 ```gml
-// items.trashed is an EVENT: mmapi calls you after it happens.
+// items.trashed is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function trash_for_cash_items_trashed(_ctx) {
     // _ctx is { item, count }.

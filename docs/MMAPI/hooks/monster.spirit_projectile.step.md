@@ -6,7 +6,7 @@ Stop a spirit projectile mid-flight.
 
 ## Contract
 
-Fires each step of a spirit projectile. ctx is the projectile instance. Return `false` to veto the step and destroy the projectile. `undefined` or `true` allows.
+Fires each step of a spirit projectile. ctx is the projectile instance. Return `false` to veto the step and destroy the projectile. Every other return allows.
 
 A veto does not merely pause the projectile. The engine runs `instance_destroy(); return;`, so the projectile is removed on the spot. Because the guard fires every step of every live projectile, a standing veto condition removes each projectile the first step it matches.
 
@@ -14,7 +14,7 @@ A veto does not merely pause the projectile. The engine runs `instance_destroy()
 | --- | --- |
 | **Fires** | Each step of a live spirit projectile, in `obj_monster_spirit_projectile`'s step. |
 | **ctx** | The projectile instance (`obj_monster_spirit_projectile`). |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx parameter
 
@@ -23,8 +23,8 @@ A veto does not merely pause the projectile. The engine runs `instance_destroy()
 ## Usage
 
 ```gml
-// monster.spirit_projectile.step is a GUARD: return false to block it,
-// undefined (or true) to allow. Guards fail OPEN - if your handler crashes,
+// monster.spirit_projectile.step is a GUARD: return Boolean false to block it;
+// every other return allows. Guards fail OPEN - if your handler crashes,
 // the action happens.
 function projectile_ward_monster_spirit_projectile_step(_ctx) {
     // _ctx is the spirit projectile instance (obj_monster_spirit_projectile).

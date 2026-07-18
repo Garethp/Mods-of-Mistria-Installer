@@ -18,7 +18,7 @@ Puts a veto check at the head of the shroom's hide decision.
 
 ## The Edit
 
-The generated dispatch lands at the head of the shroom monster's `should_hide()` check, before its normal distance test. It calls `mmapi_check_guards("monster.shroom.should_hide", self)` in the uniform try/catch shape. When any guard returns `false`, the injected line runs `return false;`. `should_hide` answers no and the shroom stays out in the open. `undefined` or `true` falls through to the pristine distance check, so a deferring handler changes nothing.
+The generated dispatch lands at the head of the shroom monster's `should_hide()` check, before its normal distance test. It calls `mmapi_check_guards("monster.shroom.should_hide", self)` in the uniform try/catch shape. When any guard returns `false`, the injected line runs `return false;`. `should_hide` answers no and the shroom stays out in the open. Every return other than Boolean `false` falls through to the pristine distance check, so a deferring handler changes nothing.
 
 The locator is structural (function + position + token anchor, matched token-wise), so it is immune to whitespace and comment drift inside `obj_monster_shroom.gml`. With zero handlers the seam is behaviorally identical to pristine.
 

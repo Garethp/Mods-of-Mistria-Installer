@@ -6,7 +6,7 @@ Stop a dungeon ladder descent before it starts.
 
 ## Contract
 
-Fires when the player activates a dungeon ladder to descend, before the descend sound and floor change. ctx is `{ subject, key: "dungeon_ladder_down" }`. Return `false` to veto the descent. `undefined` or `true` allows.
+Fires when the player activates a dungeon ladder to descend, before the descend sound and floor change. ctx is `{ subject, key: "dungeon_ladder_down" }`. Return `false` to veto the descent. Every other return allows.
 
 Like [interact.elevator_action](interact.elevator_action.md), this is an action guard, not a per-frame interactability poll: the check sits inside the ladder's interaction action, after the engine's facing and selection have routed the press to this ladder, so it fires only on a real descend press. The guard runs above the `TANGO.play("SoundEffects/Entrances/LadderDescend")` call. A veto returns before the sound, so nothing about the descent happens.
 
@@ -14,7 +14,7 @@ Like [interact.elevator_action](interact.elevator_action.md), this is an action 
 | --- | --- |
 | **Fires** | Inside the dungeon ladder's interaction action, before the descend sound and floor change. |
 | **ctx** | `{ subject, key: "dungeon_ladder_down" }` |
-| **Kind contract** | The callback returns `false` to veto the action. `undefined` or `true` allows it. Guards fail open: a callback that throws counts as allow. |
+| **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx struct
 

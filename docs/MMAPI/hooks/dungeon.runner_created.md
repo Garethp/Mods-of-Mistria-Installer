@@ -36,7 +36,7 @@ Every field is filled best-effort: a failed read leaves the field absent (not `u
 ## Usage
 
 ```gml
-// dungeon.runner_created is an EVENT: mmapi calls you after it happens.
+// dungeon.runner_created is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function run_tracker_dungeon_runner_created(_ctx) {
     // _ctx is { runner, floor, biome, room_id, grid, level, gm_room, impl }.

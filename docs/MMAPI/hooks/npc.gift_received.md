@@ -22,7 +22,7 @@ Fires at the top of `par_NPC.receive_gift(item)`, when the player gives an NPC a
 ## Usage
 
 ```gml
-// npc.gift_received is an EVENT: mmapi calls you after it happens.
+// npc.gift_received is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function gift_ledger_npc_gift_received(_ctx) {
     // _ctx is { npc, item }.

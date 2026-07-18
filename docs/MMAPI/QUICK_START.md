@@ -3,11 +3,12 @@
 [← MMAPI](MMAPI.md)
 
 The fastest way to create an MMAPI mod is to build a small one end to end. This includes:
+
 - A folder to house the mod.
 - A manifest file to describe the mod.
 - One GML file with a single hook handler.
 
-This page explains building `my_first_mod`, which displays an in-game notification everytime a new day starts.
+This page explains building `my_first_mod`, which displays an in-game notification every time a new day starts.
 
 ## Requirements
 
@@ -15,15 +16,16 @@ This page explains building `my_first_mod`, which displays an in-game notificati
 - MOMI version 0.14.0 or newer. That is the first version that ships the GML layer.
 - A text editor. There is no compiler or build step necessary. A mod is plain GML source.
 
-## (MOVE) Naming Conventions
+## Naming
 
-Pick one name and use it everywhere: the folder, the `global.__my_first_mod` state struct, and the `my_first_mod_*` function prefix in code.
+Pick one name and use it everywhere: the folder, the `global.__my_first_mod` state struct, and the `my_first_mod_*` function prefix in code. See [One Name Everywhere](MOD_ANATOMY.md#one-name-everywhere) for why this matters.
 
 ## The Folder
 
 A mod lives inside a folder. As stated above, an MMAPI mod must contain a manifest and GML file inside of it.
 
 Here's a directory tree view to help you visualize:
+
 ```text
 my_first_mod/
 ├─ manifest.json
@@ -32,11 +34,11 @@ my_first_mod/
 ```
 
 The full folder paths for each file should look like:
-```
+
+```text
 /my_first_mod/manifest.json
 /my_first_mod/gml/MyFirstMod.gml
 ```
-
 
 ## The Manifest
 
@@ -54,9 +56,9 @@ The full folder paths for each file should look like:
 }
 ```
 
-Most of these manifest fields are shared in-common across all MOMI mod types, including non-MMAPI ones. The exception is `requires_hooks`.
+Most of these manifest fields are shared across all MOMI mod types, including non-MMAPI ones. The exception is `requires_hooks`.
 
-`requires_hooks` lists every hook the mod **registers**. MOMI checks the list against the seam catalog before installing anything, and skips the mod with a clear message when a hook is missing. See [The Manifest](MANIFEST.md) for additional information about this file and its fields.
+`requires_hooks` lists every MOMI catalog hook the mod **registers**. MOMI checks the list against the seam catalog before installing anything, and skips the mod with a clear message when a hook is missing. Custom hooks published by another mod do not belong in this list. See [The Manifest](MANIFEST.md) for additional information about this file and its fields.
 
 ## The Boot File
 
@@ -83,11 +85,12 @@ function my_first_mod_register_callbacks() {
 }
 
 // Hook callback.
-// game.day_started is an EVENT. MMAPI calls you after it happens.
+// game.day_started is an EVENT: the return value is ignored.
 function my_first_mod_day_started(_ctx) {
     // _ctx contains { total_days }.
     create_notification("Day " + string(_ctx.total_days) + " begins.");
     mmapi_log_info("my_first_mod", "day started: " + string(_ctx.total_days));
+    mmapi_log_flush("my_first_mod"); // make this one-line proof visible immediately
 }
 
 // MMAPI mod declaration and hook registration.
@@ -96,13 +99,13 @@ my_first_mod_register_callbacks();
 ```
 
 > [!TIP]
-> Every piece of this skeleton exists for an engine reason. the memory-only top level, the lazy runtime struct, the `registered_hooks` latch, the named handler function. [Mod Anatomy](MOD_ANATOMY.md) explains each one.
+> Every piece of this skeleton exists for an engine reason: the memory-only top level, the lazy runtime struct, the `registered_hooks` latch, and the named handler function. [Mod Anatomy](MOD_ANATOMY.md) explains each one.
 
 ## Install The Mod
 
 Install with MOMI like any other mod. Put the folder in your `/mods` directory and run the installer (GUI or command line). MOMI installs the MMAPI framework, applies the seam catalog to the game's scripts, and copies your `gml/` tree into the game's script tree.
 
-If the mod is skipped instead of installed, MOMI shows the reason: A missing required hook, GML that does not compile, or an install-namespace clash with another mod. A skipped mod is skipped whole, so none of its content installs.
+If the mod is skipped instead of installed, MOMI shows the reason, such as a missing required hook, GML that does not compile, an install-namespace clash, or an export collision. A skipped mod installs none of its content. See [The Mod Was Skipped At Install](TROUBLESHOOTING.md#the-mod-was-skipped-at-install).
 
 To remove the mod, remove it from the `/mods` directory and run the installer again. Every install rebuilds the game's scripts from pristine data, so removal and repair are the same operation as install.
 
@@ -118,7 +121,7 @@ The log file is created automatically:
 %LOCALAPPDATA%/FieldsOfMistria/mod_data/my_first_mod/logs/my_first_mod.log
 ```
 
-The `mmapi_log_info` call in the handler proves the hook fired:
+The `mmapi_log_info` call in the handler proves the hook fired. The following flush makes that single line reach disk immediately:
 
 ```text
 [INFO ] day started: 24

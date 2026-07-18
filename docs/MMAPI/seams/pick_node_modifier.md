@@ -14,6 +14,7 @@ Filters the tool modifier at the head of every pick action.
 | **Feeds** | [`resource.node_modifier`](../hooks/resource.node_modifier.md) |
 | **Value filtered** | `modifier` - the tool modifier argument |
 | **ctx built** | `{ grid: grid, x: x_pos, y: y_pos, item: item, action: "pick" }` |
+| **Marker** | `mmapi_pick_node_modifier` |
 
 ## The Edit
 

@@ -25,7 +25,7 @@ Fires at the top of `StatusEffectManager.cancel()`, before the effect is looked 
 ## Usage
 
 ```gml
-// player.status_effect_cancel is an EVENT: mmapi calls you after it happens.
+// player.status_effect_cancel is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
 function effect_ledger_player_status_effect_cancel(_ctx) {
     // _ctx is { type, manager }.

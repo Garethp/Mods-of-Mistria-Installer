@@ -1,16 +1,16 @@
-# Catalogue
+# Catalog
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares, and every seam behind them, each with its own page. The catalog currently declares **87 hooks**, fed by **93 seams**, **2 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **87 hooks**, fed by **93 seams**, **2 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
-Each hook has exactly one kind, and each kind has one registration directive. Registering with the wrong directive never runs and only warns in the mmapi log. See [Hooks](HOOKS.md).
+Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
 | Kind | Directive | The callback |
 | ---- | --------- | ------------ |
-| event | `mmapi_on` | Observes; return ignored. |
-| filter | `mmapi_filter` | Receives `(value, ctx)`; returns a replacement or `undefined` to keep. |
-| guard | `mmapi_guard` | Returns `false` to veto; `undefined` or `true` allows. |
+| event | `mmapi_on` | Reacts to a moment; return ignored. The individual contract may allow context mutation. |
+| filter | `mmapi_filter` | Receives `(value, ctx)`; normally returns a replacement or `undefined` to keep. In-place hooks say when to mutate instead. |
+| guard | `mmapi_guard` | The Boolean value `false` vetoes; every other value allows. |
 | override | `mmapi_override` | First non-`undefined` return replaces the engine's answer. |
 
 ## Hooks
@@ -245,10 +245,12 @@ Hook-less edits the catalog also carries:
 
 | Name | Kind | Description |
 | ---- | ---- | ----------- |
-| [game_step_begin_installs](seams/game_step_begin_installs.md) | engine fix | Installs the mmapi per-frame drain at the top of the game's `step_begin`, the framework's lifecycle root. |
+| [game_step_begin_installs](seams/game_step_begin_installs.md) | engine fix | Installs the MMAPI per-frame drain at the top of the game's `step_begin`, the framework's lifecycle root. |
 | [shroom_puddle_mask](seams/shroom_puddle_mask.md) | engine fix | Corrects the acid puddle's damage-tarball collision mask, a beta-wiring fix. |
-| [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
+| [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
-## Growing The Catalogue
+## Growing The Catalog
 
-Hooks exist because real mods needed them. If nothing here covers your case, most needs are direct engine calls that need no hook at all - see [Calling the Engine Directly](API_REFERENCE.md#calling-the-engine-directly). For a genuinely missing seam, open a Pull Request describing the game moment and what your mod should be able to do about it. See [Seams](SEAMS.md#what-this-means-for-your-mod).
+Hooks exist because real mods needed them. If nothing here covers your case, first check whether a direct engine call or a registered tick can do it. See [Calling The Engine Directly](API_REFERENCE.md#calling-the-engine-directly) and [Prove A New Hook Is Needed](SEAMS.md#1-prove-a-new-hook-is-needed).
+
+For a request, describe the game moment and what your mod should be able to observe, change, block, or replace. For a contribution, the [Seam Authoring Reference](SEAMS.md#authoring-a-hook-and-seam) covers the catalog schema, template and text forms, locators, generated ops, dependencies, verification commands, and matching documentation work.
