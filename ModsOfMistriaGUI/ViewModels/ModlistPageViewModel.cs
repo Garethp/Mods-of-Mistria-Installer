@@ -479,7 +479,7 @@ public partial class ModlistPageViewModel : PageViewBase
     private void UnInstallMods()
     {
         IsInstalling  = true;
-        InstallStatus = "Uninstalling";
+        InstallStatus = Resources.GUIUninstallingText;
 
         Task.Run(async () =>
         {
@@ -489,7 +489,7 @@ public partial class ModlistPageViewModel : PageViewBase
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsInstalling  = false;
-                    InstallStatus = "Uninstall Complete";
+                    InstallStatus = Resources.GUIUninstallCompleteText;
                 });
             }
             catch (Exception e)

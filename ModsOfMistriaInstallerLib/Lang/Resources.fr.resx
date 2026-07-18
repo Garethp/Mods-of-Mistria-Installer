@@ -432,4 +432,10 @@
   <data name="CoreModRequiresIncorrectVersion" xml:space="preserve">
     <value>Le mod requiert une version minimum incorrecte de MOMI.</value>
   </data>
+  <data name="GUIUninstallCompleteText" xml:space="preserve">
+    <value>Uninstall Complete</value>
+  </data>
+  <data name="GUIUninstallingText" xml:space="preserve">
+    <value>Uninstalling</value>
+  </data>
 </root>

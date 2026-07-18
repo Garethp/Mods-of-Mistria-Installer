@@ -951,11 +951,29 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Uninstall Complete.
+        /// </summary>
+        public static string GUIUninstallCompleteText {
+            get {
+                return ResourceManager.GetString("GUIUninstallCompleteText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Uninstall Information.
         /// </summary>
         public static string GUIUninstallInformationTitle {
             get {
                 return ResourceManager.GetString("GUIUninstallInformationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uninstalling.
+        /// </summary>
+        public static string GUIUninstallingText {
+            get {
+                return ResourceManager.GetString("GUIUninstallingText", resourceCulture);
             }
         }
         
