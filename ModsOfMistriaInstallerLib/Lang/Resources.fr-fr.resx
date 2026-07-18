@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root"
+    xmlns=""
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CLIRunningBuild" xml:space="preserve">
+    <value>Build actuel {0}</value>
+  </data>
+  <data name="CLICompleted" xml:space="preserve">
+    <value>Terminé. Appuyez sur n'importe quelle touche pour quitter.</value>
+  </data>
+  <data name="CLIUninstallComplete" xml:space="preserve">
+    <value>Tous les mods ont été désinstallés. Appuyez sur n'importe quelle touche pour quitter.</value>
+  </data>
+  <data name="CLIWarning32Bit" xml:space="preserve">
+    <value>Votre système d'exploitation est une version 64-bit, mais vous avez accidentellement téléchargé la version 32-bit de MOMI. Téléchargez la version de MOMI qui ne contient pas &quot;-x86&quot;.</value>
+  </data>
+  <data name="CoreLookingForMistriaAt" xml:space="preserve">
+    <value>Recherche de Mistria dans {0}</value>
+  </data>
+  <data name="CoreMistriaNotFoundFallback" xml:space="preserve">
+    <value>Impossible de trouver Fields of Mistria, retour au dossier actuel</value>
+  </data>
+  <data name="CoreCouldNotFindModManifest" xml:space="preserve">
+    <value>Impossible de trouver le fichier manifest.</value>
+  </data>
+  <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve">
+    <value>Le fichier manifest doit être nommé manifest.json.</value>
+  </data>
+  <data name="CoreManifestHasNoAuthor" xml:space="preserve">
+    <value>Le fichier manifest doit contenir un auteur.</value>
+  </data>
+  <data name="CoreManifestHasNoName" xml:space="preserve">
+    <value>Le fichier manifest doit contenir un nom.</value>
+  </data>
+  <data name="CoreManifestHasNoVersion" xml:space="preserve">
+    <value>Le fichier manifest doit contenir une version.</value>
+  </data>
+  <data name="CoreModRequiresNewerInstaller" xml:space="preserve">
+    <value>Ce mod requiert une version récente de l'installateur.</value>
+  </data>
+  <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve">
+    <value>L'emplacement de Fields of Mistria n'existe pas.</value>
+  </data>
+  <data name="CoreModDirectoryDoesNotExist" xml:space="preserve">
+    <value>L'emplacement du mod n'existe pas.</value>
+  </data>
+  <data name="CoreGeneratingInformationForMod" xml:space="preserve">
+    <value>Génération d'informations  {0}</value>
+  </data>
+  <data name="CoreInstallCompleted" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+  <data name="CoreMistriaNotFound" xml:space="preserve">
+    <value>Impossible de trouver l'emplacement de Fields of Mistria.</value>
+  </data>
+  <data name="CoreCouldNotGuessModsAt" xml:space="preserve">
+    <value>Impossible de trouver un dossier &quot;mods&quot; dans {0}.</value>
+  </data>
+  <data name="CoreGuessedMistriaAt" xml:space="preserve">
+    <value>Emplacement estimé: {0}</value>
+  </data>
+  <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve">
+    <value>{0} ignoré car il requiert une version plus récente de l'installateur.</value>
+  </data>
+  <data name="CoreSkippingModBecauseErrors" xml:space="preserve">
+    <value>{0} ignoré à cause des erreurs suivantes&#160;:</value>
+  </data>
+  <data name="CoreModHasWarnings" xml:space="preserve">
+    <value>{0} a rencontré les avertissements suivants, mais sera tout de même installé&#160;:</value>
+  </data>
+  <data name="CoreInstalledInReporter" xml:space="preserve">
+    <value>{0} installé dans {1}</value>
+  </data>
+  <data name="CoreModsInstalledInTime" xml:space="preserve">
+    <value>Mods installés dans {0}</value>
+  </data>
+  <data name="CoreItemDoesNotHaveValue" xml:space="preserve">
+    <value>{0} n'a pas de valeur</value>
+  </data>
+  <data name="CoreSpriteFileDoesNotExist" xml:space="preserve">
+    <value>{0} pointe vers un sprite dans {1} mais ce fichier n'existe pas</value>
+  </data>
+  <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve">
+    <value>{0} pointe vers un dossier de sprites dans {1} mais ce dossier n'existe pas</value>
+  </data>
+  <data name="CoreSpriteFolderIsEmpty" xml:space="preserve">
+    <value>{0} pointe vers un dossier de sprites dans {1} mais ce dossier est vide</value>
+  </data>
+  <data name="CoreCouldNotParseJSON" xml:space="preserve">
+    <value>Impossible de paster le fichier avec message&#160;: {0}</value>
+  </data>
+  <data name="CoreNoDataInJSON" xml:space="preserve">
+    <value>Aucune donnée trouvée dans le fichier</value>
+  </data>
+  <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve">
+    <value>Le fichier outfit ne contient aucune tenue.</value>
+  </data>
+  <data name="CoreSpriteFileHasNoSprites" xml:space="preserve">
+    <value>Le fichier sprite ne contient aucun sprite.</value>
+  </data>
+  <data name="CoreStoreFileHasNoData" xml:space="preserve">
+    <value>Le fichier store ne contient aucune catégorie ou objet.</value>
+  </data>
+  <data name="CoreTilesetsFileEmpty" xml:space="preserve">
+    <value>Le fichier tileset ne contient aucun tileset.</value>
+  </data>
+  <data name="CoreReadingSprites" xml:space="preserve">
+    <value>Lecture de Textures/Sprites</value>
+  </data>
+  <data name="CoreImportingSprites" xml:space="preserve">
+    <value>Import de Textures/Sprites</value>
+  </data>
+  <data name="CoreWritingSprites" xml:space="preserve">
+    <value>Écriture de Textures/Sprites</value>
+  </data>
+  <data name="CoreErrorOutfitNoName" xml:space="preserve">
+    <value>La tenue n'a aucun nom.</value>
+  </data>
+  <data name="CoreErrorOutfitNoDescription" xml:space="preserve">
+    <value>La tenue n'a aucune description.</value>
+  </data>
+  <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve">
+    <value>La tenue {0} n'a aucun ui_slot défini.</value>
+  </data>
+  <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve">
+    <value>La tenue {0} n'a aucun ui_sub_category défini.</value>
+  </data>
+  <data name="CoreErrorOutfitNoAnimation" xml:space="preserve">
+    <value>La tenue {0} n'a aucun fichier animation.</value>
+  </data>
+  <data name="CoreErrorStoreCategoryNoName" xml:space="preserve">
+    <value>La catégorie n'a aucun nom d'icone.</value>
+  </data>
+  <data name="CoreErrorShadowHasNoLocation" xml:space="preserve">
+    <value>Le fichier ombre {0} na aucune valeur Location renseignée.</value>
+  </data>
+  <data name="CoreWarningShadowFileNoShadows" xml:space="preserve">
+    <value>Le fichier ombre ne comporte aucune ombre.</value>
+  </data>
+  <data name="CoreErrorShadowHasNoSprite" xml:space="preserve">
+    <value>Le fichier ombre {0} ne contient pas de regular_sprite_name</value>
+  </data>
+  <data name="CoreErrorModRequiresWindows" xml:space="preserve">
+    <value>Ce mod ne fonctionne que sur Windows et ne sera pas installé.</value>
+  </data>
+  <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve">
+    <value>La tenue {0} a un ui_slot incorrect. Il doit avoir une valeur parmi&#160;: {1}.</value>
+  </data>
+  <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve">
+    <value>La tenue {0} a un ui_sub_category incorrect. Il doit avoir une valeur parmi&#160;: {1}.</value>
+  </data>
+  <data name="CorePreinstallWillInstallAurie" xml:space="preserve">
+    <value>Pendant l'installation, MOMI tentera d'ajouter une entrée dans le registre de votre ordinateur. Pour cela, il vous sera demandé de donner les accès administrateur à l'&quot;Éditeur de registre&quot; et d'effectuer une modification du registre.</value>
+  </data>
+  <data name="CorePreinstallWillRemoveAurie" xml:space="preserve">
+    <value>Pendant l'installation, MOMI tentera de supprimer une entrée dans le registre de votre ordinateur. Pour cela, il vous sera demandé de donner les accès administrateur au &quot;Registry Console Tool&quot;.</value>
+  </data>
+  <data name="CoreErrorReadingVersionForMod" xml:space="preserve">
+    <value>Une erreur s'est produite lors de la lecture de la version du mod&#160;: (0)</value>
+  </data>
+  <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve">
+    <value>L'objet n'a pas été assigné à un magasin.</value>
+  </data>
+  <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve">
+    <value>L'objet du magasin {0} n'a aucune catégorie.</value>
+  </data>
+  <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve">
+    <value>Impossible d'ajouter l'objet au magasin {0} et à la catégorie {1} car il a une saison {2} invalide.</value>
+  </data>
+  <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve">
+    <value>L'objet du magasin {0} et catégorie {1} n'a pas d'objet spécifié.</value>
+  </data>
+  <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve">
+    <value>La catégorie n'a pas de magasin.</value>
+  </data>
+  <data name="CoreErrorNewObjectNoName" xml:space="preserve">
+    <value>Le nouvel objet n'a pas de nom.</value>
+  </data>
+  <data name="CoreErrorNewObjectNoCategory" xml:space="preserve">
+    <value>L'objet {0} n'a pas de catégorie.</value>
+  </data>
+  <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve">
+    <value>L'objet {0} a une catégorie {1} invalide.</value>
+  </data>
+  <data name="CoreErrorNewObjectNoData" xml:space="preserve">
+    <value>L'objet {0} n'a aucune donnée.</value>
+  </data>
+  <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve">
+    <value>Le nouveau fichier Objects ne contient aucun objet.</value>
+  </data>
+  <data name="CoreWarningItemFileHasNoItems" xml:space="preserve">
+    <value>Le nouveau fichier Items ne contient aucun objet.</value>
+  </data>
+  <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve">
+    <value>L'objet {0} ne précise pas s'il écrase un autre mod.</value>
+  </data>
+  <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve">
+    <value>L'objet {0} ne précise pas s'il écrase un autre mod.</value>
+  </data>
+  <data name="GUIApplicationTitle" xml:space="preserve">
+    <value>Mods Of Mistria Installer</value>
+  </data>
+  <data name="GUIGreetingText" xml:space="preserve">
+    <value>Bienvenue dans Mods of Mistria Installer!</value>
+  </data>
+  <data name="GUIInstallButtonText" xml:space="preserve">
+    <value>Installer</value>
+  </data>
+  <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve">
+    <value>Fields of Mistria a été détecté dans&#160;: </value>
+  </data>
+  <data name="GUIModsWillBeInstalled" xml:space="preserve">
+    <value>Cochez les cases pour tous les mods que vous voulez installer&#160;:</value>
+  </data>
+  <data name="GUIModByAuthorWithVersion" xml:space="preserve">
+    <value>{0} par {1} - Version {2}</value>
+  </data>
+  <data name="GUICouldNotFindMistria" xml:space="preserve">
+    <value>Impossible de trouver l'emplacement de Fields of Mistria. Essayez de placer ce fichier dans le même dossier que Fields of Mistria.</value>
+  </data>
+  <data name="GUICouldNotFindMods" xml:space="preserve">
+    <value>Impossible de trouver un dossier &quot;mods&quot;. Essayez de créer un dossier nommé &quot;mods&quot; dans le dossier de Fields of Mistria.</value>
+  </data>
+  <data name="GUINoModsToInstall" xml:space="preserve">
+    <value>Aucun mod à installer n'a été trouvé</value>
+  </data>
+  <data name="GUIModsRequireNewerVersion" xml:space="preserve">
+    <value>Certains mods requièrent une version plus récente de l'installateur. Mettez à jour l'installateur.</value>
+  </data>
+  <data name="GUIInstallInProgress" xml:space="preserve">
+    <value>Installation des mods...</value>
+  </data>
+  <data name="GUIModHasWarnings" xml:space="preserve">
+    <value>Ce mod a des avertissements qui ne peuvent pas être ignorés</value>
+  </data>
+  <data name="GUIModHasErrors" xml:space="preserve">
+    <value>Ce mod comporte des erreurs et ne sera pas installé</value>
+  </data>
+  <data name="GUIUpdateNagTitle" xml:space="preserve">
+    <value>Nouvelle version disponible</value>
+  </data>
+  <data name="GUIUpdateNagMessage" xml:space="preserve">
+    <value>Une nouvelle version de Mods Of Mistria Installer est disponible, vous êtes invité à la télécharger</value>
+  </data>
+  <data name="GUIUninstallButtonText" xml:space="preserve">
+    <value>Désinstaller tout</value>
+  </data>
+  <data name="GUIPreinstallInformationTitle" xml:space="preserve">
+    <value>Informations d'installation</value>
+  </data>
+  <data name="GUIUninstallInformationTitle" xml:space="preserve">
+    <value>Informations de désinstallation</value>
+  </data>
+  <data name="GUIWarning32Bit" xml:space="preserve">
+    <value>Votre système d'exploitation est une version 64-bit, mais vous avez accidentellement téléchargé la version 32-bit de MOMI. Téléchargez la version de MOMI qui ne contient pas &quot;-x86&quot;.</value>
+  </data>
+  <data name="GUIWarning32BitTitle" xml:space="preserve">
+    <value>Version 32-Bit détectée</value>
+  </data>
+  <data name="GUISetupMistriaLocation" xml:space="preserve">
+    <value>Emplacement de Fields Of Mistria&#160;:</value>
+  </data>
+  <data name="GUISetupModsLocation" xml:space="preserve">
+    <value>Dossier mods&#160;:</value>
+  </data>
+  <data name="GUICanCreateModsFolder" xml:space="preserve">
+    <value>Aucun dossier mods n'a été détecté, il a par conséquent été créé automatiquement.</value>
+  </data>
+  <data name="GUISaveLogFile" xml:space="preserve">
+    <value>Enregistrer le fichier de logs</value>
+  </data>
+  <data name="GUIPickLogFile" xml:space="preserve">
+    <value>Choisissez un emplacement pour le fichier de logs</value>
+  </data>
+  <data name="GUIEnableAllMods" xml:space="preserve">
+    <value>Activer Tous Les Mods</value>
+  </data>
+  <data name="GUIDisableAllMods" xml:space="preserve">
+    <value>Désactiver Tous Les Mods</value>
+  </data>
+  <data name="GUIReloadModlist" xml:space="preserve">
+    <value>Rafraichir la liste des mods</value>
+  </data>
+  <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve">
+    <value>L'animal {0} pour le magasin {1} n'a aucune cosométique définie.</value>
+  </data>
+  <data name="GUIGreetingText_April" xml:space="preserve">
+    <value>Le saviez-vous&#160;? Un coup de pioche savant est une excellente façon d'installer n'importe quel mod que vous avez téléchargé.</value>
+  </data>
+  <data name="GUIInstallButtonText_April" xml:space="preserve">
+    <value>Piocher savamment</value>
+  </data>
+  <data name="GUIInstallInProgress_April" xml:space="preserve">
+    <value>Piochage savant en cours...</value>
+  </data>
+  <data name="GUINoModsToInstall_April" xml:space="preserve">
+    <value>Aucun mod trouvé à piocher</value>
+  </data>
+  <data name="GUIModsWillBeInstalled_April" xml:space="preserve">
+    <value>Cochez les cases pour tous les mods que vous voulez piocher&#160;:</value>
+  </data>
+  <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve">
+    <value>La surcharge du prix de la tenue {0} doit être un nombre positif.</value>
+  </data>
+  <data name="CoreRunningInstaller" xml:space="preserve">
+    <value>Lancement de {0}</value>
+  </data>
+  <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve">
+    <value>Le sprite {0} n'a aucune valeur Location renseignée.</value>
+  </data>
+  <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve">
+    <value>Ce mod ne peut pas être installé dans sa version actuelle à cause d'une mise à jour du moteur du jeu.</value>
+  </data>
+  <data name="CoreModRequiresIncorrectVersion" xml:space="preserve">
+    <value>Le mod requiert une version minimum incorrecte de MOMI.</value>
+  </data>
+</root>
