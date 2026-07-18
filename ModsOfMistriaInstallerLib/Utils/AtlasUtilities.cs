@@ -354,16 +354,9 @@ public class AtlasUtilities
 
         public AtlasPackState OpenState(string atlasType)
         {
-            try
+            if (_currentAtlasTypes.ContainsKey(atlasType))
             {
-                if (_currentAtlasTypes.ContainsKey(atlasType))
-                {
-                    return _openAtlases[_currentAtlasTypes[atlasType]];
-                }
-            }
-            catch (Exception e)
-            {
-                var a = 1 + 1;
+                return _openAtlases[_currentAtlasTypes[atlasType]];
             }
 
             var lastAtlas = GetLastAtlas(atlasType);
@@ -441,6 +434,8 @@ public class AtlasUtilities
             {
                 FlushState(state);
             }
+
+            _currentAtlasTypes.Clear();
             _openAtlases.Clear();
         }
 
