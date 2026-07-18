@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,43 +26,40 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root"
-    xmlns=""
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -121,321 +118,321 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CLIRunningBuild" xml:space="preserve">
-    <value>Executando build {0}</value>
+    <value>Build {0} uitvoeren</value>
   </data>
   <data name="CLICompleted" xml:space="preserve">
-    <value>Completo. Pressione qualquer tecla para sair.</value>
+    <value>Voltooid. Druk op een willekeurige toets om af te sluiten.</value>
   </data>
   <data name="CLIUninstallComplete" xml:space="preserve">
-    <value>Todos os mods foram desinstalados. Pressione qualquer tecla para sair.</value>
+    <value>Alle mods zijn verwijderd. Druk op een willekeurige toets om af te sluiten.</value>
   </data>
   <data name="CLIWarning32Bit" xml:space="preserve">
-    <value>Você está executando um sistema operacional em 64-bit, mas acidentalmente baixou a versão de 32-bit do MOMI que não inclui &quot;-x86&quot;.</value>
+    <value>Je gebruikt een 64-bits bestruringssyysteem, maar hebt perrongeluk de 32-bits versie gedownload. download de versie van MOMI waarin "-x86" niet voorkomt.</value>
   </data>
   <data name="CoreLookingForMistriaAt" xml:space="preserve">
-    <value>Procurando por Mistria em {0}</value>
+    <value>Op zoek naar Mistria op {0}</value>
   </data>
   <data name="CoreMistriaNotFoundFallback" xml:space="preserve">
-    <value>Fields of Mistria não encontrado, retornando a pasta atual</value>
+    <value>Fields of Mistria niet gevonden, teruggevallen op de huidige map.</value>
   </data>
   <data name="CoreCouldNotFindModManifest" xml:space="preserve">
-    <value>Arquivo manifest não encontrado.</value>
+    <value>Het manifestbestand kon niet gevonden worden.</value>
   </data>
   <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve">
-    <value>O arquivo de manifest deve ser nomeado manifest.json.</value>
+    <value>Het manifestbestand moet manifest.json heten.</value>
   </data>
   <data name="CoreManifestHasNoAuthor" xml:space="preserve">
-    <value>O arquivo manifest deve conter um campo author.</value>
+    <value>Het manifest moet een auteur bevatten.</value>
   </data>
   <data name="CoreManifestHasNoName" xml:space="preserve">
-    <value>O arquivo manifest deve conter um nome.</value>
+    <value>Het manifest moet een naam bevatten.</value>
   </data>
   <data name="CoreManifestHasNoVersion" xml:space="preserve">
-    <value>O manifesto deve conter uma versão.</value>
+    <value>Het manifest moet een versie bevatten.</value>
   </data>
   <data name="CoreModRequiresNewerInstaller" xml:space="preserve">
-    <value>Esse mod requer uma versão mais nova do instalador.</value>
+    <value>Voor deze mod is een nieuwere versie van het installatieprogramma vereist.</value>
   </data>
   <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve">
-    <value>A localização doThe Fields of Mistria não existe.</value>
+    <value>De locatie Fields of Mistria bestaat niet.</value>
   </data>
   <data name="CoreModDirectoryDoesNotExist" xml:space="preserve">
-    <value>A localização desse mod não existe.</value>
+    <value>De locatie van de mod bestaat niet.</value>
   </data>
   <data name="CoreGeneratingInformationForMod" xml:space="preserve">
-    <value>Gerando informação para {0}</value>
+    <value>Informatie genereren voor {0}</value>
   </data>
   <data name="CoreInstallCompleted" xml:space="preserve">
-    <value>Concluído</value>
+    <value>Afgerond</value>
   </data>
   <data name="CoreMistriaNotFound" xml:space="preserve">
-    <value>Não foi possível encontrar a localização do Fields of Mistria.</value>
+    <value>Locatie van Fields of Mistria niet gevonden.</value>
   </data>
   <data name="CoreCouldNotGuessModsAt" xml:space="preserve">
-    <value>Não foi possível localizar uma pasta mods {0}.</value>
+    <value>Kon geen mods-map vinden op {0}.</value>
   </data>
   <data name="CoreGuessedMistriaAt" xml:space="preserve">
-    <value>Localização estimada: {0}</value>
+    <value>Geschatte locatie: {0}</value>
   </data>
   <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve">
-    <value>Pulando {0} já que requer uma versão mais nova do instalador.</value>
+    <value>{0} wordt overgeslagen omdat er een nieuwere versie van het installatieprogramma voor nodig is.</value>
   </data>
   <data name="CoreSkippingModBecauseErrors" xml:space="preserve">
-    <value>Pulando {0} por causa dos seguintes erros:</value>
+    <value>{0} wordt overgeslagen vanwege de volgende fouten:</value>
   </data>
   <data name="CoreModHasWarnings" xml:space="preserve">
-    <value>{0} tem os seguintes avisos, mas ainda irá instalar:</value>
+    <value>{0} heeft de volgende waarschuwingen, maar wordt toch geïnstalleerd:</value>
   </data>
   <data name="CoreInstalledInReporter" xml:space="preserve">
-    <value>{0} instalou em {1}</value>
+    <value>{0} geïnstalleerd in {1}</value>
   </data>
   <data name="CoreModsInstalledInTime" xml:space="preserve">
-    <value>Mods instalados em {0}</value>
+    <value>Mods geïnstalleerd in {0}</value>
   </data>
   <data name="CoreItemDoesNotHaveValue" xml:space="preserve">
-    <value>{0} não tem um valor</value>
+    <value>{0} heeft geen waarde</value>
   </data>
   <data name="CoreSpriteFileDoesNotExist" xml:space="preserve">
-    <value>{0} aponta para um sprite em {1} mas esse arquivo não existe</value>
+    <value>{0} verwijst naar een sprite op {1}, maar dat bestand bestaat niet.</value>
   </data>
   <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve">
-    <value>{0} aponta para uma pasta em {1} mas essa pasta não existe</value>
+    <value>{0} verwijst naar een sprite-map op {1}, maar die map bestaat niet.</value>
   </data>
   <data name="CoreSpriteFolderIsEmpty" xml:space="preserve">
-    <value>{0} aponta para uma pasta de sprite em {1} mas esse diretório está vazio</value>
+    <value>{0} verwijst naar een sprite-map op {1}, maar die map is leeg.</value>
   </data>
   <data name="CoreCouldNotParseJSON" xml:space="preserve">
-    <value>Não possível analisar o arquivo, mensagem: {0}</value>
+    <value>Kon bestand niet parseren met de melding: {0}</value>
   </data>
   <data name="CoreNoDataInJSON" xml:space="preserve">
-    <value>Nenhuma informação foi localizada no arquivo</value>
+    <value>Er zijn geen gegevens gevonden in het bestand.</value>
   </data>
   <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve">
-    <value>Arquivo de roupas não contém roupas</value>
+    <value>Het outfitbestand bevat geen outfits.</value>
   </data>
   <data name="CoreSpriteFileHasNoSprites" xml:space="preserve">
-    <value>Arquivo de sprites não contém sprites</value>
+    <value>Sprite-bestand bevat geen sprites.</value>
   </data>
   <data name="CoreStoreFileHasNoData" xml:space="preserve">
-    <value>Arquivo de loja não contém categorias ou itens.</value>
+    <value>Het opslagbestand bevat geen categorieën of items.</value>
   </data>
   <data name="CoreTilesetsFileEmpty" xml:space="preserve">
-    <value>O arquivo de tileset não contém tilesets.</value>
+    <value>Het tileset-bestand bevat geen tilesets.</value>
   </data>
   <data name="CoreReadingSprites" xml:space="preserve">
-    <value>Lendo Texturas/Sprites</value>
+    <value>Textures/Sprites lezen</value>
   </data>
   <data name="CoreImportingSprites" xml:space="preserve">
-    <value>Importando Texturas/Sprites</value>
+    <value>Textures/Sprites importeren</value>
   </data>
   <data name="CoreWritingSprites" xml:space="preserve">
-    <value>Escrevendo Texturas/Sprites</value>
+    <value>Textures/Sprites schrijven</value>
   </data>
   <data name="CoreErrorOutfitNoName" xml:space="preserve">
-    <value>Roupa não possui nome.</value>
+    <value>Outfit heeft geen naam.</value>
   </data>
   <data name="CoreErrorOutfitNoDescription" xml:space="preserve">
-    <value>Roupa não possui descrição.</value>
+    <value>Outfit heeft geen beschrijving.</value>
   </data>
   <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve">
-    <value>A roupa {0} não definiu ui_slot.</value>
+    <value>Outfit {0} heeft geen ui_slot gedefinieerd.</value>
   </data>
   <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve">
-    <value>A roupa {0} não definiu ui_sub_category.</value>
+    <value>Outfit {0} heeft geen ui_sub_category gedefinieerd.</value>
   </data>
   <data name="CoreErrorOutfitNoAnimation" xml:space="preserve">
-    <value>A roupa {0} não tem arquivos de animação.</value>
+    <value>Outfit {0} heeft geen animatiebestanden.</value>
   </data>
   <data name="CoreErrorStoreCategoryNoName" xml:space="preserve">
-    <value>A categoria não contém nomes dos ícones.</value>
+    <value>Categorie heeft geen pictogramnaam.</value>
   </data>
   <data name="CoreErrorShadowHasNoLocation" xml:space="preserve">
-    <value>A sombra {0} não contém a localização.</value>
+    <value>Schaduw {0} heeft geen locatie ingesteld.</value>
   </data>
   <data name="CoreWarningShadowFileNoShadows" xml:space="preserve">
-    <value>O arquivo de sombras não contém sombras.</value>
+    <value>Schaduwbestand bevat geen schaduwen.</value>
   </data>
   <data name="CoreErrorShadowHasNoSprite" xml:space="preserve">
-    <value>A sombra {0} não possui o sprite_nome_regular</value>
+    <value>Schaduw {0} heeft geen regular_sprite_name.</value>
   </data>
   <data name="CoreErrorModRequiresWindows" xml:space="preserve">
-    <value>Esse mod só funciona no Windows e não irá instalar.</value>
+    <value>Deze mod kan alleen op Windows worden uitgevoerd en wordt niet geïnstalleerd.</value>
   </data>
   <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve">
-    <value>A roupa {0} tem o ui_slot incorreto. Deve ser um desses: {1}.</value>
+    <value>Outfit {0} heeft een onjuiste ui_slot. Moet één van de volgende zijn: {1}.</value>
   </data>
   <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve">
-    <value>A roupa {0} tem a ui_sub_category incorreta. Deve ser uma dessas: {1}.</value>
+    <value>Outfit {0} heeft een onjuiste ui_sub_category. Moet één van de volgende zijn: {1}.</value>
   </data>
   <data name="CorePreinstallWillInstallAurie" xml:space="preserve">
-    <value>Durante a instalação, o MOMI vai tentar adicionar uma entrada ao registro do seu computador. Para isso, será solicitado que você dê acesso de administrador ao &quot;Editor de Registro&quot; para continuar.</value>
+    <value>Tijdens de installatie zal MOMI proberen een vermelding toe te voegen aan het register van uw computer. Hiervoor wordt u gevraagd beheerdersrechten te verlenen aan de Register-editor en de wijziging in het register te bevestigen.</value>
   </data>
   <data name="CorePreinstallWillRemoveAurie" xml:space="preserve">
-    <value>Durante a instalação, o MOMI vai tentar remover uma entrada do registro do computador. Como parte deste processo, será solicitado que você dê acesso de administrador a &quot;Ferramenta do Console de Registro&quot;.</value>
+    <value>Tijdens de installatie probeert MOMI een vermelding uit het Windows-register te verwijderen. Hiervoor wordt u gevraagd beheerdersrechten te verlenen aan het hulpprogramma 'Registry Console Tool'.</value>
   </data>
   <data name="CoreErrorReadingVersionForMod" xml:space="preserve">
-    <value>Um erro ocorreu ao ler a versão do mod: (0)</value>
+    <value>Er is een fout opgetreden bij het lezen van de versie van de mod: (0)</value>
   </data>
   <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve">
-    <value>Um item não foi associado a uma loja.</value>
+    <value>Item is niet toegewezen aan een winkel.</value>
   </data>
   <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve">
-    <value>Um item para a loja {0} não tem categoria.</value>
+    <value>Item voor winkel {0} heeft geen categorie.</value>
   </data>
   <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve">
-    <value>Não é possível adicionar um item a loja {0} e categoria {1} por ter uma estação inválida {2}.</value>
+    <value>Kan item niet toevoegen aan winkel {0} en categorie {1} omdat het een ongeldig seizoen heeft: {2}.</value>
   </data>
   <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve">
-    <value>Um item para a loja {0}, categoria {1} não especificou um item.</value>
+    <value>Item voor winkel {0}, categorie {1}, heeft geen item gespecificeerd.</value>
   </data>
   <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve">
-    <value>Categoria não possui loja.</value>
+    <value>Categorie is niet aan een winkel gekoppeld.</value>
   </data>
   <data name="CoreErrorNewObjectNoName" xml:space="preserve">
-    <value>Novo objeto não possui nome.</value>
+    <value>Nieuw object heeft geen naam.</value>
   </data>
   <data name="CoreErrorNewObjectNoCategory" xml:space="preserve">
-    <value>Objeto {0} não possui categoria.</value>
+    <value>Object {0} heeft geen categorie.</value>
   </data>
   <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve">
-    <value>Objeto {0} possui uma categoria inválida {1}.</value>
+    <value>Object {0} heeft een ongeldige categorie: {1}.</value>
   </data>
   <data name="CoreErrorNewObjectNoData" xml:space="preserve">
-    <value>Objeto {0} não possui dados.</value>
+    <value>Object {0} heeft geen gegevens.</value>
   </data>
   <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve">
-    <value>Arquivo de novos objetos não contém objetos.</value>
+    <value>Nieuw objectbestand bevat geen objecten.</value>
   </data>
   <data name="CoreWarningItemFileHasNoItems" xml:space="preserve">
-    <value>Arquivo de novos itens não contém itens.</value>
+    <value>Nieuw itembestand bevat geen items.</value>
   </data>
   <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve">
-    <value>Objeto {0} não especifica se sobrescreve outro mod.</value>
+    <value>Object {0} geeft niet aan of het een andere mod overschrijft.</value>
   </data>
   <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve">
-    <value>Item {0} não especifica se sobrescreve outro mod.</value>
+    <value>Item {0} geeft niet aan of het een andere mod overschrijft.</value>
   </data>
   <data name="GUIApplicationTitle" xml:space="preserve">
-    <value>Instalador de Mods de Mistria</value>
+    <value>Mods Of Mistria-installatieprogramma</value>
   </data>
   <data name="GUIGreetingText" xml:space="preserve">
-    <value>Bem-vindo ao Instalador de Mods de Mistria!</value>
+    <value>Welkom bij het Mods Of Mistria-installatieprogramma!</value>
   </data>
   <data name="GUIInstallButtonText" xml:space="preserve">
-    <value>Instalar</value>
+    <value>Installeren</value>
   </data>
   <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve">
-    <value>Fields of Mistria foi detectado em: </value>
+    <value>Fields of Mistria is gedetecteerd op: </value>
   </data>
   <data name="GUIModsWillBeInstalled" xml:space="preserve">
-    <value>Marque as caixas de todos os mods que você deseja instalar:</value>
+    <value>Vink de vakjes aan van alle mods die je wilt installeren:</value>
   </data>
   <data name="GUIModByAuthorWithVersion" xml:space="preserve">
-    <value>{0} por {1} - Versão {2}</value>
+    <value>{0} door {1} - Versie {2}</value>
   </data>
   <data name="GUICouldNotFindMistria" xml:space="preserve">
-    <value>Não foi possível encontrar a localização de Fields of Mistria. tente colocar este arquivo na mesma pasta em que o Fields of Mistria.</value>
+    <value>Kon de locatie van Fields of Mistria niet vinden. Probeer dit in dezelfde map als Fields of Mistria te plaatsen.</value>
   </data>
   <data name="GUICouldNotFindMods" xml:space="preserve">
-    <value>Não foi possível localizar uma pasta de mods. Tente criar uma pasta chamada 'mods' na pasta do Fields of Mistria.</value>
+    <value>Kon de map 'mods' niet vinden. Probeer een map met de naam 'mods' aan te maken in de map van Fields of Mistria.</value>
   </data>
   <data name="GUINoModsToInstall" xml:space="preserve">
-    <value>Não foram encontrados mods para instalar.</value>
+    <value>Geen mods gevonden om te installeren.</value>
   </data>
   <data name="GUIModsRequireNewerVersion" xml:space="preserve">
-    <value>Alguns mods necessitam de uma versão mais atual do instalador. Por favor, atualize o instalador.</value>
+    <value>Sommige mods vereisen een nieuwere versie van het installatieprogramma. Werk het installatieprogramma bij.</value>
   </data>
   <data name="GUIInstallInProgress" xml:space="preserve">
-    <value>Instalando mods...</value>
+    <value>Mods installeren...</value>
   </data>
   <data name="GUIModHasWarnings" xml:space="preserve">
-    <value>Este mod possui avisos que podem ser ignorados.</value>
+    <value>Deze mod bevat waarschuwingen die genegeerd kunnen worden.</value>
   </data>
   <data name="GUIModHasErrors" xml:space="preserve">
-    <value>Este mod possui erros e não pode ser instalado</value>
+    <value>Deze mod bevat fouten en zal niet worden geïnstalleerd.</value>
   </data>
   <data name="GUIUpdateNagTitle" xml:space="preserve">
-    <value>Nova versão disponível</value>
+    <value>Nieuwe versie beschikbaar.</value>
   </data>
   <data name="GUIUpdateNagMessage" xml:space="preserve">
-    <value>Uma nova versão do Instalador de Mods de Mistria está disponível, por favor atualize.</value>
+    <value>Er is een nieuwe versie van de Mods Of Mistria Installer beschikbaar. Werk deze bij.</value>
   </data>
   <data name="GUIUninstallButtonText" xml:space="preserve">
-    <value>Desinstalar todos</value>
+    <value>Alles verwijderen.</value>
   </data>
   <data name="GUIPreinstallInformationTitle" xml:space="preserve">
-    <value>Instalar informação</value>
+    <value>Installatie-informatie.</value>
   </data>
   <data name="GUIUninstallInformationTitle" xml:space="preserve">
-    <value>Desinstalar informação</value>
+    <value>Verwijderinformatie.</value>
   </data>
   <data name="GUIWarning32Bit" xml:space="preserve">
-    <value>Você está rodando um sistema operacional de 64-bit, mas acidentalmente baixou a versão de32-bit do MOMI. Por favor baixe a versão do MOMI que não inclui &quot;-x86&quot;.</value>
+    <value>Je gebruikt een 64-bits besturingssysteem, maar hebt per ongeluk de 32-bits versie van MOMI gedownload. Download de versie van MOMI zonder "-x86" in de naam.</value>
   </data>
   <data name="GUIWarning32BitTitle" xml:space="preserve">
-    <value>Versão de 32-bits detectada.</value>
+    <value>32-bits versie gedetecteerd.</value>
   </data>
   <data name="GUISetupMistriaLocation" xml:space="preserve">
-    <value>Localização do Fields of Mistria:</value>
+    <value>Locatie van Fields of Mistria:</value>
   </data>
   <data name="GUISetupModsLocation" xml:space="preserve">
-    <value>Pasta de Mods:</value>
+    <value>Mods-map:</value>
   </data>
   <data name="GUICanCreateModsFolder" xml:space="preserve">
-    <value>Não foi detectado uma pasta mods, mas é possível criar uma automaticamente.</value>
+    <value>Er is geen mods-map gevonden, maar deze kan automatisch voor je worden aangemaakt.</value>
   </data>
   <data name="GUISaveLogFile" xml:space="preserve">
-    <value>Salvar arquivo de log</value>
+    <value>Logbestand opslaan</value>
   </data>
   <data name="GUIPickLogFile" xml:space="preserve">
-    <value>Escolha um local para o arquivo de log</value>
+    <value>Kies een locatie voor het logbestand</value>
   </data>
   <data name="GUIEnableAllMods" xml:space="preserve">
-    <value>Habilitar todos os mods</value>
+    <value>Alle mods inschakelen</value>
   </data>
   <data name="GUIDisableAllMods" xml:space="preserve">
-    <value>Desabilitar todos os mods</value>
+    <value>Alle mods uitschakelen</value>
   </data>
   <data name="GUIReloadModlist" xml:space="preserve">
-    <value>Recarregar a lista de mods</value>
+    <value>Modlijst vernieuwen</value>
   </data>
   <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve">
-    <value>Animal {0} para a loja {1} não possui cosmético definido.</value>
+    <value>Dier {0} voor winkel {1} heeft geen cosmetic gedefinieerd.</value>
   </data>
   <data name="GUIGreetingText_April" xml:space="preserve">
-    <value>Você sabia que um golpe bem calculado com uma picareta é uma ótima maneira de instalar quaisquer mods que você tenha baixado?</value>
+    <value>Wist je dat een welgemikte slag met een pikhouweel een geweldige manier is om gedownloade mods te installeren?</value>
   </data>
   <data name="GUIInstallButtonText_April" xml:space="preserve">
-    <value>Golpeie estrategicamente</value>
+    <value>Sla toe</value>
   </data>
   <data name="GUIInstallInProgress_April" xml:space="preserve">
-    <value>Golpeando estrategicamente...</value>
+    <value>Bezig met toeslaan...</value>
   </data>
   <data name="GUINoModsToInstall_April" xml:space="preserve">
-    <value>Nenhum mod encontrado para golpear...</value>
+    <value>Geen mods gevonden om toe te slaan</value>
   </data>
   <data name="GUIModsWillBeInstalled_April" xml:space="preserve">
-    <value>Marque as caixas de todos os mods que você quer golpear:</value>
+    <value>Vink de vakjes aan van alle mods waarop je wilt toeslaan:</value>
   </data>
   <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve">
-    <value>A substituição de preço da roupa {0} deve ser um número positivo.</value>
+    <value>De prijsovername van outfit {0} moet een positief getal zijn.</value>
   </data>
   <data name="CoreRunningInstaller" xml:space="preserve">
-    <value>Executando {0}</value>
+    <value>{0} uitvoeren</value>
   </data>
   <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve">
-    <value>Sprite {0} não possui localização definida.</value>
+    <value>Sprite {0} heeft geen locatie ingesteld.</value>
   </data>
   <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve">
-    <value>Devido a uma atualização da engine, este mod não pode mais ser instalado em sua versão atual.</value>
+    <value>Door een engine-update kan deze mod in de huidige versie niet worden geïnstalleerd.</value>
   </data>
   <data name="CoreModRequiresIncorrectVersion" xml:space="preserve">
-    <value>Esse mod requer uma versão mínima incorreta do MOMI.</value>
+    <value>De mod vereist een onjuiste minimale versie van MOMI.</value>
   </data>
   <data name="GUIUninstallCompleteText" xml:space="preserve">
-    <value>Desinstalação Completa</value>
+    <value>Deïnstallatie voltooid</value>
   </data>
   <data name="GUIUninstallingText" xml:space="preserve">
-    <value>Desinstalando</value>
+    <value>Deïnstalleren</value>
   </data>
 </root>
