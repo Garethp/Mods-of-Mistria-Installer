@@ -145,17 +145,51 @@ public class MistriaLocator
 
     public static List<IMod> GetMods(string mistriaLocation, string modsLocation)
     {
-        var folderMods = Directory
+        IEnumerable<IMod> folderMods = Directory
             .GetDirectories(modsLocation)
             .Where(folder => FolderMod.GetModLocation(folder) is not null)
-            .Select(location => FolderMod.FromManifest(Path.Combine(FolderMod.GetModLocation(location)!)));
+            .Select(location =>
+            {
+                try
+                {
+                    return FolderMod.FromManifest(Path.Combine(FolderMod.GetModLocation(location)!));
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e.Message);
+                    return null;
+                }
+            })
+            .Where(mod => mod is not null)!;
 
         IEnumerable<IMod> zipMods = Directory.GetFiles(modsLocation, "*.zip")
-            .Select(ZipMod.FromZipFile)
+            .Select(manifestFile =>
+            {
+                try
+                {
+                    return ZipMod.FromZipFile(manifestFile);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e.Message);
+                    return null;
+                }
+            })
             .Where(zipMod => zipMod is not null)!;
 
         IEnumerable<IMod> rarMods = Directory.GetFiles(modsLocation, "*.rar")
-            .Select(RarMod.FromRarFile)
+            .Select(manifestFile =>
+            {
+                try
+                {
+                    return RarMod.FromRarFile(manifestFile);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e.Message);
+                    return null;
+                }
+            })
             .Where(mod => mod is not null)!;
 
         var mods = new List<IMod>();
