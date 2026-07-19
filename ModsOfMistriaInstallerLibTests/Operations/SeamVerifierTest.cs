@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using System.Text;
 using Garethp.ModsOfMistriaInstallerLib.Operations;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
@@ -6,10 +5,10 @@ using Newtonsoft.Json.Linq;
 
 namespace ModsOfMistriaInstallerLibTests.Operations;
 
-// Read-only seam verification against a fabricated build zip: a clean build
-// passes, a broken anchor, a renamed callee and an absent target file are
-// reported, and the text, JSON and exit-code surfaces carry the problems.
-// Nothing is written; no install is touched.
+// Read-only seam verification against a fabricated in-memory build tree: a
+// clean build passes, a broken anchor, a renamed callee and an absent target
+// file are reported, and the text, JSON and exit-code surfaces carry the
+// problems. Only the LocateBackup tests touch disk; no install is touched.
 [TestFixture]
 public class SeamVerifierTest
 {
@@ -70,6 +69,7 @@ public class SeamVerifierTest
     private string _root = "";
     private string _zipPath = "";
     private SeamCatalog _catalog = null!;
+    private MemoryPristineSource _pristine = null!;
 
     [SetUp]
     public void CreateTempDir()
@@ -86,28 +86,24 @@ public class SeamVerifierTest
         Directory.Delete(_root, true);
     }
 
-    // Fabricate the build's assets.zip. `other` null omits Other.gml.
-    private void WriteZip(string game, string? other)
+    // Fabricate the build's engine tree. `other` null omits Other.gml.
+    private void SetPristine(string game, string? other)
     {
-        if (File.Exists(_zipPath)) File.Delete(_zipPath);
-        using var archive = ZipFile.Open(_zipPath, ZipArchiveMode.Create);
-        using (var stream = archive.CreateEntry("assets/gml/objects/Game.gml").Open())
-            stream.Write(Encoding.UTF8.GetBytes(game));
-        if (other is null) return;
-        using var otherStream = archive.CreateEntry("assets/gml/objects/Other.gml").Open();
-        otherStream.Write(Encoding.UTF8.GetBytes(other));
+        Dictionary<string, byte[]> files = new()
+        {
+            ["assets/gml/objects/Game.gml"] = Encoding.UTF8.GetBytes(game),
+        };
+        if (other is not null)
+            files["assets/gml/objects/Other.gml"] = Encoding.UTF8.GetBytes(other);
+        _pristine = new MemoryPristineSource(files);
     }
 
-    private VerifyResult Verify()
-    {
-        using var pristine = new ZipPristineSource(_zipPath);
-        return SeamVerifier.Verify(pristine, _catalog);
-    }
+    private VerifyResult Verify() => SeamVerifier.Verify(_pristine, _catalog);
 
     [Test]
     public void ShouldPassOnACleanBuild()
     {
-        WriteZip(PristineGame, PristineOther);
+        SetPristine(PristineGame, PristineOther);
 
         var result = Verify();
 
@@ -123,7 +119,7 @@ public class SeamVerifierTest
     public void ShouldReportABrokenAnchor()
     {
         // a patch rewrote step_begin's body; the anchor no longer matches
-        WriteZip(BrokenGame, PristineOther);
+        SetPristine(BrokenGame, PristineOther);
 
         var result = Verify();
 
@@ -136,7 +132,7 @@ public class SeamVerifierTest
     {
         // anchors still hold, but the engine renamed foo_builtin, so the call
         // rewrite finds zero sites (its own fail-closed branch)
-        WriteZip(PristineGame, "function helper() {\n    return 1;\n}\n\n"
+        SetPristine(PristineGame, "function helper() {\n    return 1;\n}\n\n"
                                + "function other2() {\n    renamed_builtin(1);\n}\n");
 
         var result = Verify();
@@ -148,7 +144,7 @@ public class SeamVerifierTest
     [Test]
     public void ShouldReportAMissingTargetFile()
     {
-        WriteZip(PristineGame, null);
+        SetPristine(PristineGame, null);
 
         var result = Verify();
 
@@ -159,7 +155,7 @@ public class SeamVerifierTest
     [Test]
     public void ShouldCarryStructuredProblemRecords()
     {
-        WriteZip(BrokenGame, PristineOther);
+        SetPristine(BrokenGame, PristineOther);
 
         var result = Verify();
 
@@ -178,7 +174,7 @@ public class SeamVerifierTest
     public void ShouldIncludeTheContextExcerptInTextOutput()
     {
         // no flag needed: the excerpts are the re-anchoring payload
-        WriteZip(BrokenGame, PristineOther);
+        SetPristine(BrokenGame, PristineOther);
 
         var text = SeamVerifier.RenderText(Verify(), _zipPath);
 
@@ -189,7 +185,7 @@ public class SeamVerifierTest
     [Test]
     public void ShouldCarryProblemRecordsInJson()
     {
-        WriteZip(BrokenGame, PristineOther);
+        SetPristine(BrokenGame, PristineOther);
 
         var payload = JObject.Parse(SeamVerifier.ToJson(Verify(), _zipPath));
 
@@ -205,12 +201,12 @@ public class SeamVerifierTest
     [Test]
     public void ShouldPinTheExitCodes()
     {
-        WriteZip(PristineGame, PristineOther);
+        SetPristine(PristineGame, PristineOther);
         var clean = Verify();
         Assert.That(clean.ExitCode, Is.EqualTo(0));
         Assert.That(SeamVerifier.RenderText(clean, _zipPath), Does.Contain("OK"));
 
-        WriteZip(BrokenGame, PristineOther);
+        SetPristine(BrokenGame, PristineOther);
         var broken = Verify();
         Assert.That(broken.ExitCode, Is.EqualTo(1));
         Assert.That(SeamVerifier.RenderText(broken, _zipPath), Does.Contain("FAIL"));
