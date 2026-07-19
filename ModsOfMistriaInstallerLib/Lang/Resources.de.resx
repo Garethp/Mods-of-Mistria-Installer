@@ -59,7 +59,10 @@
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
-  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+  <xsd:schema id="root" 
+  xmlns="" 
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+  xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
       <xsd:complexType>
@@ -118,375 +121,321 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CLIRunningBuild" xml:space="preserve">
-    <value>Running Build {0}</value>
+    <value>Starte Build {0}</value>
   </data>
   <data name="CLICompleted" xml:space="preserve">
-    <value>Completed. Press any key to exit.</value>
+    <value>Fertig. Drücke eine beliebige Taste zum Beenden.</value>
   </data>
   <data name="CLIUninstallComplete" xml:space="preserve">
-    <value>All mods uninstalled. Press any key to exit.</value>
+    <value>Alle Mods wurden deinstalliert. Drücke eine beliebige Taste zum Beenden.</value>
   </data>
   <data name="CLIWarning32Bit" xml:space="preserve">
-    <value>You're running a 64-bit operating system, but have accidently downloaded the 32-bit version of MOMI. Please download the version of MOMI that does not include "-x86".</value>
-  </data>
-  <data name="CLICompileCheckUsage" xml:space="preserve">
-    <value>--compile-check must be "on", "off" or "require".</value>
-  </data>
-  <data name="CLILintUsage" xml:space="preserve">
-    <value>--lint requires a mod folder: --lint &lt;mod folder&gt; [pristine zip]</value>
+    <value>Du hast ein 64-bit Betriebssystem, aber du hast versehentlich die 32-bit Version von MOMI heruntergeladen. Bitte lade die Version von MOMI ohne "-x86" herunter.</value>
   </data>
   <data name="CoreLookingForMistriaAt" xml:space="preserve">
-    <value>Looking for Mistria at {0}</value>
+    <value>Suche nach Mistria in {0}</value>
   </data>
   <data name="CoreMistriaNotFoundFallback" xml:space="preserve">
-    <value>Fields of Mistria not found, falling back to current folder</value>
+    <value>Fields of Mistria wurde nicht gefunden, gehe zum aktuellen Ordner zurück.</value>
   </data>
   <data name="CoreCouldNotFindModManifest" xml:space="preserve">
-    <value>Could not find the manifest file.</value>
+    <value>Die manifest Datei konnte nicht gefunden werden.</value>
   </data>
   <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve">
-    <value>The manifest file must be named manifest.json.</value>
+    <value>Die manifest Datei muss manifest.json heißen.</value>
   </data>
   <data name="CoreManifestHasNoAuthor" xml:space="preserve">
-    <value>The manifest must contain an author.</value>
+    <value>Die manifest Datei muss einen Author beinhalten.</value>
   </data>
   <data name="CoreManifestHasNoName" xml:space="preserve">
-    <value>The manifest must contain a name.</value>
+    <value>Die manifest Datei muss einen Namen beinhalten.</value>
   </data>
   <data name="CoreManifestHasNoVersion" xml:space="preserve">
-    <value>The manifest must contain a version.</value>
+    <value>Die manifest Datei muss eine Version beinhalten.</value>
   </data>
   <data name="CoreModRequiresNewerInstaller" xml:space="preserve">
-    <value>This mod requires a newer version of the installer.</value>
+    <value>Diese Mod benötigt eine neuere Version von MOMI.</value>
   </data>
   <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve">
-    <value>The Fields of Mistria location does not exist.</value>
+    <value>Der Ort von Fields of Mistria existiert nicht.</value>
   </data>
   <data name="CoreModDirectoryDoesNotExist" xml:space="preserve">
-    <value>The mod location does not exist.</value>
+    <value>Der Ort der Mod existiert nicht.</value>
   </data>
   <data name="CoreGeneratingInformationForMod" xml:space="preserve">
-    <value>Generating information for {0}</value>
+    <value>Informationen generieren für {0}</value>
   </data>
   <data name="CoreInstallCompleted" xml:space="preserve">
-    <value>Finished</value>
+    <value>Fertig</value>
   </data>
   <data name="CoreMistriaNotFound" xml:space="preserve">
-    <value>Could not find Fields of Mistria location.</value>
+    <value>Ort von Fields of Mistria konnte nicht gefunden werden.</value>
   </data>
   <data name="CoreCouldNotGuessModsAt" xml:space="preserve">
-    <value>Could not find a mods folder at {0}.</value>
+    <value>Es konnte kein Mods Ordner gefunden werden in {0}.</value>
   </data>
   <data name="CoreGuessedMistriaAt" xml:space="preserve">
-    <value>Guessed Location: {0}</value>
+    <value>Vermuteter Ort: {0}</value>
   </data>
   <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve">
-    <value>Skipping {0} as it requires a newer version of the installer.</value>
+    <value>Überspringe {0} da sie eine neuere Version von MOMI benötigt.</value>
   </data>
   <data name="CoreSkippingModBecauseErrors" xml:space="preserve">
-    <value>Skipping {0} for the following Errors:</value>
+    <value>Überspringe {0} aufgrund der folgenden Fehler:</value>
   </data>
   <data name="CoreModHasWarnings" xml:space="preserve">
-    <value>{0} has the following warnings, but will still install:</value>
+    <value>{0} hat folgende Warnungen, wird aber trotzdem installiert:</value>
   </data>
   <data name="CoreInstalledInReporter" xml:space="preserve">
-    <value>{0} installed in {1}</value>
+    <value>{0} installiert in {1}</value>
   </data>
   <data name="CoreModsInstalledInTime" xml:space="preserve">
-    <value>Mods installed in {0}</value>
+    <value>Mods installiert in {0}</value>
   </data>
   <data name="CoreItemDoesNotHaveValue" xml:space="preserve">
-    <value>{0} does not have a value</value>
+    <value>{0} hat keinen Wert</value>
   </data>
   <data name="CoreSpriteFileDoesNotExist" xml:space="preserve">
-    <value>{0} points to a sprite at {1} but that file does not exist</value>
+    <value>{0} deutet auf einen Sprite in {1} aber diese Datei existiert nicht</value>
   </data>
   <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve">
-    <value>{0} points to a sprite folder at {1} but that folder does not exist</value>
+    <value>{0} deutet auf einen Sprite-Ordner in {1} aber dieser Ordner existiert nicht</value>
   </data>
   <data name="CoreSpriteFolderIsEmpty" xml:space="preserve">
-    <value>{0} points to a sprite folder at {1} but that directory is empty</value>
+    <value>{0} deutet auf einen Sprite-Ordner in {1} aber das Verzeichnis ist leer</value>
   </data>
   <data name="CoreCouldNotParseJSON" xml:space="preserve">
-    <value>Could not parse file with message: {0}</value>
+    <value>Konnte Datei nicht erfassen aufgrund Fehlercode: {0}</value>
   </data>
   <data name="CoreNoDataInJSON" xml:space="preserve">
-    <value>No data was found in file</value>
+    <value>Es konnten keine Daten in der Datei gefunden werden</value>
   </data>
   <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve">
-    <value>Outfit file has no outfits.</value>
+    <value>Kleidungs-Datei hat keine Kleidung.</value>
   </data>
   <data name="CoreSpriteFileHasNoSprites" xml:space="preserve">
-    <value>Sprite file has no sprites.</value>
+    <value>Sprite-Datei hat keine Sprites.</value>
   </data>
   <data name="CoreStoreFileHasNoData" xml:space="preserve">
-    <value>Store file has no categories or items.</value>
+    <value>Laden-Datei hat keine Kategorien oder Gegenstände.</value>
   </data>
   <data name="CoreTilesetsFileEmpty" xml:space="preserve">
-    <value>Tileset file has no tilesets.</value>
+    <value>Felder-Grafik-Datei hat keine Felder-Grafiken: tilesets.</value>
   </data>
   <data name="CoreReadingSprites" xml:space="preserve">
-    <value>Reading Textures/Sprites</value>
+    <value>Lese Texturen/Sprites</value>
   </data>
   <data name="CoreImportingSprites" xml:space="preserve">
-    <value>Importing Textures/Sprites</value>
+    <value>Importiere Texturen/Sprites</value>
   </data>
   <data name="CoreWritingSprites" xml:space="preserve">
-    <value>Writing Textures/Sprites</value>
+    <value>Schreibe Texturen/Sprites</value>
   </data>
   <data name="CoreErrorOutfitNoName" xml:space="preserve">
-    <value>Outfit has no name.</value>
+    <value>Kleidung hat keinen Namen.</value>
   </data>
   <data name="CoreErrorOutfitNoDescription" xml:space="preserve">
-    <value>Outfit has no description.</value>
+    <value>Kleidung hat keine Beschreibung.</value>
   </data>
   <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve">
-    <value>Outfit {0} has not defined ui_slot.</value>
+    <value>Kleidung {0} hat keinen definierten ui_slot.</value>
   </data>
   <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve">
-    <value>Outfit {0} has not defined ui_sub_category.</value>
+    <value>Kleidung {0} hat keine definierten Unterkategorien: ui_sub_category.</value>
   </data>
   <data name="CoreErrorOutfitNoAnimation" xml:space="preserve">
-    <value>Outfit {0} has no animation files.</value>
+    <value>Kleidung {0} hat keine Animations-Dateien.</value>
   </data>
   <data name="CoreErrorStoreCategoryNoName" xml:space="preserve">
-    <value>Category has no icon name.</value>
+    <value>Kategorie hat keinen Icon-Namen.</value>
   </data>
   <data name="CoreErrorShadowHasNoLocation" xml:space="preserve">
-    <value>Shadow {0} has no Location set</value>
+    <value>Schatten {0} hat keinen festgelegten Ort</value>
   </data>
   <data name="CoreWarningShadowFileNoShadows" xml:space="preserve">
-    <value>Shadow file has no shadows.</value>
+    <value>Schatten-Datei beinhaltet keine Schatten.</value>
   </data>
   <data name="CoreErrorShadowHasNoSprite" xml:space="preserve">
-    <value>Shadow {0} does not have a regular_sprite_name</value>
+    <value>Schatten {0} hat keinen regulären Sprite-Namen: regular_sprite_name</value>
   </data>
   <data name="CoreErrorModRequiresWindows" xml:space="preserve">
-    <value>This mod will only run on Windows and will not install.</value>
+    <value>Diese Mod wird nicht installiert werden, da sie nur auf Windows funktioniert.</value>
   </data>
   <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve">
-    <value>Outfit {0} has incorrect ui_slot. Must be one of: {1}.</value>
+    <value>Kleidung {0} hat einen fehlerhaften ui_slot. Es muss einer der Folgenden sein: {1}.</value>
   </data>
   <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve">
-    <value>Outfit {0} has incorrect ui_sub_category. Must be one of: {1}.</value>
+    <value>Kleidung {0} hat eine fehlerhafte Unterkategorie: ui_sub_category. Es muss eine der Folgenden sein: {1}.</value>
   </data>
   <data name="CorePreinstallWillInstallAurie" xml:space="preserve">
-    <value>During install, MOMI will attempt to add an entry to your computers registry. For this, you'll be asked to give admin access to "Registry Editor" and to continue with an edit to the registry.</value>
+    <value>Während der Installation wird MOMI versuchen einen Eintrag, in deinem Register deines Computers, hinzuzufügen. Dafür wirst du gebeten dem Administrator Zugang zum "Registrierungs-Editor" zu gewähren und damit fortzufahren eine Änderung am Register zu vollziehen.</value>
   </data>
   <data name="CorePreinstallWillRemoveAurie" xml:space="preserve">
-    <value>During install, MOMI will attempt to remove an entry from the computers Registry. As part of this, you'll be asked to grant admin access to the "Registry Console Tool".</value>
+    <value>Während der Installation wird MOMI versuchen einen Eintrag, in deinem Register deines Computers, zu entfernen. Dafür wirst du gebeten dem Administrator Zugang zum "Registrierungs-Konsolen-Werkzeug" zu gewähren.</value>
   </data>
   <data name="CoreErrorReadingVersionForMod" xml:space="preserve">
-    <value>An error occured when reading the version for the mod: (0)</value>
+    <value>Ein Fehler trat beim Lesen der Version der Mod auf: (0)</value>
   </data>
   <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve">
-    <value>Item has not been assigned to a store.</value>
+    <value>Gegenstand wurde keinem Laden zugeordnet.</value>
   </data>
   <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve">
-    <value>Item for store {0} has no category.</value>
+    <value>Gegenstand für Laden {0} hat keine Kategorie.</value>
   </data>
   <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve">
-    <value>Cannot add item to store {0} and category {1} because it has an invalid season {2}.</value>
+    <value>Kann Gegenstand nicht zu Laden hinzufügen {0} sowie die Kategorie {1}, da die Jahreszeit nicht valide ist {2}.</value>
   </data>
   <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve">
-    <value>Item for store {0}, category {1} has not specified an item.</value>
+    <value>Gegenstand für den Laden {0}, der Kategorie {1}, hat keinen Gegenstand spezifiziert.</value>
   </data>
   <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve">
-    <value>Category has no store.</value>
+    <value>Kategorie hat keinen Laden.</value>
   </data>
   <data name="CoreErrorNewObjectNoName" xml:space="preserve">
-    <value>New object has no name.</value>
+    <value>Neues Objekt hat keinen Namen.</value>
   </data>
   <data name="CoreErrorNewObjectNoCategory" xml:space="preserve">
-    <value>Object {0} has no category.</value>
+    <value>Objekt {0} hat keine Kategorie.</value>
   </data>
   <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve">
-    <value>Object {0} has an invalid category {1}.</value>
+    <value>Objekt {0} hat eine fehlerhafte Kategorie {1}.</value>
   </data>
   <data name="CoreErrorNewObjectNoData" xml:space="preserve">
-    <value>Object {0} has no data.</value>
+    <value>Objekt {0} hat keine Daten.</value>
   </data>
   <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve">
-    <value>New Objects file has no objects in it.</value>
+    <value>Neue Objekte Datei beinhaltet keine Objekte.</value>
   </data>
   <data name="CoreWarningItemFileHasNoItems" xml:space="preserve">
-    <value>New Items file has no items.</value>
+    <value>Neue Gegenstands-Datei beinhaltet keine Gegenstände.</value>
   </data>
   <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve">
-    <value>Object {0} does not state if it overwrites another mod.</value>
+    <value>Objekt {0} gibt nicht bekannt ob es eine andere Mod überschreibt.</value>
   </data>
   <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve">
-    <value>Item {0} does not state if it overwrites another mod.</value>
+    <value>Gegenstand {0} gibt nicht bekannt ob es eine andere Mod überschreibt.</value>
   </data>
   <data name="GUIApplicationTitle" xml:space="preserve">
     <value>Mods Of Mistria Installer</value>
   </data>
   <data name="GUIGreetingText" xml:space="preserve">
-    <value>Welcome to the Mods of Mistria Installer!</value>
+    <value>Willkommen beim Mods of Mistria Installer!</value>
   </data>
   <data name="GUIInstallButtonText" xml:space="preserve">
-    <value>Install</value>
+    <value>Installieren</value>
   </data>
   <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve">
-    <value>Fields of Mistria has been detected at: </value>
+    <value>Fields of Mistria wurde erkannt in: </value>
   </data>
   <data name="GUIModsWillBeInstalled" xml:space="preserve">
-    <value>Check the boxes for all the mods you want to install:</value>
+    <value>Setze Häkchen für alle Mods, die du installieren möchtest:</value>
   </data>
   <data name="GUIModByAuthorWithVersion" xml:space="preserve">
-    <value>{0} by {1} - Version {2}</value>
+    <value>{0} von {1} - Version {2}</value>
   </data>
   <data name="GUICouldNotFindMistria" xml:space="preserve">
-    <value>Could not find Fields of Mistria location. Try placing this in the same folder as Fields of Mistria.</value>
+    <value>Konnte den Ort von Fields of Mistria nicht finden. Versuche MOMI in den selben Ordner wie Fields of Mistria zu packen.</value>
   </data>
   <data name="GUICouldNotFindMods" xml:space="preserve">
-    <value>Could not find a mods folder. Try creating a folder called 'mods' in the Fields of Mistria folder.</value>
+    <value>Konnte keinen Mods Ordner finden. Versuche einen neuen Ordner namens "mods" innerhalb des Fields of Mistria Ordners zu erstellen.</value>
   </data>
   <data name="GUINoModsToInstall" xml:space="preserve">
-    <value>No mods found to install</value>
+    <value>Es wurde keine Mods zum installieren gefunden.</value>
   </data>
   <data name="GUIModsRequireNewerVersion" xml:space="preserve">
-    <value>Some mods require a newer version of the installer. Please update the installer.</value>
+    <value>Einige Mods benötigen eine neuere Version vom Installationgsprogramm. Bitte aktualisiere das Installationsprogramm.</value>
   </data>
   <data name="GUIInstallInProgress" xml:space="preserve">
-    <value>Installing mods...</value>
+    <value>Installiere Mods...</value>
   </data>
   <data name="GUIModHasWarnings" xml:space="preserve">
-    <value>This mod has warnings that can be ignored</value>
+    <value>Diese Mod hat Warnungen die ignoriert werden können</value>
   </data>
   <data name="GUIModHasErrors" xml:space="preserve">
-    <value>This mod has errors and will not install</value>
-  </data>
-  <data name="GUIModInstalled" xml:space="preserve">
-    <value>Installed successfully.</value>
-  </data>
-  <data name="GUIModSkipped" xml:space="preserve">
-    <value>This mod was skipped during install</value>
+    <value>Diese Mod hat Fehler und wird nicht installiert werden</value>
   </data>
   <data name="GUIUpdateNagTitle" xml:space="preserve">
-    <value>New Version Available</value>
+    <value>Neue Version verfügbar</value>
   </data>
   <data name="GUIUpdateNagMessage" xml:space="preserve">
-    <value>A new version of the Mods Of Mistria Installer is available, please update</value>
+    <value>Eine neue Version vom Mods Of Mistria Installer ist verfügbar, bitte aktualisieren</value>
   </data>
   <data name="GUIUninstallButtonText" xml:space="preserve">
-    <value>Uninstall All</value>
+    <value>Alles deinstallieren</value>
   </data>
   <data name="GUIPreinstallInformationTitle" xml:space="preserve">
-    <value>Install Information</value>
+    <value>Installationsinformationen</value>
   </data>
   <data name="GUIUninstallInformationTitle" xml:space="preserve">
-    <value>Uninstall Information</value>
+    <value>Deinstallationsinformationen</value>
   </data>
   <data name="GUIWarning32Bit" xml:space="preserve">
-    <value>You're running a 64-bit operating system, but have accidently downloaded the 32-bit version of MOMI. Please download the version of MOMI that does not include "-x86".</value>
+    <value>Du hast ein 64-bit Betriebssystem, aber du hast versehentlich die 32-bit Version von MOMI heruntergeladen. Bitte lade die Version von MOMI ohne "-x86" herunter.</value>
   </data>
   <data name="GUIWarning32BitTitle" xml:space="preserve">
-    <value>32-Bit Version Detected</value>
+    <value>32-Bit Version erkannt</value>
   </data>
   <data name="GUISetupMistriaLocation" xml:space="preserve">
-    <value>Fields Of Mistria Location:</value>
+    <value>Fields Of Mistria Ort:</value>
   </data>
   <data name="GUISetupModsLocation" xml:space="preserve">
-    <value>Mods Folder:</value>
+    <value>Mods Ordner:</value>
   </data>
   <data name="GUICanCreateModsFolder" xml:space="preserve">
-    <value>No mods folder has been detected, but one can be created automatically for you.</value>
+    <value>Es konnte kein Mods Ordner gefunden werden, aber es kann automatisch einer für dich erstellt werden.</value>
   </data>
   <data name="GUISaveLogFile" xml:space="preserve">
-    <value>Save Log File</value>
+    <value>Protokoll Datei Speichern</value>
   </data>
   <data name="GUIPickLogFile" xml:space="preserve">
-    <value>Pick a location for the log file</value>
+    <value>Wähle einen Ort für die Protokoll Datei</value>
   </data>
   <data name="GUIEnableAllMods" xml:space="preserve">
-    <value>Enable All Mods</value>
+    <value>Alle Mods aktivieren</value>
   </data>
   <data name="GUIDisableAllMods" xml:space="preserve">
-    <value>Disable All Mods</value>
+    <value>Alle Mods deaktivieren</value>
   </data>
   <data name="GUIReloadModlist" xml:space="preserve">
-    <value>Reload mod list</value>
+    <value>Mod Liste neu laden</value>
   </data>
   <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve">
-    <value>Animal {0} for store {1} has no cosmetic defined.</value>
+    <value>Tier {0} für Laden {1} hat keine Kosmetik definiert.</value>
   </data>
   <data name="GUIGreetingText_April" xml:space="preserve">
-    <value>Did you know that a thoughtful strike with a pickaxe is a great way to install any mods you have downloaded.</value>
+    <value>Wusstest du schon, dass ein bedachter Schlag mit einer Spitzhacke eine großartige Methode ist, jegliche Mods, die du heruntergeladen hast, zu installieren.</value>
   </data>
   <data name="GUIInstallButtonText_April" xml:space="preserve">
-    <value>Strike thoughtfully</value>
+    <value>bedachter Schlag</value>
   </data>
   <data name="GUIInstallInProgress_April" xml:space="preserve">
-    <value>Striking thoughtfully...</value>
+    <value>sorgfältig bedachter Schlag...</value>
   </data>
   <data name="GUINoModsToInstall_April" xml:space="preserve">
-    <value>No mods found to strike</value>
+    <value>Keine Mods zum Schlagen gefunden</value>
   </data>
   <data name="GUIModsWillBeInstalled_April" xml:space="preserve">
-    <value>Check the boxes for all the mods you want to strike:</value>
+    <value>Setze Häkchen für all die Mods denen du einen Schlag verpassen möchtest:</value>
   </data>
   <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve">
-    <value>Outfit {0}'s price override must be a positive number.</value>
+    <value>Kleidung {0} Preisänderung muss eine positive Nummer sein.</value>
   </data>
   <data name="CoreRunningInstaller" xml:space="preserve">
-    <value>Running {0}</value>
+    <value>Startet {0}</value>
   </data>
   <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve">
-    <value>Sprite {0} has no Location set.</value>
+    <value>Sprite {0} hat keinen Ort festgelegt.</value>
   </data>
   <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve">
-    <value>Due to an engine update, this mod cannot be installed in its current version.</value>
+    <value>Aufgrund einer tiefgreifenden Aktualisierung des Spiels (engine update) kann diese Mod, in seiner aktuellen Version, nicht installiert werden.</value>
   </data>
   <data name="CoreModRequiresIncorrectVersion" xml:space="preserve">
-    <value>The mod requires an incorrect minimum version of MOMI.</value>
-  </data>
-  <data name="CoreStoreRebuildFailed" xml:space="preserve">
-    <value>Could not rebuild {0}. Is Fields of Mistria running? Close it and try again; the previous install is untouched.</value>
-  </data>
-  <data name="CoreStoreFlushFailed" xml:space="preserve">
-    <value>Could not finish writing {0}. Check for a full disk or another program holding the file (such as an antivirus scan), then run the installer again.</value>
-  </data>
-  <data name="CoreStoreRestoreFailed" xml:space="preserve">
-    <value>Could not restore {0}. Is Fields of Mistria running? Close it and try again.</value>
-  </data>
-  <data name="CoreStoreBackupMissing" xml:space="preserve">
-    <value>{0} contains a previous install, but the backup {1} is missing. Please verify the game files through Steam and try again.</value>
-  </data>
-  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve">
-    <value>{0} is not a readable archive and the backup {1} is missing. Please verify the game files through Steam and try again.</value>
-  </data>
-  <data name="CoreStoreNoArchives" xml:space="preserve">
-    <value>Could not find {0} or {1}. Run the game once, or verify the game files through Steam.</value>
-  </data>
-  <data name="CoreStoreNothingToUninstall" xml:space="preserve">
-    <value>No assets store was found, so there is nothing to restore.</value>
-  </data>
-  <data name="CoreInstallSummary" xml:space="preserve">
-    <value>{0} mod(s) installed</value>
-  </data>
-  <data name="CoreInstallSummaryWithSkipped" xml:space="preserve">
-    <value>{0} mod(s) installed, {1} skipped</value>
-  </data>
-  <data name="CoreGameGmlChanged" xml:space="preserve">
-    <value>Game GML changed. Unable to install.</value>
-  </data>
-  <data name="CoreModRequiresMissingHooks" xml:space="preserve">
-    <value>The mod requires hooks this version of MOMI does not provide: {0}. Update MOMI, or use an older version of the mod.</value>
-  </data>
-  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve">
-    <value>The manifest's requires_hooks must be an array of hook-name strings.</value>
-  </data>
-  <data name="CoreSkippedModReason" xml:space="preserve">
-    <value>Skipped {0}: {1}</value>
-  </data>
-  <data name="CoreVerifyNoBackup" xml:space="preserve">
-    <value>No pristine backup was found in {0}. Run the installer once to create it, or run a seam check against a build zip directly.</value>
+    <value>Diese Mod benötigt eine falsche Mindest-Version von MOMI.</value>
   </data>
   <data name="GUIUninstallCompleteText" xml:space="preserve">
-    <value>Uninstall Complete</value>
+    <value>Deinstallation abgeschlossen</value>
   </data>
   <data name="GUIUninstallingText" xml:space="preserve">
-    <value>Uninstalling</value>
+    <value>Deinstallieren</value>
   </data>
 </root>

@@ -482,7 +482,7 @@ public partial class ModlistPageViewModel : PageViewBase
     private void UnInstallMods()
     {
         IsInstalling  = true;
-        InstallStatus = "Uninstalling";
+        InstallStatus = Resources.GUIUninstallingText;
 
         Task.Run(async () =>
         {
@@ -492,7 +492,7 @@ public partial class ModlistPageViewModel : PageViewBase
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     IsInstalling  = false;
-                    InstallStatus = "Uninstall Complete";
+                    InstallStatus = Resources.GUIUninstallCompleteText;
                     // Nothing is installed any more; the outcome icons are stale
                     foreach (var mod in Mods) mod.SetInstallOutcome(ModInstallState.None);
                 });

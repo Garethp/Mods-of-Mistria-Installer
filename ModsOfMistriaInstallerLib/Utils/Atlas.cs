@@ -1,8 +1,8 @@
+using Garethp.ModsOfMistriaInstallerLib.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using Tomlyn;
-using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 
@@ -22,11 +22,7 @@ public class Atlas
     public string PngPath  { get; }
     public int Width       { get; }
     public int Height      { get; }
-
-    public TomlTable? Data;
-
-    public Image<Rgba32>? Image;
-
+    
     private IFileModifier _fileModifier;
 
     public Atlas(string type, int number, string atlasDirectory, IFileModifier fileModifier, int width = DefaultSize, int height = DefaultSize)
@@ -97,26 +93,41 @@ public class Atlas
     public bool EnsureMetaExists()
     {
         if (_fileModifier.Exists(MetaPath)) return true;
-        var data = new TomlTable
+        var data = new AtlasMetaFile
         {
-            ["meta_properties"] = new TomlTable
+            Meta = new AtlasMetaFileMetaProperties
             {
-                ["id"]         = IDManager.GenerateUniqueId(),
-                ["asset_kind"] = "TextureAtlas"
+                Id = IDManager.GenerateUniqueId(),
+                AssetKind = "TextureAtlas"
             },
-            ["asset_properties"] = new TomlTable
+            Asset = new AtlasAssetProperties
             {
-                ["dimensions"]          = new TomlArray { Width, Height },
-                ["filter_kind"]         = "Nearest",
-                ["texture_wrap"]        = "Repeat",
-                ["mipmap_filter_kind"]  = "Nearest",
-                ["srgb"]                = true,
-                ["animations"]          = new TomlTableArray(),
-                ["atlas"]               = Type
+                Dimensions = [ Width, Height ],
+                Filter = "Nearest",
+                MipmapFilter = "Nearest",
+                TextureWrap = "Repeat",
+                Srgb = true,
+                Animations = []
             }
         };
         
         _fileModifier.Write(MetaPath, TomlSerializer.Serialize(data));
         return true;
+    }
+
+    public AtlasMetaFile LoadData()
+    {
+        EnsureMetaExists();
+        return TomlSerializer.Deserialize<AtlasMetaFile>(_fileModifier.Read(MetaPath))!;
+    }
+
+    public Image<Rgba32> LoadImage()
+    {
+        EnsureImageExists();
+        var imageStream = _fileModifier.GetReadStream(PngPath);
+        var image = Image.Load<Rgba32>(imageStream);
+        imageStream.Close();
+
+        return image;
     }
 }
