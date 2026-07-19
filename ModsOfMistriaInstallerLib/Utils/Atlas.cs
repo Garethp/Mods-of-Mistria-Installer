@@ -95,7 +95,7 @@ public class Atlas
         if (_fileModifier.Exists(MetaPath)) return true;
         var data = new AtlasMetaFile
         {
-            Meta = new AtlasMetaFileMetaProperties
+            Meta = new MetaProperties
             {
                 Id = IDManager.GenerateUniqueId(),
                 AssetKind = "TextureAtlas"
