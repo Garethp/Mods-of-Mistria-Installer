@@ -1,7 +1,7 @@
+using Garethp.ModsOfMistriaInstallerLib.Models;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Garethp.ModsOfMistriaInstallerLib.Utils;
 using SixLabors.ImageSharp;
-using Tomlyn.Model;
-using Toml = Garethp.ModsOfMistriaInstallerLib.Utils.Toml;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
@@ -59,13 +59,13 @@ public class OutfitGenerator
 
     // The lut sprite to write in player_assets.toml for this item.
     // Priority: explicit mod override → slot SharedLutSprite → derived per-item name.
-    internal static string GetFiddleLutSprite(OutfitDefinition def) =>
+    internal static string GetFiddleLutSprite(OutfitFile def) =>
         def.LutSprite
         ?? (SlotConfigs.TryGetValue(def.UiSlot, out var cfg) ? cfg.SharedLutSprite : null)
         ?? $"spr_player_{def.Id}_lut";
 
     // The outfit sprite name for single-part slots (ignores multi-part slots).
-    internal static string ResolveOutfitSprite(OutfitDefinition def) =>
+    internal static string ResolveOutfitSprite(OutfitFile def) =>
         def.OutfitSprite ?? $"spr_player_{def.Id}_{GetAnimSuffix(def.UiSlot)}";
 
     private static string GetAnimSuffix(string uiSlot) =>
@@ -105,7 +105,7 @@ public class OutfitGenerator
 
     private static void GenerateOutfitFiles(
         IMod mod,
-        OutfitDefinition def,
+        OutfitFile def,
         SlotConfig slot,
         Dictionary<string, string> out_)
     {
@@ -123,7 +123,7 @@ public class OutfitGenerator
             {
                 var iconPath  = $"animations/Item Icons/Wearable/{def.ResolvedIconSprite}{suffix}.meta.toml";
                 var shapePath = $"shapes/Item Icons/Wearable/poly_{def.ResolvedIconSprite[4..]}{suffix}.meta.toml";
-                AddIfMissing(mod, out_, iconPath,  AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0, true));
+                AddIfMissing(mod, out_, iconPath,  AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0));
                 AddIfMissing(mod, out_, shapePath, ShapeMeta(18, 18, -9, -9));
             }
         }
@@ -132,8 +132,8 @@ public class OutfitGenerator
             // icon + outline
             var iconMetaPath    = $"animations/Item Icons/Wearable/{def.ResolvedIconSprite}.meta.toml";
             var outlineMetaPath = $"animations/Item Icons/Wearable/{def.ResolvedOutlineSprite}.meta.toml";
-            AddIfMissing(mod, out_, iconMetaPath,    AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0, true));
-            AddIfMissing(mod, out_, outlineMetaPath, AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0, true));
+            AddIfMissing(mod, out_, iconMetaPath,    AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0));
+            AddIfMissing(mod, out_, outlineMetaPath, AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0));
 
             var iconShapePath    = $"shapes/Item Icons/Wearable/poly_{def.ResolvedIconSprite[4..]}.meta.toml";
             var outlineShapePath = $"shapes/Item Icons/Wearable/poly_{def.ResolvedOutlineSprite[4..]}.meta.toml";
@@ -160,7 +160,7 @@ public class OutfitGenerator
                 var partFrameCount = DetectFrameCount(mod, slot, ps, frameW);
                 AddIfMissing(mod, out_, $"animations/{slot.PlayerFolder}/{ps}.meta.toml",
                     AnimationMeta(frameW, frameH, partFrameCount, slot.Atlas, slot.Duration,
-                        slot.OffsetH, slot.OffsetV, includeAssetKind: true));
+                        slot.OffsetH, slot.OffsetV));
                 AddIfMissing(mod, out_, $"shapes/{slot.PlayerFolder}/poly_{ps[4..]}.meta.toml",
                     ShapeMeta(frameW, frameH, 0, 0));
             }
@@ -172,7 +172,7 @@ public class OutfitGenerator
             var outfitShapePath = $"shapes/{slot.PlayerFolder}/poly_{outfitSprite[4..]}.meta.toml";
             AddIfMissing(mod, out_, outfitMetaPath, AnimationMeta(
                 frameW, frameH, frameCount, slot.Atlas, slot.Duration,
-                slot.OffsetH, slot.OffsetV, includeAssetKind: true));
+                slot.OffsetH, slot.OffsetV));
             AddIfMissing(mod, out_, outfitShapePath, ShapeMeta(frameW, frameH, 0, 0));
         }
 
@@ -189,7 +189,7 @@ public class OutfitGenerator
             var (lutW, lutH) = DetectLutDimensions(mod, slot, lutSprite);
             var lutMetaPath  = $"animations/{slot.PlayerFolder}/{lutSprite}.meta.toml";
             var lutShapePath = $"shapes/{slot.PlayerFolder}/poly_{lutSprite[4..]}.meta.toml";
-            AddIfMissing(mod, out_, lutMetaPath,  AnimationMeta(lutW, lutH, 1, slot.Atlas, 0f, "Middle", "Middle", true));
+            AddIfMissing(mod, out_, lutMetaPath,  AnimationMeta(lutW, lutH, 1, slot.Atlas, 0f, "Middle", "Middle"));
             AddIfMissing(mod, out_, lutShapePath, ShapeMeta(lutW, lutH, 0, 0));
         }
     }
@@ -199,44 +199,54 @@ public class OutfitGenerator
     private static string AnimationMeta(
         int frameWidth, int frameHeight, int frameCount,
         string atlas, float duration,
-        object offsetH, object offsetV,
-        bool includeAssetKind)
+        object offsetH, object offsetV)
     {
-        var t = new TomlTable();
-        if (includeAssetKind)
-            t["meta_properties"] = new TomlTable { ["asset_kind"] = "Animation" };
-
-        var ap = new TomlTable
+        var animation = new SpriteMetaFile
         {
-            ["frame_size"] = new TomlArray { frameWidth, frameHeight },
-            ["atlas"]      = atlas,
+            Meta = new SpriteMetaFileProperties
+            {
+                Id = IDManager.GenerateUniqueId(),
+                AssetKind = "Animation"
+            },
+            Asset = new SpriteMetaFileAssetProperties
+            {
+                FrameSize = [frameWidth, frameHeight],
+                Atlas = atlas,
+                Offset = new SpriteMetaFileAssetOffset
+                {
+                    Horizontal = offsetH,
+                    Vertical = offsetV
+                }
+            },
         };
 
         if (frameCount > 1)
         {
-            ap["frame_len"] = frameCount;
-            ap["duration"]  = (double)duration;
+            animation.Asset.FrameCount = frameCount;
+            animation.Asset.Duration = [duration];
         }
-
-        ap["offset"] = new TomlTable { ["horizontal"] = offsetH, ["vertical"] = offsetV };
-
-        t["asset_properties"] = ap;
-        return Tomlyn.TomlSerializer.Serialize(t);
+        
+        return Tomlyn.TomlSerializer.Serialize(animation);
     }
 
     private static string ShapeMeta(int w, int h, int ox, int oy)
     {
-        var t = new TomlTable
+        var shape = new ShapeMeta
         {
-            ["meta_properties"]  = new TomlTable { ["asset_kind"] = "Shape" },
-            ["asset_properties"] = new TomlTable
+            Meta = new MetaProperties
             {
-                ["kind"]       = "box",
-                ["offset"]     = new TomlArray { ox, oy },
-                ["dimensions"] = new TomlArray { w, h },
+                Id = IDManager.GenerateUniqueId(),
+                AssetKind = "Shape"
+            },
+            Asset = new ShapeMetaAsset
+            {
+                Kind = "box",
+                Offset = [ox, oy],
+                Dimensions = [w, h]
             }
         };
-        return Tomlyn.TomlSerializer.Serialize(t);
+        
+        return Tomlyn.TomlSerializer.Serialize(shape);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

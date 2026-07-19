@@ -5,16 +5,9 @@ namespace Garethp.ModsOfMistriaInstallerLib.Models;
 
 public class AtlasMetaFile
 {
-    [TomlPropertyName("meta_properties")] public AtlasMetaFileMetaProperties Meta { get; set; } = new();
+    [TomlPropertyName("meta_properties")] public MetaProperties Meta { get; set; } = new();
 
     [TomlPropertyName("asset_properties")] public AtlasAssetProperties Asset { get; set; } = new();
-}
-
-public class AtlasMetaFileMetaProperties
-{
-    [TomlPropertyName("id")] public string Id { get; set; }
-    
-    [TomlPropertyName("asset_kind")] public string AssetKind { get; set; }
 }
 
 public class AtlasAssetProperties
