@@ -49,4 +49,8 @@
       <AvaloniaResource Include="Assets\icon.ico" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    </ItemGroup>
+
 </Project>
