@@ -1,4 +1,5 @@
-﻿using Tomlyn.Serialization;
+﻿using Tomlyn;
+using Tomlyn.Serialization;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Models;
 
@@ -27,7 +28,8 @@ public class AtlasAssetProperties
     [TomlPropertyName("texture_wrap")] public string? TextureWrap { get; set; }
     
     [TomlPropertyName("srgb")] public bool? Srgb { get; set; }
-
+    
+    [TomlTableArrayStyle(TomlTableArrayStyle.Headers)]
     [TomlPropertyName("animations")] public List<AtlasAnimation> Animations { get; set; } = new();
 }
 
