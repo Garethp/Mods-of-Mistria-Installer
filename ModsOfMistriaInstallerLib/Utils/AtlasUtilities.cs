@@ -1,10 +1,9 @@
-using System.Diagnostics;
+using Garethp.ModsOfMistriaInstallerLib.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Tomlyn;
-using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 
@@ -82,14 +81,11 @@ public class AtlasUtilities
             state.GetImage().Mutate(ctx => ctx.DrawImage(trimmed, new Point(x, y), 1f));
             state.Packer.Add(x, y, trim.Width, trim.Height);
 
-            state.Animations.Add(new TomlTable
+            state.Data.Asset.Animations.Add(new AtlasAnimation
             {
-                ["texture_ids"] = new TomlArray { $"{id}::{i}" },
-                ["placement"]   = new TomlArray { x, y, trim.Width, trim.Height,
-                                                  frameWidth, frameHeight, trim.X, trim.Y }
+                TextureIds = [$"{id}::{i}"],
+                Placement = [x, y, trim.Width, trim.Height, frameWidth, frameHeight, trim.X, trim.Y],
             });
-
-            state.IsDirty = true;
         }
 
         return id;
@@ -109,13 +105,10 @@ public class AtlasUtilities
             var state = _stateManager.GetAtlas(atlas.PngPath);
             if (state is null) continue;
             var data = state.Data;
-
-            if (!data.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap) continue;
-            if (!ap.TryGetValue("animations", out var animObj) || animObj is not TomlTableArray anims) continue;
-
+            
             bool modified = false;
             var cleared = new List<Rectangle>();
-            PruneAnimations(anims, prefix, ref modified, cleared);
+            PruneAnimations(data.Asset.Animations, prefix, ref modified, cleared);
 
             if (!modified) continue;
 
@@ -136,17 +129,17 @@ public class AtlasUtilities
     // caller can wipe those pixels from the atlas image — otherwise the slot is freed
     // for the packer while the old art stays behind, and a later sprite packed there
     // shows the stale pixels through its transparent areas.
-    private static void PruneAnimations(TomlTableArray anims, string baseId, ref bool modified,
-                                        List<Rectangle> cleared)
-    {
-        for (int i = anims.Count - 1; i >= 0; i--)
+    private static void PruneAnimations(
+        List<AtlasAnimation> animations, 
+        string baseId, 
+        ref bool modified,
+        List<Rectangle> cleared
+    ) {
+        for (var i = animations.Count - 1; i >= 0; i--)
         {
-            var anim = anims[i];
-            if (!anim.TryGetValue("texture_ids", out var idsObj) || idsObj is not TomlArray ids)
-                continue;
+            var animation = animations[i];
 
-            var matching = ids
-                .Cast<string>()
+            var matching = animation.TextureIds
                 .Select((id, idx) => (id, idx))
                 .Where(t => string.Equals(t.id, baseId, StringComparison.OrdinalIgnoreCase)
                          || t.id.StartsWith(baseId + "::", StringComparison.OrdinalIgnoreCase))
@@ -155,20 +148,20 @@ public class AtlasUtilities
 
             if (matching.Count == 0) continue;
 
-            if (matching.Count == ids.Count)
+            if (matching.Count == animation.TextureIds.Count)
             {
                 // All IDs in this slot belong to the replaced animation → drop the entry
                 // and remember its region so the pixels get sanitised.
-                if (TryReadRegion(anim, out var region))
+                if (TryReadRegion(animation, out var region))
                     cleared.Add(region);
-                anims.RemoveAt(i);
+                animations.RemoveAt(i);
             }
             else
             {
                 // Some other animations share this pixel region → remove only our IDs.
                 // The region stays in use, so it must NOT be cleared.
                 foreach (var (_, idx) in matching)
-                    ids.RemoveAt(idx);
+                    animation.TextureIds.RemoveAt(idx);
             }
 
             modified = true;
@@ -177,17 +170,20 @@ public class AtlasUtilities
 
     // Reads an animation entry's stored atlas rectangle: the first four values
     // of `placement` (the trimmed box).
-    private static bool TryReadRegion(TomlTable anim, out Rectangle region)
+    private static bool TryReadRegion(AtlasAnimation animation, out Rectangle region)
     {
         region = default;
-        if (!anim.TryGetValue("placement", out var dObj) || dObj is not TomlArray d || d.Count < 4)
+        if (animation.Placement.Count < 4)
         {
             return false;
         }
 
         region = new Rectangle(
-            Convert.ToInt32(d[0]), Convert.ToInt32(d[1]),
-            Convert.ToInt32(d[2]), Convert.ToInt32(d[3]));
+            animation.Placement[0], 
+            animation.Placement[1], 
+            animation.Placement[2], 
+            animation.Placement[3]
+        );
         return true;
     }
 
@@ -284,30 +280,25 @@ public class AtlasUtilities
     // Reconstructs a ShelfPacker with all existing frame placements from the atlas meta.
     // Reads actual atlas dimensions from asset_properties.dimensions so the packer
     // correctly detects when a small atlas (e.g. 512×512) is full.
-    private static ShelfPacker BuildPacker(TomlTable atlasData)
+    private static ShelfPacker BuildPacker(AtlasMetaFile atlasData)
     {
         int width  = Atlas.DefaultSize;
         int height = Atlas.DefaultSize;
 
-        if (!atlasData.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap)
-            return new ShelfPacker(width, height);
-
-        if (ap.TryGetValue("dimensions", out var dimsObj) &&
-            dimsObj is TomlArray dims && dims.Count >= 2)
+        if (atlasData.Asset.Dimensions.Count != 2)
         {
-            width  = Convert.ToInt32(dims[0]);
-            height = Convert.ToInt32(dims[1]);
+            return new ShelfPacker(width, height);
         }
-
+        
+        width = atlasData.Asset.Dimensions[0];
+        height = atlasData.Asset.Dimensions[1];
+        
         var packer = new ShelfPacker(width, height);
 
-        if (ap.TryGetValue("animations", out var animObj) && animObj is TomlTableArray animations)
+        foreach (var animation in atlasData.Asset.Animations)
         {
-            foreach (TomlTable anim in animations)
-            {
-                if (!TryReadRegion(anim, out var region)) continue;
-                packer.Add(region.X, region.Y, region.Width, region.Height);
-            }
+            if (!TryReadRegion(animation, out var region)) continue;
+            packer.Add(region.X, region.Y, region.Width, region.Height);
         }
 
         return packer;
@@ -380,20 +371,6 @@ public class AtlasUtilities
             }
             
             var data = atlas.LoadData();
-            
-            // Safely retrieve (or create) the animations array.
-            // A newly created atlas serialises an empty TomlTableArray as nothing,
-            // so the key may be absent when we read it back.
-            if (!data.TryGetValue("asset_properties", out var apObj) || apObj is not TomlTable ap)
-            {
-                ap = new TomlTable();
-                data["asset_properties"] = ap;
-            }
-            if (!ap.TryGetValue("animations", out var animObj) || animObj is not TomlTableArray anims)
-            {
-                anims = new TomlTableArray();
-                ap["animations"] = anims;
-            }
 
             var packer = BuildPacker(data);
 
@@ -402,8 +379,6 @@ public class AtlasUtilities
                 Atlas      = atlas,
                 Data       = data,
                 Packer     = packer,
-                Animations = anims,
-                IsDirty    = false
             };
 
             _openAtlases[atlas.PngPath] = state;
@@ -463,18 +438,15 @@ public class AtlasUtilities
             }
         
             _fileModifier.Write(state.Atlas.MetaPath, TomlSerializer.Serialize(state.Data));
-            state.IsDirty = false;
         }
     }
     
     public class AtlasPackState
     {
         public  required Atlas           Atlas;
-        public  required TomlTable       Data;
+        public  required AtlasMetaFile   Data;
         private          Image<Rgba32>?  Image;
         public  required ShelfPacker     Packer;
-        public  required TomlTableArray  Animations;
-        public           bool            IsDirty;
 
         public Image<Rgba32> GetImage()
         {

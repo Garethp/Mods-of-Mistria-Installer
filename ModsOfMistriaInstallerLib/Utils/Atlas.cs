@@ -1,3 +1,4 @@
+using Garethp.ModsOfMistriaInstallerLib.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
@@ -116,10 +117,10 @@ public class Atlas
         return true;
     }
 
-    public TomlTable LoadData()
+    public AtlasMetaFile LoadData()
     {
         EnsureMetaExists();
-        return TomlSerializer.Deserialize<TomlTable>(_fileModifier.Read(MetaPath))!;
+        return TomlSerializer.Deserialize<AtlasMetaFile>(_fileModifier.Read(MetaPath))!;
     }
 
     public Image<Rgba32> LoadImage()
