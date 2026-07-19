@@ -3,7 +3,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using Tomlyn;
-using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 
@@ -94,22 +93,21 @@ public class Atlas
     public bool EnsureMetaExists()
     {
         if (_fileModifier.Exists(MetaPath)) return true;
-        var data = new TomlTable
+        var data = new AtlasMetaFile
         {
-            ["meta_properties"] = new TomlTable
+            Meta = new AtlasMetaFileMetaProperties
             {
-                ["id"]         = IDManager.GenerateUniqueId(),
-                ["asset_kind"] = "TextureAtlas"
+                Id = IDManager.GenerateUniqueId(),
+                AssetKind = "TextureAtlas"
             },
-            ["asset_properties"] = new TomlTable
+            Asset = new AtlasAssetProperties
             {
-                ["dimensions"]          = new TomlArray { Width, Height },
-                ["filter_kind"]         = "Nearest",
-                ["texture_wrap"]        = "Repeat",
-                ["mipmap_filter_kind"]  = "Nearest",
-                ["srgb"]                = true,
-                ["animations"]          = new TomlTableArray(),
-                ["atlas"]               = Type
+                Dimensions = [ Width, Height ],
+                Filter = "Nearest",
+                MipmapFilter = "Nearest",
+                TextureWrap = "Repeat",
+                Srgb = true,
+                Animations = []
             }
         };
         
