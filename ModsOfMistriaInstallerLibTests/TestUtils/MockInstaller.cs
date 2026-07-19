@@ -8,46 +8,43 @@ namespace ModsOfMistriaInstallerLibTests.TestUtils;
 
 public class MockInstaller
 {
-    private readonly List<IGenerator> _generators;
-    private readonly List<IModuleInstaller> _installers;
-
-    public MockInstaller(List<IGenerator> generators, List<IModuleInstaller> installers)
+    public void InstallMod(IMod mod, IFileModifier fileModifier)
     {
-        _generators = generators;
-        _installers = installers;
-    }
+        var fileNameUIDMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        
+        // 0. Expand momi/ compact definitions into virtual overlay files
+        var generated = new OutfitGenerator().Generate(mod);
+        foreach (var kvp in new FurnitureGenerator().Generate(mod))
+            generated.TryAdd(kvp.Key, kvp.Value);
 
-    public GeneratedInformation InstallMods(List<IMod> mods, IFileModifier fileModifier)
-    {
-        var generatedInformation = new List<GeneratedInformationWithMod>();
+        var redirects = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        new CompactFurnitureGenerator().Generate(mod, generated, redirects);
 
-        var desiredGenerators = _generators;
-        var desiredInstallers = _installers;
+        IMod effectiveMod = generated.Count > 0 || redirects.Count > 0
+            ? new GeneratedOverlayMod(mod, generated, redirects)
+            : mod;
+        
+        // 2. Install TOML files (uses IDs populated above)
+        new TOMLInstaller(fileNameUIDMapping, fileModifier)
+            .Install(effectiveMod, (_, _) => { });
 
-        foreach (var mod in mods)
-        {
-            var informationWithMod = new GeneratedInformationWithMod(mod);
+        // 3. Install JSON files
+        new JSONInstaller(fileNameUIDMapping, fileModifier)
+            .Install(effectiveMod, (_, _) => { });
 
-            foreach (var generator in desiredGenerators.Where(generator => generator.CanGenerate(mod)))
-            {
-                informationWithMod.Merge(generator.Generate(mod));
-            }
+        // 4. Install XML files
+        new XMLInstaller(fileNameUIDMapping, fileModifier)
+            .Install(effectiveMod, (_, _) => { });
 
-            generatedInformation.Add(informationWithMod);
-        }
+        // 5. Install MIST files (overwrite)
+        new MISTInstaller(fileNameUIDMapping, fileModifier)
+            .Install(effectiveMod, (_, _) => { });
 
-        var finalizedInformation = new GeneratedInformation();
-        foreach (var information in generatedInformation)
-        {
-            finalizedInformation.Merge(information);
-        }
-
-        foreach (var installer in desiredInstallers)
-        {
-            installer.SetFileModifier(fileModifier);
-            installer.Install("", "", finalizedInformation, (_, _) => { });
-        }
-
-        return finalizedInformation;
+        // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
+        new OutfitInstaller(fileNameUIDMapping, fileModifier)
+            .Install(mod, (_, _) => { });
+        
+        new FurnitureInstaller(fileNameUIDMapping, fileModifier)
+            .Install(mod, (_, _) => { });
     }
 }

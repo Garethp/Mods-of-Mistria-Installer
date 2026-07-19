@@ -9,17 +9,21 @@ public class MockFileModifier: IFileModifier
 
     public MockFileModifier(Dictionary<string, string> files)
     {
-        _originalFiles = files.ToDictionary(x => x.Key, x => x.Value);
-        _resultingFiles = files.ToDictionary(x => x.Key, x => x.Value);
+        _originalFiles = files.ToDictionary(x => x.Key.Replace("\\", "/"), x => x.Value);
+        _resultingFiles = files.ToDictionary(x => x.Key.Replace("\\", "/"), x => x.Value);
     }
 
     public bool Exists(string file)
     {
+        file = file.Replace("\\", "/");
+        
         return _resultingFiles.ContainsKey(file);
     }
 
     public string[] FindFiles(string path, string pattern)
     {
+        path = path.Replace("\\", "/");
+        
         return _resultingFiles
             .Keys
             .Where(x => x.StartsWith(path) && x.Contains(pattern) && !x.EndsWith('/'))
@@ -29,11 +33,15 @@ public class MockFileModifier: IFileModifier
 
     public string Read(string file)
     {
+        file = file.Replace("\\", "/");
+        
         return _resultingFiles[file];
     }
 
     public Stream GetReadStream(string file)
     {
+        file = file.Replace("\\", "/");
+        
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
         writer.Write(_resultingFiles[file]);
@@ -45,6 +53,8 @@ public class MockFileModifier: IFileModifier
 
     public void Write(string file, string contents)
     {
+        file = file.Replace("\\", "/");
+        
         _resultingFiles[file] = contents;
     }
 
@@ -60,6 +70,8 @@ public class MockFileModifier: IFileModifier
 
     public bool ConditionalRestoreBackup(string file, Func<bool> condition)
     {
+        file = file.Replace("\\", "/");
+        
         if (condition())
         {
             _resultingFiles[file] = _originalFiles[file];
@@ -71,6 +83,8 @@ public class MockFileModifier: IFileModifier
 
     public string GetFile(string file)
     {
+        file = file.Replace("\\", "/");
+        
         return _resultingFiles[file];
     }
 }
