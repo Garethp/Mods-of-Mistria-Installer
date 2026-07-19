@@ -206,7 +206,10 @@ public class AssetsStoreTest
             Is.EqualTo(Encoding.UTF8.GetBytes("// short\n")));
     }
 
+    // Windows-only: Unix does not enforce FileShare semantics, so an open
+    // handle never blocks the rebuild there
     [Test]
+    [Platform("Win")]
     public void ShouldFailInBeginRebuildWithTheRunningGameHint()
     {
         WriteInstalledLive();
@@ -225,7 +228,10 @@ public class AssetsStoreTest
         Assert.That(File.ReadAllBytes(LivePath), Is.EqualTo(before));
     }
 
+    // Windows-only: Unix does not enforce FileShare semantics, so an open
+    // handle never blocks the rebuild there
     [Test]
+    [Platform("Win")]
     public void ShouldCarryTheRunningGameHintWhenTheOpenIsBlocked()
     {
         // a game launched between the copy and the open: this handle's share
@@ -245,6 +251,33 @@ public class AssetsStoreTest
 
         // the copy itself went through, so the failure was the open's
         Assert.That(File.ReadAllBytes(LivePath), Is.EqualTo(File.ReadAllBytes(BackupPath)));
+    }
+
+    // The Unix mirror of the two tests above: .NET's advisory locks make the
+    // copy the failing step there regardless of share mode, so a rebuild
+    // against an open handle throws the same hint with the previous install
+    // still whole. A real game holds no advisory lock on Unix, so production
+    // rebuilds do not block at all; this pins the failure-atomicity of
+    // BeginRebuild, not running-game detection.
+    [Test]
+    [Platform(Exclude = "Win")]
+    public void ShouldKeepThePreviousInstallLiveWhenTheCopyIsBlocked()
+    {
+        WriteInstalledLive();
+        WriteVanillaBackup();
+        var before = File.ReadAllBytes(LivePath);
+
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+
+        using (File.Open(LivePath, FileMode.Open, FileAccess.Read,
+                   FileShare.ReadWrite | FileShare.Delete))
+        {
+            var exception = Assert.Throws<IOException>(() => store.BeginRebuild());
+            Assert.That(exception!.Message, Does.Contain("running"));
+        }
+
+        Assert.That(File.ReadAllBytes(LivePath), Is.EqualTo(before));
     }
 
     [Test]
