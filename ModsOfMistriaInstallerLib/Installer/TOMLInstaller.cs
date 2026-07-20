@@ -24,7 +24,7 @@ public class TOMLInstaller(
         GeneratedInformation generatedInformation,
         Action<string, string> reportStatus
     ) {
-        foreach (var animationGroup in generatedInformation.AnimationGroups)
+        foreach (var animationGroup in generatedInformation.AnimationGroups.Values)
         {
             if (animationGroup.HasAnimation)
                 InstallAnimationMeta(mod, animationGroup, reportStatus);
