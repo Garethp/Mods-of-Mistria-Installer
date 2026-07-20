@@ -48,6 +48,9 @@ public interface IMod
 
     public List<ModRequirement> GetRequirements();
 
+    // Hook names the mod cannot run without (manifest `requires_hooks`)
+    public List<string> GetRequiredHooks();
+
     // URL used to check for updates (GitHub repo URL or custom JSON endpoint).
     // Null means no update checking for this mod.
     public string? GetUpdateUrl();

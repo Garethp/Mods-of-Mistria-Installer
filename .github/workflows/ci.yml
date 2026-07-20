@@ -1,23 +1,29 @@
-﻿name: CI
+name: CI
 
 on: [push]
 
 jobs:
   test:
-    strategy: 
+    strategy:
+        fail-fast: false
         matrix:
             os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
-  
+
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
+      - name: Build the GML checker and probe
+        run: cargo build --release --manifest-path tools/checker/Cargo.toml
       - name: Restore
         run: dotnet restore
       - name: Build
         run: dotnet build
       - name: Test
         run: dotnet test
+        env:
+          MOMI_GML_CHECKER: ${{ github.workspace }}/tools/checker/target/release/momi-gml-check${{ runner.os == 'Windows' && '.exe' || '' }}
+          MOMI_GML_PROBE: ${{ github.workspace }}/tools/checker/target/release/momi-gml-probe${{ runner.os == 'Windows' && '.exe' || '' }}

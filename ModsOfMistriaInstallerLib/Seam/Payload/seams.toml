@@ -1,0 +1,2249 @@
+# The mmapi v2 seam catalog: the hook declarations and the anchored engine edits
+# that wire the named-hook API into the game. Each [[hook]] declares one named
+# hook once: its kind, its contract, and (provider = "runtime") whether the
+# framework itself emits it with no seam behind it. Each [[seam]] is an engine
+# edit whose injected dispatch calls one of mmapi_emit, mmapi_apply_filters,
+# mmapi_check_guards, or mmapi_run_override. The guard convention is uniform:
+# a guard handler returns false to veto, and with zero handlers every seam is
+# byte-equivalent to pristine behavior.
+#
+# A seam comes in two forms. The TEXT form states `anchor` + `replace` verbatim
+# and names the hooks it feeds in `provides`; it carries the edits a template
+# cannot say (control-flow rewrites, value capture, argument threading). The
+# TEMPLATE form states a locator plus an op (emit, guard, filter, filter_call,
+# ctx_filter, wrap), and the injected dispatch is generated with the uniform
+# try/catch shape (see mistweave/dispatch.py); provides derives from its
+# `hook`. The locator is either pristine context stated once
+# (context_before/context_after, whose concatenation is the anchor) or a
+# structural `target` (fn + at + token anchor, matched token-wise inside the
+# named function, immune to whitespace and comment drift). A wrap targets a
+# whole function: the pristine definition is renamed, body untouched, and a
+# generated wrapper filters its return value; with zero handlers a wrap is
+# behaviorally (not byte-) equivalent to pristine.
+# Anchors are matched after normalizing \r\n to \n.
+# Apply order is catalog order plus `depends_on` edges (topo-sorted, stable).
+# Hook-less edits live in [[engine_fix]]: game_step_begin_installs (the mmapi
+# lifecycle root) and shroom_puddle_mask (a beta-wiring fix).
+
+version = 2
+
+# --- hook declarations -------------------------------------------------------------
+
+[[hook]]
+name = "animal.heart_points"
+kind = "filter"
+doc  = "Fires at the top of Animal.add_heart_points(), before the delta is applied. The filtered value is the heart points delta. ctx is the Animal struct. Return the replacement value, or undefined to keep the current value."
+
+[[hook]]
+name = "camera.culls_processed"
+kind = "event"
+doc  = "Fires at the end of Camera.process_culls(), immediately after instance_activate_region() has deactivated all node renderers (obj_node_renderer / obj_assetobject) and reactivated only the ones inside the cull region, i.e. after off-screen instances that just scrolled into view are active again and before the frame draws. ctx is the Camera struct. Fires every frame culling runs for the room. Observation only. The intended use is to re-apply per-instance sprite/visual state to the just-reactivated renderers before they draw, so a mod's sprite override does not lag a frame on scroll-in. A reactivated instance carries its last sprite_index, which the mmapi begin_step tick (running before this cull at Game.gml step_begin) cannot have refreshed yet."
+
+[[hook]]
+name = "animal.pet"
+kind = "event"
+doc  = "Fires when the player pets a barn/coop animal (top of obj_player_animal on_pet()) or puts a held animal down (end of put_down()). ctx is the obj_player_animal instance, not the Animal data struct: its Animal data is ctx.me, and ctx.create_animal_currency_dance(count, face_ari) plays the celebration that drops count AnimalCurrency 'beads' at this animal (itself a no-op unless Perk.CurrencyOfCare is active). Observation only. The two call sites share one hook, so a handler that wants once-per-day (or once-per-animal) behavior must latch itself. The on_pet site fires before the animal's own can_pet() gate, so it can fire even when the pet turns out to be a no-op."
+
+[[hook]]
+name = "npc.heart_points"
+kind = "filter"
+doc  = "Fires at the top of Npc.add_heart_points(), before the delta is applied. The filtered value is the heart points delta (amount). ctx is the Npc struct. Return the replacement value, or undefined to keep the current value. Distinct from animal.heart_points, which covers barn animals rather than villagers."
+
+[[hook]]
+name = "audio.music_selector"
+kind = "filter"
+doc  = "Fires in the scene music selector when the dungeon biome track is chosen (standard dungeon rooms, and only when the runner is not blocking music). The filtered value is the biome music track. ctx is undefined. Return the replacement track, or undefined to keep the current value."
+
+[[hook]]
+name = "audio.play_guard"
+kind = "guard"
+doc  = "Fires at the top of TANGO.play(asset_name, ...), before a sound effect starts. ctx is { asset_name }. Return false to suppress the sound (play returns undefined); undefined or true allows. Runs for every SFX the game plays through TANGO, so keep handlers cheap."
+
+[[hook]]
+name = "crafting.max_crafts"
+kind = "override"
+contention = "exclusive"
+doc  = "Fires at the top of CraftingMenu.maximum_crafts(item), the ceiling on how many of a recipe can be crafted (check_item_craftable derives from it, so this also gates craftability). ctx is { menu, item }; read ctx.menu.context for the crafting discipline. Return a replacement count (e.g. a large number to allow crafting without materials), or undefined to defer to the normal material-based computation."
+
+[[hook]]
+name = "crafting.pay_component_costs"
+kind = "guard"
+doc  = "Fires at the top of pay_component_costs(components, item_id, quantity, context), before a recipe's materials are deducted. ctx is { item_id, quantity, context } (context is the crafting discipline). Return false to skip the payment (craft for free); undefined or true pays normally."
+
+[[hook]]
+name = "npc.gift_received"
+kind = "event"
+doc  = "Fires at the top of par_NPC.receive_gift(item), when the player gives an NPC a gift, before the NPC's give_gift bookkeeping. ctx is { npc, item }: npc is the NPC instance, item is the gifted item. Observation only."
+
+[[hook]]
+name = "gossip.selections"
+kind = "filter"
+doc  = "Fires at the return of get_gossip_selections(), the NPCs offered for the day's gossip. The filtered value is that selection list. ctx is undefined. Return a replacement list (for example an empty list to suppress gossip), or undefined to keep the current value."
+
+[[hook]]
+name = "combat.damage"
+kind = "filter"
+doc  = "Fires in the obj_damage_receiver drain loop, after iframe and rockstack checks and before the hit resolves. The filtered value is the damage tarball instance. ctx is the receiver. Return the replacement tarball or undefined to keep the current one. The seam skips the hit if the tarball comes back destroyed, and fields set on the tarball here are read later by the player.incoming_damage seam. Hits injected via mmapi_deal_damage() carry __mmapi_injected with the injecting mod's name; engine hits do not."
+
+[[hook]]
+name = "combat.damage_injected"
+kind = "event"
+provider = "runtime"
+doc  = "Fires from mmapi_deal_damage() right after a receiver accepts a synthetic hit (it has passed the receiver's target-mask and iframe enqueue checks but has not resolved yet). ctx is { receiver, tarball, mod_name }. Observation only: the injected hit still flows through combat.damage and combat.damage_resolved like any engine hit, and the tarball carries __mmapi_injected with the injecting mod's name so combat.damage filters can tell synthetic hits from engine hits."
+
+[[hook]]
+name = "combat.damage_resolved"
+kind = "event"
+doc  = "Fires after a hit resolves against a damage receiver: successful hits (Normal, DamageOnAttack, and in-air Aerial) and blocks. ctx is { receiver, tarball, status, successful }; successful is true for a landed hit, false for a block."
+
+[[hook]]
+name = "combat.tarball_grid"
+kind = "filter"
+in_place = true
+doc  = "Fires at the top of obj_damage_tarball's step, inside the if self.can_hurt block and before the grid pick/chop/destroy blocks (pick at obj_damage_tarball.gml:168, chop at :209, destroy at :231) and the receiver-collision enqueue (:253). The filtered value is the tarball instance. A handler mutates it in place, setting can_pick_grid_objects / can_chop_grid_objects / can_destroy_grid_objects so the swing forages / chops / destroys grid nodes that same frame (these flags are what the pick/chop/destroy blocks read). The return is discarded (an in-place filter, the ui.item_node shape): mutate the tarball, do not build a replacement. Guard on the tarball's target (CombatTarget.Player is an incoming hit on the player) and provenance before acting. Hot path (every active can_hurt tarball, every unpaused frame). Keep handlers cheap."
+
+[[hook]]
+name = "object.interact"
+kind = "override"
+contention = "claim-scoped"
+doc  = "Fires at the top of interact(node) (Interact.gml, the shared grid-object interaction dispatcher), before can_interact. ctx is the grid node being interacted with (read node.object_id, node.prototype, node.top_left_x/y, node.renderer). Return a non-undefined value to replace the interaction entirely: the engine's interact for this node is skipped and your value becomes interact's return (return true for a handled interaction). Return undefined to defer to the engine's normal handling. This gives a mod's placed furniture custom interact behavior, since the engine dispatches every furniture interaction through this one function."
+
+[[hook]]
+name = "furniture.place_guard"
+kind = "guard"
+doc  = "Fires at the top of write_furniture_to_location(grid, xx, yy, proto, stack_count, rotation), before the placement is validated or written. ctx is { grid, x, y, proto, stack_count, rotation }; proto is the furniture NODE_PROTOTYPE (proto.object_id identifies which furniture). Return false to veto the placement (write_furniture_to_location returns undefined, so nothing is placed and the item stays in hand); undefined or true allows. stack_count > 0 indicates a recursive child-grid placement (furniture on furniture). Use it to cap or forbid placing a mod's furniture under mod-specific conditions."
+
+[[hook]]
+name = "dialogue.line"
+kind = "filter"
+doc  = "Fires in ConversationDriver.deliver_line(), before the textbox shows the line. The filtered value is the localized line text. ctx is { driver, line, conversation_name, npc_id, is_info_line }. Return the replacement string, or undefined to keep the current value."
+
+[[hook]]
+name = "dialogue.npc_blip"
+kind = "filter"
+doc  = "Fires in the NpcSpeaker constructor, after the default blip noise lookup. The filtered value is the blip sound. ctx is { npc_id, speaker }. Return the replacement sound, or undefined to keep the current value."
+
+[[hook]]
+name = "dialogue.path"
+kind = "filter"
+doc  = "Fires at the top of play_conversation(), after dialogue.play_guard. The filtered value is the struct { npc_id, path, close_callback, args }. ctx is undefined. Return the replacement struct. The seam tolerates an undefined return and re-reads every field defensively, so undefined (or a partial struct) keeps the engine values."
+
+[[hook]]
+name = "dialogue.play_guard"
+kind = "guard"
+doc  = "Fires at the top of play_conversation(), before dialogue.path runs. ctx is { npc_id, path, close_callback, args }. Return false to veto the conversation (play_conversation returns undefined). Undefined or true allows."
+
+[[hook]]
+name = "dialogue.speaker"
+kind = "filter"
+doc  = "Fires in the T2 Speaker action handler when a textbox speaker is built. The filtered value is the NpcSpeaker or CameoSpeaker about to be assigned. ctx is { action, current_npc_id, driver, conversation_name, textbox, is_cameo }. The engine threads the ConversationDriver through for mid-conversation actions, and a companion seam (which dispatches nothing itself) threads it for the conversation's initial speaker too, so driver and conversation_name are filled whenever a conversation is playing. Return the replacement speaker, or undefined to keep the current value."
+
+[[hook]]
+name = "dungeon.floor_built"
+kind = "event"
+doc  = "Fires in the dungeon floor entry bracket, right after build_dungeon_room() and before the runner's room start. ctx is { runner, floor, biome, room_id, grid, level, gm_room, impl }, each field filled best-effort."
+
+[[hook]]
+name = "dungeon.floor_enter"
+kind = "event"
+doc  = "Fires in the dungeon floor entry bracket, before dungeon.room_build_begin and build_dungeon_room(). ctx is { runner, floor, biome, room_id, grid, level, gm_room, impl }, each field filled best-effort."
+
+[[hook]]
+name = "dungeon.ladder_spawn"
+kind = "guard"
+doc  = "Fires at the top of DungeonRunner.spawn_ladder(). ctx is { runner, x, y } in tile coordinates. Return false to veto the ladder spawn. Undefined or true allows."
+
+[[hook]]
+name = "dungeon.room_build_begin"
+kind = "event"
+doc  = "Fires immediately before build_dungeon_room(), right after dungeon.floor_enter with the same ctx. ctx is { runner, floor, biome, room_id, grid, level, gm_room, impl }, each field filled best-effort."
+
+[[hook]]
+name = "dungeon.runner_created"
+kind = "event"
+doc  = "Fires in enter_dungeon() after DUNGEON_RUNNER is constructed, before the goto to the first level's room. ctx is { runner, floor, biome, room_id, grid, level, gm_room, impl }, each field filled best-effort."
+
+[[hook]]
+name = "dungeon.treasure_chest"
+kind = "event"
+doc  = "Fires in the dungeon breakables logic when a treasure chest starts its drop chain. ctx is { node, object_id, x, y }, with x and y read from the node renderer."
+
+[[hook]]
+name = "dungeon.side_room_chance"
+kind = "filter"
+doc  = "Filters the spawn chance passed to try_create_side_room() at the head of that function, before the per-floor roll. ctx is { impl, is_ritual, max_flr }; is_ritual is true when impl == DungeonImpl.Ritual (the pre-computed convenience flag so consumers need not reference the DungeonImpl enum). Return an adjusted chance (0-100) to raise/lower the odds of a treasure/ritual side room; return the value unchanged (or undefined) to defer. Fires for every side-room impl the runner attempts."
+
+[[hook]]
+name = "fsm.transition"
+kind = "filter"
+doc  = "Fires in __StateMachine.execute_state_change(), once per executed state transition of every shared-FSM machine in the game (monsters, the player and the fishing sub-machine, NPCs, animals, birds, fish and fish schools, the camera, cameos, the bobber), before the outgoing state's stop() runs. The filtered value is the struct { fsm, owner, from, to, cancel: false }: fsm is the machine, owner is whatever spawn() received (an instance for monsters, NPCs, and the player; a struct for the camera and the fishing sub-machine, so check is_struct before touching instance fields), from and to are the machine's per-species enum state ids (CatState.*, TomeState.*, MushroomState.*, PlayerState.*, and so on, resolvable by name in mod GML). Return the replacement struct, or mutate it in place and return undefined; the seam re-reads fields defensively. Set cancel to true to skip the transition entirely (no stop or start runs, the machine keeps its state, and state_frame stalls for that tick); set to to a different valid state id of the same machine to redirect (non-numeric, fractional, or out-of-range values are ignored). Redirect via the struct, never by calling change_state from inside a handler. The initial state entered at spawn does not dispatch. Deferred requests overwritten before new_tick never dispatch. A cancelled transition that the owner re-requests every step re-dispatches every tick for that instance while the cancel holds. Transitions are edge events, not per-frame."
+
+[[hook]]
+name = "game.clock_tick"
+kind = "event"
+doc  = "Fires at the top of Clock.update() every frame, before game seconds are buffered. ctx is the Clock struct. Fires even while the game is paused or time is stopped."
+
+[[hook]]
+name = "clock.time_advance"
+kind = "filter"
+doc  = "Fires inside Clock.update() each frame, after the natural per-frame time advance is computed (GAME_SECONDS_PER_FRAME, already gated by game_paused() and the clock's time_stopped) and before it is buffered into side_buffer. The filtered value is the game-seconds the clock is about to advance this frame; ctx is the Clock. Return 0 to freeze the advance this frame (for example while the player is indoors), a replacement amount, or undefined to keep the natural advance. Suppressing the advance here does not touch time_stopped, so it composes with the engine's own freezes (end-of-day menu, cutscenes, challenge floors) instead of fighting them."
+
+[[hook]]
+name = "game.day_started"
+kind = "event"
+provider = "runtime"
+doc  = "Fires from the begin_step derived-events poll when total_days() changes. ctx is { total_days }. Observation only: the day has already started, and the first poll of a session only records the baseline."
+
+[[hook]]
+name = "game.room_changed"
+kind = "event"
+provider = "runtime"
+doc  = "Fires from the begin_step derived-events poll when room() changes, after room_start has already run. ctx is { previous, current } (gm_room values). Observation only: to change room content as it loads, use the in-file seams (dungeon.floor_enter and the room transition events) instead."
+
+[[hook]]
+name = "game.room_transition_post"
+kind = "event"
+doc  = "Fires at the end of the taxi transition, after arrival and music selection. ctx is the same struct as game.room_transition_pre ({ taxi, itinerary, from_room, to_room, gm_room, instant }), with itinerary, to_room, gm_room, and instant re-read from the live itinerary just before the emit."
+
+[[hook]]
+name = "game.room_transition_pre"
+kind = "event"
+doc  = "Fires at the top of Taxi.taxi_player(), before the transition starts. ctx is { taxi, itinerary, from_room, to_room, gm_room, instant }. After the emit the seam writes ctx.itinerary, ctx.gm_room, and ctx.instant back onto the itinerary and recomputes its destination, so a handler can mutate the ctx to redirect the transition."
+
+[[hook]]
+name = "game.save_guard"
+kind = "guard"
+doc  = "Fires at the top of save_game(), before the saver is created. ctx is { save_path }. Return false to veto the save. Undefined or true allows."
+
+[[hook]]
+name = "game.title_entered"
+kind = "event"
+provider = "runtime"
+doc  = "Fires from the begin_step derived-events poll when the room changes into the title/menu room from a non-title room. ctx is {} (empty struct). Observation only. Fires after game.room_changed for the same room change."
+
+[[hook]]
+name = "input.check_value_id"
+kind = "filter"
+doc  = "Fires at the top of Input.check_value(). The filtered value is the input_id being checked. ctx is undefined. Return a replacement input id to remap the lookup, or undefined to keep the current value."
+
+[[hook]]
+name = "input.take_press"
+kind = "guard"
+doc  = "Fires in par_interactable when a registered interaction's input reads as pressed, before the interaction runs. ctx is { subject, input_id, local_key, interaction }. Return false to veto the press (a force_press still goes through). Undefined or true allows."
+
+[[hook]]
+name = "interact.elevator_action"
+kind = "guard"
+doc  = "Fires when the player actually activates the dungeon elevator (the interaction action, not the per-frame interactability poll). ctx is { subject, key: \"dungeon_elevator\" }. Return false to veto opening the elevator menu. Undefined or true allows."
+
+[[hook]]
+name = "interact.ladder_down_action"
+kind = "guard"
+doc  = "Fires when the player activates a dungeon ladder to descend, before the descend sound and floor change. ctx is { subject, key: \"dungeon_ladder_down\" }. Return false to veto the descent. Undefined or true allows."
+
+[[hook]]
+name = "item.display_description"
+kind = "filter"
+doc  = "Fires at the return of LiveItem.get_display_description(), the string the tooltip body actually renders. The filtered value is the description string. ctx is { item }. Return the replacement string, or undefined to keep the current value."
+
+[[hook]]
+name = "items.consumed"
+kind = "event"
+doc  = "Fires after the player eats an item, right after the items_eaten stat is recorded. ctx is the consumed LiveItem."
+
+[[hook]]
+name = "items.dig_artifact"
+kind = "filter"
+doc  = "Fires at the return of Archaeology.choose_random_artifact(), the artifact an archaeology dig spot yields (overworld locations and dungeon biomes both route through it). The filtered value is the chosen artifact item id. ctx is the Archaeology struct. Return the replacement item id, or undefined to keep the current value."
+
+[[hook]]
+name = "items.dropped"
+kind = "event"
+doc  = "Fires in drop_item() before the dropped items spawn into the world. ctx is { value, items, x, y, z_offset }, where items is the array of items to drop and value is the original drop argument."
+
+[[hook]]
+name = "items.trashed"
+kind = "event"
+doc  = "Fires when the player trashes the item in hand slot 0 via a trash button: the inventory trash button (PlayerMenu, the journal inventory) or the storage trash button (StorageMenu, chests). It fires at the top of the button's tap callback, before the slot pop()/drain() removes the item(s). ctx is { item, count }: item is the LiveItem in hand slot 0 (the item being trashed; undefined if the slot is somehow empty), and count is how many units this tap trashes (the whole stack when Shift-trashing via drain, else 1). This is the real trash signal: the generic slot pop()/drain() are shared by every inventory move, so only these two trash-button callbacks distinguish a trash from an ordinary slot operation (the game itself marks them with the SoundEffects/UI/UITrashItem tap sound). An event: the trash still happens; use it to react (e.g. pay out the trashed item's value)."
+
+[[hook]]
+name = "items.give"
+kind = "filter"
+doc  = "Fires at the top of give_item(), after the item is coerced to a LiveItem. The filtered value is the struct { item, item_id, count, show_toast, show_new_popup, play_sound }. ctx is the player. Return the replacement struct. The seam tolerates an undefined return and re-reads each field defensively (item_id is informational and is not read back)."
+
+[[hook]]
+name = "items.infusion_generate"
+kind = "guard"
+doc  = "Fires at the top of Recipe.generate_infusions(). ctx is the recipe struct. Return false to veto infusion generation (an empty list is returned). Undefined or true allows."
+
+[[hook]]
+name = "items.treasure_distribution"
+kind = "filter"
+doc  = "Fires at both exits of the dungeon treasure distribution roll: once when the roll produced no candidate and once on the rolled result. The filtered value is [live_item, is_perk], or undefined in the no-candidate case. ctx is { x, y }. Return a replacement [live_item, is_perk] array (in the no-candidate case this injects a drop where there was none), or undefined to keep the current value."
+
+[[hook]]
+name = "items.use_guard"
+kind = "guard"
+doc  = "Fires at the top of use_item(), after the item is coerced to a LiveItem and before any use logic. ctx is the LiveItem being used. Return false to veto the use (use_item returns false). Undefined or true allows."
+
+[[hook]]
+name = "local.get"
+kind = "filter"
+doc  = "Fires on every engine localization lookup: the localizer (local_get) is a native builtin with no GML body, so the framework token-rewrites every GML local_get() call site through mmapi_local_get(), the one GML point that sees every lookup (static UI via Node.set_key, dialogue via the Mist __get_localization_value binding and the textbox, toasts, the {Local} format specifier, item names and descriptions). The filtered value is the resolved text, after the local.missing chain has run on a miss; ctx is the lookup key exactly as the engine passed it (usually a key string like \"misc_local/warning\", but local_wrap()-wrapped raw text and non-string values pass through here too, so exact-match the keys you own and return undefined otherwise). Return the replacement string; return undefined to keep the current value. Resolved UI text is cached on the text node (Node.set_key early-outs on an unchanged key) and re-resolves through this hook on language change, so lookups run at interaction and menu-build frequency with bursts when list menus build. Keep handlers cheap, and prefer language-aware text (local_language()) since debug validators temporarily force eng."
+
+[[hook]]
+name = "local.missing"
+kind = "filter"
+doc  = "Fires inside mmapi_local_get() only when the native localizer misses: local_get() returned undefined, echoed the key back, or returned the engine's \"MISSING\" sentinel (\"PLACEHOLDER\" is a hit: the key exists with pending text). The filtered value starts undefined; ctx is { key, fallback }, fallback being what the engine would have surfaced. Return the text to inject for keys the base game lacks (computed strings, or fail-soft for keys that should have shipped as data); return undefined to keep the engine fallback unchanged. Filter, not override, on purpose: many mods legitimately register here, each owning its key prefix, and later filters see earlier injections. Static keys should ship as localization data through the normal registration path; this hook is the runtime complement, and the ctx struct is only allocated on the miss path."
+
+[[hook]]
+name = "monster.death"
+kind = "event"
+doc  = "Fires when a monster dies, just before its instance is destroyed. ctx is { monster, monster_id, x, y }."
+
+[[hook]]
+name = "monster.draw"
+kind = "event"
+doc  = "Fires at the end of par_monster's draw() method, after the monster sprite and its status overlays (venom/frozen) are drawn, once per visible monster per frame in the world-draw pass. ctx is the monster instance: read x, y, z, health, and so on, and draw in world space (e.g. a health bar on top). Observation only. Hot path (every visible monster, every frame). Keep handlers cheap."
+
+[[hook]]
+name = "monster.shroom.should_hide"
+kind = "guard"
+doc  = "Fires at the top of the shroom monster's should_hide() check. ctx is the shroom instance. Return false to veto hiding (should_hide returns false); undefined or true falls through to the normal distance check."
+
+[[hook]]
+name = "monster.spawn"
+kind = "filter"
+doc  = "Fires at the top of spawn_monster(). The filtered value is the struct { x, y, monster_id, cancel: false }. ctx is undefined. Return the replacement struct: a handler can set cancel to true to suppress the spawn (spawn_monster returns undefined) or change x, y, and monster_id to move or replace the spawn. The seam tolerates an undefined return and re-reads fields defensively."
+
+[[hook]]
+name = "monster.spirit_projectile.step"
+kind = "guard"
+doc  = "Fires each step of a spirit projectile. ctx is the projectile instance. Return false to veto the step and destroy the projectile. Undefined or true allows."
+
+[[hook]]
+name = "monster.step_begin"
+kind = "event"
+doc  = "Fires every frame for every monster in par_monster's begin step, right after the aggro update. ctx is the monster instance. Hot path. Keep handlers cheap."
+
+[[hook]]
+name = "player.equipment_bonus"
+kind = "filter"
+doc  = "Fires at the return of the player's equipment bonus lookup. The filtered value is the computed bonus. ctx is { player, infusion, key }. Return the replacement value, or undefined to keep the current value."
+
+[[hook]]
+name = "player.heal_vfx"
+kind = "guard"
+doc  = "Fires at the top of play_heal_vfx(). ctx is { color, sprite }. Return false to veto the heal vfx. Undefined or true allows."
+
+[[hook]]
+name = "player.health_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.modify_health(), before the delta is applied. The filtered value is the signed health delta. ctx is { player, play_sound }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value."
+
+[[hook]]
+name = "player.incoming_damage"
+kind = "filter"
+doc  = "Fires in the player's damage drain in obj_ari, after mitigation is applied. The filtered value is the final signed damage (health only changes while it is negative). ctx is { player, receiver, tarball }. Return the replacement damage or undefined to keep the current value. A combat.damage filter can set the ctx.tarball fields __mmapi_player_show_damage_popup and __mmapi_player_should_flinch to false to suppress the damage popup and flinch, and with both false and non-negative damage the hit is skipped entirely. mmapi_deal_damage()'s show_popup and flinch opts ride the same two fields."
+
+[[hook]]
+name = "player.max_health_item"
+kind = "event"
+doc  = "Fires right after an item's max_health_modifier raises ARI.base_health, before the vitals menu updates. ctx is { player, amount, live_item }."
+
+[[hook]]
+name = "player.move_speed"
+kind = "filter"
+doc  = "Fires at the end of the player's move speed computation, after the status effect multipliers. The filtered value is the speed. ctx is { player, on_mount }. Return the replacement speed, or undefined to keep the current value."
+
+[[hook]]
+name = "player.stamina_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.modify_stamina(), before stamina_costs_modifier is applied. The filtered value is the signed stamina delta. ctx is { player }. Return the replacement delta, or undefined to keep the current value."
+
+[[hook]]
+name = "player.status_effect_cancel"
+kind = "event"
+doc  = "Fires at the top of StatusEffectManager.cancel(), before the effect is looked up or removed. ctx is { type, manager }. Fires even when no such effect is active. Natural expiry does not route through cancel(); observe player.status_effect_expired for that."
+
+[[hook]]
+name = "player.status_effect_expired"
+kind = "event"
+doc  = "Fires in StatusEffectManager.update() when an effect's finish time lapses, right after the effect is removed from the manager. ctx is { type, effect, manager }: type is the StatusEffectId map key, effect is the removed struct ({ type, amount, start, finish, stacks, last_update }), manager is the StatusEffectManager. Disjoint from player.status_effect_cancel: natural expiry never calls cancel(), and cancel() never reaches this branch. The manager class is shared with monsters (par_monster), so monster-owned expiries fire too; compare ctx.manager against ARI.status_effects to scope to the player. The vitals HUD removes its icon on its own poll up to a frame later, so it may still be visible at emit time. Re-registering the effect from a handler is safe."
+
+[[hook]]
+name = "player.status_effect_register"
+kind = "filter"
+doc  = "Fires at the top of StatusEffectManager.register(). The filtered value is the struct { type, amount, start_time, finish_time, can_stack, show_hud }. ctx is the manager. Return the replacement struct. The seam tolerates an undefined return and re-reads each field defensively."
+
+[[hook]]
+name = "resource.node_modifier"
+kind = "filter"
+doc  = "Fires at the top of pick_node() and chop_node(), before the tool's modifier is applied to a resource node (rocks, forage, dig sites, trees, stumps). The filtered value is the tool modifier: the charged-tool bonus/penalty added to item.damage and to the item.quality gate. ctx is { grid, x, y, item, action }; action is \"pick\" or \"chop\". Return the replacement modifier (for example clamp a negative charged-tool penalty to 0 to remove the charged-attack damage penalty), or undefined to keep the current value."
+
+[[hook]]
+name = "save.game_loaded"
+kind = "event"
+doc  = "Fires at the start of loading a save, right after the save path is recorded. ctx is { save_path }."
+
+[[hook]]
+name = "save.game_saving"
+kind = "event"
+doc  = "Fires at the top of save_game(), after game.save_guard allows and the saver is created, before the save is written. ctx is { save_path }."
+
+[[hook]]
+name = "spells.can_cast"
+kind = "override"
+contention = "claim-scoped"
+doc  = "Fires at the top of can_cast_spell(). ctx is the spell id. Return a non-undefined value to replace the entire can-cast result. Undefined defers to the normal checks."
+
+[[hook]]
+name = "spells.cast"
+kind = "override"
+contention = "claim-scoped"
+doc  = "Fires at the top of cast_spell(). ctx is the spell id. Return any value other than undefined or false to consume the cast, skipping the engine cast and emitting spells.cast_done. Undefined defers to the engine cast (false also falls through, but still ends the override chain)."
+
+[[hook]]
+name = "spells.cast_done"
+kind = "event"
+doc  = "Fires when a spell cast completes: at the end of the engine's cast_spell(), and also when a spells.cast override consumes the cast. ctx is the spell id."
+
+[[hook]]
+name = "spells.cost"
+kind = "filter"
+doc  = "Fires wherever the engine reads a spell's mana cost: the can_cast_spell mana check, the spellcasting menu display, and the two mana deductions in the player's cast states (looping and default). The filtered value is SPELLS[spell].cost. ctx is the spell id. Return the replacement cost, or undefined to keep the current value."
+
+[[hook]]
+name = "ui.button_sprites"
+kind = "filter"
+doc  = "Fires when a button sprite set is built, just before it lands in BUTTON_SPRITE_CACHE. The filtered value is the built output. ctx is { key }, the cache key. Return the replacement output (the result is cached, so the filter runs once per key), or undefined to keep the current value."
+
+[[hook]]
+name = "ui.draw_gui"
+kind = "event"
+doc  = "Fires on every GUI draw, right after ANCHOR.on_draw_gui(). ctx is the display's asset_resize() value, the same argument on_draw_gui received."
+
+[[hook]]
+name = "ui.hud_should_show"
+kind = "filter"
+doc  = "Fires at the return of hud_should_show(). The filtered value is the computed boolean. ctx is undefined. Return the replacement boolean, or undefined to keep the current value."
+
+[[hook]]
+name = "ui.item_icon"
+kind = "filter"
+doc  = "Fires wherever an item icon sprite is resolved. ctx.source names the dispatch site: live_item (the generated wrapper around LiveItem.get_ui_icon, which every engine call site routes through, held and thrown sprites included) and obj_item_world (world item draw, where the value starts as get_world_icon() and may be undefined. The companion outline seam provides no dispatch of its own). The filtered value is the icon sprite. ctx is { item, source }. Return the replacement sprite, or undefined to keep the current value."
+
+[[hook]]
+name = "object.node_sprite"
+kind = "filter"
+doc  = "Fires at the top of obj_node_renderer.set_sprite(spr), before the sprite is assigned, for every world node the renderer draws (crops, forage, resource nodes). The filtered value is the sprite. ctx is the obj_node_renderer instance (read ctx.node for the node's prototype, day_count, and so on). Return the replacement sprite, or undefined to keep the current value."
+
+[[hook]]
+name = "ui.item_node"
+kind = "filter"
+in_place = true
+doc  = "Fires when a UI item node is populated: in item_node.set_to_item() with the struct { node, item, count }, and in the crafting menu grid with { node, item, count, source: \"crafting_menu\" }. Both dispatch sites call mmapi_apply_filters and discard the return value, so handlers must mutate the ctx struct in place. The struct rides in the value position and the second argument is undefined."
+
+[[hook]]
+name = "ui.menu_closed"
+kind = "event"
+doc  = "Fires when a menu leaves ANCHOR.open_menus: in the per-frame free-requested drain, and per menu when the anchor shuts down and closes everything. ctx is { menu, kind }, with kind read from menu.type."
+
+[[hook]]
+name = "ui.menu_opened"
+kind = "event"
+doc  = "Fires right after ANCHOR spawns a menu and pushes it onto open_menus. ctx is { menu, kind }, with kind being the menu id passed to spawn."
+
+[[hook]]
+name = "store.item_added"
+kind = "event"
+doc  = "Fires in StoreMenu right after a shelf tap adds an item to the shopping basket (self.basket.add(item)), before the ghost and price update. ctx is { menu, item }: menu is the StoreMenu (menu.basket is the Inventory cart with .can_add(item)/.add(item), menu.update_prices() refreshes the totals), item is the LiveItem just added. Adding more from a handler via menu.basket.add does not re-fire this event (the emit is at the tap site, not at basket.add), so no re-entry guard is needed: a bulk-buy handler can add extra copies freely."
+
+[[hook]]
+name = "ui.menu_refreshed"
+kind = "event"
+doc  = "Fires after a menu rebuilds its content from game state, at the tail of the rebuild function. Emitting menus today: ToolbarMenu.update() (slot items re-resolved from the inventory: subscriber pull, page flips, tab taps, forced rebuilds, constructor) and VitalsMenu.refresh_statuses() (status icon strip rebuilt: register, cancel, and the expiry poll). ctx is { menu, kind }, with kind read from menu.type. Emits only on rebuild edges, never per idle frame, including during the menu's constructor before ui.menu_opened fires for it (ctx.menu is not yet in ANCHOR.open_menus then). Handlers must be idempotent and must not unconditionally force another rebuild from inside the handler."
+
+[[hook]]
+name = "ui.sprite"
+kind = "filter"
+doc  = "Fires at backplate sprite assignments. ctx.source names the site: mines_menu_backplate (the mines menu backplate on dungeon room start, ctx { source }) and spellcasting_card_backplate (the spell card backplate, ctx { source, spell }). The filtered value is the default backplate sprite. Return the replacement sprite, or undefined to keep the current value."
+
+[[hook]]
+name = "ui.toolbar_tick"
+kind = "event"
+doc  = "Fires every toolbar tick, after the subscriber pull and update and before press-and-hold processing. ctx is the ToolbarMenu."
+
+[[seam]]
+id      = "animal_heart_points"
+file    = "gml/scripts/GameplaySystems/Ranching/Animal.gml"
+anchor  = '''
+    function add_heart_points(points) {
+        static MAX_POINTS = animal_heart_level_to_points(10);'''
+replace = '''
+    function add_heart_points(points) {
+        static MAX_POINTS = animal_heart_level_to_points(10);
+        points = mmapi_apply_filters("animal.heart_points", points, self); // mmapi_animal_run_heart_filters'''
+marker  = "mmapi_animal_run_heart_filters"
+provides = ["animal.heart_points"]
+
+[[seam]]
+id      = "npc_heart_points"
+file    = "gml/scripts/GameplaySystems/NPCs/Npc.gml"
+anchor  = '''
+    function add_heart_points(amount) {
+        var old = self.heart_level();'''
+replace = '''
+    function add_heart_points(amount) {
+        var old = self.heart_level();
+        amount = mmapi_apply_filters("npc.heart_points", amount, self); // mmapi_npc_run_heart_filters'''
+marker  = "mmapi_npc_run_heart_filters"
+provides = ["npc.heart_points"]
+
+[[seam]]
+id      = "archaeology_dig_artifact"
+file    = "gml/scripts/GameplaySystems/Archaeology.gml"
+target  = { fn = "choose_random_artifact" }
+op      = "wrap"
+hook    = "items.dig_artifact"
+ctx     = "self"
+blank_before = true
+catch_var = "__mmapi_dig_artifact"
+marker  = "mmapi_archaeology_dig_artifact"
+
+[[seam]]
+id      = "node_renderer_set_sprite"
+file    = "gml/objects/objects/obj_node_renderer.gml"
+context_before = '''
+            function set_sprite(spr) {
+'''
+context_after = '''
+                self.sprite_index = spr;
+'''
+op      = "filter"
+hook    = "object.node_sprite"
+ctx     = "self"
+var     = "spr"
+indent  = 16
+try_catch = false
+marker  = "mmapi_node_renderer_run_sprite_filters"
+
+[[seam]]
+id      = "audio_play_guard"
+file    = "gml/scripts/Tango.gml"
+target  = { fn = "play", at = "head" }
+op      = "guard"
+hook    = "audio.play_guard"
+ctx     = "{ asset_name: asset_name }"
+on_veto = "return undefined;"
+marker  = "mmapi_audio_run_play_guards"
+
+[[seam]]
+id      = "crafting_max_crafts"
+file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
+anchor  = '''
+    function maximum_crafts(item) {
+        var maximum = I32_MAX;'''
+replace = '''
+    function maximum_crafts(item) {
+        var __mmapi_max_crafts = mmapi_run_override("crafting.max_crafts", { menu: self, item: item }); // mmapi_crafting_max_crafts_override
+        if (__mmapi_max_crafts != undefined) { return __mmapi_max_crafts; }
+        var maximum = I32_MAX;'''
+marker  = "mmapi_crafting_max_crafts_override"
+provides = ["crafting.max_crafts"]
+
+[[seam]]
+id      = "crafting_pay_component_costs"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+target  = { fn = "pay_component_costs", at = "head" }
+op      = "guard"
+hook    = "crafting.pay_component_costs"
+ctx     = "{ item_id: item_id, quantity: quantity, context: context }"
+on_veto = "return;"
+marker  = "mmapi_crafting_run_pay_guards"
+
+[[seam]]
+id      = "npc_receive_gift"
+file    = "gml/objects/system/parents/par_NPC.gml"
+context_after = '''
+                var data = self.me.give_gift(item);
+'''
+op      = "emit"
+hook    = "npc.gift_received"
+ctx_fields = [["npc", "self"], ["item", "item"]]
+indent  = 16
+
+[[seam]]
+id      = "gossip_selections"
+file    = "gml/scripts/GossipMenu.gml"
+target  = { fn = "get_gossip_selections" }
+op      = "wrap"
+hook    = "gossip.selections"
+ctx     = "undefined"
+blank_before = true
+catch_var = "__mmapi_gossip"
+marker  = "mmapi_gossip_selections"
+
+[[seam]]
+id      = "pick_node_modifier"
+file    = "gml/scripts/GameplaySystems/Data/Grid/GridActions/Pick.gml"
+context_before = '''
+function pick_node(grid, x_pos, y_pos, item, modifier, effect_override, doppel, is_burn=false) {
+'''
+context_after = '''
+    var is_rug_pick = false;
+'''
+op      = "filter"
+hook    = "resource.node_modifier"
+ctx     = '{ grid: grid, x: x_pos, y: y_pos, item: item, action: "pick" }'
+var     = "modifier"
+indent  = 4
+
+[[seam]]
+id      = "chop_node_modifier"
+file    = "gml/scripts/GameplaySystems/Data/Grid/GridActions/Chop.gml"
+context_before = '''
+function chop_node(grid, x_pos, y_pos, item, modifier, doppel, is_burn=false) {
+'''
+context_after = '''
+    var inst_index = grid.node_index_for_cell(x_pos, y_pos);
+'''
+op      = "filter"
+hook    = "resource.node_modifier"
+ctx     = '{ grid: grid, x: x_pos, y: y_pos, item: item, action: "chop" }'
+var     = "modifier"
+indent  = 4
+
+[[seam]]
+id      = "monster_draw"
+file    = "gml/objects/Combat/par_monster.gml"
+context_before = '''
+                    gpu_reset_extra();
+                }
+'''
+context_after = '''
+            }
+'''
+op      = "emit"
+hook    = "monster.draw"
+ctx     = "self"
+indent  = 16
+marker  = "mmapi_monster_run_draw_callbacks"
+
+[[seam]]
+id      = "combat_tarball_grid"
+file    = "gml/objects/Combat/obj_damage_tarball.gml"
+context_before = '''
+            if self.can_hurt {
+'''
+context_after = '''
+                var col_count = 0;
+'''
+op      = "filter_call"
+hook    = "combat.tarball_grid"
+value   = "self"
+indent  = 16
+
+[[seam]]
+id      = "object_interact"
+file    = "gml/scripts/GameplaySystems/Data/Grid/GridActions/Interact.gml"
+anchor  = '''
+function interact(node) {
+'''
+replace = '''
+function interact(node) {
+    var __mmapi_object_interact = mmapi_run_override("object.interact", node); // mmapi_object_interact_override
+    if (__mmapi_object_interact != undefined) { return __mmapi_object_interact; }
+'''
+marker  = "mmapi_object_interact_override"
+provides = ["object.interact"]
+
+[[seam]]
+id      = "furniture_place_guard"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
+context_before = '''
+function write_furniture_to_location(grid, xx, yy, proto, stack_count, rotation=0) {
+'''
+context_after = '''
+    if array_length(proto.cardinals) == 0 || stack_count >= 3 || (stack_count > 0 && proto.can_be_child == false)  {
+'''
+op      = "guard"
+hook    = "furniture.place_guard"
+ctx     = '{ grid: grid, x: xx, y: yy, proto: proto, stack_count: stack_count, rotation: rotation }'
+on_veto = "return undefined;"
+indent  = 4
+
+[[seam]]
+id      = "items_use_guard"
+file    = "gml/scripts/GameplaySystems/Items/use_item.gml"
+target  = { fn = "use_item", at = "after", anchor = "if !is_struct(item) { item = new LiveItem(item); }" }
+op      = "guard"
+hook    = "items.use_guard"
+ctx     = "item"
+on_veto = "return false;"
+blank_before = true
+catch_var = "__mmapi_item_use"
+marker  = "mmapi_items_run_use_guards"
+
+[[seam]]
+id      = "input_check_value_id"
+file    = "gml/scripts/GameplaySystems/Input/Input.gml"
+context_before = '''
+    function check_value(input_id) {
+'''
+context_after = '''
+        //
+        if self.input_overrides[input_id] {'''
+op      = "filter"
+hook    = "input.check_value_id"
+var     = "input_id"
+indent  = 8
+catch_var = "__mmapi_input_value_id"
+marker  = "mmapi_input_run_check_value_id_filters"
+
+[[seam]]
+id      = "taxi_room_transition_pre"
+file    = "gml/scripts/GameplaySystems/Locations/Taxi.gml"
+anchor  = '''
+    function taxi_player(taxi_itinerary) {
+        assert(is_world_room(room()), "You MUST use `enter_world` to enter the world!");
+        self.location_last = self.current_location_id();'''
+replace = '''
+    function taxi_player(taxi_itinerary) {
+        assert(is_world_room(room()), "You MUST use `enter_world` to enter the world!");
+        var __mmapi_room_transition_ctx = {
+            taxi: self,
+            itinerary: taxi_itinerary,
+            from_room: room(),
+            to_room: taxi_itinerary.gm_room,
+            gm_room: taxi_itinerary.gm_room,
+            instant: taxi_itinerary.instant,
+        };
+        try {
+            mmapi_emit("game.room_transition_pre", __mmapi_room_transition_ctx); // mmapi_dungeon_run_room_transition_pre
+            taxi_itinerary = __mmapi_room_transition_ctx.itinerary;
+            taxi_itinerary.gm_room = __mmapi_room_transition_ctx.gm_room;
+            taxi_itinerary.destination = gm_room_to_location_id(taxi_itinerary.gm_room);
+            taxi_itinerary.instant = __mmapi_room_transition_ctx.instant;
+        } catch (__mmapi_room_transition_pre) {}
+        self.location_last = self.current_location_id();'''
+marker  = "mmapi_dungeon_run_room_transition_pre"
+provides = ["game.room_transition_pre"]
+
+[[seam]]
+id      = "taxi_room_transition_post"
+file    = "gml/scripts/GameplaySystems/Locations/Taxi.gml"
+anchor  = '''
+        if MUSIC_PLAYER.is_on() {
+            var potential_track = MUSIC_PLAYER.selector(self.itinerary.destination);
+            if !matches(potential_track, undefined, MUSIC_PLAYER.current_track()) {
+                MUSIC_PLAYER.stop();
+            }
+        }
+    }'''
+replace = '''
+        if MUSIC_PLAYER.is_on() {
+            var potential_track = MUSIC_PLAYER.selector(self.itinerary.destination);
+            if !matches(potential_track, undefined, MUSIC_PLAYER.current_track()) {
+                MUSIC_PLAYER.stop();
+            }
+        }
+        try {
+            __mmapi_room_transition_ctx.itinerary = self.itinerary;
+            __mmapi_room_transition_ctx.to_room = self.itinerary.gm_room;
+            __mmapi_room_transition_ctx.gm_room = self.itinerary.gm_room;
+            __mmapi_room_transition_ctx.instant = self.itinerary.instant;
+            mmapi_emit("game.room_transition_post", __mmapi_room_transition_ctx); // mmapi_dungeon_run_room_transition_post
+        } catch (__mmapi_room_transition_post) {}
+    }'''
+marker  = "mmapi_dungeon_run_room_transition_post"
+provides = ["game.room_transition_post"]
+depends_on = ["taxi_room_transition_pre"]
+
+[[seam]]
+id      = "ui_item_node_set_to_item"
+file    = "gml/scripts/UI/Anchor/anchor_utils.gml"
+context_before = '''
+    item_node.set_to_item = method(item_node, function(item, count=1) {
+        self.set_sprite(item.get_ui_icon())
+'''
+context_after = '''
+        if count <= 1 {'''
+op      = "filter_call"
+hook    = "ui.item_node"
+value   = "{ node: self, item: item, count: count }"
+indent  = 8
+catch_var = "__mmapi_ui_item_node"
+marker  = "mmapi_ui_run_item_node_filters"
+
+[[seam]]
+id      = "ui_item_icon_live_item"
+file    = "gml/scripts/GameplaySystems/Items/LiveItem.gml"
+target  = { fn = "get_ui_icon" }
+op      = "wrap"
+hook    = "ui.item_icon"
+ctx     = '{ item: self, source: "live_item" }'
+blank_before = true
+catch_var = "__mmapi_ui_item_icon"
+marker  = "mmapi_ui_run_item_icon_filters"
+
+[[seam]]
+id      = "ui_item_node_crafting_menu"
+file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
+context_before = '''
+                        icon.set_sprite(item.get_ui_icon());
+'''
+context_after = '''
+                        square.set_tap_callback(function(item) {
+'''
+op      = "filter_call"
+hook    = "ui.item_node"
+value   = '{ node: icon, item: item, count: 1, source: "crafting_menu" }'
+indent  = 24
+catch_var = "__mmapi_crafting_item_node_filter"
+marker  = "__mmapi_crafting_item_node_filter"
+
+# The rendered item-description chokepoint. TooltipMenu (and CraftingMenu) build
+# the tooltip body from item.get_display_description(). The ui.item_node seams above
+# only reach the icon node, whose .description field is never drawn. Wrap the method
+# to a single filtered return, so the set-bonus "[n/5]" synthesis lands on the string
+# the tooltip actually renders. This is the faithful chokepoint for that string.
+[[seam]]
+id      = "item_display_description"
+file    = "gml/scripts/GameplaySystems/Items/LiveItem.gml"
+target  = { fn = "get_display_description" }
+op      = "wrap"
+hook    = "item.display_description"
+ctx     = "{ item: self }"
+blank_before = true
+catch_var = "__mmapi_item_desc"
+marker  = "mmapi_item_display_description"
+
+[[seam]]
+id      = "ui_button_sprites"
+file    = "gml/scripts/UI/Anchor/anchor_utils.gml"
+context_after = '''
+    BUTTON_SPRITE_CACHE.insert(key, output);
+
+    return output;'''
+op      = "filter"
+hook    = "ui.button_sprites"
+ctx     = "{ key: key }"
+var     = "output"
+catch_var = "__mmapi_button_sprites"
+marker  = "mmapi_ui_run_button_sprites_filters"
+
+[[seam]]
+id      = "obj_item_outline_sprite"
+file    = "gml/objects/objects/obj_item.gml"
+anchor  = '''
+                item_data.prototype.icon_sprite_outline,
+                image_index,
+'''
+replace = '''
+                outline_sprite,
+                image_index,
+'''
+marker  = "outline_sprite"
+provides = ["ui.item_icon"]
+
+[[seam]]
+id      = "ui_item_icon_obj_item_world"
+file    = "gml/objects/objects/obj_item.gml"
+anchor  = '''
+            var item_data = self.items.first();
+            var outline_c = c_white;
+            if item_data.infusion != undefined {
+'''
+replace = '''
+            var item_data = self.items.first();
+            var world_sprite = undefined;
+            try { world_sprite = item_data.get_world_icon(); } catch (__mmapi_world_item_icon) {}
+            try { world_sprite = mmapi_apply_filters("ui.item_icon", world_sprite, { item: item_data, source: "obj_item_world" }); } catch (__mmapi_world_item_icon_filter) {}
+            if world_sprite != undefined && world_sprite != sprite_index {
+                sprite_index = world_sprite;
+                icon_width = sprite_get_width(sprite_index);
+                y_offset = sprite_get_yoffset(sprite_index);
+                tex_h = texture_get_texel_height(sprite_get_texture(sprite_index, image_index));
+                tex_w = texture_get_texel_width(sprite_get_texture(sprite_index, image_index));
+            }
+            var outline_sprite = undefined;
+            try { outline_sprite = item_data.get_ui_outline(); } catch (__mmapi_world_item_outline) {}
+            if outline_sprite == undefined {
+                outline_sprite = item_data.prototype.icon_sprite_outline;
+            }
+            var outline_c = c_white;
+            if item_data.infusion != undefined {
+'''
+marker  = "__mmapi_world_item_icon"
+provides = ["ui.item_icon"]
+depends_on = ["obj_item_outline_sprite"]
+
+[[seam]]
+id      = "ui_toolbar_tick"
+file    = "gml/scripts/UI/Anchor/Menus/ToolbarMenu.gml"
+context_before = '''
+        if !self.subscriber.pull().is_empty() {
+            self.update();
+        }
+
+'''
+context_after = '''
+        self.press_and_hold_reader.process();'''
+op      = "emit"
+hook    = "ui.toolbar_tick"
+ctx     = "self"
+indent  = 8
+blank_after = true
+marker  = "mmapi_ui_run_toolbar_tick"
+
+[[seam]]
+id      = "ui_hud_should_show"
+file    = "gml/scripts/UI/Anchor/anchor_utils.gml"
+target  = { fn = "hud_should_show" }
+op      = "wrap"
+hook    = "ui.hud_should_show"
+ctx     = "undefined"
+blank_before = true
+catch_var = "__mmapi_ui_hud_show"
+marker  = "mmapi_ui_run_hud_should_show_filters"
+
+[[seam]]
+id      = "ui_draw_gui"
+file    = "gml/scripts/GameplaySystems/Camera/Display.gml"
+context_before = '''
+        if DEBUG_TOOLS == false || BUGGER.hide_ui == false {
+            ANCHOR.on_draw_gui(self.asset_resize());
+        }
+
+'''
+context_after = '''
+        //'''
+op      = "emit"
+hook    = "ui.draw_gui"
+ctx     = "self.asset_resize()"
+indent  = 8
+blank_after = true
+marker  = "mmapi_ui_run_draw_gui_callbacks"
+
+[[seam]]
+id      = "ui_sprite_mines_backplate"
+file    = "gml/scripts/UI/Anchor/Menus/MinesMenu.gml"
+anchor  = '''
+        .set_room_start_callback(function() {
+            if is_dungeon_room(room()) {
+                self.backplate.enable();'''
+replace = '''
+        .set_room_start_callback(function() {
+            if is_dungeon_room(room()) {
+                try {
+                    self.backplate.set_sprite(mmapi_apply_filters("ui.sprite", spr_ui_dungeon_backplate, { source: "mines_menu_backplate" }));
+                } catch (__mmapi_mines_backplate_sprite) {}
+                self.backplate.enable();'''
+marker  = "mmapi_mines_backplate_sprite"
+provides = ["ui.sprite"]
+
+[[seam]]
+id      = "dialogue_path"
+file    = "gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml"
+anchor  = '''
+function play_conversation(npc_id, path, close_callback=undefined, args=undefined) {
+    trace("Starting conversation: \"{}\"", path);'''
+replace = '''
+function play_conversation(npc_id, path, close_callback=undefined, args=undefined) {
+    var __mmapi_dialogue_ctx = {
+        npc_id: npc_id,
+        path: path,
+        close_callback: close_callback,
+        args: args,
+    };
+    try { __mmapi_dialogue_ctx = mmapi_apply_filters("dialogue.path", __mmapi_dialogue_ctx, undefined); } catch (__mmapi_dialogue_path) {} // mmapi_dialogue_run_path_filters
+    if (__mmapi_dialogue_ctx != undefined) {
+        try { npc_id = __mmapi_dialogue_ctx.npc_id; } catch (__mmapi_dialogue_npc) {}
+        try { path = __mmapi_dialogue_ctx.path; } catch (__mmapi_dialogue_path_field) {}
+        try { close_callback = __mmapi_dialogue_ctx.close_callback; } catch (__mmapi_dialogue_close) {}
+        try { args = __mmapi_dialogue_ctx.args; } catch (__mmapi_dialogue_args) {}
+    }
+    trace("Starting conversation: \"{}\"", path);'''
+marker  = "mmapi_dialogue_run_path_filters"
+provides = ["dialogue.path"]
+
+[[seam]]
+id      = "dialogue_speaker_ctx_arg"
+file    = "gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml"
+anchor  = '''
+				process_t2_action(T2Action.Speaker(npc_id_to_string(self.npc_owner)), self.npc_owner);'''
+replace = '''
+				process_t2_action(T2Action.Speaker(npc_id_to_string(self.npc_owner)), self.npc_owner, self); // mmapi_dialogue_initial_speaker_ctx'''
+marker  = "mmapi_dialogue_initial_speaker_ctx"
+provides = ["dialogue.speaker"]
+
+[[seam]]
+id      = "dialogue_line"
+file    = "gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml"
+anchor  = '''
+    function deliver_line(line) {
+        if line.next_line_behavior.type == NextLineBehaviorId.Prompts {
+            self.textbox.ask(line.local, line.next_line_behavior.prompts);
+        } else if self.is_info_line {
+            self.textbox.info(line.local);
+        } else {
+            self.textbox.say(line.local);
+        }
+    }'''
+replace = '''
+    function deliver_line(line) {
+        var local = line.local;
+        try {
+            local = mmapi_apply_filters("dialogue.line", local, { // mmapi_dialogue_run_local_filters
+                driver: self,
+                line: line,
+                conversation_name: self.conversation_name,
+                npc_id: self.npc_owner,
+                is_info_line: self.is_info_line,
+            });
+        } catch (__mmapi_dialogue_local) {}
+
+        if line.next_line_behavior.type == NextLineBehaviorId.Prompts {
+            self.textbox.ask(local, line.next_line_behavior.prompts);
+        } else if self.is_info_line {
+            self.textbox.info(local);
+        } else {
+            self.textbox.say(local);
+        }
+    }'''
+marker  = "mmapi_dialogue_run_local_filters"
+provides = ["dialogue.line"]
+
+[[seam]]
+id      = "dialogue_speaker"
+file    = "gml/scripts/GameplaySystems/T2r.gml"
+anchor  = '''
+            var is_cameo = try_string_to_cameo_id(action.speaker) != undefined;
+            var speaker = is_cameo
+                ? new CameoSpeaker(string_to_cameo_id(action.speaker))
+                : new NpcSpeaker(string_to_npc_id(action.speaker));
+
+            textbox.requested_speaker = speaker;'''
+replace = '''
+            var is_cameo = try_string_to_cameo_id(action.speaker) != undefined;
+            var speaker = is_cameo
+                ? new CameoSpeaker(string_to_cameo_id(action.speaker))
+                : new NpcSpeaker(string_to_npc_id(action.speaker));
+
+            var __mmapi_dialogue_conversation_name = undefined;
+            try { __mmapi_dialogue_conversation_name = ctx.conversation_name; } catch (__mmapi_dialogue_conversation_name_err) {}
+            try {
+                speaker = mmapi_apply_filters("dialogue.speaker", speaker, { // mmapi_dialogue_run_speaker_filters
+                    action: action,
+                    current_npc_id: current_npc_id,
+                    driver: ctx,
+                    conversation_name: __mmapi_dialogue_conversation_name,
+                    textbox: textbox,
+                    is_cameo: is_cameo,
+                });
+            } catch (__mmapi_dialogue_speaker) {}
+
+            textbox.requested_speaker = speaker;'''
+marker  = "mmapi_dialogue_run_speaker_filters"
+provides = ["dialogue.speaker"]
+
+[[seam]]
+id      = "items_consumed"
+file    = "gml/scripts/Player/AriFsm.gml"
+context_before = '''
+                        array_push(GAME_STATS.items_eaten, {
+                            item: self.live_item.pretty_print(),
+                            day: total_days(),
+                            hour: CLOCK.hour(),
+                            minute: CLOCK.minute(),
+                        });
+
+'''
+context_after = '''
+                        //'''
+op      = "emit"
+hook    = "items.consumed"
+ctx     = "self.live_item"
+indent  = 24
+blank_after = true
+catch_var = "__mmapi_item_consume"
+marker  = "mmapi_items_run_consume_callbacks"
+
+[[seam]]
+id      = "player_max_health_item"
+file    = "gml/scripts/Player/AriFsm.gml"
+context_before = '''
+                                    ARI.base_health += live_item.prototype.max_health_modifier;
+'''
+context_after = '''
+                                    ANCHOR.get_menu(Menu.Vitals).set_max_health(ARI.base_health);
+                                    ARI.modify_health(live_item.prototype.health_modifier, false);'''
+op      = "emit"
+hook    = "player.max_health_item"
+ctx     = "{ player: ARI, amount: live_item.prototype.max_health_modifier, live_item: live_item }"
+indent  = 36
+catch_var = "__mmapi_player_max_health_delta"
+marker  = "mmapi_player_run_max_health_delta_callbacks"
+
+[[seam]]
+id      = "items_dropped"
+file    = "gml/scripts/GameplaySystems/Inventory/drop_item.gml"
+context_before = '''
+    if array == undefined {
+        return;
+    }
+
+'''
+context_after = '''
+    for (var i = 0; i < array_length(array); i++) {'''
+op      = "emit"
+hook    = "items.dropped"
+ctx_fields = [["value", "value"], ["items", "array"], ["x", "xx"], ["y", "yy"], ["z_offset", "z_offset"]]
+blank_after = true
+catch_var = "__mmapi_item_drop"
+marker  = "mmapi_items_run_drop_callbacks"
+
+# The inventory (PlayerMenu / journal) trash button. Emit before the slot pop/drain
+# with the item + unit count captured while the slot still holds them. `hand` here is
+# self.inventory.hand. See the storage-menu twin below (self.hand).
+[[seam]]
+id      = "inventory_trash_button"
+file    = "gml/scripts/UI/Anchor/Menus/PlayerMenu.gml"
+context_before = '''
+        .set_tap_callback(function() {
+'''
+context_after = '''            if keyboard_check(vk_shift) {
+                self.inventory.hand.slot(0).drain();
+            } else {
+                self.inventory.hand.slot(0).pop();
+            }
+'''
+op      = "emit"
+hook    = "items.trashed"
+ctx_fields = [["item", "self.inventory.hand.slot(0).item"], ["count", "keyboard_check(vk_shift) ? self.inventory.hand.slot(0).count : 1"]]
+indent  = 12
+catch_var = "__mmapi_inventory_trash_button"
+marker  = "mmapi_inventory_run_item_trashed"
+
+# The storage (chest) trash button: the same shape, but `hand` is self.hand.
+[[seam]]
+id      = "storage_trash_button"
+file    = "gml/scripts/UI/Anchor/Menus/StorageMenu.gml"
+context_before = '''
+                .set_tap_callback(function() {
+'''
+context_after = '''                    if keyboard_check(vk_shift) {
+                        self.hand.slot(0).drain();
+                    } else {
+                        self.hand.slot(0).pop();
+                    }
+'''
+op      = "emit"
+hook    = "items.trashed"
+ctx_fields = [["item", "self.hand.slot(0).item"], ["count", "keyboard_check(vk_shift) ? self.hand.slot(0).count : 1"]]
+indent  = 20
+catch_var = "__mmapi_storage_trash_button"
+marker  = "mmapi_storage_run_item_trashed"
+
+[[seam]]
+id      = "spells_can_cast"
+file    = "gml/scripts/Spells.gml"
+anchor  = '''
+function can_cast_spell(spell) {
+'''
+replace = '''
+function can_cast_spell(spell) {
+    var __mmapi_can_cast_spell = mmapi_run_override("spells.can_cast", spell); // mmapi_spell_can_cast_filter
+    if (__mmapi_can_cast_spell != undefined) { return __mmapi_can_cast_spell; }
+'''
+marker  = "mmapi_spell_can_cast_filter"
+provides = ["spells.can_cast"]
+
+[[seam]]
+id      = "spells_cost_can_cast"
+file    = "gml/scripts/Spells.gml"
+anchor  = '''
+        || ARI.get_mana() < SPELLS[spell].cost
+'''
+replace = '''
+        || ARI.get_mana() < mmapi_apply_filters("spells.cost", SPELLS[spell].cost, spell) // mmapi_spell_can_cast_cost
+'''
+marker  = "mmapi_spell_can_cast_cost"
+provides = ["spells.cost"]
+
+[[seam]]
+id      = "spells_cast_override"
+file    = "gml/scripts/Spells.gml"
+anchor  = '''
+function cast_spell(spell) {
+'''
+replace = '''
+function cast_spell(spell) {
+    var __mmapi_spell_cast_handled = mmapi_run_override("spells.cast", spell); // mmapi_spell_cast_override
+    if (__mmapi_spell_cast_handled != undefined && __mmapi_spell_cast_handled != false) {
+        try { mmapi_emit("spells.cast_done", spell); } catch (__mmapi_spell_cast_override_callback) {}
+        return;
+    }
+'''
+marker  = "mmapi_spell_cast_override"
+provides = ["spells.cast", "spells.cast_done"]
+
+[[seam]]
+id      = "spells_cast_done"
+file    = "gml/scripts/Spells.gml"
+context_before = '''
+        default: impossible("Unexpected Spell: {Spell}", spell);
+
+    }
+'''
+context_after = '''
+}'''
+op      = "emit"
+hook    = "spells.cast_done"
+ctx     = "spell"
+catch_var = "__mmapi_spell_cast_callback"
+marker  = "mmapi_spell_cast_callback"
+
+[[seam]]
+id      = "ui_sprite_spell_card_backplate"
+file    = "gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml"
+anchor  = '''
+        self.card.set_sprite(spr_ui_journal_magic_card_backplate);
+'''
+replace = '''
+        self.card.set_sprite(mmapi_apply_filters("ui.sprite", spr_ui_journal_magic_card_backplate, { source: "spellcasting_card_backplate", spell: spell })); // mmapi_spell_card_backplate
+'''
+marker  = "mmapi_spell_card_backplate"
+provides = ["ui.sprite"]
+
+[[seam]]
+id      = "spells_cost_menu"
+file    = "gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml"
+anchor  = '''
+        var cost = self.spell_data.cost div 4;
+'''
+replace = '''
+        var cost = mmapi_apply_filters("spells.cost", self.spell_data.cost, spell) div 4; // mmapi_spell_menu_cost
+'''
+marker  = "mmapi_spell_menu_cost"
+provides = ["spells.cost"]
+
+[[seam]]
+id      = "spells_cost_fsm_loop"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                        if !MIST.is_running() {
+                            ARI.modify_mana(-SPELLS[self.spell].cost);
+                        }'''
+replace = '''
+                        if !MIST.is_running() {
+                            ARI.modify_mana(-mmapi_apply_filters("spells.cost", SPELLS[self.spell].cost, self.spell)); // mmapi_spell_loop_cost
+                        }'''
+marker  = "mmapi_spell_loop_cost"
+provides = ["spells.cost"]
+
+[[seam]]
+id      = "spells_cost_fsm_default"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                        if did_cast_spell == false && self.spell != CUTSCENE_SPELL_SIGNUM {
+                            cast_spell(self.spell);
+                            ARI.modify_mana(-SPELLS[self.spell].cost);
+                        }'''
+replace = '''
+                        if did_cast_spell == false && self.spell != CUTSCENE_SPELL_SIGNUM {
+                            cast_spell(self.spell);
+                            ARI.modify_mana(-mmapi_apply_filters("spells.cost", SPELLS[self.spell].cost, self.spell)); // mmapi_spell_default_cost
+                        }'''
+marker  = "mmapi_spell_default_cost"
+provides = ["spells.cost"]
+
+[[seam]]
+id      = "player_equipment_bonus"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+anchor  = '''
+        return value;
+    }
+
+    //
+    function get_damage_mitigation() {'''
+replace = '''
+        return mmapi_apply_filters("player.equipment_bonus", value, { player: self, infusion: infusion, key: key }); // mmapi_player_run_equipment_bonus_filters
+    }
+
+    //
+    function get_damage_mitigation() {'''
+marker  = "mmapi_player_run_equipment_bonus_filters"
+provides = ["player.equipment_bonus"]
+
+[[seam]]
+id      = "player_health_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+context_before = '''
+    function modify_health(amount_to_add, play_sound) {
+'''
+context_after = '''
+        //
+        if amount_to_add == 0 {
+            return;
+        }
+        var o = self.get_health();
+        return self.set_health(o + amount_to_add, play_sound);
+    }'''
+op      = "filter"
+hook    = "player.health_delta"
+ctx     = "{ player: self, play_sound: play_sound }"
+var     = "amount_to_add"
+indent  = 8
+try_catch = false
+marker  = "mmapi_player_run_health_delta_filters"
+
+[[seam]]
+id      = "player_incoming_damage"
+file    = "gml/objects/characters/obj_ari.gml"
+anchor  = '''
+                    took_damage = true;
+                    var defense = ARI.get_damage_mitigation();
+                    var final_dmg = min(-1, defense - next_dmg.tarball.damage);
+                    var damage_was_acid = has_flag(next_dmg.tarball.flags, CombatFlag.Acid);
+                    var is_dead = ARI.modify_health(final_dmg, damage_was_acid == false);'''
+replace = '''
+                    var defense = ARI.get_damage_mitigation();
+                    var final_dmg = min(-1, defense - next_dmg.tarball.damage);
+                    try { final_dmg = mmapi_apply_filters("player.incoming_damage", final_dmg, { player: ARI, receiver: self.receiver, tarball: next_dmg.tarball }); } catch (__mmapi_player_incoming_damage) { mmapi_log_warn("mmapi", "player incoming damage seam failed error=`" + string(__mmapi_player_incoming_damage) + "`"); } // mmapi_player_run_incoming_damage_filters
+                    var __mmapi_player_show_damage_popup = true;
+                    var __mmapi_player_should_flinch = true;
+                    try { __mmapi_player_show_damage_popup = next_dmg.tarball.__mmapi_player_show_damage_popup; } catch (__mmapi_player_damage_popup) {}
+                    try { __mmapi_player_should_flinch = next_dmg.tarball.__mmapi_player_should_flinch; } catch (__mmapi_player_damage_flinch) {}
+                    if final_dmg >= 0 && __mmapi_player_show_damage_popup == false && __mmapi_player_should_flinch == false {
+                        continue;
+                    }
+                    if __mmapi_player_should_flinch {
+                        took_damage = true;
+                    }
+                    var damage_was_acid = has_flag(next_dmg.tarball.flags, CombatFlag.Acid);
+                    var is_dead = false;
+                    if final_dmg < 0 {
+                        is_dead = ARI.modify_health(final_dmg, damage_was_acid == false);
+                    }'''
+marker  = "mmapi_player_run_incoming_damage_filters"
+provides = ["player.incoming_damage"]
+
+[[seam]]
+id      = "player_stamina_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+context_before = '''
+    function modify_stamina(amount_to_add) {
+'''
+context_after = '''
+        var o = self.get_stamina();
+        self.set_stamina(o + (amount_to_add * self.stamina_costs_modifier));
+    }'''
+op      = "filter"
+hook    = "player.stamina_delta"
+ctx     = "{ player: self }"
+var     = "amount_to_add"
+indent  = 8
+try_catch = false
+marker  = "mmapi_player_run_stamina_delta_filters"
+
+[[seam]]
+id      = "player_move_speed"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+context_before = '''
+        spd *= self.status_effects.get_effect_value(StatusEffectId.MineTime);
+        spd *= self.status_effects.get_effect_value(StatusEffectId.SlimeDash);
+        spd *= self.status_effects.get_effect_value(StatusEffectId.KillHaste);
+'''
+context_after = '''
+        return spd;
+    }'''
+op      = "filter"
+hook    = "player.move_speed"
+ctx     = "{ player: self, on_mount: on_mount }"
+var     = "spd"
+indent  = 8
+try_catch = false
+marker  = "mmapi_player_run_move_speed_filters"
+
+[[seam]]
+id      = "dungeon_runner_created"
+file    = "gml/scripts/GameplaySystems/Dungeon/enter_dungeon.gml"
+anchor  = '''
+function enter_dungeon(start_floor=0, length=undefined, should_skip=false) {
+    var itinerary = create_dungeon_itinerary(length);
+    DUNGEON_RUNNER = new DungeonRunner(itinerary, start_floor);
+    goto_gm_room(DUNGEON_RUNNER.current_level().gm_room, TEST_SUITE || should_skip);
+}'''
+replace = '''
+function enter_dungeon(start_floor=0, length=undefined, should_skip=false) {
+    var itinerary = create_dungeon_itinerary(length);
+    DUNGEON_RUNNER = new DungeonRunner(itinerary, start_floor);
+    var __mmapi_dungeon_ctx = {}; // mmapi_dungeon_run_runner_created
+    try { __mmapi_dungeon_ctx.runner = DUNGEON_RUNNER; } catch (__mmapi_dctx_a0) {}
+    try { __mmapi_dungeon_ctx.floor = DUNGEON_FLOOR; } catch (__mmapi_dctx_a1) {}
+    try { __mmapi_dungeon_ctx.biome = DUNGEON_BIOME; } catch (__mmapi_dctx_a2) {}
+    try { __mmapi_dungeon_ctx.room_id = room(); } catch (__mmapi_dctx_a3) {}
+    try { __mmapi_dungeon_ctx.grid = GRID; } catch (__mmapi_dctx_a4) {}
+    try {
+        var __mmapi_dungeon_level = DUNGEON_RUNNER.current_level();
+        __mmapi_dungeon_ctx.level = __mmapi_dungeon_level;
+        __mmapi_dungeon_ctx.gm_room = __mmapi_dungeon_level.gm_room;
+        __mmapi_dungeon_ctx.impl = __mmapi_dungeon_level.impl;
+    } catch (__mmapi_dctx_a5) {}
+    try { mmapi_emit("dungeon.runner_created", __mmapi_dungeon_ctx); } catch (__mmapi_dungeon_runner_created) {}
+    goto_gm_room(DUNGEON_RUNNER.current_level().gm_room, TEST_SUITE || should_skip);
+}'''
+marker  = "mmapi_dungeon_run_runner_created"
+provides = ["dungeon.runner_created"]
+
+[[seam]]
+id      = "dungeon_floor_bracket"
+file    = "gml/scripts/GameplaySystems/Dungeon/enter_dungeon.gml"
+anchor  = '''
+    //
+    GS_MINES_FLOOR = game_stats_current_mines_floor();
+    GL_MINES_FLOOR_WRITTEN = false;
+    build_dungeon_room(GRID);
+    DUNGEON_RUNNER.on_room_start();'''
+replace = '''
+    //
+    GS_MINES_FLOOR = game_stats_current_mines_floor();
+    GL_MINES_FLOOR_WRITTEN = false;
+    var __mmapi_dungeon_ctx = {}; // mmapi_dungeon_run_floor_enter
+    try { __mmapi_dungeon_ctx.runner = DUNGEON_RUNNER; } catch (__mmapi_dctx_b0) {}
+    try { __mmapi_dungeon_ctx.floor = DUNGEON_FLOOR; } catch (__mmapi_dctx_b1) {}
+    try { __mmapi_dungeon_ctx.biome = DUNGEON_BIOME; } catch (__mmapi_dctx_b2) {}
+    try { __mmapi_dungeon_ctx.room_id = room(); } catch (__mmapi_dctx_b3) {}
+    try { __mmapi_dungeon_ctx.grid = GRID; } catch (__mmapi_dctx_b4) {}
+    try {
+        var __mmapi_dungeon_level = DUNGEON_RUNNER.current_level();
+        __mmapi_dungeon_ctx.level = __mmapi_dungeon_level;
+        __mmapi_dungeon_ctx.gm_room = __mmapi_dungeon_level.gm_room;
+        __mmapi_dungeon_ctx.impl = __mmapi_dungeon_level.impl;
+    } catch (__mmapi_dctx_b5) {}
+    try { mmapi_emit("dungeon.floor_enter", __mmapi_dungeon_ctx); } catch (__mmapi_dungeon_enter) {}
+    try { mmapi_emit("dungeon.room_build_begin", __mmapi_dungeon_ctx); } catch (__mmapi_dungeon_build_begin) {}
+    build_dungeon_room(GRID);
+    try { mmapi_emit("dungeon.floor_built", __mmapi_dungeon_ctx); } catch (__mmapi_dungeon_built) {}
+    DUNGEON_RUNNER.on_room_start();'''
+marker  = "mmapi_dungeon_run_floor_enter"
+provides = ["dungeon.floor_enter", "dungeon.room_build_begin", "dungeon.floor_built"]
+
+[[seam]]
+id      = "dungeon_ladder_spawn"
+file    = "gml/scripts/GameplaySystems/Dungeon/DungeonRunner.gml"
+target  = { fn = "spawn_ladder", at = "head" }
+op      = "guard"
+hook    = "dungeon.ladder_spawn"
+ctx     = "{ runner: self, x: x_pos, y: y_pos }"
+on_veto = "return;"
+indent  = 8
+marker  = "mmapi_dungeon_run_ladder_spawn_guards"
+
+[[seam]]
+id      = "dungeon_side_room_chance"
+file    = "gml/scripts/GameplaySystems/Dungeon/DungeonRunner.gml"
+target  = { fn = "try_create_side_room", at = "head" }
+op      = "filter"
+hook    = "dungeon.side_room_chance"
+ctx     = "{ impl: impl, is_ritual: impl == DungeonImpl.Ritual, max_flr: max_flr }"
+var     = "chance_val"
+indent  = 4
+marker  = "mmapi_dungeon_run_side_room_chance_filters"
+
+[[seam]]
+id      = "dungeon_treasure_chest"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Breakables.gml"
+context_before = '''
+                        var drop_chain = new_chain()
+                            .append(LinkId.Timer, 40);
+
+'''
+context_after = '''
+                        //'''
+op      = "emit"
+hook    = "dungeon.treasure_chest"
+ctx_fields = [["node", "node"], ["object_id", "node.object_id"], ["x", "node.renderer.x"], ["y", "node.renderer.y"]]
+indent  = 24
+blank_after = true
+marker  = "mmapi_dungeon_run_treasure_chest_callbacks"
+
+[[seam]]
+id      = "save_game_saving"
+file    = "gml/scripts/Serialization/SaveGame.gml"
+target  = { fn = "save_game", at = "after", anchor = "Game.last_serde_path = save_path;" }
+op      = "emit"
+hook    = "save.game_saving"
+ctx     = "{ save_path: save_path }"
+catch_var = "__mmapi_modsave_save"
+marker  = "mmapi_modsave_run_save"
+
+[[seam]]
+id      = "save_game_loaded"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+context_before = '''
+    trace("Loading save: {}", loader.save_path);
+    Game.last_serde_path = loader.save_path;
+'''
+op      = "emit"
+hook    = "save.game_loaded"
+ctx     = "{ save_path: loader.save_path }"
+catch_var = "__mmapi_modsave_load"
+marker  = "mmapi_modsave_run_load"
+
+[[seam]]
+id      = "combat_damage_pre"
+file    = "gml/objects/Combat/obj_damage_receiver.gml"
+anchor  = '''
+                    var tarball = self.damaged[| 0];
+                    ds_list_delete(self.damaged, 0);
+
+                    //
+                    if instance_exists(tarball) == false {
+                        continue;
+                    }
+
+                    if self.current_iframes > 0 && has_flag(tarball.flags, CombatFlag.Acid) == false {
+                        var my_pos = array_get_index(tarball.already_hit_array, self.id);
+                        if my_pos != -1 {
+                            array_delete(tarball.already_hit_array, my_pos, 1);
+                        }
+
+                        continue;
+                    }
+
+                    if self.parent_object() != obj_monster_rock_stack && has_flag(tarball.flags, CombatFlag.Rockstack) {
+                        continue;
+                    }
+
+                    //'''
+replace = '''
+                    var tarball = self.damaged[| 0];
+                    ds_list_delete(self.damaged, 0);
+
+                    //
+                    if instance_exists(tarball) == false {
+                        continue;
+                    }
+
+                    if self.current_iframes > 0 && has_flag(tarball.flags, CombatFlag.Acid) == false {
+                        var my_pos = array_get_index(tarball.already_hit_array, self.id);
+                        if my_pos != -1 {
+                            array_delete(tarball.already_hit_array, my_pos, 1);
+                        }
+
+                        continue;
+                    }
+
+                    if self.parent_object() != obj_monster_rock_stack && has_flag(tarball.flags, CombatFlag.Rockstack) {
+                        continue;
+                    }
+
+                    try { tarball = mmapi_apply_filters("combat.damage", tarball, self); } catch (__mmapi_combat_damage) { mmapi_log_warn("mmapi", "combat damage filter failed error=`" + string(__mmapi_combat_damage) + "`"); } // mmapi_combat_run_damage_filters
+                    if tarball == undefined || !instance_exists(tarball) {
+                        continue;
+                    }
+
+                    //'''
+marker  = "mmapi_combat_run_damage_filters"
+provides = ["combat.damage"]
+
+[[seam]]
+id      = "combat_damage_resolved"
+file    = "gml/objects/Combat/obj_damage_receiver.gml"
+anchor  = '''
+                    var cont = false;
+                    switch self.status {
+                        case ReceiverStatus.Normal:
+                        case ReceiverStatus.DamageOnAttack:
+                            //
+                            self.current_iframes = self.iframes;
+                            tarball.succesful_hit(self);
+                            break;
+                        case ReceiverStatus.Blocking:
+                            //
+                            tarball.blocked();
+                            self.current_iframes = self.iframes;
+                            break;
+                        //
+                        case ReceiverStatus.UntimedInvulnerable:
+                            cont = true;
+                            var my_pos = array_get_index(tarball.already_hit_array, self.id);
+                            if my_pos != -1 {
+                                array_delete(tarball.already_hit_array, my_pos, 1);
+                            }
+                            break;
+                        case ReceiverStatus.Aerial:
+                            //
+                            if has_flag(tarball.flags, CombatFlag.InAir) {
+                                tarball.succesful_hit(self);
+                                self.current_iframes = self.iframes;
+                            } else {
+                                cont = true;
+                            }
+                            break;
+                        default: impossible("unexpected receiver_status: {}", self.status);
+                    }'''
+replace = '''
+                    var cont = false;
+                    switch self.status {
+                        case ReceiverStatus.Normal:
+                        case ReceiverStatus.DamageOnAttack:
+                            //
+                            self.current_iframes = self.iframes;
+                            tarball.succesful_hit(self);
+                            try { mmapi_emit("combat.damage_resolved", { receiver: self, tarball: tarball, status: self.status, successful: true }); } catch (__mmapi_combat_damage_hit) { mmapi_log_warn("mmapi", "combat damage hit callback failed error=`" + string(__mmapi_combat_damage_hit) + "`"); } // mmapi_combat_run_damage_hit_callbacks
+                            break;
+                        case ReceiverStatus.Blocking:
+                            //
+                            tarball.blocked();
+                            try { mmapi_emit("combat.damage_resolved", { receiver: self, tarball: tarball, status: self.status, successful: false }); } catch (__mmapi_combat_damage_blocked) { mmapi_log_warn("mmapi", "combat damage blocked callback failed error=`" + string(__mmapi_combat_damage_blocked) + "`"); }
+                            self.current_iframes = self.iframes;
+                            break;
+                        //
+                        case ReceiverStatus.UntimedInvulnerable:
+                            cont = true;
+                            var my_pos = array_get_index(tarball.already_hit_array, self.id);
+                            if my_pos != -1 {
+                                array_delete(tarball.already_hit_array, my_pos, 1);
+                            }
+                            break;
+                        case ReceiverStatus.Aerial:
+                            //
+                            if has_flag(tarball.flags, CombatFlag.InAir) {
+                                tarball.succesful_hit(self);
+                                try { mmapi_emit("combat.damage_resolved", { receiver: self, tarball: tarball, status: self.status, successful: true }); } catch (__mmapi_combat_damage_aerial) { mmapi_log_warn("mmapi", "combat damage aerial callback failed error=`" + string(__mmapi_combat_damage_aerial) + "`"); }
+                                self.current_iframes = self.iframes;
+                            } else {
+                                cont = true;
+                            }
+                            break;
+                        default: impossible("unexpected receiver_status: {}", self.status);
+                    }'''
+marker  = "mmapi_combat_run_damage_hit_callbacks"
+provides = ["combat.damage_resolved"]
+
+[[seam]]
+id      = "monster_spawn"
+file    = "gml/scripts/Combat/Monsters.gml"
+anchor  = '''
+function spawn_monster(xx, yy, monster_id) {
+    var config = MONSTER_PROTOTYPES[monster_id];'''
+replace = '''
+function spawn_monster(xx, yy, monster_id) {
+    var __mmapi_monsters_ctx = { x: xx, y: yy, monster_id: monster_id, cancel: false };
+    try { __mmapi_monsters_ctx = mmapi_apply_filters("monster.spawn", __mmapi_monsters_ctx, undefined); } catch (__mmapi_monsters_spawn) {} // mmapi_monsters_run_spawn_filters
+    if (__mmapi_monsters_ctx != undefined) {
+        try { if (__mmapi_monsters_ctx.cancel == true) { return undefined; } } catch (__mmapi_monsters_cancel) {}
+        try { xx = __mmapi_monsters_ctx.x; } catch (__mmapi_monsters_x) {}
+        try { yy = __mmapi_monsters_ctx.y; } catch (__mmapi_monsters_y) {}
+        try { monster_id = __mmapi_monsters_ctx.monster_id; } catch (__mmapi_monsters_id) {}
+    }
+    var config = MONSTER_PROTOTYPES[monster_id];'''
+marker  = "mmapi_monsters_run_spawn_filters"
+provides = ["monster.spawn"]
+
+[[seam]]
+id      = "monster_death"
+file    = "gml/scripts/Combat/MonsterUtils.gml"
+context_before = '''
+        if self.owner != undefined && instance_exists(self.owner) {
+'''
+context_after = '''
+            instance_destroy(self.owner);'''
+op      = "emit"
+hook    = "monster.death"
+ctx_fields = [["monster", "self.owner"], ["monster_id", "self.owner.monster_id"], ["x", "self.x"], ["y", "self.y"]]
+indent  = 12
+blank_after = true
+marker  = "mmapi_monsters_run_death_callbacks"
+
+[[seam]]
+id      = "monster_step_begin"
+file    = "gml/objects/Combat/par_monster.gml"
+context_before = '''
+            self.aggro = self.patience.aggro();
+'''
+context_after = '''
+            var aggro_flipped_this_frame = self.aggro && self.patience.value > old_patience;'''
+op      = "emit"
+hook    = "monster.step_begin"
+ctx     = "self"
+indent  = 12
+catch_var = "__mmapi_monsters_step_begin"
+marker  = "mmapi_monsters_run_step_begin"
+
+# The single funnel every executed shared-FSM transition routes through: the
+# deferred path (new_tick) and the instant path (change_state_instant) both
+# land in execute_state_change(); the initial state at spawn bypasses it via
+# begin_new_state. Dispatch happens before the outgoing state's stop() so stop
+# handlers that read fsm.next_state see the post-filter destination. A cancel
+# clears next_state and returns early; new_tick's boolean return is consumed
+# nowhere in pristine, so the early return is safe. A redirect is bounds- and
+# integer-checked because List.get() asserts out of range and every id in
+# [0, count) is a defined state at spawn. execute_state_change is a
+# zero-argument function, so the injected try/catch is reliable under the
+# engine dialect.
+[[seam]]
+id      = "fsm_transition"
+file    = "gml/scripts/GameplaySystems/Fsm/StateMachine.gml"
+anchor  = '''
+    static execute_state_change = function() {
+        if self.state.has_stop() {'''
+replace = '''
+    static execute_state_change = function() {
+        var __mmapi_fsm_tx = {
+            fsm: self,
+            owner: self.state.owner,
+            from: self.state.state_id,
+            to: self.next_state.state_id,
+            cancel: false,
+        };
+        try { __mmapi_fsm_tx = mmapi_apply_filters("fsm.transition", __mmapi_fsm_tx, undefined); } catch (__mmapi_fsm_transition) {} // mmapi_fsm_transition
+        if (is_struct(__mmapi_fsm_tx)) {
+            if (__mmapi_fsm_tx[$ "cancel"] == true) {
+                self.next_state = undefined;
+                return;
+            }
+            var __mmapi_fsm_to = __mmapi_fsm_tx[$ "to"];
+            if (is_real(__mmapi_fsm_to) && floor(__mmapi_fsm_to) == __mmapi_fsm_to
+                    && __mmapi_fsm_to != self.next_state.state_id
+                    && __mmapi_fsm_to >= 0 && __mmapi_fsm_to < self.states.count()) {
+                self.next_state = self.states.get(__mmapi_fsm_to);
+            }
+        }
+        if self.state.has_stop() {'''
+marker  = "mmapi_fsm_transition"
+provides = ["fsm.transition"]
+
+[[seam]]
+id      = "monster_shroom_should_hide"
+file    = "gml/objects/Combat/obj_monster_shroom.gml"
+target  = { fn = "should_hide", at = "head" }
+op      = "guard"
+hook    = "monster.shroom.should_hide"
+ctx     = "self"
+on_veto = "return false;"
+indent  = 16
+catch_var = "__mmapi_monsters_shroom"
+marker  = "shroom_should_hide"
+
+[[seam]]
+id      = "monster_spirit_projectile_step"
+file    = "gml/objects/Combat/obj_monster_spirit_projectile.gml"
+context_before = '''
+                self.loop_id = TANGO.play("SoundEffects/Enemies/FlameSprite/ProjectileLoop", self.x, self.y);
+            }
+
+'''
+context_after = '''
+            if self.image_alpha < 1 {'''
+op      = "guard"
+hook    = "monster.spirit_projectile.step"
+ctx     = "self"
+on_veto = "instance_destroy(); return;"
+indent  = 12
+blank_after = true
+catch_var = "__mmapi_monsters_spirit_projectile"
+marker  = "spirit_projectile_step"
+
+# The locked-lift gate is an action guard. It fires only when the player actually
+# interacts with the elevator (the 3rd register_interaction arg), not on the
+# interactability condition (the 4th arg). The condition is polled every frame for
+# in-range interactables (par_interactable has_potential_interactions), so a
+# side-effect there fired the "lift locked" conversation on any Interact press near
+# the elevator, for example using the ladder at the mines entrance. As an action
+# guard, the engine's facing and selection route the press to the faced
+# interactable, so the message fires only on a real elevator press. Returning false
+# vetoes opening Menu.Elevator.
+[[seam]]
+id      = "interact_elevator_action"
+file    = "gml/objects/dungeon/obj_dungeon_elevator.gml"
+context_before = '''
+                function() {
+'''
+context_after = '''
+                    ANCHOR.spawn_menu(Menu.Elevator);
+                },'''
+op      = "guard"
+hook    = "interact.elevator_action"
+ctx     = '{ subject: self, key: "dungeon_elevator" }'
+on_veto = "return;"
+indent  = 20
+try_catch = false
+marker  = "mmapi_interact_run_elevator_action"
+
+[[seam]]
+id      = "interact_ladder_down_action"
+file    = "gml/objects/dungeon/par_ladder.gml"
+anchor  = '''
+                    function() {
+                        TANGO.play("SoundEffects/Entrances/LadderDescend");
+                        if room() == rm_mines_entry {'''
+replace = '''
+                    function() {
+                        if (mmapi_check_guards("interact.ladder_down_action", { subject: self, key: "dungeon_ladder_down" }) == false) { // mmapi_interact_run_action_guards
+                            return;
+                        }
+                        TANGO.play("SoundEffects/Entrances/LadderDescend");
+                        if room() == rm_mines_entry {'''
+marker  = "mmapi_interact_run_action_guards"
+provides = ["interact.ladder_down_action"]
+
+[[engine_fix]]
+name    = "game_step_begin_installs"
+file    = "gml/objects/Game.gml"
+anchor  = '''
+        step_begin: function() {
+            TICK++;'''
+replace = '''
+        step_begin: function() {
+            mmapi_run_installs();
+            TICK++;'''
+marker  = "mmapi_run_installs();"
+
+[[engine_fix]]
+name    = "shroom_puddle_mask"
+file    = "gml/objects/Combat/obj_hot_patch.gml"
+anchor  = '''
+                .set_acid()
+                .set_mask_index(self.mask_index)
+                .set_provenance(self.owner.monster_id, self.owner.stats_entry)
+'''
+replace = '''
+                .set_acid()
+                .set_mask_index(self.sprite_index) // mmapi_hot_patch_damage_mask
+                .set_provenance(self.owner.monster_id, self.owner.stats_entry)
+'''
+marker  = "mmapi_hot_patch_damage_mask"
+
+# The remaining entries are appended after the earlier ones on purpose. Catalog
+# order is apply order, and two of them stack onto files already seamed above
+# (dialogue_play_guard onto ConversationDriver.gml after dialogue_path, and
+# game_save_guard onto SaveGame.gml after save_game_saving). Their anchors are
+# pristine text that the earlier seams' replaces re-emit verbatim, so they match
+# exactly once against both the pristine file and the staged file.
+
+[[seam]]
+id      = "dialogue_play_guard"
+file    = "gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml"
+target  = { fn = "play_conversation", at = "head" }
+op      = "guard"
+hook    = "dialogue.play_guard"
+ctx     = "{ npc_id: npc_id, path: path, close_callback: close_callback, args: args }"
+on_veto = "return undefined;"
+catch_var = "__mmapi_dialogue_play_guard"
+marker  = "mmapi_dialogue_run_play_guards"
+depends_on = ["dialogue_path"]
+
+[[seam]]
+id      = "game_clock_tick"
+file    = "gml/scripts/GameplaySystems/TimeSeasons/Clock.gml"
+target  = { fn = "update", at = "head" }
+op      = "emit"
+hook    = "game.clock_tick"
+ctx     = "self"
+indent  = 8
+marker  = "mmapi_game_run_clock_tick"
+
+[[seam]]
+id      = "clock_time_advance"
+file    = "gml/scripts/GameplaySystems/TimeSeasons/Clock.gml"
+anchor  = '''
+        self.side_buffer += GAME_SECONDS_PER_FRAME * !game_paused() * !self.time_stopped;'''
+replace = '''
+        var __clock_advance = GAME_SECONDS_PER_FRAME * !game_paused() * !self.time_stopped;
+        __clock_advance = mmapi_apply_filters("clock.time_advance", __clock_advance, self); // mmapi_clock_run_time_advance
+        self.side_buffer += __clock_advance;'''
+marker  = "mmapi_clock_run_time_advance"
+provides = ["clock.time_advance"]
+
+[[seam]]
+id      = "audio_music_selector"
+file    = "gml/scripts/SceneAudioPlayer.gml"
+anchor  = '''
+    if is_dungeon_room(room()) && !is_special_dungeon_room(room()) {
+        if DUNGEON_RUNNER.blocking_music {
+            return undefined;
+        } else {
+            return DUNGEON.biomes[DUNGEON_BIOME].music;
+        }
+    }'''
+replace = '''
+    if is_dungeon_room(room()) && !is_special_dungeon_room(room()) {
+        if DUNGEON_RUNNER.blocking_music {
+            return undefined;
+        } else {
+            var __mmapi_dungeon_music = DUNGEON.biomes[DUNGEON_BIOME].music;
+            try { __mmapi_dungeon_music = mmapi_apply_filters("audio.music_selector", __mmapi_dungeon_music, undefined); } catch (__mmapi_audio_music_selector) {} // mmapi_audio_run_music_selector_filters
+            return __mmapi_dungeon_music;
+        }
+    }'''
+marker  = "mmapi_audio_run_music_selector_filters"
+provides = ["audio.music_selector"]
+
+[[seam]]
+id      = "player_status_effect_register"
+file    = "gml/scripts/Player/StatusEffectManager.gml"
+anchor  = '''
+    function register(type, amount, start, finish, can_stack=false, show_hud=true) {
+        var effect = {'''
+replace = '''
+    function register(type, amount, start, finish, can_stack=false, show_hud=true) {
+        var __mmapi_status_ctx = {
+            type: type,
+            amount: amount,
+            start_time: start,
+            finish_time: finish,
+            can_stack: can_stack,
+            show_hud: show_hud,
+        };
+        try { __mmapi_status_ctx = mmapi_apply_filters("player.status_effect_register", __mmapi_status_ctx, self); } catch (__mmapi_status_register) {} // mmapi_player_run_status_register_filters
+        if (__mmapi_status_ctx != undefined) {
+            try { type = __mmapi_status_ctx.type; } catch (__mmapi_status_reg_type) {}
+            try { amount = __mmapi_status_ctx.amount; } catch (__mmapi_status_reg_amount) {}
+            try { start = __mmapi_status_ctx.start_time; } catch (__mmapi_status_reg_start) {}
+            try { finish = __mmapi_status_ctx.finish_time; } catch (__mmapi_status_reg_finish) {}
+            try { can_stack = __mmapi_status_ctx.can_stack; } catch (__mmapi_status_reg_stack) {}
+            try { show_hud = __mmapi_status_ctx.show_hud; } catch (__mmapi_status_reg_hud) {}
+        }
+        var effect = {'''
+marker  = "mmapi_player_run_status_register_filters"
+provides = ["player.status_effect_register"]
+
+[[seam]]
+id      = "player_status_effect_cancel"
+file    = "gml/scripts/Player/StatusEffectManager.gml"
+target  = { fn = "cancel", at = "head" }
+op      = "emit"
+hook    = "player.status_effect_cancel"
+ctx     = "{ type: type, manager: self }"
+indent  = 8
+catch_var = "__mmapi_status_cancel"
+marker  = "mmapi_player_run_status_cancel_callbacks"
+
+[[seam]]
+id      = "player_status_effect_expired"
+file    = "gml/scripts/Player/StatusEffectManager.gml"
+context_before = '''
+            if now >= effect.finish {
+                self.effects.remove(i);
+'''
+context_after = '''
+                continue;'''
+op      = "emit"
+hook    = "player.status_effect_expired"
+ctx     = "{ type: i, effect: effect, manager: self }"
+indent  = 16
+catch_var = "__mmapi_status_expired"
+marker  = "mmapi_player_run_status_expired_callbacks"
+
+[[seam]]
+id      = "player_heal_vfx"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+target  = { fn = "play_heal_vfx", at = "head" }
+op      = "guard"
+hook    = "player.heal_vfx"
+ctx     = "{ color: color, sprite: sprite }"
+on_veto = "return;"
+marker  = "mmapi_player_run_heal_vfx_guards"
+
+[[seam]]
+id      = "game_save_guard"
+file    = "gml/scripts/Serialization/SaveGame.gml"
+target  = { fn = "save_game", at = "head" }
+op      = "guard"
+hook    = "game.save_guard"
+ctx     = "{ save_path: save_path }"
+on_veto = "return;"
+marker  = "mmapi_game_run_save_guards"
+depends_on = ["save_game_saving"]
+
+[[seam]]
+id      = "items_give"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+anchor  = '''
+    function give_item(item, count=1, show_toast=true, show_new_popup=true, play_sound=true) {
+        item = is_struct(item) ? item : new LiveItem(item);'''
+replace = '''
+    function give_item(item, count=1, show_toast=true, show_new_popup=true, play_sound=true) {
+        item = is_struct(item) ? item : new LiveItem(item);
+
+        var __mmapi_items_give_ctx = {
+            item: item,
+            item_id: item.item_id,
+            count: count,
+            show_toast: show_toast,
+            show_new_popup: show_new_popup,
+            play_sound: play_sound,
+        };
+        try { __mmapi_items_give_ctx = mmapi_apply_filters("items.give", __mmapi_items_give_ctx, self); } catch (__mmapi_items_give) {} // mmapi_items_run_give_filters
+        if (__mmapi_items_give_ctx != undefined) {
+            try { item = __mmapi_items_give_ctx.item; } catch (__mmapi_items_give_item) {}
+            try { count = __mmapi_items_give_ctx.count; } catch (__mmapi_items_give_count) {}
+            try { show_toast = __mmapi_items_give_ctx.show_toast; } catch (__mmapi_items_give_toast) {}
+            try { show_new_popup = __mmapi_items_give_ctx.show_new_popup; } catch (__mmapi_items_give_popup) {}
+            try { play_sound = __mmapi_items_give_ctx.play_sound; } catch (__mmapi_items_give_sound) {}
+        }'''
+marker  = "mmapi_items_run_give_filters"
+provides = ["items.give"]
+
+[[seam]]
+id      = "items_infusion_generate"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+target  = { fn = "generate_infusions", at = "after", anchor = "var infusions = List();" }
+op      = "guard"
+hook    = "items.infusion_generate"
+ctx     = "self"
+on_veto = "return infusions;"
+indent  = 8
+catch_var = "__mmapi_items_infusion"
+marker  = "mmapi_items_run_infusion_generate_guards"
+
+[[seam]]
+id      = "items_treasure_distribution_none"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Breakables.gml"
+anchor  = '''
+    if candidate == undefined {
+        return undefined;
+    } else {
+        assert_neq(candidate_index, undefined, "failed to find candidate_index");'''
+replace = '''
+    if candidate == undefined {
+        var __mmapi_treasure_none = undefined;
+        try { __mmapi_treasure_none = mmapi_apply_filters("items.treasure_distribution", undefined, { x: xx, y: yy }); } catch (__mmapi_items_treasure_none) {} // mmapi_items_run_treasure_none_filters
+        return __mmapi_treasure_none;
+    } else {
+        assert_neq(candidate_index, undefined, "failed to find candidate_index");'''
+marker  = "mmapi_items_run_treasure_none_filters"
+provides = ["items.treasure_distribution"]
+
+[[seam]]
+id      = "items_treasure_distribution_result"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Breakables.gml"
+anchor  = '''
+        return [candidate_live_item, is_perk];
+    }
+}'''
+replace = '''
+        var __mmapi_treasure_result = [candidate_live_item, is_perk];
+        try { __mmapi_treasure_result = mmapi_apply_filters("items.treasure_distribution", __mmapi_treasure_result, { x: xx, y: yy }); } catch (__mmapi_items_treasure_result) {} // mmapi_items_run_treasure_result_filters
+        return __mmapi_treasure_result;
+    }
+}'''
+marker  = "mmapi_items_run_treasure_result_filters"
+provides = ["items.treasure_distribution"]
+
+[[seam]]
+id      = "dialogue_npc_blip"
+file    = "gml/scripts/UI/Anchor/Menus/TextboxMenu.gml"
+anchor  = '''
+function NpcSpeaker(id) : Speaker(id) constructor {
+    self.me = MIST.is_running() ? MIST.npcs.get(self.id) : NPCS[self.id];
+    self.identity = npc_id_to_string(self.id);
+    self.blip_sound = find_npc_blip_noise(self.id);'''
+replace = '''
+function NpcSpeaker(id) : Speaker(id) constructor {
+    self.me = MIST.is_running() ? MIST.npcs.get(self.id) : NPCS[self.id];
+    self.identity = npc_id_to_string(self.id);
+    self.blip_sound = find_npc_blip_noise(self.id);
+    try { self.blip_sound = mmapi_apply_filters("dialogue.npc_blip", self.blip_sound, { npc_id: self.id, speaker: self }); } catch (__mmapi_dialogue_npc_blip) {} // mmapi_dialogue_run_npc_blip_filters'''
+marker  = "mmapi_dialogue_run_npc_blip_filters"
+provides = ["dialogue.npc_blip"]
+
+[[seam]]
+id      = "ui_menu_opened"
+file    = "gml/scripts/UI/Anchor/Anchor.gml"
+context_before = '''
+        var menu = spawn(menu_id, arg1, arg2, arg3, arg4, arg5, arg6);
+        self.open_menus.push(menu);
+'''
+context_after = '''
+        return menu;'''
+op      = "emit"
+hook    = "ui.menu_opened"
+ctx     = "{ menu: menu, kind: menu_id }"
+indent  = 8
+marker  = "mmapi_ui_run_menu_opened"
+
+[[seam]]
+id      = "store_item_added"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+anchor  = '''
+                    self.basket.add(item);'''
+replace = '''
+                    self.basket.add(item);
+                    try { mmapi_emit("store.item_added", { menu: self, item: item }); } catch (__mmapi_store_item_added) {} // mmapi_store_run_item_added'''
+marker  = "mmapi_store_run_item_added"
+provides = ["store.item_added"]
+
+[[seam]]
+id      = "ui_menu_closed_drain"
+file    = "gml/scripts/UI/Anchor/Anchor.gml"
+context_before = '''
+            if menu.free_requested {
+                menu.free();
+                self.open_menus.remove(i);
+'''
+context_after = '''
+                i -= 1;'''
+op      = "emit"
+hook    = "ui.menu_closed"
+ctx     = "{ menu: menu, kind: menu.type }"
+indent  = 16
+marker  = "mmapi_ui_run_menu_closed_drain"
+
+[[seam]]
+id      = "ui_menu_closed_shutdown"
+file    = "gml/scripts/UI/Anchor/Anchor.gml"
+anchor  = '''
+        while self.open_menus.count() > 0 {
+            var menu = self.open_menus.first();
+            menu.on_free();
+            self.open_menus.remove(0);'''
+replace = '''
+        while self.open_menus.count() > 0 {
+            var menu = self.open_menus.first();
+            menu.on_free();
+            self.open_menus.remove(0);
+            try { mmapi_emit("ui.menu_closed", { menu: menu, kind: menu.type }); } catch (__mmapi_ui_menu_closed_shutdown) {} // mmapi_ui_run_menu_closed_shutdown'''
+marker  = "mmapi_ui_run_menu_closed_shutdown"
+provides = ["ui.menu_closed"]
+
+[[seam]]
+id      = "ui_toolbar_refreshed"
+file    = "gml/scripts/UI/Anchor/Menus/ToolbarMenu.gml"
+context_before = '''
+            slot.item.enable();
+            slot.item.set_to_item(inv_slot.item, inv_slot.count);
+        }
+'''
+context_after = '''
+    }
+
+    function on_think() {'''
+op      = "emit"
+hook    = "ui.menu_refreshed"
+ctx     = "{ menu: self, kind: self.type }"
+indent  = 8
+catch_var = "__mmapi_ui_toolbar_refreshed"
+marker  = "mmapi_ui_run_toolbar_refreshed"
+
+[[seam]]
+id      = "ui_vitals_refreshed"
+file    = "gml/scripts/UI/Anchor/Menus/VitalsMenu.gml"
+context_before = '''
+            array_push(effects, state.status.type);
+        }
+'''
+context_after = '''
+
+    }
+
+    function on_think() {'''
+op      = "emit"
+hook    = "ui.menu_refreshed"
+ctx     = "{ menu: self, kind: self.type }"
+indent  = 8
+catch_var = "__mmapi_ui_vitals_refreshed"
+marker  = "mmapi_ui_run_vitals_refreshed"
+
+[[seam]]
+id      = "input_take_press"
+file    = "gml/objects/system/parents/par_interactable.gml"
+anchor  = '''
+                    var pressed = interaction.take_press
+                        ? INPUT.take_press(interaction.input_id)
+                        : INPUT.pressed(interaction.input_id);
+
+                    if pressed || force_press {'''
+replace = '''
+                    var pressed = interaction.take_press
+                        ? INPUT.take_press(interaction.input_id)
+                        : INPUT.pressed(interaction.input_id);
+
+                    if (pressed) {
+                        try { if (mmapi_check_guards("input.take_press", { subject: self, input_id: interaction.input_id, local_key: interaction.local_key, interaction: interaction }) == false) { pressed = false; } } catch (__mmapi_input_take_press) {} // mmapi_input_run_take_press_guards
+                    }
+
+                    if pressed || force_press {'''
+marker  = "mmapi_input_run_take_press_guards"
+provides = ["input.take_press"]
+
+# animal.pet emits from two sites in obj_player_animal so a mod can react whenever
+# the player pets or puts down an animal. on_pet uses at=head (its body never
+# touches the FSM, so a currency-dance celebration set up here survives the rest of
+# the body); put_down uses at=after its last statement, because put_down's body
+# changes the FSM to Wander and a head emit's celebration state would be clobbered.
+[[seam]]
+id      = "animal_on_pet"
+file    = "gml/objects/obj_player_animal.gml"
+target  = { fn = "on_pet", at = "head" }
+op      = "emit"
+hook    = "animal.pet"
+ctx     = "self"
+indent  = 16
+marker  = "mmapi_animal_run_pet_on_pet"
+
+[[seam]]
+id      = "animal_put_down"
+file    = "gml/objects/obj_player_animal.gml"
+target  = { fn = "put_down", at = "after", anchor = "obj_ari.par.held_item_render_callback = undefined;" }
+op      = "emit"
+hook    = "animal.pet"
+ctx     = "self"
+indent  = 16
+marker  = "mmapi_animal_run_pet_put_down"
+
+# camera.culls_processed emits at the end of Camera.process_culls, right after instance_activate_region
+# reactivates the in-view node renderers. A text seam (not target/at=after) because the anchor is the
+# multi-line instance_activate_region(...) call: instance_activate_region is unique to this function,
+# so the call + the closing brace anchor exactly once. Lets a mod refresh just-reactivated renderers
+# before they draw (crop_timers re-skins badges), closing the 1-frame scroll-in lag the begin_step tick
+# (which runs before this cull, Game.gml step_begin) leaves.
+[[seam]]
+id      = "camera_culls_processed"
+file    = "gml/scripts/GameplaySystems/Camera/Camera.gml"
+anchor  = '''
+        instance_activate_region(
+            region[0],
+            region[1],
+            region[2],
+            region[3],
+        );
+    }'''
+replace = '''
+        instance_activate_region(
+            region[0],
+            region[1],
+            region[2],
+            region[3],
+        );
+        try { mmapi_emit("camera.culls_processed", self); } catch (__mmapi_camera_culls) {} // mmapi_camera_run_culls_processed
+    }'''
+marker  = "mmapi_camera_run_culls_processed"
+provides = ["camera.culls_processed"]
+
+# local_get is a native builtin (fabricator extension): the pristine tree has no
+# GML body for it, so no template, target, text, or wrap form can reach inside
+# it and a wrap has nothing to rename. The waist is created instead by
+# redirecting every GML call site to the framework wrapper: 107 calls on 102
+# lines across 35 files at catalog time, every one a direct single-argument
+# call, none in member-access or reference position (verified against
+# pristine). Token-matched: the identifier local_get immediately applied with
+# an open paren; the distinct identifiers local_get_info, local_get_pronouns,
+# and local_get_default_pronouns can never match. Applied after all
+# [[seam]]/[[engine_fix]] edits so anchored seams keep matching pristine text;
+# call tokens inside seam-injected text are rewritten too (correct semantics).
+# scripts/mmapi/ is excluded from the rewrite so the wrapper's own native call
+# survives. Zero handlers = behavioral (not byte) equivalence, the wrap
+# tradeoff writ wide. In exchange, engine updates that add call sites are
+# covered automatically.
+[[call_rewrite]]
+id       = "local_get_dispatch"
+callee   = "local_get"
+to       = "mmapi_local_get"
+args     = 1
+provides = ["local.get", "local.missing"]

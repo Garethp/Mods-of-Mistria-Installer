@@ -28,6 +28,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="Seam\Payload\seams.toml" LogicalName="Seam/Payload/seams.toml" />
+      <EmbeddedResource Include="Seam\Payload\mmapi\*.gml" LogicalName="Seam/Payload/mmapi/%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
       <EmbeddedResource Update="Lang\Resources.resx">
         <Generator>PublicResXFileCodeGenerator</Generator>
         <LastGenOutput>Resources.Designer.cs</LastGenOutput>

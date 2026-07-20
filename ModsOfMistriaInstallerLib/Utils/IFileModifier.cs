@@ -10,6 +10,8 @@ public interface IFileModifier
 
     public void Write(string file, string contents);
 
+    public void Write(string file, byte[] contents);
+
     public Stream GetWriteStream(string file);
 
     public string[] FindFiles(string path, string pattern);

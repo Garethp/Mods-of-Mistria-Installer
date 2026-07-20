@@ -841,6 +841,24 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
                 return ResourceManager.GetString("GUIModHasWarnings", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Installed successfully..
+        /// </summary>
+        public static string GUIModInstalled {
+            get {
+                return ResourceManager.GetString("GUIModInstalled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This mod was skipped during install.
+        /// </summary>
+        public static string GUIModSkipped {
+            get {
+                return ResourceManager.GetString("GUIModSkipped", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Some mods require a newer version of the installer. Please update the installer..
@@ -1010,6 +1028,150 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string GUIWarning32BitTitle {
             get {
                 return ResourceManager.GetString("GUIWarning32BitTitle", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Could not rebuild {0}. Is Fields of Mistria running? Close it and try again; the previous install is untouched.
+        /// </summary>
+        public static string CoreStoreRebuildFailed {
+            get {
+                return ResourceManager.GetString("CoreStoreRebuildFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Could not finish writing {0}. Check for a full disk or another program holding the file (such as an antivirus scan), then run the installer again.
+        /// </summary>
+        public static string CoreStoreFlushFailed {
+            get {
+                return ResourceManager.GetString("CoreStoreFlushFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Could not restore {0}. Is Fields of Mistria running? Close it and try again.
+        /// </summary>
+        public static string CoreStoreRestoreFailed {
+            get {
+                return ResourceManager.GetString("CoreStoreRestoreFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} contains a previous install, but the backup {1} is missing. Please verify the game files through Steam and try again.
+        /// </summary>
+        public static string CoreStoreBackupMissing {
+            get {
+                return ResourceManager.GetString("CoreStoreBackupMissing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} is not a readable archive and the backup {1} is missing. Please verify the game files through Steam and try again.
+        /// </summary>
+        public static string CoreStoreUnreadableNoBackup {
+            get {
+                return ResourceManager.GetString("CoreStoreUnreadableNoBackup", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find {0} or {1}. Run the game once, or verify the game files through Steam.
+        /// </summary>
+        public static string CoreStoreNoArchives {
+            get {
+                return ResourceManager.GetString("CoreStoreNoArchives", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No assets store was found, so there is nothing to restore.
+        /// </summary>
+        public static string CoreStoreNothingToUninstall {
+            get {
+                return ResourceManager.GetString("CoreStoreNothingToUninstall", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} mod(s) installed.
+        /// </summary>
+        public static string CoreInstallSummary {
+            get {
+                return ResourceManager.GetString("CoreInstallSummary", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to {0} mod(s) installed, {1} skipped.
+        /// </summary>
+        public static string CoreInstallSummaryWithSkipped {
+            get {
+                return ResourceManager.GetString("CoreInstallSummaryWithSkipped", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Game GML changed. Unable to install..
+        /// </summary>
+        public static string CoreGameGmlChanged {
+            get {
+                return ResourceManager.GetString("CoreGameGmlChanged", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The mod requires hooks this version of MOMI does not provide: {0}. Update MOMI, or use an older version of the mod.
+        /// </summary>
+        public static string CoreModRequiresMissingHooks {
+            get {
+                return ResourceManager.GetString("CoreModRequiresMissingHooks", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The manifest&apos;s requires_hooks must be an array of hook-name strings.
+        /// </summary>
+        public static string CoreManifestRequiresHooksInvalid {
+            get {
+                return ResourceManager.GetString("CoreManifestRequiresHooksInvalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Skipped {0}: {1}.
+        /// </summary>
+        public static string CoreSkippedModReason {
+            get {
+                return ResourceManager.GetString("CoreSkippedModReason", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No pristine backup was found in {0}. Run the installer once to create it, or run a seam check against a build zip directly.
+        /// </summary>
+        public static string CoreVerifyNoBackup {
+            get {
+                return ResourceManager.GetString("CoreVerifyNoBackup", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to --compile-check must be &quot;on&quot;, &quot;off&quot; or &quot;require&quot;.
+        /// </summary>
+        public static string CLICompileCheckUsage {
+            get {
+                return ResourceManager.GetString("CLICompileCheckUsage", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to --lint requires a mod folder: --lint &lt;mod folder&gt; [pristine zip].
+        /// </summary>
+        public static string CLILintUsage {
+            get {
+                return ResourceManager.GetString("CLILintUsage", resourceCulture);
             }
         }
     }

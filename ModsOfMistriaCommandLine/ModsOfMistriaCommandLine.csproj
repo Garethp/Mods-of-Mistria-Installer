@@ -8,8 +8,8 @@
         <Nullable>enable</Nullable>
         <PublishSingleFile>true</PublishSingleFile>
         <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
-        <AssemblyVersion>0.13.3</AssemblyVersion>
-        <FileVersion>0.13.3</FileVersion>
+        <AssemblyVersion>0.14.0</AssemblyVersion>
+        <FileVersion>0.14.0</FileVersion>
         <AssemblyName>ModsOfMistriaInstaller-cli</AssemblyName>
         <RootNamespace>Garethp.ModsOfMistriaCommandLine</RootNamespace>
     </PropertyGroup>
@@ -47,6 +47,15 @@
 
     <ItemGroup>
       <AvaloniaResource Include="Assets\icon.ico" />
+    </ItemGroup>
+
+    <!-- The compile gate's binary, built per RID by CI and downloaded to
+         tools/checker/dist/<rid>/. Only the checker is bundled: the probe
+         executes GML and never ships. Conditioned on existence so a dev build
+         without it still compiles; the gate then reports no backend. -->
+    <ItemGroup Condition="Exists('..\tools\checker\dist\$(RuntimeIdentifier)')">
+      <None Include="..\tools\checker\dist\$(RuntimeIdentifier)\momi-gml-check*"
+            CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
     </ItemGroup>
 
 </Project>

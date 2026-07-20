@@ -1,4 +1,5 @@
-﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
+using System.Text;
+using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
 namespace ModsOfMistriaInstallerLibTests.Fixtures;
@@ -7,14 +8,29 @@ public class MockMod : IMod
 {
     private readonly Dictionary<string, Dictionary<string, string>> _files = new();
 
+    private readonly Validation _validation = new();
+
+    public string Id { get; init; } = "mock.mod";
+
+    public string Name { get; init; } = "Mock Mod";
+
+    public string Author { get; init; } = "mock";
+
+    public string Version { get; init; } = "1.0";
+
+    // Stands in for the mod's folder name, which may differ from its id
+    public string DirName { get; init; } = "mock_mod";
+
+    public List<string> RequiredHooks { get; init; } = [];
+
     public MockMod(List<string> files)
     {
         files.ForEach(file =>
         {
             if (Path.HasExtension(file))
             {
-                var folderName = Path.GetDirectoryName(file)?.Replace('\\', '/');
-                
+                var folderName = Path.GetDirectoryName(file)?.Replace('\\', '/') ?? "";
+
                 if (!_files.ContainsKey(folderName)) _files[folderName] = new();
                 _files[folderName][file] = "";
             }
@@ -31,8 +47,8 @@ public class MockMod : IMod
         {
             if (Path.HasExtension(file))
             {
-                var folderName = Path.GetDirectoryName(file)?.Replace('\\', '/');
-                
+                var folderName = Path.GetDirectoryName(file)?.Replace('\\', '/') ?? "";
+
                 if (!_files.ContainsKey(folderName)) _files[folderName] = new();
                 _files[folderName][file] = files[file];
             }
@@ -43,76 +59,39 @@ public class MockMod : IMod
         });
     }
 
-    public string GetAuthor()
-    {
-        throw new NotImplementedException();
-    }
+    public string GetAuthor() => Author;
 
-    public string GetName()
-    {
-        throw new NotImplementedException();
-    }
+    public string GetName() => Name;
 
-    public string GetVersion()
-    {
-        throw new NotImplementedException();
-    }
+    public string GetVersion() => Version;
 
-    public string GetLocation()
-    {
-        throw new NotImplementedException();
-    }
+    public string GetLocation() => DirName;
 
-    public string GetMinimunInstallerVersion()
-    {
-        throw new NotImplementedException();
-    }
+    public string GetMinimumInstallerVersion() => "1.0";
 
-    public string GetManifestVersion()
-    {
-        throw new NotImplementedException();
-    }
+    public string GetManifestVersion() => "1";
 
-    public Validation GetValidation()
-    {
-        throw new NotImplementedException();
-    }
+    public Validation GetValidation() => _validation;
 
-    public string GetId() => "mock.mod";
+    public string GetId() => Id;
 
-    public Validation Validate()
-    {
-        throw new NotImplementedException();
-    }
+    public Validation Validate() => _validation;
 
     public string GetBasePath() => "";
 
-    public string? CanInstall()
-    {
-        throw new NotImplementedException();
-    }
+    public bool IsInstalled() => false;
 
-    public bool IsInstalled()
-    {
-        throw new NotImplementedException();
-    }
-    
     public void SetInstalled(bool installed)
     {
-        throw new NotImplementedException();
     }
 
-    public bool HasFilesInFolder(string folder, string extension)
-    {
-        throw new NotImplementedException();
-    }
+    public bool HasFilesInFolder(string folder, string extension) =>
+        _files.TryGetValue(folder, out var files) && files.Keys.Any(f => f.EndsWith(extension));
 
     public bool HasFilesInFolder(string folder) => _files.ContainsKey(folder) && _files[folder].Count > 0;
 
-    public List<string> GetFilesInFolder(string folder, string extension)
-    {
-        throw new NotImplementedException();
-    }
+    public List<string> GetFilesInFolder(string folder, string extension) =>
+        GetFilesInFolder(folder).Where(f => f.EndsWith(extension)).ToList();
 
     public List<string> GetFilesInFolder(string folder)
     {
@@ -140,17 +119,14 @@ public class MockMod : IMod
             }
         }
 
-        throw new NotImplementedException();
+        throw new FileNotFoundException(path);
     }
 
-    public Stream ReadFileAsStream(string path)
-    {
-        throw new NotImplementedException();
-    }
-
-    public string GetMinimumInstallerVersion() => throw new NotImplementedException();
+    public Stream ReadFileAsStream(string path) => new MemoryStream(Encoding.UTF8.GetBytes(ReadFile(path)));
 
     public List<ModRequirement> GetRequirements() => [];
+
+    public List<string> GetRequiredHooks() => RequiredHooks;
 
     public string? GetUpdateUrl()   => null;
     public string? GetDownloadUrl() => null;

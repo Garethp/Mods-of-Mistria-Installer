@@ -32,6 +32,10 @@ public class FolderMod : IMod
 
     private string? _downloadUrl;
 
+    private List<string> _requiredHooks = [];
+
+    private bool _requiredHooksValid = true;
+
     public string Id
     {
         get
@@ -64,6 +68,8 @@ public class FolderMod : IMod
     public string GetId() => Id;
 
     public List<ModRequirement> GetRequirements() => _requirements;
+
+    public List<string> GetRequiredHooks() => _requiredHooks;
 
     public string? GetUpdateUrl()   => _updateUrl;
     public string? GetDownloadUrl() => _downloadUrl;
@@ -104,7 +110,9 @@ public class FolderMod : IMod
             _manifestVersion = manifest.ManifestVersion,
             _requirements = manifest.Requirements,
             _updateUrl   = manifest.UpdateUrl,
-            _downloadUrl = manifest.DownloadUrl
+            _downloadUrl = manifest.DownloadUrl,
+            _requiredHooks = manifest.RequiresHooks,
+            _requiredHooksValid = manifest.RequiresHooksValid
         };
     }
 
@@ -157,8 +165,20 @@ public class FolderMod : IMod
         {
             _validation.Warnings.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"), Resources.CoreModRequiresIncorrectVersion));
         }
-        
+
+        ValidateGmlManifestFields(_validation, this, Path.Combine(_location, "manifest.json"),
+            _requiredHooksValid);
+
         return _validation;
+    }
+
+    // Shared by the three containers: the requires_hooks shape check.
+    internal static void ValidateGmlManifestFields(Validation validation, IMod mod, string manifestPath,
+        bool requiredHooksValid)
+    {
+        if (!requiredHooksValid)
+            validation.Errors.Add(new ValidationMessage(mod, manifestPath,
+                Resources.CoreManifestRequiresHooksInvalid));
     }
 
     public static string? GetModLocation(string pathCandidate)

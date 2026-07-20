@@ -346,12 +346,19 @@ This will create new sprites in the `data.win` folder with the name `shadow_spri
 
 If you use this, please set `minInstallerVersion` in your `manifest.json` to no lower than `0.1.4`
 
-### `aurie/`
-**Note: At the moment, Aurie mods will not install on the Steam Deck/Linux**
+### `gml/` (behavioural mods)
+If you want your mod to change how the game behaves, put GML your files in a `gml/` folder, and set the `minInstallerVersion` in your `manifest.json` to no lower than `0.14.0`.
 
-If you have Aurie DLLs as part of your mod, put them in the `aurie/` folder of your mod. MOMI will then automatically
-install Aurie onto the players setup, register the keys necessary and copy your DLL into the correct Aurie folder. If
-you do this, please set `minInstallerVersion` in your `manifest.json` to no lower than `0.2.0`.
+MOMI installs them into the game's scripts under a folder assigned to your mod, alongside the
+MMAPI framework your code talks to.
+
+> [!IMPORTANT]
+> Mods using GML must be developed using MMAPI in order for MOMI to install them.
+
+Before anything is written, MOMI checks that your mod's GML compiles and doesn't clash with the game or with other
+mods. A mod that fails those checks is skipped completely.
+
+For additional information, see [MMAPI](docs/MMAPI/MMAPI.md) documentation.
 
 ## Contributing Translations
 

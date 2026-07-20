@@ -1,0 +1,36 @@
+[package]
+name = "momi-gml-check"
+version = "0.1.0"
+edition = "2024"
+
+# Two binaries, and the split is a safety boundary rather than packaging
+# taste. `momi-gml-check` is what the installer runs on user mod code: it
+# compiles and never executes. `momi-gml-probe` executes, and exists only so
+# the test suite can run the engine-claim probes and the mmapi runtime suites
+# on the pinned VM without a fabricator checkout. The release pipeline bundles
+# `momi-gml-check` by name and nothing else, so the probe cannot reach an end
+# user's machine.
+[[bin]]
+name = "momi-gml-check"
+path = "src/main.rs"
+
+[[bin]]
+name = "momi-gml-probe"
+path = "src/probe.rs"
+
+# The rev below is the authoritative fabricator pin. src/rev.rs reports it and
+# must match; GmlCompileGateTest asserts all five references agree. Re-pin
+# deliberately or not at all, and in all five places at once.
+[dependencies]
+gc-arena = "0.6"
+fabricator-compiler = { git = "https://github.com/kyren/fabricator.git", rev = "d7f0cbdce2ac877c90304261a0793ceaf85f21e9" }
+fabricator-stdlib = { git = "https://github.com/kyren/fabricator.git", rev = "d7f0cbdce2ac877c90304261a0793ceaf85f21e9" }
+fabricator-vm = { git = "https://github.com/kyren/fabricator.git", rev = "d7f0cbdce2ac877c90304261a0793ceaf85f21e9" }
+fabricator-util = { git = "https://github.com/kyren/fabricator.git", rev = "d7f0cbdce2ac877c90304261a0793ceaf85f21e9" }
+
+[profile.release]
+strip = true
+lto = true
+
+# Keep this crate out of any enclosing workspace.
+[workspace]

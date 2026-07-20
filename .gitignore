@@ -8,3 +8,5 @@ Release/
 ModsOfMistriaInstaller.sln.DotSettings.user
 **/*.DotSettings.user
 .vs/
+/tools/checker/target/
+/tools/checker/dist/

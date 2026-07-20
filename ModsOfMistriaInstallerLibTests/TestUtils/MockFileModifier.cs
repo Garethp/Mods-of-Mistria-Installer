@@ -48,6 +48,11 @@ public class MockFileModifier: IFileModifier
         _resultingFiles[file] = contents;
     }
 
+    public void Write(string file, byte[] contents)
+    {
+        _resultingFiles[file] = System.Text.Encoding.UTF8.GetString(contents);
+    }
+
     public Stream GetWriteStream(string file)
     {
         throw new NotImplementedException();
