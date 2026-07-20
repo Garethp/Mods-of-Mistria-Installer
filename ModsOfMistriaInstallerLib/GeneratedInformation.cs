@@ -23,7 +23,7 @@ public class GeneratedTomlItem
 
     public string? Contents;
 
-    public TomlTable Read(IMod mod)
+    public TomlTable ReadToml(IMod mod)
     {
         if (!string.IsNullOrEmpty(Contents))
         {
@@ -37,5 +37,21 @@ public class GeneratedTomlItem
 
         // TODO: Should this throw an exception?
         return new TomlTable();
+    }
+
+    public string ReadString(IMod mod)
+    {
+        if (!string.IsNullOrEmpty(Contents))
+        {
+            return Contents;
+        }
+
+        if (!string.IsNullOrEmpty(ReadFilePath))
+        {
+            return mod.ReadFile(ReadFilePath);
+        }
+
+        // TODO: Should this throw an exception?
+        return "";
     }
 }

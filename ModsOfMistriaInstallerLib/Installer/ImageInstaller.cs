@@ -41,7 +41,7 @@ public class ImageInstaller(
             // Skip anything that lives inside a replace/ subfolder
             if (IsUnderReplaceFolder(group.PngRelPath!)) continue;
 
-            var metaToml = TomlSerializer.Deserialize<SpriteMetaFile>(mod.ReadFile(group.AnimationMetaRelPath!))!;
+            var metaToml = TomlSerializer.Deserialize<SpriteMetaFile>(group.AnimationMetaRelPath!.ReadString(mod))!;
 
             if (string.IsNullOrEmpty(metaToml.Asset?.Atlas) || metaToml.Asset.FrameWidth == 0 || metaToml.Asset.FrameHeight == 0)
             {

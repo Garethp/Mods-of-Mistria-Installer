@@ -7,13 +7,13 @@ public class AnimationGroup
     public string BaseName { get; init; } = "";
 
     // Path relative to mod root, e.g. "animations/Animals/.../spr_foo_idle_east.meta.toml"
-    public string? AnimationMetaRelPath { get; init; }
+    public GeneratedTomlItem? AnimationMetaRelPath { get; init; }
 
     // Path relative to mod root, e.g. "animations/Animals/.../spr_foo_idle_east.png"
     public string? PngRelPath { get; init; }
 
     // Path relative to mod root, e.g. "shapes/Animals/.../poly_foo_idle_east.meta.toml"
-    public string? ShapeMetaRelPath { get; init; }
+    public GeneratedTomlItem? ShapeMetaRelPath { get; init; }
 
     public bool HasAnimation => AnimationMetaRelPath is not null;
     public bool HasPng       => PngRelPath           is not null;
