@@ -21,8 +21,11 @@ public class FurnitureInstaller(
     IFileModifier fileModifier)
     : Installer(fileNameUidMapping)
 {
-    public override void Install(IMod mod, Action<string, string> reportStatus)
-    {
+    public override void Install(
+        IMod mod, 
+        GeneratedInformation generatedInformation,
+        Action<string, string> reportStatus
+    ) {
         InstallLegacyDefinitions(mod, reportStatus);
         InstallCompactItemFiles(mod, reportStatus);
         InstallCompactObjectFiles(mod, reportStatus);

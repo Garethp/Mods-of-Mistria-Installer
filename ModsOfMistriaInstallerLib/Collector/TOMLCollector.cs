@@ -10,16 +10,11 @@ public class TOMLCollector
 {
     private const string SprPrefix  = "spr_";
     private const string PolyPrefix = "poly_";
-
-    // After calling Collect(), grouped animation+shape pairs.
-    public IReadOnlyList<AnimationGroup> Groups { get; private set; } = [];
-
-    // After calling Collect(), .toml / .meta.toml files not part of any group,
-    // as paths relative to the mod root.
-    public IReadOnlyList<GeneratedTomlItem> OtherTomlItems { get; private set; } = [];
-
-    public void Collect(IMod mod)
+    
+    public GeneratedInformation Collect(IMod mod)
     {
+        var generatedInformation = new GeneratedInformation();
+        
         var allMeta = mod.GetAllFiles(".meta.toml");
         var allToml = mod.GetAllFiles(".toml")
                         .Where(p => !p.EndsWith(".meta.toml", StringComparison.OrdinalIgnoreCase))
@@ -93,7 +88,7 @@ public class TOMLCollector
             }
         }
 
-        Groups = builders.Values
+        var animationGroups = builders.Values
             .Select(group => new AnimationGroup
             {
                 BaseName             = group.BaseName,
@@ -102,8 +97,15 @@ public class TOMLCollector
                 ShapeMetaRelPath     = group.ShapeMetaRelPath
             })
             .ToList();
-
-        OtherTomlItems = [.. allToml, .. ungroupedItems];
+        
+        // After calling Collect(), grouped animation+shape pairs.
+        generatedInformation.AnimationGroups.AddRange(animationGroups);
+        
+        // After calling Collect(), .toml / .meta.toml files not part of any group,
+        // as paths relative to the mod root.
+        generatedInformation.Toml.AddRange([.. allToml, .. ungroupedItems ]);
+        
+        return generatedInformation;
     }
 
     // "momi/" files are compact definitions consumed directly by their own

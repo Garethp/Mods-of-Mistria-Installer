@@ -25,27 +25,27 @@ public class ImageInstaller(
     IFileModifier fileModifier)
     : Installer(fileNameUidMapping)
 {
-    public override void Install(IMod mod, Action<string, string> reportStatus)
-    {
+    public override void Install(
+        IMod mod, 
+        GeneratedInformation generatedInformation,
+        Action<string, string> reportStatus
+    ) {
         // --- 1. Sprite replacements (images/replace/) ---
         InstallReplacements(mod, reportStatus);
 
         // --- 2. New sprites (images/, excluding the replace/ subfolder) ---
-        var collector = new TOMLCollector();
-        collector.Collect(mod);
-
-        foreach (var group in collector.Groups)
+        foreach (var animationGroup in generatedInformation.AnimationGroups)
         {
-            if (!group.HasAnimation || !group.HasPng) continue;
+            if (!animationGroup.HasAnimation || !animationGroup.HasPng) continue;
 
             // Skip anything that lives inside a replace/ subfolder
-            if (IsUnderReplaceFolder(group.PngRelPath!)) continue;
+            if (IsUnderReplaceFolder(animationGroup.PngRelPath!)) continue;
 
-            var metaToml = TomlSerializer.Deserialize<SpriteMetaFile>(group.AnimationMetaRelPath!.ReadString(mod))!;
+            var metaToml = TomlSerializer.Deserialize<SpriteMetaFile>(animationGroup.AnimationMetaRelPath!.ReadString(mod))!;
 
             if (string.IsNullOrEmpty(metaToml.Asset?.Atlas) || metaToml.Asset.FrameWidth == 0 || metaToml.Asset.FrameHeight == 0)
             {
-                reportStatus($"Skipping {group.BaseName}: missing animation metadata.", "");
+                reportStatus($"Skipping {animationGroup.BaseName}: missing animation metadata.", "");
                 continue;
             }
             if (metaToml.Asset.FrameCount is null or <= 0) metaToml.Asset.FrameCount = 1; // frame_len omitted = single frame
@@ -56,20 +56,20 @@ public class ImageInstaller(
                 // replace_id: reuse an existing game texture_id and remove the old atlas entries.
                 if (!string.IsNullOrEmpty(metaToml.Meta.ReplaceId))
                 {
-                    FileNameUIDMapping[group.BaseName] = metaToml.Meta.ReplaceId;
+                    FileNameUIDMapping[animationGroup.BaseName] = metaToml.Meta.ReplaceId;
                     IDManager.RegisterId(metaToml.Meta.ReplaceId);
                     atlasUtils.RemoveById(metaToml.Meta.ReplaceId);
-                    reportStatus($"Replacing {group.BaseName} (id {metaToml.Meta.ReplaceId})", "");
+                    reportStatus($"Replacing {animationGroup.BaseName} (id {metaToml.Meta.ReplaceId})", "");
                 }
                 // id: preset ID for a new sprite.
-                else if (!string.IsNullOrEmpty(metaToml.Meta.Id) && !FileNameUIDMapping.ContainsKey(group.BaseName))
+                else if (!string.IsNullOrEmpty(metaToml.Meta.Id) && !FileNameUIDMapping.ContainsKey(animationGroup.BaseName))
                 {
-                    FileNameUIDMapping[group.BaseName] = metaToml.Meta.Id;
+                    FileNameUIDMapping[animationGroup.BaseName] = metaToml.Meta.Id;
                     IDManager.RegisterId(metaToml.Meta.Id);
                 }
             }
 
-            using var pngStream = mod.ReadFileAsStream(group.PngRelPath!);
+            using var pngStream = mod.ReadFileAsStream(animationGroup.PngRelPath!);
             var id = atlasUtils.AddStrip(
                 metaToml.Asset.Atlas, 
                 metaToml.Asset.FrameWidth, 
@@ -77,10 +77,10 @@ public class ImageInstaller(
                 metaToml.Asset.FrameCount ?? 1, 
                 pngStream, 
                 FileNameUIDMapping, 
-                group.BaseName
+                animationGroup.BaseName
             );
 
-            reportStatus($"Packed {group.BaseName} → {metaToml.Asset.Atlas} atlas (id {id})", "");
+            reportStatus($"Packed {animationGroup.BaseName} → {metaToml.Asset.Atlas} atlas (id {id})", "");
         }
     }
 
