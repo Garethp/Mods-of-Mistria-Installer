@@ -33,7 +33,7 @@ public class TOMLInstaller(
                 InstallShapeMeta(mod, group, reportStatus);
         }
 
-        foreach (var relPath in collector.OtherTomlFiles)
+        foreach (var relPath in collector.OtherTomlItems)
             InstallGenericToml(mod, relPath, reportStatus);
     }
 
@@ -109,14 +109,13 @@ public class TOMLInstaller(
     }
 
     // Generic TOML / ungrouped .meta.toml
-
-    private void InstallGenericToml(IMod mod, string relPath, Action<string, string> reportStatus)
+    private void InstallGenericToml(IMod mod, GeneratedTomlItem item, Action<string, string> reportStatus)
     {
-        var dest       = DestinationPath(relPath);
-        var sourceToml = Toml.ParseToml(mod.ReadFile(relPath));
+        var dest = DestinationPath(item.FilePath);
+        var sourceToml = item.Read(mod);
 
         MergeOrWriteToml(sourceToml, dest);
-        reportStatus($"Installed TOML: {relPath}", "");
+        reportStatus($"Installed TOML: {item.FilePath}", "");
     }
 
     // Helpers
