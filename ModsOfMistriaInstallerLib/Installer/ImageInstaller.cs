@@ -34,7 +34,7 @@ public class ImageInstaller(
         InstallReplacements(mod, reportStatus);
 
         // --- 2. New sprites (images/, excluding the replace/ subfolder) ---
-        foreach (var animationGroup in generatedInformation.AnimationGroups)
+        foreach (var animationGroup in generatedInformation.AnimationGroups.Values)
         {
             if (!animationGroup.HasAnimation || !animationGroup.HasPng) continue;
 

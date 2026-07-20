@@ -28,7 +28,6 @@ public class TOMLCollector
                         .ToList();
         
         // Map: baseName (lower) → mutable group builder
-        var builders = new Dictionary<string, GroupBuilder>(StringComparer.OrdinalIgnoreCase);
         var ungroupedItems = new List<GeneratedTomlItem>();
 
         foreach (var absolutePath in allMeta)
@@ -58,16 +57,17 @@ public class TOMLCollector
             }
 
             var baseName = spriteName[prefix.Length..];
-
-            if (!builders.TryGetValue(baseName, out var builder))
+            
+            if (!generatedInformation.AnimationGroups.ContainsKey(baseName))
             {
-                builder = new GroupBuilder { BaseName = baseName };
-                builders[baseName] = builder;
+                generatedInformation.AnimationGroups[baseName] = new AnimationGroup { BaseName = baseName };
             }
+
+            var animationGroup = generatedInformation.AnimationGroups[baseName];
 
             if (prefix == SprPrefix)
             {
-                builder.AnimationMetaRelPath = new GeneratedTomlItem
+                animationGroup.AnimationMetaRelPath = new GeneratedTomlItem
                 {
                     FilePath = relPath,
                     ReadFilePath = relPath
@@ -76,30 +76,17 @@ public class TOMLCollector
                 // Look for a paired PNG next to the .meta.toml
                 var pngAbsolute = absolutePath[..^".meta.toml".Length] + ".png";
                 if (mod.FileExists(GetRelativePath(mod, pngAbsolute)))
-                    builder.PngRelPath = GetRelativePath(mod, pngAbsolute);
+                    animationGroup.PngRelPath = GetRelativePath(mod, pngAbsolute);
             }
             else
             {
-                builder.ShapeMetaRelPath = new GeneratedTomlItem
+                animationGroup.ShapeMetaRelPath = new GeneratedTomlItem
                 {
                     FilePath = relPath,
                     ReadFilePath = relPath
                 };
             }
         }
-
-        var animationGroups = builders.Values
-            .Select(group => new AnimationGroup
-            {
-                BaseName             = group.BaseName,
-                AnimationMetaRelPath = group.AnimationMetaRelPath,
-                PngRelPath           = group.PngRelPath,
-                ShapeMetaRelPath     = group.ShapeMetaRelPath
-            })
-            .ToList();
-        
-        // After calling Collect(), grouped animation+shape pairs.
-        generatedInformation.AnimationGroups.AddRange(animationGroups);
         
         // After calling Collect(), .toml / .meta.toml files not part of any group,
         // as paths relative to the mod root.

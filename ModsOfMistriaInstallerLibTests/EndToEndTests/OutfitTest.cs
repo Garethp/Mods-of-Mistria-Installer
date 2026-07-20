@@ -25,14 +25,6 @@ public class OutfitTest
                 ui_sub_category = "skirt"
                 default_unlocked = true
                 """
-            },
-            {
-                "momi/images/spr_player_lryn_celine_summer_skirt_waist.png",
-                File.ReadAllText(FixtureHandler.GetFixturePath("OutfitMod/spr_player_lryn_celine_summer_skirt_waist.png"))
-            },
-            {
-                "momi/images/spr_player_lryn_celine_summer_skirt_lut.png",
-                File.ReadAllText(FixtureHandler.GetFixturePath("OutfitMod/spr_player_lryn_celine_summer_skirt_lut.png"))
             }
         });
         
@@ -85,5 +77,40 @@ public class OutfitTest
         
         // Check that it was inserted into player_asset_parts.json
         Assert.That(fileModifier.Exists("assets/data_files/animation/player_asset_parts.json"), Is.True);
+    }
+
+    [Test]
+    public void ShouldNotOverrideExistingFilesWhenGenerating()
+    {
+        var fileModifier = new MockFileModifier(new ());
+        
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            { 
+                "momi/outfit/lryn_celine_outfit.toml",
+                """
+                [lryn_celine_summer_skirt]
+                id = "lryn_celine_summer_skirt"
+                name = "Celine's summer skirt"
+                ui_slot = "skirt"
+                ui_sub_category = "skirt"
+                default_unlocked = true
+                """
+            },
+            {
+                "animations/Player/Skirts/spr_player_lryn_celine_summer_skirt_waist.meta.toml",
+                """
+                [asset_properties]
+                atlas = "Modded"
+                """
+            }
+        });
+        
+        new MockInstaller().InstallMod(mod, fileModifier);
+
+        Assert.That(fileModifier.Exists("assets/animations/Player/Skirts/spr_player_lryn_celine_summer_skirt_waist.meta.toml"));
+        var skirt = TomlSerializer.Deserialize<SpriteMetaFile>(fileModifier.GetFile(
+            "assets/animations/Player/Skirts/spr_player_lryn_celine_summer_skirt_waist.meta.toml"))!;
+        Assert.That(skirt.Asset.Atlas, Is.EqualTo("Modded"));
     }
 }

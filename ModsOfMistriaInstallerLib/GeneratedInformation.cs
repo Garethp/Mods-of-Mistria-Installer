@@ -9,12 +9,16 @@ public class GeneratedInformation
 {
     public List<GeneratedTomlItem> Toml = [];
     
-    public List<AnimationGroup> AnimationGroups = [];
+    public Dictionary<string, AnimationGroup> AnimationGroups = [];
     
     public void Merge(GeneratedInformation information)
     {
         Toml.AddRange(information.Toml);
-        AnimationGroups.AddRange(information.AnimationGroups);
+        
+        foreach (var key in information.AnimationGroups.Keys)
+        {
+            if (!AnimationGroups.ContainsKey(key)) AnimationGroups.Add(key, information.AnimationGroups[key]);
+        }
     }
 }
 
