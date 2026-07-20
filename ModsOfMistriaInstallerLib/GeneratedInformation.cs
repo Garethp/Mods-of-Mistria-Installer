@@ -1,16 +1,41 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Tomlyn;
+using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
 public class GeneratedInformation
 {
-    public Dictionary<string, object?> Toml = new(StringComparer.OrdinalIgnoreCase);
+    public List<GeneratedTomlItem> Toml = [];
 
     public void Merge(GeneratedInformation information)
     {
-        foreach (var key in information.Toml.Keys)
+        Toml.AddRange(information.Toml);
+    }
+}
+
+public class GeneratedTomlItem
+{
+    public string FilePath;
+    
+    public string? ReadFilePath;
+
+    public string? Contents;
+
+    public TomlTable Read(IMod mod)
+    {
+        if (!string.IsNullOrEmpty(Contents))
         {
-            if (!Toml.ContainsKey(key)) Toml.Add(key, Toml[key]);
+            return TomlSerializer.Deserialize<TomlTable>(Contents)!;
         }
+
+        if (!string.IsNullOrEmpty(ReadFilePath))
+        {
+            return TomlSerializer.Deserialize<TomlTable>(mod.ReadFile(ReadFilePath))!;
+        }
+
+        // TODO: Should this throw an exception?
+        return new TomlTable();
     }
 }

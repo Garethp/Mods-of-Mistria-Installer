@@ -16,7 +16,7 @@ public class TOMLCollector
 
     // After calling Collect(), .toml / .meta.toml files not part of any group,
     // as paths relative to the mod root.
-    public IReadOnlyList<string> OtherTomlFiles { get; private set; } = [];
+    public IReadOnlyList<GeneratedTomlItem> OtherTomlItems { get; private set; } = [];
 
     public void Collect(IMod mod)
     {
@@ -25,11 +25,16 @@ public class TOMLCollector
                         .Where(p => !p.EndsWith(".meta.toml", StringComparison.OrdinalIgnoreCase))
                         .Select(p => GetRelativePath(mod, p))
                         .Where(p => !IsUnderMomiFolder(p))
+                        .Select(path => new GeneratedTomlItem
+                        {
+                            FilePath = path,
+                            ReadFilePath = path
+                        })
                         .ToList();
-
+        
         // Map: baseName (lower) → mutable group builder
         var builders = new Dictionary<string, GroupBuilder>(StringComparer.OrdinalIgnoreCase);
-        var ungroupedMeta = new List<string>();
+        var ungroupedItems = new List<GeneratedTomlItem>();
 
         foreach (var absolutePath in allMeta)
         {
@@ -49,7 +54,11 @@ public class TOMLCollector
 
             if (prefix is null)
             {
-                ungroupedMeta.Add(relPath);
+                ungroupedItems.Add(new GeneratedTomlItem
+                {
+                    FilePath = relPath,
+                    ReadFilePath = relPath
+                });
                 continue;
             }
 
@@ -77,16 +86,16 @@ public class TOMLCollector
         }
 
         Groups = builders.Values
-            .Select(b => new AnimationGroup
+            .Select(group => new AnimationGroup
             {
-                BaseName             = b.BaseName,
-                AnimationMetaRelPath = b.AnimationMetaRelPath,
-                PngRelPath           = b.PngRelPath,
-                ShapeMetaRelPath     = b.ShapeMetaRelPath
+                BaseName             = group.BaseName,
+                AnimationMetaRelPath = group.AnimationMetaRelPath,
+                PngRelPath           = group.PngRelPath,
+                ShapeMetaRelPath     = group.ShapeMetaRelPath
             })
             .ToList();
 
-        OtherTomlFiles = [.. allToml, .. ungroupedMeta];
+        OtherTomlItems = [.. allToml, .. ungroupedItems];
     }
 
     // "momi/" files are compact definitions consumed directly by their own
