@@ -24,7 +24,7 @@ public class TOMLCollector
         var allToml = mod.GetAllFiles(".toml")
                         .Where(p => !p.EndsWith(".meta.toml", StringComparison.OrdinalIgnoreCase))
                         .Select(p => GetRelativePath(mod, p))
-                        .Where(p => !IsUnderMomiFolder(p))
+                        .Where(p => !IsUnderMomiFolder(p) && p != "manifest.toml")
                         .Select(path => new GeneratedTomlItem
                         {
                             FilePath = path,
