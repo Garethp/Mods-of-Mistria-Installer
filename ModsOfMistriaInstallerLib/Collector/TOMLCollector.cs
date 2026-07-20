@@ -72,7 +72,11 @@ public class TOMLCollector
 
             if (prefix == SprPrefix)
             {
-                builder.AnimationMetaRelPath = relPath;
+                builder.AnimationMetaRelPath = new GeneratedTomlItem
+                {
+                    FilePath = relPath,
+                    ReadFilePath = relPath
+                };
 
                 // Look for a paired PNG next to the .meta.toml
                 var pngAbsolute = absolutePath[..^".meta.toml".Length] + ".png";
@@ -81,7 +85,11 @@ public class TOMLCollector
             }
             else
             {
-                builder.ShapeMetaRelPath = relPath;
+                builder.ShapeMetaRelPath = new GeneratedTomlItem
+                {
+                    FilePath = relPath,
+                    ReadFilePath = relPath
+                };
             }
         }
 
@@ -119,9 +127,9 @@ public class TOMLCollector
 
     private class GroupBuilder
     {
-        public string  BaseName             { get; init; } = "";
-        public string? AnimationMetaRelPath { get; set; }
-        public string? PngRelPath           { get; set; }
-        public string? ShapeMetaRelPath     { get; set; }
+        public string             BaseName             { get; init; } = "";
+        public GeneratedTomlItem? AnimationMetaRelPath { get; set; }
+        public string?            PngRelPath           { get; set; }
+        public GeneratedTomlItem? ShapeMetaRelPath     { get; set; }
     }
 }
