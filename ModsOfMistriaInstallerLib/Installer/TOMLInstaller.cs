@@ -19,21 +19,21 @@ public class TOMLInstaller(
     IFileModifier modifier)
     : Installer(fileNameUidMapping)
 {
-    public override void Install(IMod mod, Action<string, string> reportStatus)
-    {
-        var collector = new TOMLCollector();
-        collector.Collect(mod);
-
-        foreach (var group in collector.Groups)
+    public override void Install(
+        IMod mod, 
+        GeneratedInformation generatedInformation,
+        Action<string, string> reportStatus
+    ) {
+        foreach (var animationGroup in generatedInformation.AnimationGroups)
         {
-            if (group.HasAnimation)
-                InstallAnimationMeta(mod, group, reportStatus);
+            if (animationGroup.HasAnimation)
+                InstallAnimationMeta(mod, animationGroup, reportStatus);
 
-            if (group.HasShape)
-                InstallShapeMeta(mod, group, reportStatus);
+            if (animationGroup.HasShape)
+                InstallShapeMeta(mod, animationGroup, reportStatus);
         }
 
-        foreach (var relPath in collector.OtherTomlItems)
+        foreach (var relPath in generatedInformation.Toml)
             InstallGenericToml(mod, relPath, reportStatus);
     }
 

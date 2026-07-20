@@ -14,7 +14,11 @@ public abstract class Installer
         FileNameUIDMapping = fileNameUIDMapping;
     }
 
-    public abstract void Install(IMod mod, Action<string, string> reportStatus);
+    public abstract void Install(
+        IMod mod, 
+        GeneratedInformation generatedInformation,
+        Action<string, string> reportStatus
+    );
 
     // Returns the absolute destination path in assets/ for a file that lives at
     // relPath inside the mod.

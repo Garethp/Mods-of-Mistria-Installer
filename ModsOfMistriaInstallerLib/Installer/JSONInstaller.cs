@@ -13,8 +13,11 @@ public class JSONInstaller(
     IFileModifier fileModifier)
     : Installer(fileNameUidMapping)
 {
-    public override void Install(IMod mod, Action<string, string> reportStatus)
-    {
+    public override void Install(
+        IMod mod, 
+        GeneratedInformation generatedInformation,
+        Action<string, string> reportStatus
+    ) {
         var jsonFiles = mod.GetAllFiles(".json")
             .Where(p => !p.EndsWith(".meta.json", StringComparison.OrdinalIgnoreCase))
             .Select(p => RelativePath(mod, p))

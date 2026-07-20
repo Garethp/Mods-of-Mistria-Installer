@@ -20,8 +20,11 @@ public class XMLInstaller(
     private const string GroupIndent = IndentUnit;
     private const string ObjectIndent = GroupIndent + IndentUnit;
 
-    public override void Install(IMod mod, Action<string, string> reportStatus)
-    {
+    public override void Install(
+        IMod mod, 
+        GeneratedInformation generatedInformation,
+        Action<string, string> reportStatus
+    ) {
         if (!mod.FolderExists(PointsFolder))
             return;
 

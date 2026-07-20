@@ -1,4 +1,3 @@
-using Garethp.ModsOfMistriaInstallerLib.Installer;
 using ModsOfMistriaInstallerLibTests.Fixtures;
 using ModsOfMistriaInstallerLibTests.TestUtils;
 
@@ -41,7 +40,7 @@ public class TOMLInstallerTest
         });
         var modifier = new MockFileModifier(new Dictionary<string, string>());
 
-        new TOMLInstaller(new Dictionary<string, string>(), modifier).Install(mod, (_, _) => { });
+        new MockInstaller().InstallMod(mod, modifier);
 
         return modifier.GetFile(Path.Combine("assets", "animations", "Modded", "spr_test_thing.meta.toml"));
     }

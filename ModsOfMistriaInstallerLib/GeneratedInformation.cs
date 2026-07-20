@@ -1,4 +1,4 @@
-﻿using Garethp.ModsOfMistriaInstallerLib.Models;
+﻿using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Tomlyn;
 using Tomlyn.Model;
@@ -8,10 +8,13 @@ namespace Garethp.ModsOfMistriaInstallerLib;
 public class GeneratedInformation
 {
     public List<GeneratedTomlItem> Toml = [];
-
+    
+    public List<AnimationGroup> AnimationGroups = [];
+    
     public void Merge(GeneratedInformation information)
     {
         Toml.AddRange(information.Toml);
+        AnimationGroups.AddRange(information.AnimationGroups);
     }
 }
 

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.GmlMods;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
@@ -170,6 +171,7 @@ public class ModInstaller
         Action<string, string> reportStatus,
         Action<string, string> reportPhase)
     {
+        var generatedInformation = new GeneratedInformation();
         var modName = mod.GetName();
 
         // 0. Expand momi/ compact definitions into virtual overlay files
@@ -185,40 +187,42 @@ public class ModInstaller
             ? new GeneratedOverlayMod(mod, generated, redirects)
             : mod;
 
+        generatedInformation.Merge(new TOMLCollector().Collect(effectiveMod));
+        
         // 1. Pack images into atlases first so IDs are ready for TOML
         reportPhase(modName, "Installing Images");
         new ImageInstaller(fileNameUIDMapping, atlasUtils, _fileModifier)
-            .Install(effectiveMod, reportStatus);
+            .Install(effectiveMod, generatedInformation, reportStatus);
 
         // 2. Install TOML files (uses IDs populated above)
         reportPhase(modName, "Installing TOML");
         new TOMLInstaller(fileNameUIDMapping, _fileModifier)
-            .Install(effectiveMod, reportStatus);
+            .Install(effectiveMod, generatedInformation, reportStatus);
 
         // 3. Install JSON files
         reportPhase(modName, "Installing JSON");
         new JSONInstaller(fileNameUIDMapping, _fileModifier)
-            .Install(effectiveMod, reportStatus);
+            .Install(effectiveMod, generatedInformation, reportStatus);
 
         // 4. Install XML files
         reportPhase(modName, "Installing XML");
         new XMLInstaller(fileNameUIDMapping, _fileModifier)
-            .Install(effectiveMod, reportStatus);
+            .Install(effectiveMod, generatedInformation, reportStatus);
 
         // 5. Install MIST files (overwrite)
         reportPhase(modName, "Installing Mist");
         new MISTInstaller(fileNameUIDMapping, _fileModifier)
-            .Install(effectiveMod, reportStatus);
+            .Install(effectiveMod, generatedInformation, reportStatus);
 
         // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
         reportPhase(modName, "Installing Outfits");
         new OutfitInstaller(fileNameUIDMapping, _fileModifier)
-            .Install(mod, reportStatus);
-
+            .Install(mod, generatedInformation, reportStatus);
+        
         reportPhase(modName, "Installing Furniture");
         new FurnitureInstaller(fileNameUIDMapping, _fileModifier)
-            .Install(mod, reportStatus);
-
+            .Install(mod, generatedInformation, reportStatus);
+        
         atlasUtils.SemiFlush();
     }
 }

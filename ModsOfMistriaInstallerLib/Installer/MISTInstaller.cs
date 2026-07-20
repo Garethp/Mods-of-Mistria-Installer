@@ -9,8 +9,11 @@ public class MISTInstaller(
     IFileModifier _fileModifier)
     : Installer(fileNameUidMapping)
 {
-    public override void Install(IMod mod, Action<string, string> reportStatus)
-    {
+    public override void Install(
+        IMod mod, 
+        GeneratedInformation generatedInformation,
+        Action<string, string> reportStatus
+    ) {
         var mistFiles = mod.GetAllFiles(".mist")
             .Select(p => RelativePath(mod, p))
             .ToList();

@@ -19,8 +19,11 @@ public class OutfitInstaller(
     IFileModifier _fileModifier)
     : Installer(fileNameUidMapping)
 {
-    public override void Install(IMod mod, Action<string, string> reportStatus)
-    {
+    public override void Install(
+        IMod mod, 
+        GeneratedInformation generatedInformation,
+        Action<string, string> reportStatus
+    ) {
         if (!mod.HasFilesInFolder("momi/outfit", ".toml"))
             return;
 
