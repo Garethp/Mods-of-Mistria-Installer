@@ -104,6 +104,10 @@ public class GmlCompileGate : ICompileGate
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
+                // A windowed host has no console, so a console-subsystem child
+                // flashes an empty window; the streams are already redirected,
+                // so suppressing it changes nothing the gate reads
+                CreateNoWindow = true,
             };
             startInfo.ArgumentList.Add(mode);
             startInfo.ArgumentList.Add("--files-from");

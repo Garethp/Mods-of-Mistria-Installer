@@ -91,7 +91,7 @@ public class ModLinterTest
         var result = Lint(GmlMod("function mod_a_boot() {\n}\n"), gate: gate);
 
         Assert.That(result.Ok, Is.False);
-        Assert.That(result.ExclusionReasons, Has.Some.Contains("does not compile"));
+        Assert.That(result.ExclusionReasons, Has.Some.Contains("Compile Error"));
     }
 
     [Test]
