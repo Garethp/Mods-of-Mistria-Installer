@@ -172,7 +172,7 @@ public static class GmlLayer
                 catch (InvalidOperationException exception)
                 {
                     survivors.Remove(mod);
-                    Exclude(plan, mod, [$"does not compile: {exception.Message}"]);
+                    Exclude(plan, mod, [FormatCompileError(exception.Message, scratch)]);
                 }
             }
 
@@ -182,6 +182,50 @@ public static class GmlLayer
         {
             if (Directory.Exists(scratch)) Directory.Delete(scratch, true);
         }
+    }
+
+    // The user-facing shape of a compile-gate failure. The checker reports the
+    // absolute staged path twice per diagnostic
+    // (<scratch>/assets/gml/scripts/<id>/F.gml: <msg> at <same>:<line>), so
+    // each line is rewritten to scripts/<id>/F.gml:<line>: <msg> under a
+    // "Compile Error:" heading. Anything unrecognised passes through with only
+    // the scratch prefix trimmed: a reason can get shorter here, never lost.
+    public static string FormatCompileError(string message, string scratch)
+    {
+        // both separators, so a forward-slash path is trimmed on any platform
+        string Trim(string text) => new[] { Path.DirectorySeparatorChar, '/' }
+            .Select(sep => $"{scratch}{sep}assets{sep}gml{sep}")
+            .Aggregate(text, (current, prefix) => current.Replace(prefix, ""));
+
+        var lines = message.Replace("\r\n", "\n").Split('\n');
+
+        // Only the gate's compile-failure message carries the
+        // "compile pass FAILED (exit N):" scaffold on its first line. Its
+        // operational throws (vanished staged file, launch failure) are
+        // scaffold-less single lines and surface raw rather than losing their
+        // reason to the Skip below.
+        if (!lines[0].StartsWith("compile pass FAILED", StringComparison.Ordinal))
+            return Trim(message);
+
+        var diagnostics = lines.Skip(1).Select(line =>
+        {
+            line = Trim(line);
+
+            var sep = line.IndexOf(": ", StringComparison.Ordinal);
+            if (sep < 0) return line;
+            var path = line[..sep];
+            var rest = line[(sep + 2)..];
+
+            // hoist the line number out of the trailing " at <path>:<line>";
+            // a diagnostic without one keeps its original path: message shape
+            var tail = $" at {path}:";
+            var at = rest.LastIndexOf(tail, StringComparison.Ordinal);
+            return at >= 0 && int.TryParse(rest[(at + tail.Length)..], out var lineNumber)
+                ? $"{path}:{lineNumber}: {rest[..at]}"
+                : $"{path}: {rest}";
+        });
+
+        return "Compile Error:\n" + string.Join("\n", diagnostics);
     }
 
     private static void Exclude(GmlLayerPlan plan, GmlModCode mod, List<string> reasons,
