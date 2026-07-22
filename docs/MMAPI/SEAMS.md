@@ -20,7 +20,7 @@ The catalog is `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`, embedded int
 
 The shipped catalog currently declares **88 hooks**, fed by **94 seams**, **3 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
 
-Some hooks use `provider = "runtime"`. The framework emits those itself, with no engine edit behind them. `combat.damage_injected`, `game.day_started`, `game.room_changed`, and `game.title_entered` are the current runtime-provided hooks.
+Some hooks use `provider = "runtime"`. The framework emits those itself, with no engine edit behind them. `combat.damage_injected`, `game.day_started`, `game.room_changed`, and `game.title_entered` are the current runtime-provided hooks. The derived ones are polls over live state (`room()`, `total_days()`): they lag the change they report, and the first poll of a session only records the baseline, so no event fires for the state a session starts in. Treat them as edge triggers — react to the change, but read the live state at any later decision point rather than caching their ctx (see the warning on [game.room_changed](hooks/game.room_changed.md)).
 
 At install time MOMI also renders the hook declarations into `mmapi_hook_catalog.gml`. That generated file supplies the runtime name, kind, alias, and override-contention tables used by registration checks and introspection. See [The Installed Catalog](HOOKS.md#the-installed-catalog).
 

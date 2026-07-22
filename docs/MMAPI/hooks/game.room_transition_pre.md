@@ -57,5 +57,5 @@ mmapi_on("game.room_transition_pre", taxi_detour_game_room_transition_pre);
 ## See Also
 
 - [game.room_transition_post](game.room_transition_post.md) - This is the end of the same transition, with the same ctx struct re-read from the live itinerary.
-- [game.room_changed](game.room_changed.md) - This is the after-the-fact derived event, which fires once the room has actually changed.
+- [game.room_changed](game.room_changed.md) - This is the after-the-fact derived event, which fires once the room has actually changed. It is a lagging observation, never a state source; this hook is where request-time semantics live.
 - [dungeon.floor_enter](dungeon.floor_enter.md) - This is the dungeon-side entry bracket, for changing dungeon floor content as it loads.

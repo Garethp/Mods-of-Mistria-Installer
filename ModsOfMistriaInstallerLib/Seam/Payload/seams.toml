@@ -204,7 +204,7 @@ doc  = "Fires from the begin_step derived-events poll when total_days() changes.
 name = "game.room_changed"
 kind = "event"
 provider = "runtime"
-doc  = "Fires from the begin_step derived-events poll when room() changes, after room_start has already run. ctx is { previous, current } (gm_room values). Observation only: to change room content as it loads, use the in-file seams (dungeon.floor_enter and the room transition events) instead."
+doc  = "Fires from the begin_step derived-events poll when room() changes, after room_start has already run. ctx is { previous, current } (gm_room values). Observation only: to change room content as it loads, use the in-file seams (dungeon.floor_enter and the room transition events) instead. Do not cache ctx.current for a later decision: the poll lags the real transition by a frame or more, no event fires for the room a session starts in (a save loaded in-place leaves any cache empty until the next change), and the ctx values are gm_room ASSETS, not name strings. Read room() live at the point of use (asset_to_string(room()) for the name) and treat this event as an edge trigger only; for request-time semantics, use game.room_transition_pre."
 
 [[hook]]
 name = "game.room_transition_post"
