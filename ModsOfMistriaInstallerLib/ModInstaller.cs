@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.GmlMods;
 using Garethp.ModsOfMistriaInstallerLib.Installer;
@@ -8,6 +9,7 @@ using Garethp.ModsOfMistriaInstallerLib.Seam;
 using Garethp.ModsOfMistriaInstallerLib.Store;
 using Garethp.ModsOfMistriaInstallerLib.Tools;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Microsoft.Win32;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
@@ -154,11 +156,36 @@ public class ModInstaller
 
     public void Uninstall()
     {
+        UninstallAurie();
+        
         if (new AssetsStore(_fomLocation).Uninstall())
         {
             // The Mods tab matches the store again
             GameManifestWriter.Write([]);
         }
+    }
+
+    /**
+     * We're seeing a lot of people returning from back when Aurie used the registry to patch into Fields of Mistria
+     * and encountering a "Missing executable" error. This is very difficult to resolve for users, so let's try to
+     * resolve it automatically for them in MOMI
+     */
+    private void UninstallAurie()
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return;
+
+        var mistriaSubKey = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options")?.OpenSubKey("FieldsOfMistria.exe");
+
+        if (mistriaSubKey is null) return;
+
+        var proc = new Process();
+        proc.StartInfo.FileName = "reg";
+        proc.StartInfo.ArgumentList.Add("delete");
+        proc.StartInfo.ArgumentList.Add(mistriaSubKey.Name);
+        proc.StartInfo.ArgumentList.Add("/f");
+        proc.StartInfo.UseShellExecute = true;
+        proc.StartInfo.Verb = "runas";
+        proc.Start();
     }
 
     // ── Private helpers ────────────────────────────────────────────────────────
