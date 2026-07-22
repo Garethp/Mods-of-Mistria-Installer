@@ -23,7 +23,8 @@
 # Anchors are matched after normalizing \r\n to \n.
 # Apply order is catalog order plus `depends_on` edges (topo-sorted, stable).
 # Hook-less edits live in [[engine_fix]]: game_step_begin_installs (the mmapi
-# lifecycle root) and shroom_puddle_mask (a beta-wiring fix).
+# lifecycle root), shroom_puddle_mask (a beta-wiring fix), and
+# statue_hp_death_sweep (the griffin statue's missing depleted-hp death check).
 
 version = 2
 
@@ -1818,6 +1819,33 @@ replace = '''
                 .set_provenance(self.owner.monster_id, self.owner.stats_entry)
 '''
 marker  = "mmapi_hot_patch_damage_mask"
+
+# The Living Griffin Statue is the one hp-driven monster with no depleted-hp death
+# check outside its damage drain. Its only Dying transition sits inside
+# `if hit_points > 0 { ... if took_any_damage { ... } }`, so hp reaching zero without
+# a drained hit leaves it alive, hostile, and undamageable forever. The drain gate
+# never passes again. The fix adds the else branch every sibling of this drain
+# template carries (mite, bat, cat, enchantern).
+[[engine_fix]]
+name    = "statue_hp_death_sweep"
+file    = "gml/objects/obj_monster_statue.gml"
+anchor  = '''
+                    if self.hit_points <= 0 {
+                        self.fsm.change_state(StatueState.Dying);
+                    }
+                }
+            }
+        },'''
+replace = '''
+                    if self.hit_points <= 0 {
+                        self.fsm.change_state(StatueState.Dying);
+                    }
+                }
+            } else if csi != StatueState.Dying {
+                self.fsm.change_state(StatueState.Dying); // mmapi_statue_hp_sweep
+            }
+        },'''
+marker  = "mmapi_statue_hp_sweep"
 
 # The remaining entries are appended after the earlier ones on purpose. Catalog
 # order is apply order, and two of them stack onto files already seamed above

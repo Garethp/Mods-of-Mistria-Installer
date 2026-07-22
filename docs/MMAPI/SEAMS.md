@@ -18,7 +18,7 @@ The catalog is `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`, embedded int
 | `[[engine_fix]]` | A hook-less engine edit. It applies like a text seam but dispatches nothing. |
 | `[[call_rewrite]]` | A tree-wide redirect of direct calls to a native function that has no GML body to seam. |
 
-The shipped catalog currently declares **87 hooks**, fed by **93 seams**, **2 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
+The shipped catalog currently declares **87 hooks**, fed by **93 seams**, **3 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
 
 Some hooks use `provider = "runtime"`. The framework emits those itself, with no engine edit behind them. `combat.damage_injected`, `game.day_started`, `game.room_changed`, and `game.title_entered` are the current runtime-provided hooks.
 

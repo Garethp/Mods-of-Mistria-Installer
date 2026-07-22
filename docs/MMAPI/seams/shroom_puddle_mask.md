@@ -27,5 +27,6 @@ The replace changes one argument: the tarball's mask is set from `self.sprite_in
 
 ## See Also
 
-- [game_step_begin_installs](game_step_begin_installs.md) - This is the catalog's other engine fix, the MMAPI lifecycle root.
+- [game_step_begin_installs](game_step_begin_installs.md) - This is another of the catalog's engine fixes, the MMAPI lifecycle root.
+- [statue_hp_death_sweep](statue_hp_death_sweep.md) - This is another of the catalog's engine fixes, the griffin statue's missing death check.
 - [monster_shroom_should_hide](monster_shroom_should_hide.md) - This is the shroom's other seam. It guards the hide behavior of the monster that lays these puddles.
