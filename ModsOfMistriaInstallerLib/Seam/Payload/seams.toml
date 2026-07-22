@@ -175,6 +175,11 @@ kind = "filter"
 doc  = "Filters the spawn chance passed to try_create_side_room() at the head of that function, before the per-floor roll. ctx is { impl, is_ritual, max_flr }; is_ritual is true when impl == DungeonImpl.Ritual (the pre-computed convenience flag so consumers need not reference the DungeonImpl enum). Return an adjusted chance (0-100) to raise/lower the odds of a treasure/ritual side room; return the value unchanged (or undefined) to defer. Fires for every side-room impl the runner attempts."
 
 [[hook]]
+name = "fishing.should_reel"
+kind = "filter"
+doc  = "Fires every step of the player fishing FSM's Wait state, after bite notification handling and before the retract sound, caught/missed handling, and Reel transitions. The filtered value is whether the player requested a reel through the normal tool inputs. ctx is { bite_active }, true while FISHING.bite_timer is positive. Return a replacement boolean, or undefined to keep the current value. The final true value runs the complete vanilla reel block; false remains in Wait. Hot while waiting for a fish."
+
+[[hook]]
 name = "fsm.transition"
 kind = "filter"
 doc  = "Fires in __StateMachine.execute_state_change(), once per executed state transition of every shared-FSM machine in the game (monsters, the player and the fishing sub-machine, NPCs, animals, birds, fish and fish schools, the camera, cameos, the bobber), before the outgoing state's stop() runs. The filtered value is the struct { fsm, owner, from, to, cancel: false }: fsm is the machine, owner is whatever spawn() received (an instance for monsters, NPCs, and the player; a struct for the camera and the fishing sub-machine, so check is_struct before touching instance fields), from and to are the machine's per-species enum state ids (CatState.*, TomeState.*, MushroomState.*, PlayerState.*, and so on, resolvable by name in mod GML). Return the replacement struct, or mutate it in place and return undefined; the seam re-reads fields defensively. Set cancel to true to skip the transition entirely (no stop or start runs, the machine keeps its state, and state_frame stalls for that tick); set to to a different valid state id of the same machine to redirect (non-numeric, fractional, or out-of-range values are ignored). Redirect via the struct, never by calling change_state from inside a handler. The initial state entered at spawn does not dispatch. Deferred requests overwritten before new_tick never dispatch. A cancelled transition that the owner re-requests every step re-dispatches every tick for that instance while the cancel holds. Transitions are edge events, not per-frame."
@@ -1259,6 +1264,23 @@ replace = '''
                         }'''
 marker  = "mmapi_spell_default_cost"
 provides = ["spells.cost"]
+
+# FishingState.Windup contains the same input expression. The following
+# fishing_sfx line makes this the one Wait-state gate, where a true result runs
+# the complete pristine retract/caught-or-missed/Reel block.
+[[seam]]
+id      = "fishing_should_reel"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                        if INPUT.check(InputId.UseToolCharged) || INPUT.check(InputId.UseToolRepeated) {
+                            var fishing_sfx = fiddle_get("tool_fx/fishing");'''
+replace = '''
+                        var __mmapi_fishing_should_reel = INPUT.check(InputId.UseToolCharged) || INPUT.check(InputId.UseToolRepeated);
+                        try { __mmapi_fishing_should_reel = mmapi_apply_filters("fishing.should_reel", __mmapi_fishing_should_reel, { bite_active: FISHING.bite_timer > 0 }); } catch (__mmapi_fishing_should_reel_error) {} // mmapi_fishing_run_should_reel_filters
+                        if (__mmapi_fishing_should_reel) {
+                            var fishing_sfx = fiddle_get("tool_fx/fishing");'''
+marker  = "mmapi_fishing_run_should_reel_filters"
+provides = ["fishing.should_reel"]
 
 [[seam]]
 id      = "player_equipment_bonus"

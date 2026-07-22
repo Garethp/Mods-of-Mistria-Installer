@@ -37,7 +37,7 @@ deq("a throwing override is skipped and the next one still answers",
 
 // ── The unguarded seam shapes, reproduced verbatim ──────────────────────────
 //
-// Most seams wrap their dispatcher call in a try/catch, 73 of 93. These two do
+// Most seams wrap their dispatcher call in a try/catch, 74 of 94. These two do
 // not, and the claim to test is that a callback throwing under them crashes the
 // game. It does not: the dispatcher guards each handler itself, so the seam's
 // try/catch was never what protected the callback.

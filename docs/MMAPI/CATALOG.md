@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **87 hooks**, fed by **93 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **88 hooks**, fed by **94 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -60,6 +60,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [player.status_effect_register](hooks/player.status_effect_register.md) | filter | Rewrite a status effect as it registers. |
 | [player.status_effect_cancel](hooks/player.status_effect_cancel.md) | event | Know when the game cancels a status effect. |
 | [player.status_effect_expired](hooks/player.status_effect_expired.md) | event | Know the moment a status effect runs out. |
+| [fishing.should_reel](hooks/fishing.should_reel.md) | filter | Change whether the player reels from the fishing Wait state this frame. |
 | [npc.heart_points](hooks/npc.heart_points.md) | filter | Adjust the heart points a villager gains. |
 | [npc.gift_received](hooks/npc.gift_received.md) | event | Know when the player gives an NPC a gift. |
 | [animal.heart_points](hooks/animal.heart_points.md) | filter | Adjust the heart points a barn animal gains. |
@@ -167,6 +168,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [player_status_effect_register](seams/player_status_effect_register.md) | Filters every status effect's fields at the top of `register()`. |
 | [player_status_effect_cancel](seams/player_status_effect_cancel.md) | Emits at the head of `StatusEffectManager.cancel()`, before any lookup. |
 | [player_status_effect_expired](seams/player_status_effect_expired.md) | Emits inside `update()`'s expiry branch, right after the effect is removed. |
+| [fishing_should_reel](seams/fishing_should_reel.md) | Filters the Wait state's reel decision before the complete vanilla reel block. |
 | [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it lands. |
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
 | [animal_heart_points](seams/animal_heart_points.md) | Reroutes every barn-animal heart-point delta through a filter before it lands. |
