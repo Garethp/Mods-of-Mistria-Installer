@@ -26,4 +26,4 @@ This seam sets `try_catch = false`: the dispatch is a direct assignment, not wra
 
 - [player.stamina_delta](../hooks/player.stamina_delta.md) - This is the hook this seam dispatches.
 - [player_health_delta](player_health_delta.md) - This seam is the same shape on `modify_health()`.
-- [player_move_speed](player_move_speed.md) - This seam is the third of `Ari.gml`'s direct-dispatch stat filters.
+- [player_move_speed](player_move_speed.md) - This seam is another of `Ari.gml`'s direct-dispatch stat filters, alongside [player_gold_delta](player_gold_delta.md) and [player_mana_delta](player_mana_delta.md).

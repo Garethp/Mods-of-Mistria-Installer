@@ -338,6 +338,16 @@ kind = "filter"
 doc  = "Fires at the return of the player's equipment bonus lookup. The filtered value is the computed bonus. ctx is { player, infusion, key }. Return the replacement value, or undefined to keep the current value."
 
 [[hook]]
+name = "player.essence_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.modify_essence(), before the delta is applied. The filtered value is the signed essence delta: morsel pickups, item gains, and ritual refunds are positive; shrine offerings and essence craft costs are negative. ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. The seam floors the filtered result at -essence so the total never goes negative: set_essence has no floor of its own, and a negative total arms the engine's essence assert, which crashes on the NEXT essence change. The floor never binds on engine values (every vanilla spend is affordability-gated first). Absolute sets (save load, new game, debug) do not route through modify_essence and never fire this hook. Morsel-based gains land here per collected morsel, after gain_essence()'s overflow accrual and Requirement.CollectEssence gate."
+
+[[hook]]
+name = "player.gold_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.modify_gold(), before the delta is applied. The filtered value is the signed gold delta: sales, rewards, and grants positive; purchases, fees, and craft costs negative. A store checkout arrives as one negative delta of the whole basket total (a sale arrives the same way with the sign flipped). ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. set_gold floors the result at 0 and truncates fractions, so an overdrawing replacement safely bottoms out at broke. Absolute sets (save load, new game, debug) do not route through modify_gold and never fire this hook."
+
+[[hook]]
 name = "player.heal_vfx"
 kind = "guard"
 doc  = "Fires at the top of play_heal_vfx(). ctx is { color, sprite }. Return false to veto the heal vfx. Undefined or true allows."
@@ -351,6 +361,11 @@ doc  = "Fires at the top of Ari.modify_health(), before the delta is applied. Th
 name = "player.incoming_damage"
 kind = "filter"
 doc  = "Fires in the player's damage drain in obj_ari, after mitigation is applied. The filtered value is the final signed damage (health only changes while it is negative). ctx is { player, receiver, tarball }. Return the replacement damage or undefined to keep the current value. A combat.damage filter can set the ctx.tarball fields __mmapi_player_show_damage_popup and __mmapi_player_should_flinch to false to suppress the damage popup and flinch, and with both false and non-negative damage the hit is skipped entirely. mmapi_deal_damage()'s show_popup and flinch opts ride the same two fields."
+
+[[hook]]
+name = "player.mana_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.modify_mana(), before the delta is applied. The filtered value is the signed mana delta: cast deductions negative, restores positive. ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. set_mana clamps the result to [0, mana_max], so any replacement is safe. A companion seam reroutes the mana potion's direct set_mana call through modify_mana, so item restores fire this hook too; cutscene absolute sets and save load do not. Composes with spells.cost: a cast's deduction arrives here as the negative of the already-filtered cost, so prefer spells.cost for spell pricing and this hook for everything else."
 
 [[hook]]
 name = "player.max_health_item"
@@ -381,6 +396,11 @@ doc  = "Fires in StatusEffectManager.update() when an effect's finish time lapse
 name = "player.status_effect_register"
 kind = "filter"
 doc  = "Fires at the top of StatusEffectManager.register(). The filtered value is the struct { type, amount, start_time, finish_time, can_stack, show_hud }. ctx is the manager. Return the replacement struct. The seam tolerates an undefined return and re-reads each field defensively."
+
+[[hook]]
+name = "player.xp_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.gain_xp(skill, xp, silent), before the XP is applied. The filtered value is the XP delta; ctx is { player, skill, silent }, skill being the Skill.* enum id. Return the replacement delta, or undefined to keep the current value. A negative delta genuinely deducts XP and can lower the skill's level: the seam floors the filtered result at -skill_xp[skill] so the total never goes negative (levels 0 and 1 cost 0 XP, so the computed level bottoms out at 1, never the -1 a negative total would read as), and the seam narrows the level celebration to genuine gains, so a level DOWN does not play the LevelUp chime and dingaling (vanilla celebrates any level change; the narrowed condition is unreachable without a negative delta). The floor never binds on engine values (vanilla deltas are all non-negative). The engine's own cap at MAX_SKILL_LEVEL_COSTS still applies after the filter, and already-granted level rewards are not revoked by leveling down."
 
 [[hook]]
 name = "resource.node_modifier"
@@ -1370,6 +1390,119 @@ var     = "amount_to_add"
 indent  = 8
 try_catch = false
 marker  = "mmapi_player_run_stamina_delta_filters"
+
+# The essence delta filter carries its own floor: set_essence has no lower
+# clamp, and a negative total arms the engine's assert(essence >= 0), which
+# crashes on the NEXT essence change - far from the handler that caused it.
+# The floor (and the is_real/is_int64 type guard in front of it) only binds
+# on handler output vanilla never produces, so with zero handlers the edit
+# is behaviorally equivalent to pristine.
+[[seam]]
+id      = "player_essence_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+anchor  = '''
+    function modify_essence(amount_to_add) {
+        self.set_essence(self.essence + amount_to_add);
+    }'''
+replace = '''
+    function modify_essence(amount_to_add) {
+        try {
+            var __mmapi_essence_delta = mmapi_apply_filters("player.essence_delta", amount_to_add, { player: self }); // mmapi_player_run_essence_delta_filters
+            if (is_real(__mmapi_essence_delta) || is_int64(__mmapi_essence_delta)) {
+                amount_to_add = max(__mmapi_essence_delta, -self.essence);
+            }
+        } catch (__mmapi_essence_delta_err) {}
+        self.set_essence(self.essence + amount_to_add);
+    }'''
+marker  = "mmapi_player_run_essence_delta_filters"
+provides = ["player.essence_delta"]
+
+[[seam]]
+id      = "player_gold_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+context_before = '''
+    function modify_gold(amount_to_add) {
+'''
+context_after = '''
+        self.set_gold(self.gold + amount_to_add);
+    }'''
+op      = "filter"
+hook    = "player.gold_delta"
+ctx     = "{ player: self }"
+var     = "amount_to_add"
+indent  = 8
+try_catch = false
+marker  = "mmapi_player_run_gold_delta_filters"
+
+[[seam]]
+id      = "player_mana_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+context_before = '''
+    function modify_mana(amount_to_add) {
+'''
+context_after = '''
+        var o = get_mana();
+        set_mana(o + amount_to_add);
+    }'''
+op      = "filter"
+hook    = "player.mana_delta"
+ctx     = "{ player: self }"
+var     = "amount_to_add"
+indent  = 8
+try_catch = false
+marker  = "mmapi_player_run_mana_delta_filters"
+
+# The one gameplay-delta mana change that bypasses modify_mana: the mana
+# potion consumes via set_mana(mana_current + modifier). modify_mana(x) is
+# literally set_mana(get_mana() + x), so the reroute is behavior-identical
+# and brings item restores into the player.mana_delta filter.
+[[seam]]
+id      = "player_mana_item_delta"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                            ARI.set_mana(ARI.mana_current + self.live_item.prototype.mana_modifier);'''
+replace = '''
+                            ARI.modify_mana(self.live_item.prototype.mana_modifier); // mmapi_player_mana_item_delta'''
+marker  = "mmapi_player_mana_item_delta"
+provides = ["player.mana_delta"]
+
+# The XP delta filter floors the running total at zero: skill_xp has no
+# lower clamp, and skill_xp_to_level() reads a negative total as level -1.
+# Levels 0 and 1 cost 0 XP, so the floored level bottoms out at 1. The same
+# edit narrows the level celebration from `!=` to `<`, so a level DOWN does
+# not play the LevelUp chime and dingaling - a branch vanilla cannot reach,
+# since every vanilla delta is non-negative.
+[[seam]]
+id      = "player_xp_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+anchor  = '''
+    function gain_xp(skill, xp, silent=false) {
+        var old_skill_level = ARI.level(skill);
+
+        self.skill_xp[skill] = min(
+            self.skill_xp[skill] + xp,
+            MAX_SKILL_LEVEL_COSTS[skill],
+        );
+
+        if !silent && old_skill_level != ARI.level(skill) {'''
+replace = '''
+    function gain_xp(skill, xp, silent=false) {
+        try {
+            var __mmapi_xp_delta = mmapi_apply_filters("player.xp_delta", xp, { player: self, skill: skill, silent: silent }); // mmapi_player_run_xp_delta_filters
+            if (is_real(__mmapi_xp_delta) || is_int64(__mmapi_xp_delta)) {
+                xp = max(__mmapi_xp_delta, -self.skill_xp[skill]);
+            }
+        } catch (__mmapi_xp_delta_err) {}
+        var old_skill_level = ARI.level(skill);
+
+        self.skill_xp[skill] = min(
+            self.skill_xp[skill] + xp,
+            MAX_SKILL_LEVEL_COSTS[skill],
+        );
+
+        if !silent && old_skill_level < ARI.level(skill) {'''
+marker  = "mmapi_player_run_xp_delta_filters"
+provides = ["player.xp_delta"]
 
 [[seam]]
 id      = "player_move_speed"
