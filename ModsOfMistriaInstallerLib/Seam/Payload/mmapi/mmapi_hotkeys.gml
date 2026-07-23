@@ -69,6 +69,9 @@ function mmapi_hotkey_name_from_vk(vk) {
 
     // Named keys: find the name whose forward lookup yields this vk. This only runs on
     // a conflict (or a failed callback), so a linear scan of the vocabulary is fine.
+    // Each probe is guarded: the forward map reads bare vk_* constants, which the live
+    // runtime defines and the tier-1 VM does not, and a diagnostics path must never
+    // throw - a name that does not resolve just falls through to the "vk <ordinal>" form.
     var names = [
         "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
         "NUMPAD_0", "NUMPAD_1", "NUMPAD_2", "NUMPAD_3", "NUMPAD_4",
@@ -77,7 +80,9 @@ function mmapi_hotkey_name_from_vk(vk) {
         "CONTROL", "PAUSE_BREAK", "CAPS_LOCK", "NUM_LOCK", "SCROLL_LOCK",
     ];
     for (var i = 0; i < array_length(names); i++) {
-        if (mmapi_hotkey_vk_from_name(names[i]) == vk) { return names[i]; }
+        var candidate = undefined;
+        try { candidate = mmapi_hotkey_vk_from_name(names[i]); } catch (__mmapi_hotkey_vk_probe) {}
+        if (candidate == vk) { return names[i]; }
     }
     return "vk " + string(vk);
 }
