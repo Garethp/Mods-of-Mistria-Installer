@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **92 hooks**, fed by **99 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **93 hooks**, fed by **100 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -58,6 +58,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [player.gold_delta](hooks/player.gold_delta.md) | filter | Change every gold gain or spend before it applies. |
 | [player.mana_delta](hooks/player.mana_delta.md) | filter | Change every mana gain or spend before it applies. |
 | [player.xp_delta](hooks/player.xp_delta.md) | filter | Change every skill XP gain before it applies, or turn it into a deduction. |
+| [player.renown_delta](hooks/player.renown_delta.md) | filter | Change every renown gain before it applies, or turn it into a deduction. |
 | [player.equipment_bonus](hooks/player.equipment_bonus.md) | filter | Adjust the bonus an equipment infusion grants the player. |
 | [player.max_health_item](hooks/player.max_health_item.md) | event | Know when an item permanently raises Ari's max health. |
 | [player.heal_vfx](hooks/player.heal_vfx.md) | guard | Block the player's heal sparkle before it plays. |
@@ -169,6 +170,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [player_mana_delta](seams/player_mana_delta.md) | Filters the signed mana delta at the top of `Ari.modify_mana()`. |
 | [player_mana_item_delta](seams/player_mana_item_delta.md) | Reroutes the mana potion's direct `set_mana` call through `modify_mana`, so item restores fire the mana filter. |
 | [player_xp_delta](seams/player_xp_delta.md) | Filters the XP delta at the head of `gain_xp()`, floors the total at zero, and narrows the level celebration to genuine gains. |
+| [player_renown_delta](seams/player_renown_delta.md) | Filters the renown delta at the top of `Ari.modify_renown()`, once per pending entry at day rollover. |
 | [player_incoming_damage](seams/player_incoming_damage.md) | Rewrites the player's damage drain so mods filter the final damage and its popup and flinch side effects. |
 | [player_move_speed](seams/player_move_speed.md) | Filters the player's computed move speed after the status-effect multipliers. |
 | [player_equipment_bonus](seams/player_equipment_bonus.md) | Rewrites the equipment bonus lookup's return into a filtered return. |

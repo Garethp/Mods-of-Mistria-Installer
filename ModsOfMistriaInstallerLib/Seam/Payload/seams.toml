@@ -378,6 +378,11 @@ kind = "filter"
 doc  = "Fires at the end of the player's move speed computation, after the status effect multipliers. The filtered value is the speed. ctx is { player, on_mount }. Return the replacement speed, or undefined to keep the current value."
 
 [[hook]]
+name = "player.renown_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.modify_renown(), before the delta is applied. The filtered value is the renown delta. The engine's one gameplay caller is the on_new_day drain of pending_renown_entries, so this fires at day rollover, once per pending entry (quest completions, museum donations, the prior day's shipping gold). ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. set_renown clamps the resulting total to [0, max renown], so any replacement is safe: a negative delta lowers renown and the computed level, plays no celebration, and never revokes already-granted level rewards, while a gain that crosses several levels grants each crossed level's reward. The end-of-day menu tallies the raw pending entries before the drain, so its renown-earned figure shows unfiltered values. Absolute sets (debug, test suite, new game) do not route through modify_renown and never fire this hook."
+
+[[hook]]
 name = "player.stamina_delta"
 kind = "filter"
 doc  = "Fires at the top of Ari.modify_stamina(), before stamina_costs_modifier is applied. The filtered value is the signed stamina delta. ctx is { player }. Return the replacement delta, or undefined to keep the current value."
@@ -1503,6 +1508,23 @@ replace = '''
         if !silent && old_skill_level < ARI.level(skill) {'''
 marker  = "mmapi_player_run_xp_delta_filters"
 provides = ["player.xp_delta"]
+
+[[seam]]
+id      = "player_renown_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+context_before = '''
+    function modify_renown(amount_to_add) {
+'''
+context_after = '''
+        self.set_renown(self.renown + amount_to_add);
+    }'''
+op      = "filter"
+hook    = "player.renown_delta"
+ctx     = "{ player: self }"
+var     = "amount_to_add"
+indent  = 8
+try_catch = false
+marker  = "mmapi_player_run_renown_delta_filters"
 
 [[seam]]
 id      = "player_move_speed"
