@@ -347,7 +347,7 @@ The generated template payload defaults to a site-level `try/catch`, and each di
 - Dispatcher isolation protects one mod from another and applies the kind's failure rule.
 - Site isolation protects the engine from a bad context expression, result assignment, or framework-site assumption around an ordinary dispatch. A `ctx_filter` builds its initial struct before entering its catch, so its field expressions must be safe on their own.
 
-For a simple line op, `try_catch = false` emits that line bare. Existing entries use it only at tested legacy sites. It is not a performance switch; leave it true for new seams unless the exact engine location requires otherwise and the reason is recorded on the seam page.
+For a simple line op, `try_catch = false` emits that line bare. Existing entries use it only at tested sites whose dispatch line cannot fail on its own: a ctx that cannot fail to construct, such as the player delta family's `{ player: self }`. It is not a performance switch, leave it true for new seams unless the exact engine location requires otherwise and the reason is recorded on the seam page.
 
 Check the zero-handler path explicitly:
 

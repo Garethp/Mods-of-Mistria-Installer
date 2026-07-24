@@ -37,10 +37,17 @@ deq("a throwing override is skipped and the next one still answers",
 
 // ── The unguarded seam shapes, reproduced verbatim ──────────────────────────
 //
-// Most seams wrap their dispatcher call in a try/catch, 74 of 94. These two do
-// not, and the claim to test is that a callback throwing under them crashes the
-// game. It does not: the dispatcher guards each handler itself, so the seam's
-// try/catch was never what protected the callback.
+// Two layers of protection exist at a seam, guarding different code. The
+// dispatcher wraps every HANDLER call itself, so a throwing mod callback is
+// always contained, at every seam. The seam's own try/catch (the try_catch
+// template option) guards the SEAM's code instead: a ctx expression that
+// reads live engine state, or a write-back after the dispatch. A few seams
+// skip that site catch because their dispatch line is provably total - a
+// literal ctx like { player: self } and a bare assignment of the return have
+// nothing left to fail. The worry this section retires is that those bare
+// seams are unprotected against throwing callbacks: they are not, because
+// callback isolation never came from the site catch. Both bare shapes below
+// reproduce real catalog seams and survive a thrower.
 
 // player_move_speed's seam body, in shape: no try/catch anywhere.
 function i_move_speed_seam() {
