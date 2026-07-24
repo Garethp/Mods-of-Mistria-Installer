@@ -1,25 +1,26 @@
 # Seam: request_board_fetch_pool_ready
 
-Emits after request-board finalization, so mods can observe the exact board output for the day.
+Emits the finished request board at the tail of the daily build, final pool included.
 
-`request_board_fetch_pool_ready` is an **emit seam** that feeds [request_board.fetch_pool_ready](../hooks/request_board.fetch_pool_ready.md).
+`request_board_fetch_pool_ready` is a **text seam** (`anchor` + `replace`). It feeds [request_board.fetch_pool_ready](../hooks/request_board.fetch_pool_ready.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/RequestBoard.gml` |
-| **Function** | `create_request_board()` |
-| **Locator** | after `randomize();` and before `return requests;` |
-| **Op** | event emit |
-| **ctx fields** | `{ random_pool, random_slots, year, season, day, is_crown_quest_day, final_pool }` |
+| **Locator** | text anchor on `create_request_board()`'s tail: the `randomize()` line and the `return requests` that closes the function |
+| **Op** | text (`anchor` + `replace`) |
+| **Feeds** | [`request_board.fetch_pool_ready`](../hooks/request_board.fetch_pool_ready.md) |
+| **Value filtered** | none - an emit |
+| **ctx built** | `{ year, season, day, is_crown_quest_day, final_pool }` |
 | **Marker** | `mmapi_request_board_fetch_pool_ready_emit` |
 
 ## The Edit
 
-After the request list is finalized, the seam emits `request_board.fetch_pool_ready` with the same day context as `request_board.fetch_pool`, plus `final_pool` so observers can reason about exactly what the player will see.
+The emit lands between `randomize()` and the return, inside a try/catch, after the final `retain` pass has already dropped completed and active quests - so `final_pool` is exactly the list the function returns. It is the **live** List, not a copy: a handler that mutates it changes the actual board, which the hook page documents as read-only-unless-intended. The date fields are the same pure engine reads the companion filter's value carries. Emitting after `randomize()` means the deterministic per-day seed used by the build has already been discarded; handlers observing here see the finished result, not the seeded stream.
 
 ## See Also
 
-- [request_board.fetch_pool](../hooks/request_board.fetch_pool.md)
-- [request_board.fetch_pool_ready](../hooks/request_board.fetch_pool_ready.md)
+- [request_board.fetch_pool_ready](../hooks/request_board.fetch_pool_ready.md) - This is the hook this seam dispatches.
+- [request_board_fetch_pool](request_board_fetch_pool.md) - The companion filter earlier in the same build.

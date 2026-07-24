@@ -415,7 +415,12 @@ doc  = "Fires at the top of pick_node() and chop_node(), before the tool's modif
 [[hook]]
 name = "request_board.fetch_pool"
 kind = "filter"
-doc  = "Fires during request-board generation after non-crown candidates are collected and before the board draws from the random pool. The filtered value is a struct with `random_pool`, `random_slots`, `year`, `season`, `day`, and `is_crown_quest_day`. Return the replacement struct, or undefined to keep behavior."
+doc  = "Fires in create_request_board()'s daily random top-up, after the crown offer and the always-available entries are already pushed and the candidate keys are shuffled, before the availability loop draws from them. The board builds once per day (new day, new game, and some loads), so this fires per build, not per viewing. The filtered value is the struct { random_pool, random_slots, year, season, day, is_crown_quest_day }: random_pool is the shuffled List of candidate request keys (a List with count()/get(), not an array), random_slots is the cap the draw stops at - it counts the WHOLE board, crown and always-available entries included, not just the random picks - year/season/day are the calendar date (day 1-based), and is_crown_quest_day reflects the crown cooldown being ready (an eligible offer may still be absent). ctx is undefined. Return the replacement struct, or undefined to keep the current values. The seam re-reads every field defensively, so a non-struct return or a partial struct keeps the engine values."
+
+[[hook]]
+name = "request_board.fetch_pool_ready"
+kind = "event"
+doc  = "Fires at the end of create_request_board(), after the final retain pass and the re-randomize, just before the built board list is returned. The board builds once per day (new day, new game, and some loads), so this fires per build, not per viewing. ctx is { year, season, day, is_crown_quest_day, final_pool }: the date fields match request_board.fetch_pool's, and final_pool is the LIVE List the function returns - pushing or removing entries here changes the actual board, so treat it as read-only unless that is the intent. The return value is ignored."
 
 [[hook]]
 name = "save.game_loaded"
@@ -682,36 +687,32 @@ anchor  = '''
 replace = '''
     if CALENDAR.time >= days(1) {
         var __mmapi_rand_pool_size = fiddle_get("misc/fetch_quests_per_day");
-        var __mmapi_request_keys = ListFromArray(REQUEST_BOARD_ENTRIES.keys());
-        __mmapi_request_keys.shuffle();
+        var __mmapi_shuffled_keys = ListFromArray(REQUEST_BOARD_ENTRIES.keys());
+        __mmapi_shuffled_keys.shuffle();
 
         var __mmapi_pool_ctx = {
-            random_pool: __mmapi_request_keys,
+            random_pool: __mmapi_shuffled_keys,
             random_slots: __mmapi_rand_pool_size,
             year: CALENDAR.year(),
             season: CALENDAR.season(),
             day: CALENDAR.day() + 1,
-            is_crown_quest_day: ARI.ready_for_crown_quest()
+            is_crown_quest_day: ARI.ready_for_crown_quest(),
         };
         try {
             __mmapi_pool_ctx = mmapi_apply_filters("request_board.fetch_pool", __mmapi_pool_ctx, undefined); // mmapi_request_board_fetch_pool_filter
         } catch (__mmapi_request_board_fetch_pool) {}
 
-        if (__mmapi_pool_ctx == undefined) {
-            __mmapi_pool_ctx = {
-                random_pool: __mmapi_request_keys,
-                random_slots: __mmapi_rand_pool_size
-            };
+        if (!is_struct(__mmapi_pool_ctx)) {
+            __mmapi_pool_ctx = {};
         }
-        if (__mmapi_pool_ctx.random_pool == undefined) {
-            __mmapi_pool_ctx.random_pool = __mmapi_request_keys;
+        var __mmapi_request_keys = __mmapi_pool_ctx[$ "random_pool"];
+        if (__mmapi_request_keys == undefined) {
+            __mmapi_request_keys = __mmapi_shuffled_keys;
         }
-        if (__mmapi_pool_ctx.random_slots == undefined) {
-            __mmapi_pool_ctx.random_slots = __mmapi_rand_pool_size;
+        var __mmapi_requests_cap = __mmapi_pool_ctx[$ "random_slots"];
+        if (__mmapi_requests_cap == undefined) {
+            __mmapi_requests_cap = __mmapi_rand_pool_size;
         }
-
-        var __mmapi_request_keys = __mmapi_pool_ctx.random_pool;
-        var __mmapi_requests_count = __mmapi_pool_ctx.random_slots;
         var __mmapi_request_keys_count = 0;
         try {
             __mmapi_request_keys_count = __mmapi_request_keys.count();
@@ -731,7 +732,7 @@ replace = '''
             {
                 requests.push(key);
 
-                if requests.count() >= __mmapi_requests_count {
+                if requests.count() >= __mmapi_requests_cap {
                     break;
                 }
             }
@@ -753,8 +754,6 @@ replace = '''
 
     try {
         mmapi_emit("request_board.fetch_pool_ready", {
-            random_pool: requests,
-            random_slots: requests.count(),
             year: CALENDAR.year(),
             season: CALENDAR.season(),
             day: CALENDAR.day() + 1,
