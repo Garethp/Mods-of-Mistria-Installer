@@ -413,6 +413,11 @@ kind = "filter"
 doc  = "Fires at the top of pick_node() and chop_node(), before the tool's modifier is applied to a resource node (rocks, forage, dig sites, trees, stumps). The filtered value is the tool modifier: the charged-tool bonus/penalty added to item.damage and to the item.quality gate. ctx is { grid, x, y, item, action }; action is \"pick\" or \"chop\". Return the replacement modifier (for example clamp a negative charged-tool penalty to 0 to remove the charged-attack damage penalty), or undefined to keep the current value."
 
 [[hook]]
+name = "request_board.fetch_pool"
+kind = "filter"
+doc  = "Fires during request-board generation after non-crown candidates are collected and before the board draws from the random pool. The filtered value is a struct with `random_pool`, `random_slots`, `year`, `season`, `day`, and `is_crown_quest_day`. Return the replacement struct, or undefined to keep behavior."
+
+[[hook]]
 name = "save.game_loaded"
 kind = "event"
 doc  = "Fires at the start of loading a save, right after the save path is recorded. ctx is { save_path }."
@@ -644,6 +649,124 @@ hook    = "resource.node_modifier"
 ctx     = '{ grid: grid, x: x_pos, y: y_pos, item: item, action: "chop" }'
 var     = "modifier"
 indent  = 4
+
+[[seam]]
+id      = "request_board_fetch_pool"
+file    = "gml/scripts/RequestBoard.gml"
+anchor  = '''
+    if CALENDAR.time >= days(1) {
+        var quantity = fiddle_get("misc/fetch_quests_per_day");
+        var keys = ListFromArray(REQUEST_BOARD_ENTRIES.keys());
+        keys.shuffle();
+
+        for (var i = 0; i < keys.count(); i++) {
+            var key = keys.get(i);
+            var entry = REQUEST_BOARD_ENTRIES.get(key);
+
+            //
+            //
+            if entry.randomly_selected
+                && !QUEST_LOG.completed.contains(key)
+                && !QUEST_LOG.active.contains_key(key)
+                && requirements_pass(entry.requirements)
+            {
+                requests.push(key);
+
+                if requests.count() >= quantity {
+                    break;
+                }
+            }
+        }
+    }
+'''
+replace = '''
+    if CALENDAR.time >= days(1) {
+        var __mmapi_rand_pool_size = fiddle_get("misc/fetch_quests_per_day");
+        var __mmapi_request_keys = ListFromArray(REQUEST_BOARD_ENTRIES.keys());
+        __mmapi_request_keys.shuffle();
+
+        var __mmapi_pool_ctx = {
+            random_pool: __mmapi_request_keys,
+            random_slots: __mmapi_rand_pool_size,
+            year: CALENDAR.year(),
+            season: CALENDAR.season(),
+            day: CALENDAR.day() + 1,
+            is_crown_quest_day: ARI.ready_for_crown_quest()
+        };
+        try {
+            __mmapi_pool_ctx = mmapi_apply_filters("request_board.fetch_pool", __mmapi_pool_ctx, undefined); // mmapi_request_board_fetch_pool_filter
+        } catch (__mmapi_request_board_fetch_pool) {}
+
+        if (__mmapi_pool_ctx == undefined) {
+            __mmapi_pool_ctx = {
+                random_pool: __mmapi_request_keys,
+                random_slots: __mmapi_rand_pool_size
+            };
+        }
+        if (__mmapi_pool_ctx.random_pool == undefined) {
+            __mmapi_pool_ctx.random_pool = __mmapi_request_keys;
+        }
+        if (__mmapi_pool_ctx.random_slots == undefined) {
+            __mmapi_pool_ctx.random_slots = __mmapi_rand_pool_size;
+        }
+
+        var __mmapi_request_keys = __mmapi_pool_ctx.random_pool;
+        var __mmapi_requests_count = __mmapi_pool_ctx.random_slots;
+        var __mmapi_request_keys_count = 0;
+        try {
+            __mmapi_request_keys_count = __mmapi_request_keys.count();
+        } catch (__mmapi_request_board_pool_count) {
+            __mmapi_request_keys_count = 0;
+        }
+        for (var i = 0; i < __mmapi_request_keys_count; i++) {
+            var key = __mmapi_request_keys.get(i);
+            var entry = REQUEST_BOARD_ENTRIES.get(key);
+
+            //
+            //
+            if entry.randomly_selected
+                && !QUEST_LOG.completed.contains(key)
+                && !QUEST_LOG.active.contains_key(key)
+                && requirements_pass(entry.requirements)
+            {
+                requests.push(key);
+
+                if requests.count() >= __mmapi_requests_count {
+                    break;
+                }
+            }
+        }
+    }
+'''
+marker  = "mmapi_request_board_fetch_pool_filter"
+provides = ["request_board.fetch_pool"]
+
+[[seam]]
+id      = "request_board_fetch_pool_ready"
+file    = "gml/scripts/RequestBoard.gml"
+anchor  = '''
+    randomize();
+    return requests;
+}'''
+replace = '''
+    randomize();
+
+    try {
+        mmapi_emit("request_board.fetch_pool_ready", {
+            random_pool: requests,
+            random_slots: requests.count(),
+            year: CALENDAR.year(),
+            season: CALENDAR.season(),
+            day: CALENDAR.day() + 1,
+            is_crown_quest_day: ARI.ready_for_crown_quest(),
+            final_pool: requests,
+        }); // mmapi_request_board_fetch_pool_ready_emit
+    } catch (__mmapi_request_board_ready) {}
+
+    return requests;
+}'''
+marker  = "mmapi_request_board_fetch_pool_ready_emit"
+provides = ["request_board.fetch_pool_ready"]
 
 [[seam]]
 id      = "monster_draw"
