@@ -133,6 +133,38 @@ The queue registration itself is not de-duplicated. Calling `mmapi_register(my_m
 
 A throwing queued function warns rate-limited, attributed to its mod, and the drain continues to the next one. The framework sets the current mod around each call, so hook registrations made inside the function attribute to the mod that queued it.
 
+## User-Facing Text (Localization)
+
+Any text the player sees, such as notification toasts and injected UI strings, should be a **localization key**, not an English literal in your GML. Keys resolve through the engine's localizer, registered strings are real localizer entries that language packs can translate, and every engine-side lookup runs inside MMAPI's [local.get](hooks/local.get.md) filter chain. The pattern shipped mods converged on has three parts:
+
+1. **Strings live in a fiddle file**, `fiddle/mods/<mod>/notifications.toml` (any path works; this is the convention):
+
+   ```toml
+   something_happened = "Something happened!"
+   ```
+
+2. **The file registers for localization**, so ship `localization/l10n.meta.toml` with a `fiddle_renames` entry per string file. **Flat per-file entries only**, since an umbrella directory form (`"mods/my_mod" = ["*"]`) crashes the engine at boot:
+
+   ```toml
+   [asset_properties]
+   	[asset_properties.fiddle_renames]
+   		"mods/my_mod/notifications" = ["*"]
+   ```
+
+   MOMI's TOML merge folds this into the game's `localization/l10n.meta.toml`. Registered text is extracted into engine-minted loc slots and resolved by the real localizer (live-verified by shipped mods).
+
+3. **GML passes the derived key**, the file path minus `.toml`, plus the entry key:
+
+   ```gml
+   create_notification("mods/my_mod/notifications/something_happened");
+   ```
+
+Passing the **key**, not pre-localized text, matters beyond translation. Engine call sites like `create_notification` resolve the key inside the [local_get_dispatch](seams/local_get_dispatch.md) rewrite, so [local.get](hooks/local.get.md) filters can rewrite the text at display time (dynamic token substitution). Mod files are excluded from that rewrite, so pre-localizing in your own code via `ANCHOR.wrap_for_local(local_get(key))` compositions bypasses the whole filter surface; shipped mods hit exactly that failure live before converging on key-passing.
+
+`ANCHOR.wrap_for_local("raw text")` remains the quick form for prototypes and genuinely one-off dynamic strings (vanilla uses it for quest-name toasts), but it is untranslatable and filter-invisible, so keep it out of shipped mods.
+
+One boundary note: t2 conversation text is a separate system, a line's `local` field is inline source text (a fiddle loc key placed there displays raw), and `fiddle_renames` does not apply to `t2/` files.
+
 ## Engine Behavior
 
 The engine behavior every mod must respect.

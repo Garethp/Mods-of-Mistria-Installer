@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **87 hooks**, fed by **93 seams**, **2 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **93 hooks**, fed by **100 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -50,16 +50,22 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 
 | Name | Kind | Description |
 | ---- | ---- | ----------- |
-| [player.health_delta](hooks/player.health_delta.md) | filter | Change every player health gain or loss before it lands. |
+| [player.health_delta](hooks/player.health_delta.md) | filter | Change every player health gain or loss before it applies. |
 | [player.stamina_delta](hooks/player.stamina_delta.md) | filter | Change every stamina cost or gain before it applies. |
 | [player.incoming_damage](hooks/player.incoming_damage.md) | filter | Change the final damage a hit deals the player. |
 | [player.move_speed](hooks/player.move_speed.md) | filter | Change the player's move speed after every engine modifier. |
+| [player.essence_delta](hooks/player.essence_delta.md) | filter | Change every essence gain or spend before it applies. |
+| [player.gold_delta](hooks/player.gold_delta.md) | filter | Change every gold gain or spend before it applies. |
+| [player.mana_delta](hooks/player.mana_delta.md) | filter | Change every mana gain or spend before it applies. |
+| [player.xp_delta](hooks/player.xp_delta.md) | filter | Change every skill XP gain before it applies, or turn it into a deduction. |
+| [player.renown_delta](hooks/player.renown_delta.md) | filter | Change every renown gain before it applies, or turn it into a deduction. |
 | [player.equipment_bonus](hooks/player.equipment_bonus.md) | filter | Adjust the bonus an equipment infusion grants the player. |
 | [player.max_health_item](hooks/player.max_health_item.md) | event | Know when an item permanently raises Ari's max health. |
 | [player.heal_vfx](hooks/player.heal_vfx.md) | guard | Block the player's heal sparkle before it plays. |
 | [player.status_effect_register](hooks/player.status_effect_register.md) | filter | Rewrite a status effect as it registers. |
 | [player.status_effect_cancel](hooks/player.status_effect_cancel.md) | event | Know when the game cancels a status effect. |
 | [player.status_effect_expired](hooks/player.status_effect_expired.md) | event | Know the moment a status effect runs out. |
+| [fishing.should_reel](hooks/fishing.should_reel.md) | filter | Change whether the player reels from the fishing Wait state this frame. |
 | [npc.heart_points](hooks/npc.heart_points.md) | filter | Adjust the heart points a villager gains. |
 | [npc.gift_received](hooks/npc.gift_received.md) | event | Know when the player gives an NPC a gift. |
 | [animal.heart_points](hooks/animal.heart_points.md) | filter | Adjust the heart points a barn animal gains. |
@@ -159,6 +165,12 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | ---- | ----------- |
 | [player_health_delta](seams/player_health_delta.md) | Filters the signed health delta at the top of `Ari.modify_health()`. |
 | [player_stamina_delta](seams/player_stamina_delta.md) | Filters the signed stamina delta before the stamina cost modifier applies. |
+| [player_essence_delta](seams/player_essence_delta.md) | Filters the signed essence delta at the top of `Ari.modify_essence()`, floored so the total never goes negative. |
+| [player_gold_delta](seams/player_gold_delta.md) | Filters the signed gold delta at the top of `Ari.modify_gold()`. |
+| [player_mana_delta](seams/player_mana_delta.md) | Filters the signed mana delta at the top of `Ari.modify_mana()`. |
+| [player_mana_item_delta](seams/player_mana_item_delta.md) | Reroutes the mana potion's direct `set_mana` call through `modify_mana`, so item restores fire the mana filter. |
+| [player_xp_delta](seams/player_xp_delta.md) | Filters the XP delta at the head of `gain_xp()`, floors the total at zero, and narrows the level celebration to genuine gains. |
+| [player_renown_delta](seams/player_renown_delta.md) | Filters the renown delta at the top of `Ari.modify_renown()`, once per pending entry at day rollover. |
 | [player_incoming_damage](seams/player_incoming_damage.md) | Rewrites the player's damage drain so mods filter the final damage and its popup and flinch side effects. |
 | [player_move_speed](seams/player_move_speed.md) | Filters the player's computed move speed after the status-effect multipliers. |
 | [player_equipment_bonus](seams/player_equipment_bonus.md) | Rewrites the equipment bonus lookup's return into a filtered return. |
@@ -167,9 +179,10 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [player_status_effect_register](seams/player_status_effect_register.md) | Filters every status effect's fields at the top of `register()`. |
 | [player_status_effect_cancel](seams/player_status_effect_cancel.md) | Emits at the head of `StatusEffectManager.cancel()`, before any lookup. |
 | [player_status_effect_expired](seams/player_status_effect_expired.md) | Emits inside `update()`'s expiry branch, right after the effect is removed. |
-| [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it lands. |
+| [fishing_should_reel](seams/fishing_should_reel.md) | Filters the Wait state's reel decision before the complete vanilla reel block. |
+| [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it applies. |
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
-| [animal_heart_points](seams/animal_heart_points.md) | Reroutes every barn-animal heart-point delta through a filter before it lands. |
+| [animal_heart_points](seams/animal_heart_points.md) | Reroutes every barn-animal heart-point delta through a filter before it applies. |
 | [animal_on_pet](seams/animal_on_pet.md) | Announces the moment the player pets a barn animal. |
 | [animal_put_down](seams/animal_put_down.md) | Announces the moment a held animal is set back down. |
 | [combat_damage_pre](seams/combat_damage_pre.md) | Threads every enqueued hit through a damage filter before it resolves. |
@@ -247,6 +260,7 @@ Hook-less edits the catalog also carries:
 | ---- | ---- | ----------- |
 | [game_step_begin_installs](seams/game_step_begin_installs.md) | engine fix | Installs the MMAPI per-frame drain at the top of the game's `step_begin`, the framework's lifecycle root. |
 | [shroom_puddle_mask](seams/shroom_puddle_mask.md) | engine fix | Corrects the acid puddle's damage-tarball collision mask, a beta-wiring fix. |
+| [statue_hp_death_sweep](seams/statue_hp_death_sweep.md) | engine fix | Adds the Living Griffin Statue's missing depleted-hp death check, closing a potential soft-lock and matching every other monster's sweep. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Growing The Catalog

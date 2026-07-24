@@ -23,7 +23,8 @@
 # Anchors are matched after normalizing \r\n to \n.
 # Apply order is catalog order plus `depends_on` edges (topo-sorted, stable).
 # Hook-less edits live in [[engine_fix]]: game_step_begin_installs (the mmapi
-# lifecycle root) and shroom_puddle_mask (a beta-wiring fix).
+# lifecycle root), shroom_puddle_mask (a beta-wiring fix), and
+# statue_hp_death_sweep (the griffin statue's missing depleted-hp death check).
 
 version = 2
 
@@ -174,6 +175,11 @@ kind = "filter"
 doc  = "Filters the spawn chance passed to try_create_side_room() at the head of that function, before the per-floor roll. ctx is { impl, is_ritual, max_flr }; is_ritual is true when impl == DungeonImpl.Ritual (the pre-computed convenience flag so consumers need not reference the DungeonImpl enum). Return an adjusted chance (0-100) to raise/lower the odds of a treasure/ritual side room; return the value unchanged (or undefined) to defer. Fires for every side-room impl the runner attempts."
 
 [[hook]]
+name = "fishing.should_reel"
+kind = "filter"
+doc  = "Fires every step of the player fishing FSM's Wait state, after bite notification handling and before the retract sound, caught/missed handling, and Reel transitions. The filtered value is whether the player requested a reel through the normal tool inputs. ctx is { bite_active }, true while FISHING.bite_timer is positive. Return a replacement boolean, or undefined to keep the current value. The final true value runs the complete vanilla reel block; false remains in Wait. Hot while waiting for a fish."
+
+[[hook]]
 name = "fsm.transition"
 kind = "filter"
 doc  = "Fires in __StateMachine.execute_state_change(), once per executed state transition of every shared-FSM machine in the game (monsters, the player and the fishing sub-machine, NPCs, animals, birds, fish and fish schools, the camera, cameos, the bobber), before the outgoing state's stop() runs. The filtered value is the struct { fsm, owner, from, to, cancel: false }: fsm is the machine, owner is whatever spawn() received (an instance for monsters, NPCs, and the player; a struct for the camera and the fishing sub-machine, so check is_struct before touching instance fields), from and to are the machine's per-species enum state ids (CatState.*, TomeState.*, MushroomState.*, PlayerState.*, and so on, resolvable by name in mod GML). Return the replacement struct, or mutate it in place and return undefined; the seam re-reads fields defensively. Set cancel to true to skip the transition entirely (no stop or start runs, the machine keeps its state, and state_frame stalls for that tick); set to to a different valid state id of the same machine to redirect (non-numeric, fractional, or out-of-range values are ignored). Redirect via the struct, never by calling change_state from inside a handler. The initial state entered at spawn does not dispatch. Deferred requests overwritten before new_tick never dispatch. A cancelled transition that the owner re-requests every step re-dispatches every tick for that instance while the cancel holds. Transitions are edge events, not per-frame."
@@ -198,7 +204,7 @@ doc  = "Fires from the begin_step derived-events poll when total_days() changes.
 name = "game.room_changed"
 kind = "event"
 provider = "runtime"
-doc  = "Fires from the begin_step derived-events poll when room() changes, after room_start has already run. ctx is { previous, current } (gm_room values). Observation only: to change room content as it loads, use the in-file seams (dungeon.floor_enter and the room transition events) instead."
+doc  = "Fires from the begin_step derived-events poll when room() changes, after room_start has already run. ctx is { previous, current } (gm_room values). Observation only: to change room content as it loads, use the in-file seams (dungeon.floor_enter and the room transition events) instead. Do not cache ctx.current for a later decision: the poll lags the real transition by a frame or more, no event fires for the room a session starts in (a save loaded in-place leaves any cache empty until the next change), and the ctx values are gm_room ASSETS, not name strings. Read room() live at the point of use (asset_to_string(room()) for the name) and treat this event as an edge trigger only; for request-time semantics, use game.room_transition_pre."
 
 [[hook]]
 name = "game.room_transition_post"
@@ -332,6 +338,16 @@ kind = "filter"
 doc  = "Fires at the return of the player's equipment bonus lookup. The filtered value is the computed bonus. ctx is { player, infusion, key }. Return the replacement value, or undefined to keep the current value."
 
 [[hook]]
+name = "player.essence_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.modify_essence(), before the delta is applied. The filtered value is the signed essence delta: morsel pickups, item gains, and ritual refunds are positive; shrine offerings and essence craft costs are negative. ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. The seam floors the filtered result at -essence so the total never goes negative: set_essence has no floor of its own, and a negative total arms the engine's essence assert, which crashes on the NEXT essence change. The floor never binds on engine values (every vanilla spend is affordability-gated first). Absolute sets (save load, new game, debug) do not route through modify_essence and never fire this hook. Morsel-based gains land here per collected morsel, after gain_essence()'s overflow accrual and Requirement.CollectEssence gate."
+
+[[hook]]
+name = "player.gold_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.modify_gold(), before the delta is applied. The filtered value is the signed gold delta: sales, rewards, and grants positive; purchases, fees, and craft costs negative. A store checkout arrives as one negative delta of the whole basket total (a sale arrives the same way with the sign flipped). ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. set_gold floors the result at 0 and truncates fractions, so an overdrawing replacement safely bottoms out at broke. Absolute sets (save load, new game, debug) do not route through modify_gold and never fire this hook."
+
+[[hook]]
 name = "player.heal_vfx"
 kind = "guard"
 doc  = "Fires at the top of play_heal_vfx(). ctx is { color, sprite }. Return false to veto the heal vfx. Undefined or true allows."
@@ -347,6 +363,11 @@ kind = "filter"
 doc  = "Fires in the player's damage drain in obj_ari, after mitigation is applied. The filtered value is the final signed damage (health only changes while it is negative). ctx is { player, receiver, tarball }. Return the replacement damage or undefined to keep the current value. A combat.damage filter can set the ctx.tarball fields __mmapi_player_show_damage_popup and __mmapi_player_should_flinch to false to suppress the damage popup and flinch, and with both false and non-negative damage the hit is skipped entirely. mmapi_deal_damage()'s show_popup and flinch opts ride the same two fields."
 
 [[hook]]
+name = "player.mana_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.modify_mana(), before the delta is applied. The filtered value is the signed mana delta: cast deductions negative, restores positive. ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. set_mana clamps the result to [0, mana_max], so any replacement is safe. A companion seam reroutes the mana potion's direct set_mana call through modify_mana, so item restores fire this hook too; cutscene absolute sets and save load do not. Composes with spells.cost: a cast's deduction arrives here as the negative of the already-filtered cost, so prefer spells.cost for spell pricing and this hook for everything else."
+
+[[hook]]
 name = "player.max_health_item"
 kind = "event"
 doc  = "Fires right after an item's max_health_modifier raises ARI.base_health, before the vitals menu updates. ctx is { player, amount, live_item }."
@@ -355,6 +376,11 @@ doc  = "Fires right after an item's max_health_modifier raises ARI.base_health, 
 name = "player.move_speed"
 kind = "filter"
 doc  = "Fires at the end of the player's move speed computation, after the status effect multipliers. The filtered value is the speed. ctx is { player, on_mount }. Return the replacement speed, or undefined to keep the current value."
+
+[[hook]]
+name = "player.renown_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.modify_renown(), before the delta is applied. The filtered value is the renown delta. The engine's one gameplay caller is the on_new_day drain of pending_renown_entries, so this fires at day rollover, once per pending entry (quest completions, museum donations, the prior day's shipping gold). ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. set_renown clamps the resulting total to [0, max renown], so any replacement is safe: a negative delta lowers renown and the computed level, plays no celebration, and never revokes already-granted level rewards, while a gain that crosses several levels grants each crossed level's reward. The end-of-day menu tallies the raw pending entries before the drain, so its renown-earned figure shows unfiltered values. Absolute sets (debug, test suite, new game) do not route through modify_renown and never fire this hook."
 
 [[hook]]
 name = "player.stamina_delta"
@@ -375,6 +401,11 @@ doc  = "Fires in StatusEffectManager.update() when an effect's finish time lapse
 name = "player.status_effect_register"
 kind = "filter"
 doc  = "Fires at the top of StatusEffectManager.register(). The filtered value is the struct { type, amount, start_time, finish_time, can_stack, show_hud }. ctx is the manager. Return the replacement struct. The seam tolerates an undefined return and re-reads each field defensively."
+
+[[hook]]
+name = "player.xp_delta"
+kind = "filter"
+doc  = "Fires at the top of Ari.gain_xp(skill, xp, silent), before the XP is applied. The filtered value is the XP delta; ctx is { player, skill, silent }, skill being the Skill.* enum id. Return the replacement delta, or undefined to keep the current value. A negative delta genuinely deducts XP and can lower the skill's level: the seam floors the filtered result at -skill_xp[skill] so the total never goes negative (levels 0 and 1 cost 0 XP, so the computed level bottoms out at 1, never the -1 a negative total would read as), and the seam narrows the level celebration to genuine gains, so a level DOWN does not play the LevelUp chime and dingaling (vanilla celebrates any level change; the narrowed condition is unreachable without a negative delta). The floor never binds on engine values (vanilla deltas are all non-negative). The engine's own cap at MAX_SKILL_LEVEL_COSTS still applies after the filter, and already-granted level rewards are not revoked by leveling down."
 
 [[hook]]
 name = "resource.node_modifier"
@@ -1259,6 +1290,23 @@ replace = '''
 marker  = "mmapi_spell_default_cost"
 provides = ["spells.cost"]
 
+# FishingState.Windup contains the same input expression. The following
+# fishing_sfx line makes this the one Wait-state gate, where a true result runs
+# the complete pristine retract/caught-or-missed/Reel block.
+[[seam]]
+id      = "fishing_should_reel"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                        if INPUT.check(InputId.UseToolCharged) || INPUT.check(InputId.UseToolRepeated) {
+                            var fishing_sfx = fiddle_get("tool_fx/fishing");'''
+replace = '''
+                        var __mmapi_fishing_should_reel = INPUT.check(InputId.UseToolCharged) || INPUT.check(InputId.UseToolRepeated);
+                        try { __mmapi_fishing_should_reel = mmapi_apply_filters("fishing.should_reel", __mmapi_fishing_should_reel, { bite_active: FISHING.bite_timer > 0 }); } catch (__mmapi_fishing_should_reel_error) {} // mmapi_fishing_run_should_reel_filters
+                        if (__mmapi_fishing_should_reel) {
+                            var fishing_sfx = fiddle_get("tool_fx/fishing");'''
+marker  = "mmapi_fishing_run_should_reel_filters"
+provides = ["fishing.should_reel"]
+
 [[seam]]
 id      = "player_equipment_bonus"
 file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
@@ -1347,6 +1395,136 @@ var     = "amount_to_add"
 indent  = 8
 try_catch = false
 marker  = "mmapi_player_run_stamina_delta_filters"
+
+# The essence delta filter carries its own floor: set_essence has no lower
+# clamp, and a negative total arms the engine's assert(essence >= 0), which
+# crashes on the NEXT essence change - far from the handler that caused it.
+# The floor (and the is_real/is_int64 type guard in front of it) only binds
+# on handler output vanilla never produces, so with zero handlers the edit
+# is behaviorally equivalent to pristine.
+[[seam]]
+id      = "player_essence_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+anchor  = '''
+    function modify_essence(amount_to_add) {
+        self.set_essence(self.essence + amount_to_add);
+    }'''
+replace = '''
+    function modify_essence(amount_to_add) {
+        try {
+            var __mmapi_essence_delta = mmapi_apply_filters("player.essence_delta", amount_to_add, { player: self }); // mmapi_player_run_essence_delta_filters
+            if (is_real(__mmapi_essence_delta) || is_int64(__mmapi_essence_delta)) {
+                amount_to_add = max(__mmapi_essence_delta, -self.essence);
+            }
+        } catch (__mmapi_essence_delta_err) {}
+        self.set_essence(self.essence + amount_to_add);
+    }'''
+marker  = "mmapi_player_run_essence_delta_filters"
+provides = ["player.essence_delta"]
+
+[[seam]]
+id      = "player_gold_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+context_before = '''
+    function modify_gold(amount_to_add) {
+'''
+context_after = '''
+        self.set_gold(self.gold + amount_to_add);
+    }'''
+op      = "filter"
+hook    = "player.gold_delta"
+ctx     = "{ player: self }"
+var     = "amount_to_add"
+indent  = 8
+try_catch = false
+marker  = "mmapi_player_run_gold_delta_filters"
+
+[[seam]]
+id      = "player_mana_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+context_before = '''
+    function modify_mana(amount_to_add) {
+'''
+context_after = '''
+        var o = get_mana();
+        set_mana(o + amount_to_add);
+    }'''
+op      = "filter"
+hook    = "player.mana_delta"
+ctx     = "{ player: self }"
+var     = "amount_to_add"
+indent  = 8
+try_catch = false
+marker  = "mmapi_player_run_mana_delta_filters"
+
+# The one gameplay-delta mana change that bypasses modify_mana: the mana
+# potion consumes via set_mana(mana_current + modifier). modify_mana(x) is
+# literally set_mana(get_mana() + x), so the reroute is behavior-identical
+# and brings item restores into the player.mana_delta filter.
+[[seam]]
+id      = "player_mana_item_delta"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                            ARI.set_mana(ARI.mana_current + self.live_item.prototype.mana_modifier);'''
+replace = '''
+                            ARI.modify_mana(self.live_item.prototype.mana_modifier); // mmapi_player_mana_item_delta'''
+marker  = "mmapi_player_mana_item_delta"
+provides = ["player.mana_delta"]
+
+# The XP delta filter floors the running total at zero: skill_xp has no
+# lower clamp, and skill_xp_to_level() reads a negative total as level -1.
+# Levels 0 and 1 cost 0 XP, so the floored level bottoms out at 1. The same
+# edit narrows the level celebration from `!=` to `<`, so a level DOWN does
+# not play the LevelUp chime and dingaling - a branch vanilla cannot reach,
+# since every vanilla delta is non-negative.
+[[seam]]
+id      = "player_xp_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+anchor  = '''
+    function gain_xp(skill, xp, silent=false) {
+        var old_skill_level = ARI.level(skill);
+
+        self.skill_xp[skill] = min(
+            self.skill_xp[skill] + xp,
+            MAX_SKILL_LEVEL_COSTS[skill],
+        );
+
+        if !silent && old_skill_level != ARI.level(skill) {'''
+replace = '''
+    function gain_xp(skill, xp, silent=false) {
+        try {
+            var __mmapi_xp_delta = mmapi_apply_filters("player.xp_delta", xp, { player: self, skill: skill, silent: silent }); // mmapi_player_run_xp_delta_filters
+            if (is_real(__mmapi_xp_delta) || is_int64(__mmapi_xp_delta)) {
+                xp = max(__mmapi_xp_delta, -self.skill_xp[skill]);
+            }
+        } catch (__mmapi_xp_delta_err) {}
+        var old_skill_level = ARI.level(skill);
+
+        self.skill_xp[skill] = min(
+            self.skill_xp[skill] + xp,
+            MAX_SKILL_LEVEL_COSTS[skill],
+        );
+
+        if !silent && old_skill_level < ARI.level(skill) {'''
+marker  = "mmapi_player_run_xp_delta_filters"
+provides = ["player.xp_delta"]
+
+[[seam]]
+id      = "player_renown_delta"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+context_before = '''
+    function modify_renown(amount_to_add) {
+'''
+context_after = '''
+        self.set_renown(self.renown + amount_to_add);
+    }'''
+op      = "filter"
+hook    = "player.renown_delta"
+ctx     = "{ player: self }"
+var     = "amount_to_add"
+indent  = 8
+try_catch = false
+marker  = "mmapi_player_run_renown_delta_filters"
 
 [[seam]]
 id      = "player_move_speed"
@@ -1818,6 +1996,33 @@ replace = '''
                 .set_provenance(self.owner.monster_id, self.owner.stats_entry)
 '''
 marker  = "mmapi_hot_patch_damage_mask"
+
+# The Living Griffin Statue is the one hp-driven monster with no depleted-hp death
+# check outside its damage drain. Its only Dying transition sits inside
+# `if hit_points > 0 { ... if took_any_damage { ... } }`, so hp reaching zero without
+# a drained hit leaves it alive, hostile, and undamageable forever. The drain gate
+# never passes again. The fix adds the else branch every sibling of this drain
+# template carries (mite, bat, cat, enchantern).
+[[engine_fix]]
+name    = "statue_hp_death_sweep"
+file    = "gml/objects/obj_monster_statue.gml"
+anchor  = '''
+                    if self.hit_points <= 0 {
+                        self.fsm.change_state(StatueState.Dying);
+                    }
+                }
+            }
+        },'''
+replace = '''
+                    if self.hit_points <= 0 {
+                        self.fsm.change_state(StatueState.Dying);
+                    }
+                }
+            } else if csi != StatueState.Dying {
+                self.fsm.change_state(StatueState.Dying); // mmapi_statue_hp_sweep
+            }
+        },'''
+marker  = "mmapi_statue_hp_sweep"
 
 # The remaining entries are appended after the earlier ones on purpose. Catalog
 # order is apply order, and two of them stack onto files already seamed above

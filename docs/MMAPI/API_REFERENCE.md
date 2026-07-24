@@ -209,7 +209,15 @@ if (_id != undefined) { ARI.give_item(_id, 1); }
 ARI.modify_gold(500);
 
 // Show the toast notification popup. Once per real event, not every frame.
-create_notification("Something happened");
+// The argument is a LOCALIZATION KEY, resolved engine-side through local_get
+// - inside the local_get_dispatch rewrite, so local.get filters apply (pass
+// the key, never pre-localized text). Register your own keys via fiddle
+// strings + l10n fiddle_renames: see Mod Anatomy's "User-Facing Text".
+// Optional second arg suppresses repeats of the same key, in frames.
+create_notification("misc_local/known_recipe");
+create_notification("mods/my_mod/notifications/something_happened", 60 * 5);
+// Prototypes only (untranslatable, bypasses filters):
+create_notification(ANCHOR.wrap_for_local("Something happened"));
 
 // Teleport the player to a named location, at pixel coordinates in that room.
 if (instance_exists(obj_ari)) {

@@ -6,7 +6,7 @@ Know when the player has landed in a different room.
 
 ## Contract
 
-Fires from the begin_step derived-events poll when `room()` changes, after `room_start` has already run. ctx is `{ previous, current }` (`gm_room` values). Observation only: to change room content as it loads, use the in-file seams ([dungeon.floor_enter](dungeon.floor_enter.md) and the room transition events) instead.
+Fires from the begin_step derived-events poll when `room()` changes, after `room_start` has already run. ctx is `{ previous, current }` (`gm_room` values). Observation only: to change room content as it loads, use the in-file seams ([dungeon.floor_enter](dungeon.floor_enter.md) and the room transition events) instead. Do not cache `ctx.current` for a later decision — see the warning below.
 
 | | |
 | --- | --- |
@@ -21,6 +21,9 @@ Fires from the begin_step derived-events poll when `room()` changes, after `room
 
 > [!NOTE]
 > This event fires after the fact: begin_step runs after `room_start`, so the new room is already set up when your handler runs. The first poll of a session only records the current room as the baseline. No event fires for the room the session starts in.
+
+> [!WARNING]
+> Do not derive state from this event. Caching `ctx.current` in your runtime and reading the cache at a later decision point goes stale three distinct ways: the poll lags the real transition by a frame or more; a session that loads straight into a room gets no event, so the cache stays empty until the next change; and the ctx values are `gm_room` **assets**, not name strings — an `is_string(ctx.current)` check silently drops them. Each of these has shipped as a real bug in ported mods whose legacy versions hooked the room-change function itself, where handler-time caches were sound; this event is a lagging echo of that change, not the change. Read `room()` live at the point of use instead (`asset_to_string(room())` for the name), and treat this event as an **edge trigger** only — react to a transition, never record it. When you need request-time semantics — knowing or changing where a transition is going before it happens — use [game.room_transition_pre](game.room_transition_pre.md).
 
 ## Usage
 

@@ -29,11 +29,30 @@ ARI.modify_gold(500);   // a negative amount takes gold
 
 ## Show a Notification
 
-```gml
-create_notification("Something happened");
+`create_notification` takes a **localization key**, resolved engine-side through `local_get`. The shipped-mod pattern registers your string and passes the derived key. See the full mechanism in [User-Facing Text](MOD_ANATOMY.md#user-facing-text-localization):
+
+```toml
+# fiddle/mods/my_mod/notifications.toml
+something_happened = "Something happened!"
 ```
 
-Once per real event, not every frame.
+```toml
+# localization/l10n.meta.toml: Flat per-file entries ONLY (the umbrella
+# directory form crashes the engine at boot)
+[asset_properties]
+	[asset_properties.fiddle_renames]
+		"mods/my_mod/notifications" = ["*"]
+```
+
+```gml
+create_notification("mods/my_mod/notifications/something_happened", 60 * 5);
+```
+
+The optional second argument suppresses repeats of the same key for that many frames (`60 * 5` ≈ five seconds). Once per real event, not every frame.
+
+Because the key resolves inside the [local_get_dispatch](seams/local_get_dispatch.md) rewrite, [local.get](hooks/local.get.md) filters can substitute dynamic tokens into the text at display time. Pass the key, never pre-localized text, or the filters never see it.
+
+For throwaway prototypes only: `create_notification(ANCHOR.wrap_for_local("raw text"))` shows unregistered text, it is untranslatable and invisible to filters.
 
 ## Teleport the Player
 

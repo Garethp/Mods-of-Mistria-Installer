@@ -49,6 +49,44 @@ function mmapi_hotkey_vk_from_name(name) {
     return undefined;
 }
 
+// Reverse of mmapi_hotkey_vk_from_name: the friendly button name a vk resolves to,
+// for human-readable diagnostics (the conflict Warn / poll-failure Warn) instead of
+// a bare ordinal. A single digit/letter reverses straight to its character; the named
+// keys (F1-F12, NUMPAD_*, specials) probe the forward map so the two never drift.
+// Falls back to "vk <ordinal>" for a code with no supported name.
+function mmapi_hotkey_name_from_vk(vk) {
+    if (!is_real(vk)) { return "vk " + string(vk); }
+
+    // Digit or letter: the forward map used the ASCII code directly (ord). Reverse it
+    // by indexing the contiguous vocabulary (via string_char_at + ord rather than chr,
+    // which the live runtime has but the tier-1 VM's stdlib does not).
+    if (vk >= ord("0") && vk <= ord("9")) {
+        return string_char_at("0123456789", vk - ord("0") + 1);
+    }
+    if (vk >= ord("A") && vk <= ord("Z")) {
+        return string_char_at("ABCDEFGHIJKLMNOPQRSTUVWXYZ", vk - ord("A") + 1);
+    }
+
+    // Named keys: find the name whose forward lookup yields this vk. This only runs on
+    // a conflict (or a failed callback), so a linear scan of the vocabulary is fine.
+    // Each probe is guarded: the forward map reads bare vk_* constants, which the live
+    // runtime defines and the tier-1 VM does not, and a diagnostics path must never
+    // throw - a name that does not resolve just falls through to the "vk <ordinal>" form.
+    var names = [
+        "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+        "NUMPAD_0", "NUMPAD_1", "NUMPAD_2", "NUMPAD_3", "NUMPAD_4",
+        "NUMPAD_5", "NUMPAD_6", "NUMPAD_7", "NUMPAD_8", "NUMPAD_9",
+        "INSERT", "DELETE", "HOME", "PAGE_UP", "PAGE_DOWN", "SHIFT", "ALT",
+        "CONTROL", "PAUSE_BREAK", "CAPS_LOCK", "NUM_LOCK", "SCROLL_LOCK",
+    ];
+    for (var i = 0; i < array_length(names); i++) {
+        var candidate = undefined;
+        try { candidate = mmapi_hotkey_vk_from_name(names[i]); } catch (__mmapi_hotkey_vk_probe) {}
+        if (candidate == vk) { return names[i]; }
+    }
+    return "vk " + string(vk);
+}
+
 function mmapi_hotkey_register(vk, callback, opts) {
     if (global[$ "__mmapi_hotkeys"] == undefined) { global.__mmapi_hotkeys = []; }
     var hotkeys = global.__mmapi_hotkeys;
@@ -59,7 +97,7 @@ function mmapi_hotkey_register(vk, callback, opts) {
     for (var i = 0; i < array_length(hotkeys); i++) {
         if (hotkeys[i].vk == vk) {
             mmapi_log_warn(mod_name,
-                "mmapi hotkey conflict: vk " + string(vk) + " is registered by "
+                "mmapi hotkey conflict: " + mmapi_hotkey_name_from_vk(vk) + " is registered by "
                 + hotkeys[i].mod_name + " and now also by " + mod_name
                 + ". Both will fire");
         }
@@ -81,7 +119,7 @@ function mmapi_hotkeys_poll() {
                 mmapi_warn_rate_limited(
                     "hotkey:" + string(entry.vk) + ":" + entry.mod_name,
                     entry.mod_name,
-                    "mmapi hotkey vk " + string(entry.vk) + " from "
+                    "mmapi hotkey " + mmapi_hotkey_name_from_vk(entry.vk) + " from "
                     + entry.mod_name + " failed: " + string(err));
             }
         }

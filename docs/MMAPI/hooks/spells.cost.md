@@ -49,4 +49,5 @@ mmapi_filter("spells.cost", mana_miser_spells_cost);
 
 - [spells.can_cast](spells.can_cast.md) - Take over the whole can-cast decision instead of just its mana term.
 - [spells.cast](spells.cast.md) - Replace the cast itself. A consumed cast still pays this cost.
+- [player.mana_delta](player.mana_delta.md) - Filter the mana deduction itself, after this cost filter has run.
 - [ui.sprite](ui.sprite.md) - Swap the spell card backplate in the same menu.

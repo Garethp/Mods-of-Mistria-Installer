@@ -18,9 +18,9 @@ The catalog is `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`, embedded int
 | `[[engine_fix]]` | A hook-less engine edit. It applies like a text seam but dispatches nothing. |
 | `[[call_rewrite]]` | A tree-wide redirect of direct calls to a native function that has no GML body to seam. |
 
-The shipped catalog currently declares **87 hooks**, fed by **93 seams**, **2 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
+The shipped catalog currently declares **93 hooks**, fed by **100 seams**, **3 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
 
-Some hooks use `provider = "runtime"`. The framework emits those itself, with no engine edit behind them. `combat.damage_injected`, `game.day_started`, `game.room_changed`, and `game.title_entered` are the current runtime-provided hooks.
+Some hooks use `provider = "runtime"`. The framework emits those itself, with no engine edit behind them. `combat.damage_injected`, `game.day_started`, `game.room_changed`, and `game.title_entered` are the current runtime-provided hooks. The derived ones are polls over live state (`room()`, `total_days()`): they lag the change they report, and the first poll of a session only records the baseline, so no event fires for the state a session starts in. Treat them as edge triggers — react to the change, but read the live state at any later decision point rather than caching their ctx (see the warning on [game.room_changed](hooks/game.room_changed.md)).
 
 At install time MOMI also renders the hook declarations into `mmapi_hook_catalog.gml`. That generated file supplies the runtime name, kind, alias, and override-contention tables used by registration checks and introspection. See [The Installed Catalog](HOOKS.md#the-installed-catalog).
 
@@ -347,7 +347,7 @@ The generated template payload defaults to a site-level `try/catch`, and each di
 - Dispatcher isolation protects one mod from another and applies the kind's failure rule.
 - Site isolation protects the engine from a bad context expression, result assignment, or framework-site assumption around an ordinary dispatch. A `ctx_filter` builds its initial struct before entering its catch, so its field expressions must be safe on their own.
 
-For a simple line op, `try_catch = false` emits that line bare. Existing entries use it only at tested legacy sites. It is not a performance switch; leave it true for new seams unless the exact engine location requires otherwise and the reason is recorded on the seam page.
+For a simple line op, `try_catch = false` emits that line bare. Existing entries use it only at tested sites whose dispatch line cannot fail on its own: a ctx that cannot fail to construct, such as the player delta family's `{ player: self }`. It is not a performance switch, leave it true for new seams unless the exact engine location requires otherwise and the reason is recorded on the seam page.
 
 Check the zero-handler path explicitly:
 
