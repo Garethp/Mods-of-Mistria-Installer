@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **93 hooks**, fed by **100 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **95 hooks**, fed by **102 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -40,6 +40,8 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [interact.elevator_action](hooks/interact.elevator_action.md) | guard | Block the dungeon elevator before its menu opens. |
 | [interact.ladder_down_action](hooks/interact.ladder_down_action.md) | guard | Stop a dungeon ladder descent before it starts. |
 | [resource.node_modifier](hooks/resource.node_modifier.md) | filter | Change the charged-tool modifier on picks and chops. |
+| [request_board.fetch_pool](hooks/request_board.fetch_pool.md) | filter | Change the request board's daily candidate pool and draw cap. |
+| [request_board.fetch_pool_ready](hooks/request_board.fetch_pool_ready.md) | event | Know the finished request board the moment it is built each day. |
 | [furniture.place_guard](hooks/furniture.place_guard.md) | guard | Veto a furniture placement before it is written. |
 | [object.interact](hooks/object.interact.md) | override | Take over any grid object's interaction. |
 | [object.node_sprite](hooks/object.node_sprite.md) | filter | Swap the sprite of any world node before it draws. |
@@ -153,6 +155,8 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [interact_ladder_down_action](seams/interact_ladder_down_action.md) | Puts a veto check on the ladder's descend action, before the sound and the floor change. |
 | [pick_node_modifier](seams/pick_node_modifier.md) | Filters the tool modifier at the head of every pick action. |
 | [chop_node_modifier](seams/chop_node_modifier.md) | Filters the tool modifier at the head of every chop action. |
+| [request_board_fetch_pool](seams/request_board_fetch_pool.md) | Rewrites the request board's daily random top-up so the candidate pool and draw cap pass through a filter. |
+| [request_board_fetch_pool_ready](seams/request_board_fetch_pool_ready.md) | Emits the finished request board at the tail of the daily build, final pool included. |
 | [furniture_place_guard](seams/furniture_place_guard.md) | Puts a veto check in front of every furniture placement. |
 | [object_interact](seams/object_interact.md) | Puts a claim-scoped override in front of every grid-object interaction. |
 | [node_renderer_set_sprite](seams/node_renderer_set_sprite.md) | Filters the sprite every world node renderer is about to wear. |

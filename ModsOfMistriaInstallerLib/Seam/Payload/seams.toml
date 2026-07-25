@@ -413,6 +413,16 @@ kind = "filter"
 doc  = "Fires at the top of pick_node() and chop_node(), before the tool's modifier is applied to a resource node (rocks, forage, dig sites, trees, stumps). The filtered value is the tool modifier: the charged-tool bonus/penalty added to item.damage and to the item.quality gate. ctx is { grid, x, y, item, action }; action is \"pick\" or \"chop\". Return the replacement modifier (for example clamp a negative charged-tool penalty to 0 to remove the charged-attack damage penalty), or undefined to keep the current value."
 
 [[hook]]
+name = "request_board.fetch_pool"
+kind = "filter"
+doc  = "Fires in create_request_board()'s daily random top-up, after the crown offer and the always-available entries are already pushed and the candidate keys are shuffled, before the availability loop draws from them. The board builds once per day (new day, new game, and some loads), so this fires per build, not per viewing. The filtered value is the struct { random_pool, random_slots, year, season, day, is_crown_quest_day }: random_pool is the shuffled List of candidate request keys (a List with count()/get(), not an array), random_slots is the cap the draw stops at - it counts the WHOLE board, crown and always-available entries included, not just the random picks - year/season/day are the calendar date (day 1-based), and is_crown_quest_day reflects the crown cooldown being ready (an eligible offer may still be absent). ctx is undefined. Return the replacement struct, or undefined to keep the current values. The seam re-reads every field defensively, so a non-struct return or a partial struct keeps the engine values."
+
+[[hook]]
+name = "request_board.fetch_pool_ready"
+kind = "event"
+doc  = "Fires at the end of create_request_board(), after the final retain pass and the re-randomize, just before the built board list is returned. The board builds once per day (new day, new game, and some loads), so this fires per build, not per viewing. ctx is { year, season, day, is_crown_quest_day, final_pool }: the date fields match request_board.fetch_pool's, and final_pool is the LIVE List the function returns - pushing or removing entries here changes the actual board, so treat it as read-only unless that is the intent. The return value is ignored."
+
+[[hook]]
 name = "save.game_loaded"
 kind = "event"
 doc  = "Fires at the start of loading a save, right after the save path is recorded. ctx is { save_path }."
@@ -644,6 +654,118 @@ hook    = "resource.node_modifier"
 ctx     = '{ grid: grid, x: x_pos, y: y_pos, item: item, action: "chop" }'
 var     = "modifier"
 indent  = 4
+
+[[seam]]
+id      = "request_board_fetch_pool"
+file    = "gml/scripts/RequestBoard.gml"
+anchor  = '''
+    if CALENDAR.time >= days(1) {
+        var quantity = fiddle_get("misc/fetch_quests_per_day");
+        var keys = ListFromArray(REQUEST_BOARD_ENTRIES.keys());
+        keys.shuffle();
+
+        for (var i = 0; i < keys.count(); i++) {
+            var key = keys.get(i);
+            var entry = REQUEST_BOARD_ENTRIES.get(key);
+
+            //
+            //
+            if entry.randomly_selected
+                && !QUEST_LOG.completed.contains(key)
+                && !QUEST_LOG.active.contains_key(key)
+                && requirements_pass(entry.requirements)
+            {
+                requests.push(key);
+
+                if requests.count() >= quantity {
+                    break;
+                }
+            }
+        }
+    }
+'''
+replace = '''
+    if CALENDAR.time >= days(1) {
+        var __mmapi_rand_pool_size = fiddle_get("misc/fetch_quests_per_day");
+        var __mmapi_shuffled_keys = ListFromArray(REQUEST_BOARD_ENTRIES.keys());
+        __mmapi_shuffled_keys.shuffle();
+
+        var __mmapi_pool_ctx = {
+            random_pool: __mmapi_shuffled_keys,
+            random_slots: __mmapi_rand_pool_size,
+            year: CALENDAR.year(),
+            season: CALENDAR.season(),
+            day: CALENDAR.day() + 1,
+            is_crown_quest_day: ARI.ready_for_crown_quest(),
+        };
+        try {
+            __mmapi_pool_ctx = mmapi_apply_filters("request_board.fetch_pool", __mmapi_pool_ctx, undefined); // mmapi_request_board_fetch_pool_filter
+        } catch (__mmapi_request_board_fetch_pool) {}
+
+        if (!is_struct(__mmapi_pool_ctx)) {
+            __mmapi_pool_ctx = {};
+        }
+        var __mmapi_request_keys = __mmapi_pool_ctx[$ "random_pool"];
+        if (__mmapi_request_keys == undefined) {
+            __mmapi_request_keys = __mmapi_shuffled_keys;
+        }
+        var __mmapi_requests_cap = __mmapi_pool_ctx[$ "random_slots"];
+        if (__mmapi_requests_cap == undefined) {
+            __mmapi_requests_cap = __mmapi_rand_pool_size;
+        }
+        var __mmapi_request_keys_count = 0;
+        try {
+            __mmapi_request_keys_count = __mmapi_request_keys.count();
+        } catch (__mmapi_request_board_pool_count) {
+            __mmapi_request_keys_count = 0;
+        }
+        for (var i = 0; i < __mmapi_request_keys_count; i++) {
+            var key = __mmapi_request_keys.get(i);
+            var entry = REQUEST_BOARD_ENTRIES.get(key);
+
+            //
+            //
+            if entry.randomly_selected
+                && !QUEST_LOG.completed.contains(key)
+                && !QUEST_LOG.active.contains_key(key)
+                && requirements_pass(entry.requirements)
+            {
+                requests.push(key);
+
+                if requests.count() >= __mmapi_requests_cap {
+                    break;
+                }
+            }
+        }
+    }
+'''
+marker  = "mmapi_request_board_fetch_pool_filter"
+provides = ["request_board.fetch_pool"]
+
+[[seam]]
+id      = "request_board_fetch_pool_ready"
+file    = "gml/scripts/RequestBoard.gml"
+anchor  = '''
+    randomize();
+    return requests;
+}'''
+replace = '''
+    randomize();
+
+    try {
+        mmapi_emit("request_board.fetch_pool_ready", {
+            year: CALENDAR.year(),
+            season: CALENDAR.season(),
+            day: CALENDAR.day() + 1,
+            is_crown_quest_day: ARI.ready_for_crown_quest(),
+            final_pool: requests,
+        }); // mmapi_request_board_fetch_pool_ready_emit
+    } catch (__mmapi_request_board_ready) {}
+
+    return requests;
+}'''
+marker  = "mmapi_request_board_fetch_pool_ready_emit"
+provides = ["request_board.fetch_pool_ready"]
 
 [[seam]]
 id      = "monster_draw"
