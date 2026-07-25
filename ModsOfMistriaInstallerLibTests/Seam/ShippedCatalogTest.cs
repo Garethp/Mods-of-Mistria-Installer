@@ -55,8 +55,14 @@ public class ShippedCatalogTest
             .Select(d => d.Name)
             .ToList();
         Assert.That(runtime, Does.Contain("game.room_changed"));
-        Assert.That(runtime, Does.Contain("game.day_started"));
+        Assert.That(runtime, Does.Contain("game.day_changed"));
         Assert.That(runtime, Does.Contain("game.title_entered"));
+
+        // The rename kept the old name resolving: game.day_changed carries the
+        // catalog's first alias, and the in-engine game.new_day is declared beside it.
+        var dayChanged = _catalog.HookDeclarations.Single(d => d.Name == "game.day_changed");
+        Assert.That(dayChanged.Aliases, Does.Contain("game.day_started"));
+        Assert.That(_catalog.HookDeclarations.Select(d => d.Name), Does.Contain("game.new_day"));
     }
 
     [Test]
