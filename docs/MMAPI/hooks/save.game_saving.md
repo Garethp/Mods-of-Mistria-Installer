@@ -45,3 +45,4 @@ mmapi_on("save.game_saving", backup_buddy_save_game_saving);
 
 - [game.save_guard](game.save_guard.md) - This is the veto point at the head of the same function. A vetoed save never reaches this event.
 - [save.game_loaded](save.game_loaded.md) - This is the counterpart when a save starts loading.
+- [game.new_day](game.new_day.md) - On the end-of-day path that event fires just before this one: `new_day()` completes, then `EodMenu` commits the autosave.

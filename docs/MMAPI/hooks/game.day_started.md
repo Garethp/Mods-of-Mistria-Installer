@@ -21,6 +21,9 @@ Fires from the begin_step derived-events poll when `total_days()` changes. ctx i
 > [!NOTE]
 > The first poll of a session only records the current `total_days()` as the baseline. No event fires for the day the session starts in. After that, one event fires each time the value changes.
 
+> [!NOTE]
+> "The value changes" is the whole contract. A cross-day save load changes `total_days()` too, so this event can fire right after loading a save from a different day - and because the poll runs a frame after the end-of-day sequence, a real overnight fires it after the end-of-day autosave has already written. For the engine's new-day logic itself - fired inside `new_day()` before that autosave, and never on a save load - see [game.new_day](game.new_day.md).
+
 ## Usage
 
 ```gml
@@ -43,6 +46,7 @@ mmapi_on("game.day_started", morning_briefing_game_day_started);
 
 ## See Also
 
+- [game.new_day](game.new_day.md) - This is the engine's new-day logic itself: fired inside `new_day()` before the end-of-day autosave, never after a save load. Prefer it for daily resets and grants.
 - [game.room_changed](game.room_changed.md) - This event is the other main derived event from the same poll.
 - [game.clock_tick](game.clock_tick.md) - This is the every-frame clock event, for when a day is too coarse.
 - [clock.time_advance](clock.time_advance.md) - Control how fast the day boundary approaches.

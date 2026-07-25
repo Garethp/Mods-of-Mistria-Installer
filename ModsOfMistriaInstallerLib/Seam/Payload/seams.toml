@@ -198,7 +198,12 @@ doc  = "Fires inside Clock.update() each frame, after the natural per-frame time
 name = "game.day_started"
 kind = "event"
 provider = "runtime"
-doc  = "Fires from the begin_step derived-events poll when total_days() changes. ctx is { total_days }. Observation only: the day has already started, and the first poll of a session only records the baseline."
+doc  = "Fires from the begin_step derived-events poll when total_days() changes. ctx is { total_days }. Observation only: the day has already started, and the first poll of a session only records the baseline. A cross-day save load also changes the value and fires this; for the engine's new-day logic itself, ordered before the end-of-day autosave and never fired on a load, see game.new_day."
+
+[[hook]]
+name = "game.new_day"
+kind = "event"
+doc  = "Fires from inside the engine's new_day() (Cycle/NewDay.gml), after the day-transition work completes - on the end-of-day path that is before the autosave writes, so handler effects land in that save. ctx is { total_days }. Fires exactly when the game's new-day logic runs, including the engine's debug and test-suite new_day() callers, and never on a save load. Not a frame boundary: handlers run inside the end-of-day call stack, so keep them to memory and state work. For a poll-side observation of the day number changing, see game.day_started."
 
 [[hook]]
 name = "game.room_changed"
@@ -1792,6 +1797,16 @@ hook    = "save.game_loaded"
 ctx     = "{ save_path: loader.save_path }"
 catch_var = "__mmapi_modsave_load"
 marker  = "mmapi_modsave_run_load"
+
+[[seam]]
+id      = "new_day_complete"
+file    = "gml/scripts/GameplaySystems/Cycle/NewDay.gml"
+target  = { fn = "new_day", at = "after", anchor = "new_day_grid();" }
+op      = "emit"
+hook    = "game.new_day"
+ctx     = "{ total_days: total_days() }"
+catch_var = "__mmapi_new_day"
+marker  = "mmapi_run_new_day_callbacks"
 
 [[seam]]
 id      = "combat_damage_pre"
