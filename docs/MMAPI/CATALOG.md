@@ -20,7 +20,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | Name | Kind | Description |
 | ---- | ---- | ----------- |
 | [game.clock_tick](hooks/game.clock_tick.md) | event | Know every frame the game clock ticks, even while paused. |
-| [game.day_started](hooks/game.day_started.md) | event | Know the moment a new day has begun. |
+| [game.day_changed](hooks/game.day_changed.md) | event | Know when the current day has changed. |
 | [game.new_day](hooks/game.new_day.md) | event | Know the moment the engine's new-day logic has run, before the end-of-day autosave. |
 | [game.room_changed](hooks/game.room_changed.md) | event | Know when the player has landed in a different room. |
 | [game.room_transition_pre](hooks/game.room_transition_pre.md) | event | React to a room transition before it starts, and redirect it. |

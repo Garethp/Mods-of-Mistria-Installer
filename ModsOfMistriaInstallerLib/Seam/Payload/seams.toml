@@ -195,15 +195,16 @@ kind = "filter"
 doc  = "Fires inside Clock.update() each frame, after the natural per-frame time advance is computed (GAME_SECONDS_PER_FRAME, already gated by game_paused() and the clock's time_stopped) and before it is buffered into side_buffer. The filtered value is the game-seconds the clock is about to advance this frame; ctx is the Clock. Return 0 to freeze the advance this frame (for example while the player is indoors), a replacement amount, or undefined to keep the natural advance. Suppressing the advance here does not touch time_stopped, so it composes with the engine's own freezes (end-of-day menu, cutscenes, challenge floors) instead of fighting them."
 
 [[hook]]
-name = "game.day_started"
+name = "game.day_changed"
 kind = "event"
 provider = "runtime"
-doc  = "Fires from the begin_step derived-events poll when total_days() changes. ctx is { total_days }. Observation only: the day has already started, and the first poll of a session only records the baseline. A cross-day save load also changes the value and fires this; for the engine's new-day logic itself, ordered before the end-of-day autosave and never fired on a load, see game.new_day."
+aliases = ["game.day_started"]
+doc  = "Fires from the begin_step derived-events poll when total_days() changes - a new day beginning, or a save load landing in a different day. ctx is { total_days }. Observation only: the change has already happened, the first poll of a session only records the baseline, and a real overnight fires this after the end-of-day autosave has written. For the engine's new-day logic itself, ordered before that autosave and never fired on a load, see game.new_day."
 
 [[hook]]
 name = "game.new_day"
 kind = "event"
-doc  = "Fires from inside the engine's new_day() (Cycle/NewDay.gml), after the day-transition work completes - on the end-of-day path that is before the autosave writes, so handler effects land in that save. ctx is { total_days }. Fires exactly when the game's new-day logic runs, including the engine's debug and test-suite new_day() callers, and never on a save load. Not a frame boundary: handlers run inside the end-of-day call stack, so keep them to memory and state work. For a poll-side observation of the day number changing, see game.day_started."
+doc  = "Fires from inside the engine's new_day() (Cycle/NewDay.gml), after the day-transition work completes - on the end-of-day path that is before the autosave writes, so handler effects land in that save. ctx is { total_days }. Fires exactly when the game's new-day logic runs, including the engine's debug and test-suite new_day() callers, and never on a save load. Not a frame boundary: handlers run inside the end-of-day call stack, so keep them to memory and state work. For a poll-side observation of the day number changing, see game.day_changed."
 
 [[hook]]
 name = "game.room_changed"

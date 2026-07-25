@@ -19,7 +19,7 @@ Fires at the start of loading a save, right after the save path is recorded. ctx
 - `save_path` - the loader's `save_path`: the path of the save file being loaded, the same value the engine records as `Game.last_serde_path`.
 
 > [!NOTE]
-> This fires at the start of the load, not the end. The world is not built yet. Use it to key your mod's per-save state to the file being loaded. Wait for [game.room_changed](game.room_changed.md) or [game.day_started](game.day_started.md) style signals before touching world content.
+> This fires at the start of the load, not the end. The world is not built yet. Use it to key your mod's per-save state to the file being loaded. Wait for [game.room_changed](game.room_changed.md) or [game.day_changed](game.day_changed.md) style signals before touching world content.
 
 ## Usage
 

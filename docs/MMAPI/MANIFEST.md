@@ -12,7 +12,7 @@ Every mod ships exactly one of `manifest.json` or `manifest.toml` at its root. I
     "description": "Shows a notification when a new day starts.",
     "minInstallerVersion": "0.14.0",
     "manifestVersion": 1,
-    "requires_hooks": ["game.day_started"]
+    "requires_hooks": ["game.new_day"]
 }
 ```
 

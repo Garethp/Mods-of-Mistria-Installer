@@ -1,12 +1,12 @@
-# Hook: game.day_started
+# Hook: game.day_changed
 
-Know the moment a new day has begun.
+Know when the current day has changed - a new day beginning, or a save load landing in a different one.
 
-`game.day_started` is an **event** hook. Register a callback with `mmapi_on`. See [Hooks](../HOOKS.md) for how registration and dispatch work.
+`game.day_changed` is an **event** hook. Register a callback with `mmapi_on`. See [Hooks](../HOOKS.md) for how registration and dispatch work.
 
 ## Contract
 
-Fires from the begin_step derived-events poll when `total_days()` changes. ctx is `{ total_days }`. Observation only: the day has already started, and the first poll of a session only records the baseline.
+Fires from the begin_step derived-events poll when `total_days()` changes. ctx is `{ total_days }`. Observation only: the change has already happened, and the first poll of a session only records the baseline.
 
 | | |
 | --- | --- |
@@ -24,20 +24,24 @@ Fires from the begin_step derived-events poll when `total_days()` changes. ctx i
 > [!NOTE]
 > "The value changes" is the whole contract. A cross-day save load changes `total_days()` too, so this event can fire right after loading a save from a different day - and because the poll runs a frame after the end-of-day sequence, a real overnight fires it after the end-of-day autosave has already written. For the engine's new-day logic itself - fired inside `new_day()` before that autosave, and never on a save load - see [game.new_day](game.new_day.md).
 
+> [!NOTE]
+> `game.day_started` is this hook's old name. A registration against the old name still resolves here, with a one-time warning per mod in the MMAPI log. Update the registration to `game.day_changed`.
+
 ## Usage
 
 ```gml
-// game.day_started is an EVENT: the return value is ignored.
+// game.day_changed is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
-function morning_briefing_game_day_started(_ctx) {
+function date_display_game_day_changed(_ctx) {
     // _ctx is { total_days }.
-    //   .total_days - the new total_days() value for the day that just began.
-    // The day has already started when this fires.
-    // your once-per-day code here
+    //   .total_days - the new total_days() value the poll observed.
+    // The session is in a different day than it was - an overnight, or a
+    // cross-day save load. Refresh anything derived from the current date.
+    // Daily resets and grants belong on game.new_day instead.
 }
 
 // inside your latched register function (see Mod Anatomy):
-mmapi_on("game.day_started", morning_briefing_game_day_started);
+mmapi_on("game.day_changed", date_display_game_day_changed);
 ```
 
 ## Engine Wiring

@@ -46,4 +46,5 @@ mmapi_on("game.clock_tick", clock_watcher_game_clock_tick);
 ## See Also
 
 - [clock.time_advance](clock.time_advance.md) - This is the filter on the per-frame game-seconds advance that `update()` buffers right after this event. Unlike `game.clock_tick`, its natural value is already gated to `0` while paused or time-stopped.
-- [game.day_started](game.day_started.md) - This is the day-boundary event, if you only care when `total_days()` changes.
+- [game.new_day](game.new_day.md) - This is the day rollover, if you only care about once per day.
+- [game.day_changed](game.day_changed.md) - This is the observation-side day event, if you only care when the current day changes.

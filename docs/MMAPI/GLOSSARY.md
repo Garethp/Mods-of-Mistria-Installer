@@ -6,7 +6,7 @@ Plain-language definitions of the terms this documentation uses.
 
 | Term | Meaning |
 | ---- | ------- |
-| **hook** | A named moment the game exposes, like `game.day_started`. A mod registers a handler against it. |
+| **hook** | A named moment the game exposes, like `game.new_day`. A mod registers a handler against it. |
 | **handler** | A mod function the framework calls when a hook dispatches. |
 | **kind** | A hook's dispatch style: event, filter, guard, or override. It fixes what the handler receives and what its return value means. |
 | **event** | A kind. React to a moment; the return value is ignored. An individual hook may document context fields handlers can mutate. |
