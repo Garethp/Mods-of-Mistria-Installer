@@ -61,11 +61,11 @@ function my_mod_register_callbacks() {
     if (_rt.registered_hooks != undefined) return;
     _rt.registered_hooks = true;
 
-    mmapi_on("game.day_started", my_mod_day_started);
+    mmapi_on("game.new_day", my_mod_new_day);
 }
 
 // 4. Named handler functions.
-function my_mod_day_started(_ctx) {
+function my_mod_new_day(_ctx) {
     var _cfg = my_mod_config(); // lazy: file IO is safe here, not at boot
     if (!_cfg.enabled) return;
     // react to the new day

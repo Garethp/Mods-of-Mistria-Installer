@@ -7,7 +7,8 @@ using Tomlyn.Model;
 namespace Garethp.ModsOfMistriaInstallerLib.Seam;
 
 // Loads and validates the seam catalog (seams.toml: [[hook]], [[seam]],
-// [[engine_fix]] and [[call_rewrite]] entries, schema version 2). Anchor and
+// [[engine_fix]] and [[call_rewrite]] entries plus the optional [counts]
+// integrity table, schema version 2). Anchor and
 // replace are normalised from \r\n to \n; the byte-exact contract is modulo
 // CRLF. Validation is batched: every problem in the catalog is reported in
 // one SeamCatalogException, not just the first.
@@ -48,6 +49,34 @@ public static class SeamCatalogLoader
                 [$"unsupported version {version} (expected {SupportedCatalogVersion})"]);
 
         List<string> errors = [];
+
+        // The optional [counts] integrity table: declared totals checked against
+        // the parsed stanzas at the end of validation. Optional so fixture
+        // catalogs stay terse; the shipped catalog always declares it (the
+        // shipped-catalog test holds it to that).
+        CatalogCounts? declaredCounts = null;
+        if (doc.TryGetValue("counts", out var countsRaw))
+        {
+            if (countsRaw is TomlTable countsTable)
+            {
+                Dictionary<string, int> countFields = [];
+                foreach (var field in (string[]) ["hooks", "seams", "engine_fixes", "call_rewrites"])
+                {
+                    if (countsTable.TryGetValue(field, out var raw))
+                        countFields[field] = (int)Convert.ToInt64(raw, CultureInfo.InvariantCulture);
+                    else
+                        errors.Add($"[counts] is missing '{field}'");
+                }
+
+                if (countFields.Count == 4)
+                    declaredCounts = new CatalogCounts(countFields["hooks"], countFields["seams"],
+                        countFields["engine_fixes"], countFields["call_rewrites"]);
+            }
+            else
+            {
+                errors.Add("[counts] must be a table");
+            }
+        }
 
         // hook declarations, then alias collisions in declaration order
         List<HookDeclaration> declarations = [];
@@ -157,6 +186,22 @@ public static class SeamCatalogLoader
                            + "provides it - drop the provider field");
         }
 
+        // Declared-vs-parsed integrity: a mismatch means a truncated file or a
+        // forgotten bump; either way the catalog does not load.
+        if (declaredCounts is not null)
+        {
+            var seamCount = entries.Count(e => e.Kind == SeamEntryKind.Seam);
+            var fixCount = entries.Count(e => e.Kind == SeamEntryKind.EngineFix);
+            if (declaredCounts.Hooks != declarations.Count)
+                errors.Add($"[counts] declares {declaredCounts.Hooks} hooks but the catalog parses {declarations.Count}");
+            if (declaredCounts.Seams != seamCount)
+                errors.Add($"[counts] declares {declaredCounts.Seams} seams but the catalog parses {seamCount}");
+            if (declaredCounts.EngineFixes != fixCount)
+                errors.Add($"[counts] declares {declaredCounts.EngineFixes} engine fixes but the catalog parses {fixCount}");
+            if (declaredCounts.CallRewrites != rewrites.Count)
+                errors.Add($"[counts] declares {declaredCounts.CallRewrites} call rewrites but the catalog parses {rewrites.Count}");
+        }
+
         var ordered = OrderEntries(entries, errors);
 
         if (errors.Count > 0) throw new SeamCatalogException(sourceName, errors);
@@ -165,7 +210,8 @@ public static class SeamCatalogLoader
             version,
             ordered,
             declarations.OrderBy(d => d.Name, StringComparer.Ordinal).ToList(),
-            rewrites);
+            rewrites,
+            declaredCounts);
     }
 
     private static HookDeclaration? ParseHook(TomlTable table, int index, List<string> errors)

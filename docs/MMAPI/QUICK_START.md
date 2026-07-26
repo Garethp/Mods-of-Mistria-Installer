@@ -13,7 +13,7 @@ This page explains building `my_first_mod`, which displays an in-game notificati
 ## Requirements
 
 - Fields of Mistria, the game.
-- MOMI version 0.14.0 or newer. That is the first version that ships the GML layer.
+- MOMI version 0.14.1 or newer. 0.14.0 first shipped the GML layer; the example's `game.new_day` hook needs 0.14.1.
 - A text editor. There is no compiler or build step necessary. A mod is plain GML source.
 
 ## Naming
@@ -50,9 +50,9 @@ The full folder paths for each file should look like:
     "author": "you",
     "version": "1.0.0",
     "description": "Shows a notification when a new day starts.",
-    "minInstallerVersion": "0.14.0",
+    "minInstallerVersion": "0.14.1",
     "manifestVersion": 1,
-    "requires_hooks": ["game.day_started"]
+    "requires_hooks": ["game.new_day"]
 }
 ```
 
@@ -81,12 +81,12 @@ function my_first_mod_register_callbacks() {
     if (_rt.registered_hooks != undefined) return;
     _rt.registered_hooks = true;
 
-    mmapi_on("game.day_started", my_first_mod_day_started); // EVENT hook registration
+    mmapi_on("game.new_day", my_first_mod_new_day); // EVENT hook registration
 }
 
 // Hook callback.
-// game.day_started is an EVENT: the return value is ignored.
-function my_first_mod_day_started(_ctx) {
+// game.new_day is an EVENT: the return value is ignored.
+function my_first_mod_new_day(_ctx) {
     // _ctx contains { total_days }.
     // create_notification takes a LOCALIZATION KEY, not raw text (the engine
     // runs it through local_get). Wrapping with ANCHOR.wrap_for_local lets raw
@@ -94,7 +94,7 @@ function my_first_mod_day_started(_ctx) {
     // instead (translatable, filter-aware): see RECIPES.md "Show a
     // Notification" and Mod Anatomy's "User-Facing Text".
     create_notification(ANCHOR.wrap_for_local("Day " + string(_ctx.total_days) + " begins."));
-    mmapi_log_info("my_first_mod", "day started: " + string(_ctx.total_days));
+    mmapi_log_info("my_first_mod", "new day: " + string(_ctx.total_days));
     mmapi_log_flush("my_first_mod"); // make this one-line proof visible immediately
 }
 

@@ -489,4 +489,10 @@
   <data name="GUIUninstallingText" xml:space="preserve">
     <value>Uninstalling</value>
   </data>
+  <data name="GUIInstallFatalError" xml:space="preserve">
+    <value>A fatal error occurred during mod installation:</value>
+  </data>
+  <data name="GUIUninstallFatalError" xml:space="preserve">
+    <value>A fatal error occurred during mod uninstallation:</value>
+  </data>
 </root>

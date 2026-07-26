@@ -11,6 +11,8 @@ Most shipped hooks are dispatched from engine seams. A few are emitted directly 
 > [!NOTE]
 > A mod uses the game hooks MOMI already ships. It never packages its own seams. Mods can also publish custom hooks as cross-mod extension points, covered in [Publishing Custom Hooks](#publishing-custom-hooks).
 
+The shipped catalog currently declares **96 hooks**, fed by **103 seams**, **3 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
+
 ## Using A Shipped Hook
 
 Follow the same path for every hook:
@@ -21,19 +23,19 @@ Follow the same path for every hook:
 4. Write a named top-level handler and register it with the function for that hook's kind.
 5. Install the mod, trigger the moment in game, and [confirm the handler fired](#confirming-a-handler-fired).
 
-For example, `game.day_started` is an event hook. Its handler receives `{ total_days }`:
+For example, `game.new_day` is an event hook. Its handler receives `{ total_days }`:
 
 ```gml
-function my_mod_day_started(_ctx) {
+function my_mod_new_day(_ctx) {
     var _cfg = my_mod_config();
     if (!_cfg.enabled) return;
 
     // React to the new day. The event's return value is ignored.
-    mmapi_log_info("my_mod", "day " + string(_ctx.total_days) + " started");
+    mmapi_log_info("my_mod", "day " + string(_ctx.total_days) + " begins");
 }
 
 // Inside your latched register function:
-mmapi_on("game.day_started", my_mod_day_started);
+mmapi_on("game.new_day", my_mod_new_day);
 ```
 
 Put registrations behind the latch shown in [Mod Anatomy](MOD_ANATOMY.md#the-registered_hooks-latch). Registration is memory-only and safe during boot. Reading config, touching live engine state, and performing file IO are not; do that later from the handler or a queued tick.
@@ -179,7 +181,7 @@ Alias resolution happens during registration only. Dispatch and introspection fu
 Registration warnings happen at game boot. The manifest's [`requires_hooks`](MANIFEST.md#requires_hooks) catches a missing shipped hook during installation instead:
 
 ```toml
-requires_hooks = ["game.day_started", "player.health_delta"]
+requires_hooks = ["game.new_day", "player.health_delta"]
 ```
 
 MOMI checks those names against the installed seam catalog. If any are absent, it skips that mod with a clear reason while continuing with compatible mods. List the shipped hooks your mod needs to function.
@@ -222,7 +224,7 @@ The individual hook page documents frequency when it matters. Treat a log-and-fl
 For a temporary proof, add one log line to the handler and flush it:
 
 ```gml
-mmapi_log_info("my_mod", "game.day_started fired");
+mmapi_log_info("my_mod", "game.new_day fired");
 mmapi_log_flush("my_mod");
 ```
 

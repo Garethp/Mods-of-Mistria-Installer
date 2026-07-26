@@ -47,4 +47,4 @@ mmapi_on("request_board.fetch_pool_ready", board_watcher_request_board_fetch_poo
 ## See Also
 
 - [request_board.fetch_pool](request_board.fetch_pool.md) - Change the candidates and cap before the draw instead of watching the result.
-- [game.day_started](game.day_started.md) - The day rollover this build rides on.
+- [game.new_day](game.new_day.md) - The day rollover this build rides on.

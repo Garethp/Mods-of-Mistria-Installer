@@ -64,12 +64,12 @@ public class TomlTest
     public void ShouldKeepAValueArrayAsAValueArray()
     {
         var doc = Toml.ParseDocument("""
-            provides = ["game.step_begin", "game.day_started"]
+            provides = ["game.step_begin", "game.day_changed"]
             empty = []
             """);
 
         Assert.That(doc["provides"], Is.InstanceOf<TomlArray>());
-        Assert.That((TomlArray)doc["provides"], Is.EqualTo(new[] { "game.step_begin", "game.day_started" }));
+        Assert.That((TomlArray)doc["provides"], Is.EqualTo(new[] { "game.step_begin", "game.day_changed" }));
         Assert.That(doc["empty"], Is.InstanceOf<TomlArray>());
         Assert.That((TomlArray)doc["empty"], Is.Empty);
     }

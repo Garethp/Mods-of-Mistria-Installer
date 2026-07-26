@@ -48,4 +48,4 @@ mmapi_filter("clock.time_advance", slow_days_clock_time_advance);
 ## See Also
 
 - [game.clock_tick](game.clock_tick.md) - This is the every-frame event at the top of the same `update()`. It fires even while paused or time-stopped, where this filter's natural value is already `0`.
-- [game.day_started](game.day_started.md) - This is the day boundary that accumulated game time eventually crosses.
+- [game.new_day](game.new_day.md) - This is the day rollover that accumulated game time eventually triggers.

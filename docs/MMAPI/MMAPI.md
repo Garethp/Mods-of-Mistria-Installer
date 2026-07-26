@@ -2,7 +2,7 @@
 
 MMAPI is a **hook framework** for [Fields of Mistria](https://www.fieldsofmistria.com/) mods written in GML.
 
-Mods talk to the game through **named hooks**, which are moments in game code MMAPI exposes, like `game.day_started` or `items.use_guard`. Alongside the hooks, a small runtime of `mmapi_*` helpers provides utilities for logging, config, per-save data, hotkeys, and more.
+Mods talk to the game through **named hooks**, which are moments in game code MMAPI exposes, like `game.new_day` or `items.use_guard`. Alongside the hooks, a small runtime of `mmapi_*` helpers provides utilities for logging, config, per-save data, hotkeys, and more.
 
 > [!NOTE]
 > MOMI automatically installs the MMAPI framework, alongside mods written for it, during mod installation.

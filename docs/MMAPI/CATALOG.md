@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **95 hooks**, fed by **102 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **96 hooks**, fed by **103 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -20,7 +20,8 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | Name | Kind | Description |
 | ---- | ---- | ----------- |
 | [game.clock_tick](hooks/game.clock_tick.md) | event | Know every frame the game clock ticks, even while paused. |
-| [game.day_started](hooks/game.day_started.md) | event | Know the moment a new day has begun. |
+| [game.day_changed](hooks/game.day_changed.md) | event | Know when the current day has changed. |
+| [game.new_day](hooks/game.new_day.md) | event | Know the moment the engine's new-day logic has run, before the end-of-day autosave. |
 | [game.room_changed](hooks/game.room_changed.md) | event | Know when the player has landed in a different room. |
 | [game.room_transition_pre](hooks/game.room_transition_pre.md) | event | React to a room transition before it starts, and redirect it. |
 | [game.room_transition_post](hooks/game.room_transition_post.md) | event | Know the moment a room transition has finished, destination settled. |
@@ -145,6 +146,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [game_save_guard](seams/game_save_guard.md) | Puts a veto check at the head of `save_game()`, before anything is written. |
 | [save_game_saving](seams/save_game_saving.md) | Announces an imminent save, right after the engine records the save path. |
 | [save_game_loaded](seams/save_game_loaded.md) | Announces the start of a save load, right after the save path is recorded. |
+| [new_day_complete](seams/new_day_complete.md) | Emits the completion of the engine's new-day work inside `new_day()`, ahead of the end-of-day autosave. |
 | [camera_culls_processed](seams/camera_culls_processed.md) | Emits the end-of-cull moment so mods can refresh renderers the camera just reactivated. |
 | [dungeon_runner_created](seams/dungeon_runner_created.md) | Emits the birth of a dungeon run, after `DUNGEON_RUNNER` is constructed and before the first floor loads. |
 | [dungeon_floor_bracket](seams/dungeon_floor_bracket.md) | Brackets dungeon floor entry with three emits: floor enter, room-build begin, and floor built. |

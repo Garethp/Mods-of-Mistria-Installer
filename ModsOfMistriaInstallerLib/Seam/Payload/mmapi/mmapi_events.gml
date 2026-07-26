@@ -4,7 +4,7 @@
 // seam.
 //
 //   "game.room_changed"  ctx { previous, current }
-//   "game.day_started"   ctx { total_days }
+//   "game.day_changed"   ctx { total_days }
 //   "game.title_entered" ctx {}
 //
 // These fire from begin_step, which runs after room_start, so they report a
@@ -58,7 +58,7 @@ function mmapi_events_poll() {
 
     if (current_days != state.last_total_days) {
         state.last_total_days = current_days;
-        mmapi_emit("game.day_started", { total_days: current_days });
+        mmapi_emit("game.day_changed", { total_days: current_days });
     }
 }
 

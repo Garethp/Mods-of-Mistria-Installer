@@ -122,6 +122,42 @@ public class SeamCatalogLoaderTest
     private static string SeamBWith(string body, string provides) =>
         SeamB.Replace("REPLACE_BODY", body).Replace("PROVIDES", provides);
 
+    private const string MatchingCounts = "\n" + """
+        [counts]
+        hooks = 2
+        seams = 0
+        engine_fixes = 0
+        call_rewrites = 1
+        """ + "\n";
+
+    [Test]
+    public void ShouldAcceptMatchingDeclaredCounts()
+    {
+        var catalog = Load(RewriteBase + MatchingCounts + Rewrite);
+
+        Assert.That(catalog.DeclaredCounts, Is.EqualTo(new CatalogCounts(2, 0, 0, 1)));
+    }
+
+    [Test]
+    public void ShouldRejectMismatchedDeclaredCounts()
+    {
+        var mismatched = MatchingCounts.Replace("hooks = 2", "hooks = 5");
+
+        var message = LoadError(RewriteBase + mismatched + Rewrite);
+
+        Assert.That(message, Does.Contain("[counts] declares 5 hooks but the catalog parses 2"));
+    }
+
+    [Test]
+    public void ShouldRejectAnIncompleteCountsTable()
+    {
+        var partial = MatchingCounts.Replace("call_rewrites = 1", "");
+
+        var message = LoadError(RewriteBase + partial + Rewrite);
+
+        Assert.That(message, Does.Contain("[counts] is missing 'call_rewrites'"));
+    }
+
     private static SeamCatalog Load(string text) =>
         SeamCatalogLoader.Load(Encoding.UTF8.GetBytes(text), "seams.toml");
 
