@@ -147,7 +147,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [save_game_saving](seams/save_game_saving.md) | Announces an imminent save, right after the engine records the save path. |
 | [save_game_loaded](seams/save_game_loaded.md) | Announces the start of a save load, right after the save path is recorded. |
 | [new_day_complete](seams/new_day_complete.md) | Emits the completion of the engine's new-day work inside `new_day()`, ahead of the end-of-day autosave. |
-| [title_menu_main_screen](seams/title_menu_main_screen.md) | Emits the title-screen entry from the head of `TitleMenu.setup_main_screen()`, at boot and on quit-to-title. |
+| [setup_title_entry](seams/setup_title_entry.md) | Emits the title-screen entry from Setup's create, right after the title menu is spawned, at boot and on quit-to-title. |
 | [camera_culls_processed](seams/camera_culls_processed.md) | Emits the end-of-cull moment so mods can refresh renderers the camera just reactivated. |
 | [dungeon_runner_created](seams/dungeon_runner_created.md) | Emits the birth of a dungeon run, after `DUNGEON_RUNNER` is constructed and before the first floor loads. |
 | [dungeon_floor_bracket](seams/dungeon_floor_bracket.md) | Brackets dungeon floor entry with three emits: floor enter, room-build begin, and floor built. |

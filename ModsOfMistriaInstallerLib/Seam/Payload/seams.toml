@@ -240,7 +240,7 @@ doc  = "Fires at the top of save_game(), before the saver is created. ctx is { s
 [[hook]]
 name = "game.title_entered"
 kind = "event"
-doc  = "Fires from TitleMenu.setup_main_screen() on every title-screen entry: at boot, once the logo chain hands over to the main screen, and again whenever a play session quits back to the title. ctx is { from_game } - false for the boot entry, true when a session has just ended (the engine's FROM_GAME flag, still set at this point; it only resets inside enter_game). Observation only. Formerly a runtime-provided poll event, which could never fire: the derived-events poll runs from the Game object's begin_step, and no Game instance ever steps in the title room - at the boot title none exists yet, and quit-to-title halts stepping entirely."
+doc  = "Fires from Setup's title-entry create, right after the title menu is spawned and started, on every title-screen entry: at boot and again whenever a play session quits back to the title. ctx is { from_game } - false for the boot entry, true when a play session has just ended. Observation only. Gate session-teardown handlers on ctx.from_game."
 
 [[hook]]
 name = "input.check_value_id"
@@ -1818,15 +1818,21 @@ ctx     = "{ total_days: total_days() }"
 catch_var = "__mmapi_new_day"
 marker  = "mmapi_run_new_day_callbacks"
 
+# Placement constraint: the emit must stay on the spawn pair. FROM_GAME is cleared at the
+# end of Setup's create, and the title menu's own start chain (setup_background /
+# setup_main_screen) runs frames later - any later emit point always reads from_game false.
 [[seam]]
-id      = "title_menu_main_screen"
-file    = "gml/scripts/UI/Anchor/Menus/TitleMenu.gml"
-target  = { fn = "setup_main_screen", at = "head" }
-op      = "emit"
-hook    = "game.title_entered"
-ctx     = "{ from_game: FROM_GAME }"
-indent  = 8
+id      = "setup_title_entry"
+file    = "gml/objects/Setup.gml"
+anchor  = '''
+            var menu = ANCHOR.spawn_menu(Menu.Title);
+            menu.start();'''
+replace = '''
+            var menu = ANCHOR.spawn_menu(Menu.Title);
+            menu.start();
+            try { mmapi_emit("game.title_entered", { from_game: FROM_GAME }); } catch (__mmapi_setup_title_entry) {} // mmapi_game_run_title_entered'''
 marker  = "mmapi_game_run_title_entered"
+provides = ["game.title_entered"]
 
 [[seam]]
 id      = "combat_damage_pre"

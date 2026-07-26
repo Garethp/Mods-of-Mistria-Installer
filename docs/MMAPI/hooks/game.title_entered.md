@@ -6,20 +6,20 @@ Know when the title screen comes up, at boot or when a session ends.
 
 ## Contract
 
-Fires from the head of `TitleMenu.setup_main_screen()` on every title-screen entry: at boot, once the logo chain hands over to the main screen, and again whenever a play session quits back to the title. ctx is `{ from_game }`. This hook is observation only.
+Fires from Setup's title-entry create, right after the title menu is spawned and started, on every title-screen entry: at boot, and again whenever a play session quits back to the title. ctx is `{ from_game }`. This hook is observation only.
 
 | | |
 | --- | --- |
-| **Fires** | From the head of `TitleMenu.setup_main_screen()`, on every title-screen entry. |
+| **Fires** | From Setup's create, right after the title menu is spawned and started, on every title-screen entry. |
 | **ctx** | `{ from_game }` |
 | **Kind contract** | The callback observes the moment. Its return value is ignored. |
 
 ### The ctx struct
 
-- `from_game` — `false` for the boot entry, `true` when a play session has just ended. This is the engine's own `FROM_GAME` flag, read while it is still set (it only resets inside `enter_game`).
+- `from_game` — `false` for the boot entry, `true` when a play session has just ended. This is the engine's own boot-vs-session-ended flag.
 
 > [!NOTE]
-> The quit-to-title entry is the per-session teardown moment: a save that was in play is over, so reset any per-save state your mod holds. The boot entry fires before any session has existed, so a reset handler is harmless there — but gate on `ctx.from_game` if your teardown must only run when a session actually ended. Handlers run inside the title menu's build chain, before the player can interact with the menu.
+> The quit-to-title entry is the per-session teardown moment: a save that was in play is over, so reset any per-save state your mod holds. The boot entry fires before any session has existed, so a reset handler is harmless there — but gate on `ctx.from_game` if your teardown must only run when a session actually ended. Handlers run during Setup's create, before the title menu is drawn or interactive.
 
 ## Usage
 
@@ -39,7 +39,7 @@ mmapi_on("game.title_entered", session_stats_game_title_entered);
 
 ## Engine Wiring
 
-- The [`title_menu_main_screen`](../seams/title_menu_main_screen.md) seam places the emit at the head of `TitleMenu.setup_main_screen()`, the one method both title entries funnel through — the same method the legacy YYTK mods hooked for this moment. An earlier version of this hook was runtime-provided, derived from the begin_step room poll; it could never fire, because no Game instance ever steps in the title room (at the boot title none exists yet, and quit-to-title halts stepping entirely).
+- The [`setup_title_entry`](../seams/setup_title_entry.md) seam places the emit in Setup's create, directly after the title menu is spawned and started — the one point that runs exactly once per title entry while the engine's `FROM_GAME` flag still distinguishes the boot entry from quit-to-title.
 
 ## See Also
 
