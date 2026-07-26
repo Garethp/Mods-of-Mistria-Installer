@@ -5,7 +5,6 @@
 //
 //   "game.room_changed"  ctx { previous, current }
 //   "game.day_changed"   ctx { total_days }
-//   "game.title_entered" ctx {}
 //
 // These fire from begin_step, which runs after room_start, so they report a
 // change that has already happened. To change room content as it loads, use
@@ -13,22 +12,10 @@
 //
 // The first poll of a session records the current state as the baseline. After
 // that, an event fires each time the state changes.
-
-// rm_menu is the engine's title and menu room, defined in
-// scripts/GameplaySystems/RoomCheckScripts.gml under is_menu_room. Tests fake
-// the predicate through global.__mmapi_events_title_room_name.
-function mmapi_events_title_room_name() {
-    var override = global[$ "__mmapi_events_title_room_name"];
-    if (override != undefined) { return override; }
-    return "rm_menu";
-}
-
-function mmapi_events_room_is_title(room_value) {
-    // asset_to_string, not room_get_name: this engine has no room_get_name and
-    // calling it throws "no such field" in-engine. A gm_room is an asset, and
-    // the engine reads room names with asset_to_string.
-    return asset_to_string(room_value) == mmapi_events_title_room_name();
-}
+//
+// This poll runs from the Game object's begin_step, and no Game instance ever
+// steps in the title room. At the boot title none exists yet, and quit-to-
+// title halts stepping entirely.
 
 function mmapi_events_poll() {
     var current_room = room();
@@ -37,7 +24,6 @@ function mmapi_events_poll() {
     if (global[$ "__mmapi_events_state"] == undefined) {
         global.__mmapi_events_state = {
             last_room: current_room,
-            last_room_was_title: mmapi_events_room_is_title(current_room),
             last_total_days: current_days,
         };
         return;
@@ -48,12 +34,6 @@ function mmapi_events_poll() {
         var previous_room = state.last_room;
         state.last_room = current_room;
         mmapi_emit("game.room_changed", { previous: previous_room, current: current_room });
-
-        var now_title = mmapi_events_room_is_title(current_room);
-        if (now_title && state.last_room_was_title == false) {
-            mmapi_emit("game.title_entered", {});
-        }
-        state.last_room_was_title = now_title;
     }
 
     if (current_days != state.last_total_days) {

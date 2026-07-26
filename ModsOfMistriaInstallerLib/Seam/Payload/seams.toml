@@ -34,7 +34,7 @@ version = 2
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
 hooks = 96
-seams = 103
+seams = 104
 engine_fixes = 3
 call_rewrites = 1
 
@@ -240,8 +240,7 @@ doc  = "Fires at the top of save_game(), before the saver is created. ctx is { s
 [[hook]]
 name = "game.title_entered"
 kind = "event"
-provider = "runtime"
-doc  = "Fires from the begin_step derived-events poll when the room changes into the title/menu room from a non-title room. ctx is {} (empty struct). Observation only. Fires after game.room_changed for the same room change."
+doc  = "Fires from TitleMenu.setup_main_screen() on every title-screen entry: at boot, once the logo chain hands over to the main screen, and again whenever a play session quits back to the title. ctx is { from_game } - false for the boot entry, true when a session has just ended (the engine's FROM_GAME flag, still set at this point; it only resets inside enter_game). Observation only. Formerly a runtime-provided poll event, which could never fire: the derived-events poll runs from the Game object's begin_step, and no Game instance ever steps in the title room - at the boot title none exists yet, and quit-to-title halts stepping entirely."
 
 [[hook]]
 name = "input.check_value_id"
@@ -1818,6 +1817,16 @@ hook    = "game.new_day"
 ctx     = "{ total_days: total_days() }"
 catch_var = "__mmapi_new_day"
 marker  = "mmapi_run_new_day_callbacks"
+
+[[seam]]
+id      = "title_menu_main_screen"
+file    = "gml/scripts/UI/Anchor/Menus/TitleMenu.gml"
+target  = { fn = "setup_main_screen", at = "head" }
+op      = "emit"
+hook    = "game.title_entered"
+ctx     = "{ from_game: FROM_GAME }"
+indent  = 8
+marker  = "mmapi_game_run_title_entered"
 
 [[seam]]
 id      = "combat_damage_pre"

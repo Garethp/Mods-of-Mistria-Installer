@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **96 hooks**, fed by **103 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **96 hooks**, fed by **104 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -26,7 +26,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [game.room_transition_pre](hooks/game.room_transition_pre.md) | event | React to a room transition before it starts, and redirect it. |
 | [game.room_transition_post](hooks/game.room_transition_post.md) | event | Know the moment a room transition has finished, destination settled. |
 | [game.save_guard](hooks/game.save_guard.md) | guard | Block a game save before anything is written. |
-| [game.title_entered](hooks/game.title_entered.md) | event | Know when the game returns to the title screen. |
+| [game.title_entered](hooks/game.title_entered.md) | event | Know when the title screen comes up, at boot or when a session ends. |
 | [save.game_loaded](hooks/save.game_loaded.md) | event | Know the moment a save file starts loading. |
 | [save.game_saving](hooks/save.game_saving.md) | event | Know the moment the game commits to writing a save. |
 | [clock.time_advance](hooks/clock.time_advance.md) | filter | Adjust or freeze how much game time passes each frame. |
@@ -147,6 +147,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [save_game_saving](seams/save_game_saving.md) | Announces an imminent save, right after the engine records the save path. |
 | [save_game_loaded](seams/save_game_loaded.md) | Announces the start of a save load, right after the save path is recorded. |
 | [new_day_complete](seams/new_day_complete.md) | Emits the completion of the engine's new-day work inside `new_day()`, ahead of the end-of-day autosave. |
+| [title_menu_main_screen](seams/title_menu_main_screen.md) | Emits the title-screen entry from the head of `TitleMenu.setup_main_screen()`, at boot and on quit-to-title. |
 | [camera_culls_processed](seams/camera_culls_processed.md) | Emits the end-of-cull moment so mods can refresh renderers the camera just reactivated. |
 | [dungeon_runner_created](seams/dungeon_runner_created.md) | Emits the birth of a dungeon run, after `DUNGEON_RUNNER` is constructed and before the first floor loads. |
 | [dungeon_floor_bracket](seams/dungeon_floor_bracket.md) | Brackets dungeon floor entry with three emits: floor enter, room-build begin, and floor built. |

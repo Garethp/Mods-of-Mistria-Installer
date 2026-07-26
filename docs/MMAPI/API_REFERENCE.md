@@ -143,7 +143,7 @@ Every direct engine-GML `local_get(...)` call routes through MMAPI (a call rewri
 
 ## Derived Events
 
-Some hooks are emitted by the framework itself rather than by an engine seam. `game.day_changed`, `game.room_changed`, and `game.title_entered` come from the per-frame state poll; `combat.damage_injected` fires directly from `mmapi_deal_damage`. They register and behave exactly like any other hook. The distinction only matters if you go looking for their seam.
+Some hooks are emitted by the framework itself rather than by an engine seam. `game.day_changed` and `game.room_changed` come from the per-frame state poll; `combat.damage_injected` fires directly from `mmapi_deal_damage`. They register and behave exactly like any other hook. The distinction only matters if you go looking for their seam.
 
 ## Cross-Mod Coordination
 
