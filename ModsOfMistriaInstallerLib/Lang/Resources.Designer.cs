@@ -798,6 +798,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A fatal error occurred during mod installation:.
+        /// </summary>
+        public static string GUIInstallFatalError {
+            get {
+                return ResourceManager.GetString("GUIInstallFatalError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installing mods....
         /// </summary>
         public static string GUIInstallInProgress {
@@ -974,6 +983,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string GUIUninstallCompleteText {
             get {
                 return ResourceManager.GetString("GUIUninstallCompleteText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fatal error occurred during mod uninstallation:.
+        /// </summary>
+        public static string GUIUninstallFatalError {
+            get {
+                return ResourceManager.GetString("GUIUninstallFatalError", resourceCulture);
             }
         }
         

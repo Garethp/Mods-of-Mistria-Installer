@@ -499,7 +499,15 @@ public partial class ModlistPageViewModel : PageViewBase
             }
             catch (Exception e)
             {
-                Exception = e.Message;
+                // The failure surfaces globally and is TERMINAL for the session:
+                // the busy latch deliberately stays set, so installing,
+                // uninstalling and the list actions remain disabled under the
+                // error. Saving the log stays live - the error is a bug report.
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    InstallStatus = "";
+                    Exception     = Resources.GUIUninstallFatalError + "\n" + e.Message;
+                });
             }
         });
     }
@@ -540,7 +548,15 @@ public partial class ModlistPageViewModel : PageViewBase
         }
         catch (Exception e)
         {
-            Exception = e.Message;
+            // The failure surfaces globally and is TERMINAL for the session: the
+            // busy latch deliberately stays set, so installing, uninstalling and
+            // the list actions remain disabled under the error. Saving the log
+            // stays live - the error is a bug report.
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                InstallStatus = "";
+                Exception     = Resources.GUIInstallFatalError + "\n" + e.Message;
+            });
         }
     }
 

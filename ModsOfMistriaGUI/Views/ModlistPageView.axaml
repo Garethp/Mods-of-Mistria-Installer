@@ -22,10 +22,10 @@
                             </Image.Source>
                         </Image>
                     </MenuItem.Header>
-                    <MenuItem Header="{x:Static lang:Resources.GUIReloadModlist}" Command="{Binding ReloadModlistCommand}" />
+                    <MenuItem Header="{x:Static lang:Resources.GUIReloadModlist}" Command="{Binding ReloadModlistCommand}" IsEnabled="{Binding !IsInstalling}" />
                     <MenuItem Header="{x:Static lang:Resources.GUISaveLogFile}" Command="{Binding SaveLogFileCommand}" />
-                    <MenuItem Header="{x:Static lang:Resources.GUIEnableAllMods}" Command="{Binding EnableAllModsCommand}" />
-                    <MenuItem Header="{x:Static lang:Resources.GUIDisableAllMods}" Command="{Binding DisableAllModsCommand}" />
+                    <MenuItem Header="{x:Static lang:Resources.GUIEnableAllMods}" Command="{Binding EnableAllModsCommand}" IsEnabled="{Binding !IsInstalling}" />
+                    <MenuItem Header="{x:Static lang:Resources.GUIDisableAllMods}" Command="{Binding DisableAllModsCommand}" IsEnabled="{Binding !IsInstalling}" />
                 </MenuItem>
             </Menu>
 

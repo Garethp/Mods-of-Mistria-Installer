@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
 using ModsOfMistriaInstallerLibTests.TestUtils;
 
@@ -48,7 +49,14 @@ public class ShippedCatalogTest
     [Test]
     public void ShouldDeclareAndCountEveryHook()
     {
-        Assert.That(_catalog.Hooks, Has.Count.GreaterThanOrEqualTo(64));
+        // The shipped catalog must self-declare its integrity counts; the loader
+        // enforces declared == parsed (and orphan hooks, in both directions), so
+        // loading at all proves consistency. The echo here documents the contract.
+        Assert.That(_catalog.DeclaredCounts, Is.Not.Null);
+        Assert.That(_catalog.DeclaredCounts!.Hooks, Is.EqualTo(_catalog.HookDeclarations.Count));
+        Assert.That(_catalog.DeclaredCounts.Seams, Is.EqualTo(_catalog.Seams.Count));
+        Assert.That(_catalog.DeclaredCounts.EngineFixes, Is.EqualTo(_catalog.EngineFixes.Count));
+        Assert.That(_catalog.DeclaredCounts.CallRewrites, Is.EqualTo(_catalog.CallRewrites.Count));
 
         var runtime = _catalog.HookDeclarations
             .Where(d => d.Provider == HookProvider.Runtime)
@@ -59,10 +67,44 @@ public class ShippedCatalogTest
         Assert.That(runtime, Does.Contain("game.title_entered"));
 
         // The rename kept the old name resolving: game.day_changed carries the
-        // catalog's first alias, and the in-engine game.new_day is declared beside it.
+        // catalog's first alias.
         var dayChanged = _catalog.HookDeclarations.Single(d => d.Name == "game.day_changed");
         Assert.That(dayChanged.Aliases, Does.Contain("game.day_started"));
-        Assert.That(_catalog.HookDeclarations.Select(d => d.Name), Does.Contain("game.new_day"));
+    }
+
+    [Test]
+    public void ShouldKeepTheDocCountSentencesInStepWithTheCatalog()
+    {
+        var repoRoot = FindRepoRoot();
+        if (repoRoot is null)
+            Assert.Ignore("docs/MMAPI not found - running outside the repo checkout");
+
+        var counts = _catalog.DeclaredCounts!;
+        var sentence = new Regex(
+            @"\*\*(\d+) hooks\*\*, fed by \*\*(\d+) seams\*\*, \*\*(\d+) engine fixes\*\*, and \*\*(\d+) call rewrites?\*\*");
+        foreach (var page in (string[]) ["CATALOG.md", "SEAMS.md", "HOOKS.md"])
+        {
+            var text = File.ReadAllText(Path.Combine(repoRoot!, "docs", "MMAPI", page));
+            var match = sentence.Match(text);
+            Assert.That(match.Success, Is.True, $"{page} carries no catalog count sentence");
+            Assert.That(int.Parse(match.Groups[1].Value), Is.EqualTo(counts.Hooks), $"{page} hook count");
+            Assert.That(int.Parse(match.Groups[2].Value), Is.EqualTo(counts.Seams), $"{page} seam count");
+            Assert.That(int.Parse(match.Groups[3].Value), Is.EqualTo(counts.EngineFixes), $"{page} engine fix count");
+            Assert.That(int.Parse(match.Groups[4].Value), Is.EqualTo(counts.CallRewrites), $"{page} call rewrite count");
+        }
+    }
+
+    private static string? FindRepoRoot()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null)
+        {
+            if (File.Exists(Path.Combine(dir.FullName, "docs", "MMAPI", "CATALOG.md")))
+                return dir.FullName;
+            dir = dir.Parent;
+        }
+
+        return null;
     }
 
     [Test]

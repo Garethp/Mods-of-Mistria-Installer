@@ -28,6 +28,16 @@
 
 version = 2
 
+# Integrity counts. The loader verifies these against the parsed stanzas, so a
+# truncated or mis-merged catalog fails at load instead of shipping a partial
+# hook surface. Keep them in step when adding or removing entries; the
+# shipped-catalog test also holds the docs' count sentences to these numbers.
+[counts]
+hooks = 96
+seams = 103
+engine_fixes = 3
+call_rewrites = 1
+
 # --- hook declarations -------------------------------------------------------------
 
 [[hook]]
