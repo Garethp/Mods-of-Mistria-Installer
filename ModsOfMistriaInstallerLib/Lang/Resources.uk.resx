@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CLIRunningBuild" xml:space="preserve">
+    <value>Запуск збірки {0}</value>
+  </data>
+  <data name="CLICompleted" xml:space="preserve">
+    <value>Завершено. Натисніть будь-яку клавішу для виходу.</value>
+  </data>
+  <data name="CLIUninstallComplete" xml:space="preserve">
+    <value>Усі моди видалено. Натисніть будь-яку клавішу для виходу.</value>
+  </data>
+  <data name="CLIWarning32Bit" xml:space="preserve">
+    <value>Ви використовуєте 64-розрядну операційну систему, але випадково завантажили 32-розрядну версію MOMI. Будь ласка, завантажте версію MOMI без суфікса «-x86».</value>
+  </data>
+  <data name="CLICompileCheckUsage" xml:space="preserve">
+    <value>Параметр --compile-check має мати значення «on», «off» або «require».</value>
+  </data>
+  <data name="CLILintUsage" xml:space="preserve">
+    <value>Параметр --lint потребує вказування папки мода: --lint &lt;папка мода&gt; [оригінальний zip-архів]</value>
+  </data>
+  <data name="CoreLookingForMistriaAt" xml:space="preserve">
+    <value>Пошук гри Fields of Mistria в {0}</value>
+  </data>
+  <data name="CoreMistriaNotFoundFallback" xml:space="preserve">
+    <value>Гру Fields of Mistria не знайдено, повернення до поточної папки</value>
+  </data>
+  <data name="CoreCouldNotFindModManifest" xml:space="preserve">
+    <value>Не вдалося знайти файл маніфесту.</value>
+  </data>
+  <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve">
+    <value>Файл маніфесту має називатися manifest.json.</value>
+  </data>
+  <data name="CoreManifestHasNoAuthor" xml:space="preserve">
+    <value>У маніфесті має бути вказаний автор (author).</value>
+  </data>
+  <data name="CoreManifestHasNoName" xml:space="preserve">
+    <value>У маніфесті має бути вказана назва (name).</value>
+  </data>
+  <data name="CoreManifestHasNoVersion" xml:space="preserve">
+    <value>У маніфесті має бути вказана версія (version).</value>
+  </data>
+  <data name="CoreModRequiresNewerInstaller" xml:space="preserve">
+    <value>Для цього мода потрібна новіша версія інсталятора.</value>
+  </data>
+  <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve">
+    <value>Шлях до гри Fields of Mistria не існує.</value>
+  </data>
+  <data name="CoreModDirectoryDoesNotExist" xml:space="preserve">
+    <value>Шлях до папки мода не існує.</value>
+  </data>
+  <data name="CoreGeneratingInformationForMod" xml:space="preserve">
+    <value>Генерування інформації для {0}</value>
+  </data>
+  <data name="CoreInstallCompleted" xml:space="preserve">
+    <value>Завершено</value>
+  </data>
+  <data name="CoreMistriaNotFound" xml:space="preserve">
+    <value>Не вдалося знайти розташування Fields of Mistria.</value>
+  </data>
+  <data name="CoreCouldNotGuessModsAt" xml:space="preserve">
+    <value>Не вдалося знайти папку з модами (mods) в {0}.</value>
+  </data>
+  <data name="CoreGuessedMistriaAt" xml:space="preserve">
+    <value>Ймовірне розташування: {0}</value>
+  </data>
+  <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve">
+    <value>Пропуск {0}, оскільки для нього потрібна новіша версія інсталятора.</value>
+  </data>
+  <data name="CoreSkippingModBecauseErrors" xml:space="preserve">
+    <value>Пропуск {0} через такі помилки:</value>
+  </data>
+  <data name="CoreModHasWarnings" xml:space="preserve">
+    <value>У {0} є такі попередження, але мод усе одно буде встановлено:</value>
+  </data>
+  <data name="CoreInstalledInReporter" xml:space="preserve">
+    <value>Мод {0} встановлено за {1}</value>
+  </data>
+  <data name="CoreModsInstalledInTime" xml:space="preserve">
+    <value>Моди встановлено за {0}</value>
+  </data>
+  <data name="CoreItemDoesNotHaveValue" xml:space="preserve">
+    <value>{0} не має значення</value>
+  </data>
+  <data name="CoreSpriteFileDoesNotExist" xml:space="preserve">
+    <value>{0} вказує на спрайт у {1}, але цей файл не існує</value>
+  </data>
+  <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve">
+    <value>{0} вказує на папку зі спрайтами в {1}, але ця директорія не існує</value>
+  </data>
+  <data name="CoreSpriteFolderIsEmpty" xml:space="preserve">
+    <value>{0} вказує на папку зі спрайтами в {1}, але ця директорія порожня</value>
+  </data>
+  <data name="CoreCouldNotParseJSON" xml:space="preserve">
+    <value>Не вдалося обробити файл. Помилка: {0}</value>
+  </data>
+  <data name="CoreNoDataInJSON" xml:space="preserve">
+    <value>У файлі не знайдено даних</value>
+  </data>
+  <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve">
+    <value>У файлі вбрання (outfits) немає даних про вбрання.</value>
+  </data>
+  <data name="CoreSpriteFileHasNoSprites" xml:space="preserve">
+    <value>У файлі спрайтів немає даних про спрайти.</value>
+  </data>
+  <data name="CoreStoreFileHasNoData" xml:space="preserve">
+    <value>У файлі магазину (store) немає категорій або предметів.</value>
+  </data>
+  <data name="CoreTilesetsFileEmpty" xml:space="preserve">
+    <value>У файлі тайлсетів немає даних про тайлсети.</value>
+  </data>
+  <data name="CoreReadingSprites" xml:space="preserve">
+    <value>Читання текстур/спрайтів</value>
+  </data>
+  <data name="CoreImportingSprites" xml:space="preserve">
+    <value>Імпортування текстур/спрайтів</value>
+  </data>
+  <data name="CoreWritingSprites" xml:space="preserve">
+    <value>Запис текстур/спрайтів</value>
+  </data>
+  <data name="CoreErrorOutfitNoName" xml:space="preserve">
+    <value>У вбрання немає назви.</value>
+  </data>
+  <data name="CoreErrorOutfitNoDescription" xml:space="preserve">
+    <value>У вбрання немає опису.</value>
+  </data>
+  <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve">
+    <value>Для вбрання {0} не визначено параметр ui_slot.</value>
+  </data>
+  <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve">
+    <value>Для вбрання {0} не визначено параметр ui_sub_category.</value>
+  </data>
+  <data name="CoreErrorOutfitNoAnimation" xml:space="preserve">
+    <value>Для вбрання {0} відсутні файли анімації.</value>
+  </data>
+  <data name="CoreErrorStoreCategoryNoName" xml:space="preserve">
+    <value>У категорії не вказано назву іконки (icon name).</value>
+  </data>
+  <data name="CoreErrorShadowHasNoLocation" xml:space="preserve">
+    <value>Для тіні {0} не встановлено розташування (Location)</value>
+  </data>
+  <data name="CoreWarningShadowFileNoShadows" xml:space="preserve">
+    <value>У файлі тіней немає даних про тіні.</value>
+  </data>
+  <data name="CoreErrorShadowHasNoSprite" xml:space="preserve">
+    <value>У тіні {0} відсутній параметр regular_sprite_name</value>
+  </data>
+  <data name="CoreErrorModRequiresWindows" xml:space="preserve">
+    <value>Цей мод працює лише на ОС Windows і не буде встановлений.</value>
+  </data>
+  <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve">
+    <value>У вбрання {0} неправильний параметр ui_slot. Має бути один із: {1}.</value>
+  </data>
+  <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve">
+    <value>У вбрання {0} неправильний параметр ui_sub_category. Має бути один із: {1}.</value>
+  </data>
+  <data name="CorePreinstallWillInstallAurie" xml:space="preserve">
+    <value>Під час встановлення MOMI спробує додати запис до реєстру вашого комп'ютера. Для цього вас попросять надати права адміністратора «Редактору реєстру» (Registry Editor) і дозволити внесення змін до реєстру.</value>
+  </data>
+  <data name="CorePreinstallWillRemoveAurie" xml:space="preserve">
+    <value>Під час встановлення/видалення MOMI спробує видалити запис із реєстру комп'ютера. У зв'язку з цим вас попросять надати права адміністратора «Консольній утиліті реєстру» (Registry Console Tool).</value>
+  </data>
+  <data name="CoreErrorReadingVersionForMod" xml:space="preserve">
+    <value>Сталася помилка під час читання версії мода: {0}</value>
+  </data>
+  <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve">
+    <value>Предмет не було призначено магазину (store).</value>
+  </data>
+  <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve">
+    <value>Предмет для магазину {0} не має категорії.</value>
+  </data>
+  <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve">
+    <value>Неможливо додати предмет до магазину {0} (категорія {1}), оскільки він має недопустимий сезон {2}.</value>
+  </data>
+  <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve">
+    <value>Для запису в магазині {0} (категорія {1}) не вказано сам предмет.</value>
+  </data>
+  <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve">
+    <value>У категорії не вказано магазин.</value>
+  </data>
+  <data name="CoreErrorNewObjectNoName" xml:space="preserve">
+    <value>Новий об'єкт не має назви.</value>
+  </data>
+  <data name="CoreErrorNewObjectNoCategory" xml:space="preserve">
+    <value>Об'єкт {0} не має категорії.</value>
+  </data>
+  <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve">
+    <value>Об'єкт {0} має неправильну категорію {1}.</value>
+  </data>
+  <data name="CoreErrorNewObjectNoData" xml:space="preserve">
+    <value>Об'єкт {0} не містить даних.</value>
+  </data>
+  <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve">
+    <value>У файлі нових об'єктів немає об'єктів.</value>
+  </data>
+  <data name="CoreWarningItemFileHasNoItems" xml:space="preserve">
+    <value>У файлі нових предметів немає предметів.</value>
+  </data>
+  <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve">
+    <value>Для об'єкта {0} не вказано, чи перезаписує він інший мод (overwrites_other_mod).</value>
+  </data>
+  <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve">
+    <value>Для предмета {0} не вказано, чи перезаписує він інший мод (overwrites_other_mod).</value>
+  </data>
+  <data name="GUIApplicationTitle" xml:space="preserve">
+    <value>Mods Of Mistria Installer</value>
+  </data>
+  <data name="GUIGreetingText" xml:space="preserve">
+    <value>Ласкаво просимо до інсталятора Mods of Mistria (MOMI)!</value>
+  </data>
+  <data name="GUIInstallButtonText" xml:space="preserve">
+    <value>Встановити</value>
+  </data>
+  <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve">
+    <value>Гру Fields of Mistria знайдено за адресою: </value>
+  </data>
+  <data name="GUIModsWillBeInstalled" xml:space="preserve">
+    <value>Позначте галочками всі моди, які ви хочете встановити:</value>
+  </data>
+  <data name="GUIModByAuthorWithVersion" xml:space="preserve">
+    <value>{0} від {1} — Версія {2}</value>
+  </data>
+  <data name="GUICouldNotFindMistria" xml:space="preserve">
+    <value>Не вдалося знайти розташування Fields of Mistria. Спробуйте помістити цю програму в ту ж папку, де знаходиться гра.</value>
+  </data>
+  <data name="GUICouldNotFindMods" xml:space="preserve">
+    <value>Не вдалося знайти папку з модами. Спробуйте створити папку з назвою «mods» у кореневій папці Fields of Mistria.</value>
+  </data>
+  <data name="GUINoModsToInstall" xml:space="preserve">
+    <value>Не знайдено модів для встановлення</value>
+  </data>
+  <data name="GUIModsRequireNewerVersion" xml:space="preserve">
+    <value>Для деяких модів потрібна новіша версія інсталятора. Будь ласка, оновіть програму.</value>
+  </data>
+  <data name="GUIInstallInProgress" xml:space="preserve">
+    <value>Встановлення модів...</value>
+  </data>
+  <data name="GUIModHasWarnings" xml:space="preserve">
+    <value>У цьому моді є попередження, які можна проігнорувати</value>
+  </data>
+  <data name="GUIModHasErrors" xml:space="preserve">
+    <value>У цьому моді є критичні помилки, він не буде встановлений</value>
+  </data>
+  <data name="GUIModInstalled" xml:space="preserve">
+    <value>Успішно встановлено.</value>
+  </data>
+  <data name="GUIModSkipped" xml:space="preserve">
+    <value>Цей мод було пропущено під час встановлення</value>
+  </data>
+  <data name="GUIUpdateNagTitle" xml:space="preserve">
+    <value>Доступна нова версія</value>
+  </data>
+  <data name="GUIUpdateNagMessage" xml:space="preserve">
+    <value>Доступна нова версія інсталятора Mods Of Mistria, будь ласка, оновіть програму.</value>
+  </data>
+  <data name="GUIUninstallButtonText" xml:space="preserve">
+    <value>Видалити все</value>
+  </data>
+  <data name="GUIPreinstallInformationTitle" xml:space="preserve">
+    <value>Інформація про встановлення</value>
+  </data>
+  <data name="GUIUninstallInformationTitle" xml:space="preserve">
+    <value>Інформація про видалення</value>
+  </data>
+  <data name="GUIWarning32Bit" xml:space="preserve">
+    <value>Ви використовуєте 64-розрядну операційну систему, але випадково завантажили 32-розрядну версію MOMI. Будь ласка, завантажте версію MOMI без суфікса «-x86».</value>
+  </data>
+  <data name="GUIWarning32BitTitle" xml:space="preserve">
+    <value>Виявлено 32-розрядну версію</value>
+  </data>
+  <data name="GUISetupMistriaLocation" xml:space="preserve">
+    <value>Розташування Fields Of Mistria:</value>
+  </data>
+  <data name="GUISetupModsLocation" xml:space="preserve">
+    <value>Папка з модами:</value>
+  </data>
+  <data name="GUICanCreateModsFolder" xml:space="preserve">
+    <value>Папку для модів не виявлено, але її можна створити автоматично.</value>
+  </data>
+  <data name="GUISaveLogFile" xml:space="preserve">
+    <value>Зберегти файл журналу (лог)</value>
+  </data>
+  <data name="GUIPickLogFile" xml:space="preserve">
+    <value>Виберіть місце для збереження файлу журналу</value>
+  </data>
+  <data name="GUIEnableAllMods" xml:space="preserve">
+    <value>Увімкнути всі моди</value>
+  </data>
+  <data name="GUIDisableAllMods" xml:space="preserve">
+    <value>Вимкнути всі моди</value>
+  </data>
+  <data name="GUIReloadModlist" xml:space="preserve">
+    <value>Оновити список модів</value>
+  </data>
+  <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve">
+    <value>Для тварини {0} в магазині {1} не визначено косметичний параметр (cosmetic).</value>
+  </data>
+  <data name="GUIGreetingText_April" xml:space="preserve">
+    <value>А ви знали, що вдумливий удар кайлом — це чудовий спосіб встановити будь-які завантажені вами моди?</value>
+  </data>
+  <data name="GUIInstallButtonText_April" xml:space="preserve">
+    <value>Вдумливо вдарити</value>
+  </data>
+  <data name="GUIInstallInProgress_April" xml:space="preserve">
+    <value>Вдумливий удар...</value>
+  </data>
+  <data name="GUINoModsToInstall_April" xml:space="preserve">
+    <value>Не знайдено модів для удару</value>
+  </data>
+  <data name="GUIModsWillBeInstalled_April" xml:space="preserve">
+    <value>Позначте галочками всі моди, по яких ви хочете вдарити:</value>
+  </data>
+  <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve">
+    <value>Перевизначення ціни для вбрання {0} має бути додатним числом.</value>
+  </data>
+  <data name="CoreRunningInstaller" xml:space="preserve">
+    <value>Запуск {0}</value>
+  </data>
+  <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve">
+    <value>Для спрайта {0} не встановлено розташування (Location).</value>
+  </data>
+  <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve">
+    <value>Через оновлення рушія гри цей мод неможливо встановити в його поточній версії.</value>
+  </data>
+  <data name="CoreModRequiresIncorrectVersion" xml:space="preserve">
+    <value>Для мода потрібна некоректна мінімальна версія MOMI.</value>
+  </data>
+  <data name="CoreStoreRebuildFailed" xml:space="preserve">
+    <value>Не вдалося перезібрати {0}. Гра Fields of Mistria запущена? Закрийте її та спробуйте знову; попереднє встановлення не порушено.</value>
+  </data>
+  <data name="CoreStoreFlushFailed" xml:space="preserve">
+    <value>Не вдалося завершити запис у {0}. Перевірте, чи є на диску вільне місце, і чи не зайнятий файл іншою програмою (наприклад, антивірусом), а потім запустіть інсталятор знову.</value>
+  </data>
+  <data name="CoreStoreRestoreFailed" xml:space="preserve">
+    <value>Не вдалося відновити {0}. Гра Fields of Mistria запущена? Закрийте її та спробуйте знову.</value>
+  </data>
+  <data name="CoreStoreBackupMissing" xml:space="preserve">
+    <value>{0} містить дані про попереднє встановлення, але резервна копія {1} відсутня. Будь ласка, перевірте цілісність файлів гри в Steam і спробуйте знову.</value>
+  </data>
+  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve">
+    <value>Архів {0} не читається, а резервна копія {1} відсутня. Будь ласка, перевірте цілісність файлів гри в Steam і спробуйте знову.</value>
+  </data>
+  <data name="CoreStoreNoArchives" xml:space="preserve">
+    <value>Не вдалося знайти {0} або {1}. Запустіть гру принаймні один раз або перевірте цілісність файлів гри через Steam.</value>
+  </data>
+  <data name="CoreStoreNothingToUninstall" xml:space="preserve">
+    <value>Сховище ресурсів не знайдено, тому відновлювати нічого.</value>
+  </data>
+  <data name="CoreInstallSummary" xml:space="preserve">
+    <value>Встановлено модів: {0}</value>
+  </data>
+  <data name="CoreInstallSummaryWithSkipped" xml:space="preserve">
+    <value>Встановлено модів: {0}, пропущено: {1}</value>
+  </data>
+  <data name="CoreGameGmlChanged" xml:space="preserve">
+    <value>GML гри змінено. Встановлення неможливе.</value>
+  </data>
+  <data name="CoreModRequiresMissingHooks" xml:space="preserve">
+    <value>Мод потребує хуків (hooks), яких немає в цій версії MOMI: {0}. Оновіть MOMI або використовуйте старішу версію мода.</value>
+  </data>
+  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve">
+    <value>Параметр requires_hooks у маніфесті має бути масивом рядків з іменами хуків.</value>
+  </data>
+  <data name="CoreSkippedModReason" xml:space="preserve">
+    <value>Пропущено {0}: {1}</value>
+  </data>
+  <data name="CoreVerifyNoBackup" xml:space="preserve">
+    <value>Чиста резервна копія не знайдена в {0}. Запустіть інсталятор один раз для її створення або виконайте перевірку швів (seam check) безпосередньо із zip-архівом збірки.</value>
+  </data>
+  <data name="GUIUninstallCompleteText" xml:space="preserve">
+    <value>Видалення завершено</value>
+  </data>
+  <data name="GUIUninstallingText" xml:space="preserve">
+    <value>Видалення...</value>
+  </data>
+  <data name="GUIInstallFatalError" xml:space="preserve">
+    <value>Під час встановлення модів сталася критична помилка:</value>
+  </data>
+  <data name="GUIUninstallFatalError" xml:space="preserve">
+    <value>Під час видалення модів сталася критична помилка:</value>
+  </data>
+</root>
