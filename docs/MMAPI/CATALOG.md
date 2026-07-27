@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **97 hooks**, fed by **105 seams**, **4 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **98 hooks**, fed by **106 seams**, **5 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -105,6 +105,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [item.display_description](hooks/item.display_description.md) | filter | Reword the description an item's tooltip renders. |
 | [crafting.max_crafts](hooks/crafting.max_crafts.md) | override | Take over how many of a recipe can be crafted. |
 | [crafting.pay_component_costs](hooks/crafting.pay_component_costs.md) | guard | Veto a recipe's material payment, craft for free. |
+| [crafting.component_count](hooks/crafting.component_count.md) | filter | Adjust one recipe component's effective cost - including making crafts instant via a zero duration. |
 
 ### UI, Text, And Presentation
 
@@ -229,6 +230,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [item_display_description](seams/item_display_description.md) | Wraps the item-description getter, the string the tooltip body actually renders. |
 | [crafting_max_crafts](seams/crafting_max_crafts.md) | Puts an override in front of the craft-count ceiling before the engine computes it. |
 | [crafting_pay_component_costs](seams/crafting_pay_component_costs.md) | Puts a veto check in front of a recipe's material payment. |
+| [crafting_component_count](seams/crafting_component_count.md) | Filters every crafting cost read by wrapping the component-count resolver. |
 
 ### UI, Text, And Presentation
 
@@ -271,6 +273,7 @@ Hook-less edits the catalog also carries:
 | [shroom_puddle_mask](seams/shroom_puddle_mask.md) | engine fix | Corrects the acid puddle's damage-tarball collision mask, a beta-wiring fix. |
 | [statue_hp_death_sweep](seams/statue_hp_death_sweep.md) | engine fix | Adds the Living Griffin Statue's missing depleted-hp death check, closing a potential soft-lock and matching every other monster's sweep. |
 | [tarball_chop_burn_flag](seams/tarball_chop_burn_flag.md) | engine fix | Passes the tarball's real fire flag to its grid chop, so non-fire chops stop being burn-throttled by stump/fruit-tree iframes. |
+| [max_crafts_zero_component](seams/max_crafts_zero_component.md) | engine fix | Skips zero-cost components in the craft-ceiling loop, mirroring the zero guard the duration branch already has. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Growing The Catalog
