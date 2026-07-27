@@ -274,7 +274,7 @@
     <value>Während der Installation wird MOMI versuchen einen Eintrag, in deinem Register deines Computers, zu entfernen. Dafür wirst du gebeten dem Administrator Zugang zum "Registrierungs-Konsolen-Werkzeug" zu gewähren.</value>
   </data>
   <data name="CoreErrorReadingVersionForMod" xml:space="preserve">
-    <value>Ein Fehler trat beim Lesen der Version der Mod auf: (0)</value>
+    <value>Ein Fehler trat beim Lesen der Version der Mod auf: {0}</value>
   </data>
   <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve">
     <value>Gegenstand wurde keinem Laden zugeordnet.</value>

@@ -258,7 +258,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An error occured when reading the version for the mod: (0).
+        ///   Looks up a localized string similar to An error occured when reading the version for the mod: {0}.
         /// </summary>
         public static string CoreErrorReadingVersionForMod {
             get {

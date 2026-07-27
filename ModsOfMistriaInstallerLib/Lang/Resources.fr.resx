@@ -274,7 +274,7 @@
     <value>Pendant l'installation, MOMI tentera de supprimer une entrée dans le registre de votre ordinateur. Pour cela, il vous sera demandé de donner les accès administrateur au &quot;Registry Console Tool&quot;.</value>
   </data>
   <data name="CoreErrorReadingVersionForMod" xml:space="preserve">
-    <value>Une erreur s'est produite lors de la lecture de la version du mod&#160;: (0)</value>
+    <value>Une erreur s'est produite lors de la lecture de la version du mod&#160;: {0}</value>
   </data>
   <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve">
     <value>L'objet n'a pas été assigné à un magasin.</value>

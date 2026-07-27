@@ -274,7 +274,7 @@
     <value>Durante a instalação, o MOMI vai tentar remover uma entrada do registro do computador. Como parte deste processo, será solicitado que você dê acesso de administrador a &quot;Ferramenta do Console de Registro&quot;.</value>
   </data>
   <data name="CoreErrorReadingVersionForMod" xml:space="preserve">
-    <value>Um erro ocorreu ao ler a versão do mod: (0)</value>
+    <value>Um erro ocorreu ao ler a versão do mod: {0}</value>
   </data>
   <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve">
     <value>Um item não foi associado a uma loja.</value>
