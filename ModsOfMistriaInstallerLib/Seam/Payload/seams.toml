@@ -33,8 +33,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 96
-seams = 104
+hooks = 97
+seams = 105
 engine_fixes = 3
 call_rewrites = 1
 
@@ -123,6 +123,11 @@ doc  = "Fires at the top of interact(node) (Interact.gml, the shared grid-object
 name = "furniture.place_guard"
 kind = "guard"
 doc  = "Fires at the top of write_furniture_to_location(grid, xx, yy, proto, stack_count, rotation), before the placement is validated or written. ctx is { grid, x, y, proto, stack_count, rotation }; proto is the furniture NODE_PROTOTYPE (proto.object_id identifies which furniture). Return false to veto the placement (write_furniture_to_location returns undefined, so nothing is placed and the item stays in hand); undefined or true allows. stack_count > 0 indicates a recursive child-grid placement (furniture on furniture). Use it to cap or forbid placing a mod's furniture under mod-specific conditions."
+
+[[hook]]
+name = "furniture.floor_sprite"
+kind = "filter"
+doc  = "Fires in create_furniture_renderer(node) as a furniture node's floor sprite is resolved, after the engine's native winter_floor_sprite override and before the floor renderer instance is created. The filtered value is the floor sprite. ctx is the furniture node (read ctx.object_id, ctx.prototype, ctx.cardinal_index). Return the replacement sprite, or undefined to keep the current value. Fires once per furniture render BUILD (placement, room/grid load), not per frame, so a changed decision (e.g. a season change) applies on the node's next build, not instantly on a live world. Furniture floor sprites never route through obj_node_renderer.set_sprite, so object.node_sprite cannot reach them."
 
 [[hook]]
 name = "dialogue.line"
@@ -840,6 +845,27 @@ hook    = "furniture.place_guard"
 ctx     = '{ grid: grid, x: xx, y: yy, proto: proto, stack_count: stack_count, rotation: rotation }'
 on_veto = "return undefined;"
 indent  = 4
+
+[[seam]]
+id      = "furniture_floor_sprite"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
+context_before = '''
+        if CALENDAR.season() == Season.Winter && cardinal_data[$ "winter_floor_sprite"] != undefined {
+            sprite_to_use = cardinal_data.winter_floor_sprite;
+        }
+'''
+context_after = '''
+
+        node.renderer.floor_renderer = instance_create_layer(node.renderer.x, node.renderer.y, "Instances", obj_node_renderer_top);
+'''
+op      = "filter"
+hook    = "furniture.floor_sprite"
+ctx     = "node"
+var     = "sprite_to_use"
+indent  = 8
+try_catch = true
+catch_var = "__mmapi_floor_sprite"
+marker  = "mmapi_furniture_floor_sprite"
 
 [[seam]]
 id      = "items_use_guard"

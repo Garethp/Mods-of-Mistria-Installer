@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **96 hooks**, fed by **104 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **97 hooks**, fed by **105 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -44,6 +44,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [request_board.fetch_pool](hooks/request_board.fetch_pool.md) | filter | Change the request board's daily candidate pool and draw cap. |
 | [request_board.fetch_pool_ready](hooks/request_board.fetch_pool_ready.md) | event | Know the finished request board the moment it is built each day. |
 | [furniture.place_guard](hooks/furniture.place_guard.md) | guard | Veto a furniture placement before it is written. |
+| [furniture.floor_sprite](hooks/furniture.floor_sprite.md) | filter | Swap a furniture piece's floor sprite as its renderer is built. |
 | [object.interact](hooks/object.interact.md) | override | Take over any grid object's interaction. |
 | [object.node_sprite](hooks/object.node_sprite.md) | filter | Swap the sprite of any world node before it draws. |
 | [store.item_added](hooks/store.item_added.md) | event | Know when an item lands in the shopping basket. |
@@ -161,6 +162,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [request_board_fetch_pool](seams/request_board_fetch_pool.md) | Rewrites the request board's daily random top-up so the candidate pool and draw cap pass through a filter. |
 | [request_board_fetch_pool_ready](seams/request_board_fetch_pool_ready.md) | Emits the finished request board at the tail of the daily build, final pool included. |
 | [furniture_place_guard](seams/furniture_place_guard.md) | Puts a veto check in front of every furniture placement. |
+| [furniture_floor_sprite](seams/furniture_floor_sprite.md) | Filters the floor sprite as a furniture renderer is built. |
 | [object_interact](seams/object_interact.md) | Puts a claim-scoped override in front of every grid-object interaction. |
 | [node_renderer_set_sprite](seams/node_renderer_set_sprite.md) | Filters the sprite every world node renderer is about to wear. |
 | [store_item_added](seams/store_item_added.md) | Announces every shelf tap that puts an item in the shopping basket. |
