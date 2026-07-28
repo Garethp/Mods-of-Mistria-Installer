@@ -1078,8 +1078,6 @@ replace = '''
                 sprite_index = world_sprite;
                 icon_width = sprite_get_width(sprite_index);
                 y_offset = sprite_get_yoffset(sprite_index);
-                tex_h = texture_get_texel_height(sprite_get_texture(sprite_index, image_index));
-                tex_w = texture_get_texel_width(sprite_get_texture(sprite_index, image_index));
             }
             var outline_sprite = undefined;
             try { outline_sprite = item_data.get_ui_outline(); } catch (__mmapi_world_item_outline) {}
