@@ -10,26 +10,25 @@ public class TOMLCollector
 {
     private const string SprPrefix  = "spr_";
     private const string PolyPrefix = "poly_";
-
-    // After calling Collect(), grouped animation+shape pairs.
-    public IReadOnlyList<AnimationGroup> Groups { get; private set; } = [];
-
-    // After calling Collect(), .toml / .meta.toml files not part of any group,
-    // as paths relative to the mod root.
-    public IReadOnlyList<string> OtherTomlFiles { get; private set; } = [];
-
-    public void Collect(IMod mod)
+    
+    public GeneratedInformation Collect(IMod mod)
     {
+        var generatedInformation = new GeneratedInformation();
+        
         var allMeta = mod.GetAllFiles(".meta.toml");
         var allToml = mod.GetAllFiles(".toml")
                         .Where(p => !p.EndsWith(".meta.toml", StringComparison.OrdinalIgnoreCase))
                         .Select(p => GetRelativePath(mod, p))
-                        .Where(p => !IsUnderMomiFolder(p))
+                        .Where(p => !IsUnderMomiFolder(p) && p != "manifest.toml")
+                        .Select(path => new GeneratedTomlItem
+                        {
+                            FilePath = path,
+                            ReadFilePath = path
+                        })
                         .ToList();
-
+        
         // Map: baseName (lower) → mutable group builder
-        var builders = new Dictionary<string, GroupBuilder>(StringComparer.OrdinalIgnoreCase);
-        var ungroupedMeta = new List<string>();
+        var ungroupedItems = new List<GeneratedTomlItem>();
 
         foreach (var absolutePath in allMeta)
         {
@@ -49,44 +48,51 @@ public class TOMLCollector
 
             if (prefix is null)
             {
-                ungroupedMeta.Add(relPath);
+                ungroupedItems.Add(new GeneratedTomlItem
+                {
+                    FilePath = relPath,
+                    ReadFilePath = relPath
+                });
                 continue;
             }
 
             var baseName = spriteName[prefix.Length..];
-
-            if (!builders.TryGetValue(baseName, out var builder))
+            
+            if (!generatedInformation.AnimationGroups.ContainsKey(baseName))
             {
-                builder = new GroupBuilder { BaseName = baseName };
-                builders[baseName] = builder;
+                generatedInformation.AnimationGroups[baseName] = new AnimationGroup { BaseName = baseName };
             }
+
+            var animationGroup = generatedInformation.AnimationGroups[baseName];
 
             if (prefix == SprPrefix)
             {
-                builder.AnimationMetaRelPath = relPath;
+                animationGroup.AnimationMetaRelPath = new GeneratedTomlItem
+                {
+                    FilePath = relPath,
+                    ReadFilePath = relPath
+                };
 
                 // Look for a paired PNG next to the .meta.toml
                 var pngAbsolute = absolutePath[..^".meta.toml".Length] + ".png";
                 if (mod.FileExists(GetRelativePath(mod, pngAbsolute)))
-                    builder.PngRelPath = GetRelativePath(mod, pngAbsolute);
+                    animationGroup.PngRelPath = GetRelativePath(mod, pngAbsolute);
             }
             else
             {
-                builder.ShapeMetaRelPath = relPath;
+                animationGroup.ShapeMetaRelPath = new GeneratedTomlItem
+                {
+                    FilePath = relPath,
+                    ReadFilePath = relPath
+                };
             }
         }
-
-        Groups = builders.Values
-            .Select(b => new AnimationGroup
-            {
-                BaseName             = b.BaseName,
-                AnimationMetaRelPath = b.AnimationMetaRelPath,
-                PngRelPath           = b.PngRelPath,
-                ShapeMetaRelPath     = b.ShapeMetaRelPath
-            })
-            .ToList();
-
-        OtherTomlFiles = [.. allToml, .. ungroupedMeta];
+        
+        // After calling Collect(), .toml / .meta.toml files not part of any group,
+        // as paths relative to the mod root.
+        generatedInformation.Toml.AddRange([.. allToml, .. ungroupedItems ]);
+        
+        return generatedInformation;
     }
 
     // "momi/" files are compact definitions consumed directly by their own
@@ -110,9 +116,9 @@ public class TOMLCollector
 
     private class GroupBuilder
     {
-        public string  BaseName             { get; init; } = "";
-        public string? AnimationMetaRelPath { get; set; }
-        public string? PngRelPath           { get; set; }
-        public string? ShapeMetaRelPath     { get; set; }
+        public string             BaseName             { get; init; } = "";
+        public GeneratedTomlItem? AnimationMetaRelPath { get; set; }
+        public string?            PngRelPath           { get; set; }
+        public GeneratedTomlItem? ShapeMetaRelPath     { get; set; }
     }
 }

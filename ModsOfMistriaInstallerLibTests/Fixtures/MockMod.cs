@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
@@ -88,7 +88,7 @@ public class MockMod : IMod
     public bool HasFilesInFolder(string folder, string extension) =>
         _files.TryGetValue(folder, out var files) && files.Keys.Any(f => f.EndsWith(extension));
 
-    public bool HasFilesInFolder(string folder) => _files.ContainsKey(folder) && _files[folder].Count > 0;
+    public bool HasFilesInFolder(string folder) => HasFilesInFolder(folder, "");
 
     public List<string> GetFilesInFolder(string folder, string extension) =>
         GetFilesInFolder(folder).Where(f => f.EndsWith(extension)).ToList();

@@ -25,28 +25,20 @@ public class SpriteMetaFile
     }
 }
 
-public class SpriteMetaFileProperties
+public class SpriteMetaFileProperties: MetaProperties
 {
-    [TomlPropertyName("id")] public string? Id { get; set; }
-    
     [TomlPropertyName("replace_id")] public string? ReplaceId { get; set; }
-
-    [TomlPropertyName("asset_kind")] public string? AssetKind { get; set; }
-
+    
     public void Merge(SpriteMetaFileProperties? newProperties)
     {
         if (newProperties is null) return;
         
-        if (!string.IsNullOrEmpty(newProperties.Id))
-            Id = newProperties.Id;
-
         if (!string.IsNullOrEmpty(newProperties.ReplaceId))
         {
             ReplaceId = newProperties.ReplaceId;
         }
 
-        if (!string.IsNullOrEmpty(newProperties.AssetKind))
-            AssetKind = newProperties.AssetKind;
+        Merge(newProperties as MetaProperties);
     }
 }
 

@@ -19,21 +19,21 @@ public class TOMLInstaller(
     IFileModifier modifier)
     : Installer(fileNameUidMapping)
 {
-    public override void Install(IMod mod, Action<string, string> reportStatus)
-    {
-        var collector = new TOMLCollector();
-        collector.Collect(mod);
-
-        foreach (var group in collector.Groups)
+    public override void Install(
+        IMod mod, 
+        GeneratedInformation generatedInformation,
+        Action<string, string> reportStatus
+    ) {
+        foreach (var animationGroup in generatedInformation.AnimationGroups.Values)
         {
-            if (group.HasAnimation)
-                InstallAnimationMeta(mod, group, reportStatus);
+            if (animationGroup.HasAnimation)
+                InstallAnimationMeta(mod, animationGroup, reportStatus);
 
-            if (group.HasShape)
-                InstallShapeMeta(mod, group, reportStatus);
+            if (animationGroup.HasShape)
+                InstallShapeMeta(mod, animationGroup, reportStatus);
         }
 
-        foreach (var relPath in collector.OtherTomlFiles)
+        foreach (var relPath in generatedInformation.Toml)
             InstallGenericToml(mod, relPath, reportStatus);
     }
 
@@ -41,10 +41,9 @@ public class TOMLInstaller(
 
     private void InstallAnimationMeta(IMod mod, AnimationGroup group, Action<string, string> reportStatus)
     {
-        var relPath = group.AnimationMetaRelPath!;
-        var dest    = DestinationPath(relPath);
+        var dest    = DestinationPath(group.AnimationMetaRelPath!.FilePath);
 
-        var toml = Toml.ParseToml(mod.ReadFile(relPath));
+        var toml = group.AnimationMetaRelPath.ReadToml(mod);
         var meta  = EnsureTable(toml, "meta_properties");
 
         // If the mod's file already has an id, honour it and register it for
@@ -76,17 +75,16 @@ public class TOMLInstaller(
         }
 
         MergeOrWriteToml(toml, dest);
-        reportStatus($"Installed animation meta: {relPath}", "");
+        reportStatus($"Installed animation meta: {group.AnimationMetaRelPath.ReadFilePath}", "");
     }
 
     // Poly .meta.toml
 
     private void InstallShapeMeta(IMod mod, AnimationGroup group, Action<string, string> reportStatus)
     {
-        var relPath = group.ShapeMetaRelPath!;
-        var dest    = DestinationPath(relPath);
+        var dest    = DestinationPath(group.ShapeMetaRelPath!.FilePath);
 
-        var toml = Toml.ParseToml(mod.ReadFile(relPath));
+        var toml = group.ShapeMetaRelPath.ReadToml(mod);
         var meta  = EnsureTable(toml, "meta_properties");
 
         // Preserve the mod's own shape id if provided; generate one otherwise.
@@ -105,18 +103,17 @@ public class TOMLInstaller(
         }
 
         MergeOrWriteToml(toml, dest);
-        reportStatus($"Installed shape meta: {relPath}", "");
+        reportStatus($"Installed shape meta: {group.ShapeMetaRelPath.FilePath}", "");
     }
 
     // Generic TOML / ungrouped .meta.toml
-
-    private void InstallGenericToml(IMod mod, string relPath, Action<string, string> reportStatus)
+    private void InstallGenericToml(IMod mod, GeneratedTomlItem item, Action<string, string> reportStatus)
     {
-        var dest       = DestinationPath(relPath);
-        var sourceToml = Toml.ParseToml(mod.ReadFile(relPath));
+        var dest = DestinationPath(item.FilePath);
+        var sourceToml = item.ReadToml(mod);
 
         MergeOrWriteToml(sourceToml, dest);
-        reportStatus($"Installed TOML: {relPath}", "");
+        reportStatus($"Installed TOML: {item.FilePath}", "");
     }
 
     // Helpers

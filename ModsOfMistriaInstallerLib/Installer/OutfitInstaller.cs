@@ -1,4 +1,5 @@
 using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.Models;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
 using Newtonsoft.Json;
@@ -18,8 +19,11 @@ public class OutfitInstaller(
     IFileModifier _fileModifier)
     : Installer(fileNameUidMapping)
 {
-    public override void Install(IMod mod, Action<string, string> reportStatus)
-    {
+    public override void Install(
+        IMod mod, 
+        GeneratedInformation generatedInformation,
+        Action<string, string> reportStatus
+    ) {
         if (!mod.HasFilesInFolder("momi/outfit", ".toml"))
             return;
 
@@ -41,7 +45,7 @@ public class OutfitInstaller(
 
     // ── fiddle/player_assets.toml ─────────────────────────────────────────────
 
-    private void InstallFiddle(OutfitDefinition def, Action<string, string> reportStatus)
+    private void InstallFiddle(OutfitFile def, Action<string, string> reportStatus)
     {
         var dest = DestinationPath("fiddle/player_assets.toml");
 
@@ -70,7 +74,7 @@ public class OutfitInstaller(
     }
 
 
-    private void InstallOutlines(OutfitDefinition def, Action<string, string> reportStatus)
+    private void InstallOutlines(OutfitFile def, Action<string, string> reportStatus)
     {
         var dest = DestinationPath("data_files/animation/outlines.json");
 
@@ -93,7 +97,7 @@ public class OutfitInstaller(
     }
 
 
-    private void InstallPlayerAssetParts(IMod mod, OutfitDefinition def, Action<string, string> reportStatus)
+    private void InstallPlayerAssetParts(IMod mod, OutfitFile def, Action<string, string> reportStatus)
     {
         var dest = DestinationPath("data_files/animation/player_asset_parts.json");
 
