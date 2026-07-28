@@ -1,3 +1,5 @@
+using Esprima.Ast;
+using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.Models;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
@@ -80,13 +82,10 @@ public class OutfitGenerator
 
     // Builds virtual file contents from the mod's momi/outfit/ definitions.
     // Only generates files the mod hasn't already provided.
-    public Dictionary<string, string> Generate(IMod mod)
+    public GeneratedInformation Generate(IMod mod)
     {
-        var virtual_ = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-        if (!mod.HasFilesInFolder("momi/outfit", ".toml"))
-            return virtual_;
-
+        var information = new GeneratedInformation();
+        
         foreach (var entry in mod.GetFilesInFolder("momi/outfit", ".toml"))
         {
             var relPath = Relativize(mod, entry);
@@ -96,19 +95,19 @@ public class OutfitGenerator
             foreach (var (_, def) in OutfitDefinition.ParseAll(content))
             {
                 if (!SlotConfigs.TryGetValue(def.UiSlot, out var slot)) continue;
-                GenerateOutfitFiles(mod, def, slot, virtual_);
+                GenerateOutfitFiles(mod, def, slot, information);
             }
         }
 
-        return virtual_;
+        return information;
     }
 
-    private static void GenerateOutfitFiles(
+    private void GenerateOutfitFiles(
         IMod mod,
         OutfitFile def,
         SlotConfig slot,
-        Dictionary<string, string> out_)
-    {
+        GeneratedInformation information
+    ) {
         var frameW       = def.FrameWidth  ?? slot.FrameWidth;
         var frameH       = def.FrameHeight ?? slot.FrameHeight;
         var outfitSprite = ResolveOutfitSprite(def);
@@ -123,22 +122,64 @@ public class OutfitGenerator
             {
                 var iconPath  = $"animations/Item Icons/Wearable/{def.ResolvedIconSprite}{suffix}.meta.toml";
                 var shapePath = $"shapes/Item Icons/Wearable/poly_{def.ResolvedIconSprite[4..]}{suffix}.meta.toml";
-                AddIfMissing(mod, out_, iconPath,  AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0));
-                AddIfMissing(mod, out_, shapePath, ShapeMeta(18, 18, -9, -9));
+
+                information.AnimationGroups[$"{def.ResolvedIconSprite[4..]}{suffix}"] = new AnimationGroup
+                {
+                    BaseName = $"{def.ResolvedIconSprite[4..]}{suffix}",
+                    PngRelPath = $"animations/Item Icons/Wearable/{def.ResolvedIconSprite}{suffix}.png",
+                    AnimationMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                        mod,
+                        iconPath,
+                        AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0)
+                    ),
+                    ShapeMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                        mod,
+                        shapePath,
+                        ShapeMeta(18, 18, -9, -9)
+                    )
+                };
             }
         }
         else
         {
             // icon + outline
             var iconMetaPath    = $"animations/Item Icons/Wearable/{def.ResolvedIconSprite}.meta.toml";
-            var outlineMetaPath = $"animations/Item Icons/Wearable/{def.ResolvedOutlineSprite}.meta.toml";
-            AddIfMissing(mod, out_, iconMetaPath,    AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0));
-            AddIfMissing(mod, out_, outlineMetaPath, AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0));
-
             var iconShapePath    = $"shapes/Item Icons/Wearable/poly_{def.ResolvedIconSprite[4..]}.meta.toml";
+            
+            var outlineMetaPath = $"animations/Item Icons/Wearable/{def.ResolvedOutlineSprite}.meta.toml";
             var outlineShapePath = $"shapes/Item Icons/Wearable/poly_{def.ResolvedOutlineSprite[4..]}.meta.toml";
-            AddIfMissing(mod, out_, iconShapePath,    ShapeMeta(18, 18, -9, -9));
-            AddIfMissing(mod, out_, outlineShapePath, ShapeMeta(18, 18, -9, -9));
+            
+            information.AnimationGroups[def.ResolvedIconSprite[4..]] = new AnimationGroup()
+            {
+                BaseName = def.ResolvedIconSprite[4..],
+                PngRelPath = $"animations/Item Icons/Wearable/{def.ResolvedIconSprite}.png",
+                AnimationMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                    mod, 
+                    iconMetaPath, 
+                    AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0)
+                ),
+                ShapeMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                    mod, 
+                    iconShapePath, 
+                    ShapeMeta(18, 18, -9, -9)
+                )
+            };
+            
+            information.AnimationGroups[def.ResolvedOutlineSprite[4..]] = new AnimationGroup()
+            {
+                BaseName = def.ResolvedOutlineSprite[4..],
+                PngRelPath = $"animations/Item Icons/Wearable/{def.ResolvedOutlineSprite}.png",
+                AnimationMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                    mod,
+                    outlineMetaPath,
+                    AnimationMeta(18, 18, 1, "UI", 0f, 9.0, 9.0)
+                ),
+                ShapeMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                    mod,
+                    outlineShapePath,
+                    ShapeMeta(18, 18, -9, -9)
+                )
+            };
         }
 
         // ── Player animation ──────────────────────────────────────────────────
@@ -154,15 +195,24 @@ public class OutfitGenerator
             // Only parts the mod actually uses get a meta.
             foreach (var part in parts)
             {
-                var ps = $"spr_player_{def.Id}_{part}";
-                if (!mod.FileExists($"animations/{slot.PlayerFolder}/{ps}.png")) continue;
+                var partSprite = $"spr_player_{def.Id}_{part}";
+                if (!mod.FileExists($"animations/{slot.PlayerFolder}/{partSprite}.png")) continue;
 
-                var partFrameCount = DetectFrameCount(mod, slot, ps, frameW);
-                AddIfMissing(mod, out_, $"animations/{slot.PlayerFolder}/{ps}.meta.toml",
-                    AnimationMeta(frameW, frameH, partFrameCount, slot.Atlas, slot.Duration,
-                        slot.OffsetH, slot.OffsetV));
-                AddIfMissing(mod, out_, $"shapes/{slot.PlayerFolder}/poly_{ps[4..]}.meta.toml",
-                    ShapeMeta(frameW, frameH, 0, 0));
+                var partFrameCount = DetectFrameCount(mod, slot, partSprite, frameW);
+                information.AnimationGroups[partSprite] = new AnimationGroup
+                {
+                    PngRelPath = $"animations/{slot.PlayerFolder}/{partSprite}.png",
+                    AnimationMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                        mod,
+                        $"animations/{slot.PlayerFolder}/{partSprite}.meta.toml",
+                        AnimationMeta(frameW, frameH, partFrameCount, slot.Atlas, slot.Duration, slot.OffsetH, slot.OffsetV)
+                    ),
+                    ShapeMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                        mod,
+                        $"shapes/{slot.PlayerFolder}/poly_{partSprite[4..]}.meta.toml",
+                        ShapeMeta(frameW, frameH, 0, 0)
+                    )
+                };
             }
         }
         else
@@ -170,10 +220,22 @@ public class OutfitGenerator
             // Single-part slot
             var outfitMetaPath  = $"animations/{slot.PlayerFolder}/{outfitSprite}.meta.toml";
             var outfitShapePath = $"shapes/{slot.PlayerFolder}/poly_{outfitSprite[4..]}.meta.toml";
-            AddIfMissing(mod, out_, outfitMetaPath, AnimationMeta(
-                frameW, frameH, frameCount, slot.Atlas, slot.Duration,
-                slot.OffsetH, slot.OffsetV));
-            AddIfMissing(mod, out_, outfitShapePath, ShapeMeta(frameW, frameH, 0, 0));
+
+            information.AnimationGroups[outfitSprite[4..]] = new AnimationGroup
+            {
+                BaseName = outfitSprite[4..],
+                PngRelPath = $"animations/{slot.PlayerFolder}/{outfitSprite}.png",
+                AnimationMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                    mod,
+                    outfitMetaPath,
+                    AnimationMeta(frameW, frameH, frameCount, slot.Atlas, slot.Duration, slot.OffsetH, slot.OffsetV)
+                ),
+                ShapeMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                    mod,
+                    outfitShapePath,
+                    ShapeMeta(frameW, frameH, 0, 0)
+                )
+            };
         }
 
         // ── LUT ──────────────────────────────────────────────────────────────────
@@ -189,8 +251,22 @@ public class OutfitGenerator
             var (lutW, lutH) = DetectLutDimensions(mod, slot, lutSprite);
             var lutMetaPath  = $"animations/{slot.PlayerFolder}/{lutSprite}.meta.toml";
             var lutShapePath = $"shapes/{slot.PlayerFolder}/poly_{lutSprite[4..]}.meta.toml";
-            AddIfMissing(mod, out_, lutMetaPath,  AnimationMeta(lutW, lutH, 1, slot.Atlas, 0f, "Middle", "Middle"));
-            AddIfMissing(mod, out_, lutShapePath, ShapeMeta(lutW, lutH, 0, 0));
+
+            information.AnimationGroups[lutSprite[4..]] = new AnimationGroup
+            {
+                BaseName = lutSprite[4..],
+                PngRelPath = lutPngPath,
+                AnimationMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                    mod,
+                    lutMetaPath,
+                    AnimationMeta(lutW, lutH, 1, slot.Atlas, 0f, "Middle", "Middle")
+                ),
+                ShapeMetaRelPath = GeneratedTomlItem.FromFileOrContents(
+                    mod,
+                    lutShapePath,
+                    ShapeMeta(lutW, lutH, 0, 0)
+                )
+            };
         }
     }
 
@@ -284,13 +360,7 @@ public class OutfitGenerator
             return (5, 256);
         }
     }
-
-    private static void AddIfMissing(IMod mod, Dictionary<string, string> out_, string relPath, string content)
-    {
-        if (!mod.FileExists(relPath))
-            out_[relPath] = content;
-    }
-
+    
     internal static string Relativize(IMod mod, string path)
     {
         var normalizedBase = mod.GetBasePath().Replace('\\', '/').TrimEnd('/') + '/';

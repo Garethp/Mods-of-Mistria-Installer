@@ -15,7 +15,9 @@ public class MockInstaller
         var generatedInformation = new GeneratedInformation();
         
         // 0. Expand momi/ compact definitions into virtual overlay files
-        var generated = new OutfitGenerator().Generate(mod);
+        var generated = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        generatedInformation.Merge(new OutfitGenerator().Generate(mod));
+        
         foreach (var kvp in new FurnitureGenerator().Generate(mod))
             generated.TryAdd(kvp.Key, kvp.Value);
 

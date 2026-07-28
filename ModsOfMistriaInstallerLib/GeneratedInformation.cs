@@ -61,4 +61,22 @@ public class GeneratedTomlItem
         // TODO: Should this throw an exception?
         return "";
     }
+
+    public static GeneratedTomlItem FromFileOrContents(IMod mod, string filePath, string contents)
+    {
+        if (mod.FileExists(filePath))
+        {
+            return new GeneratedTomlItem
+            {
+                FilePath = filePath,
+                ReadFilePath = filePath
+            };
+        }
+
+        return new GeneratedTomlItem
+        {
+            FilePath = filePath,
+            Contents = contents
+        };
+    }
 }
