@@ -1,6 +1,8 @@
 using Esprima.Ast;
 using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.Models.MOMI;
+using Garethp.ModsOfMistriaInstallerLib.Models.SDK;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
 using SixLabors.ImageSharp;

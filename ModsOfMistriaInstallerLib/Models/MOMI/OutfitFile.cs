@@ -1,6 +1,6 @@
 ﻿using Tomlyn.Serialization;
 
-namespace Garethp.ModsOfMistriaInstallerLib.Models;
+namespace Garethp.ModsOfMistriaInstallerLib.Models.MOMI;
 
 public class OutfitFile
 {
