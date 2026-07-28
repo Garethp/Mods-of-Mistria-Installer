@@ -201,6 +201,7 @@ public class OutfitGenerator
                 var partFrameCount = DetectFrameCount(mod, slot, partSprite, frameW);
                 information.AnimationGroups[partSprite] = new AnimationGroup
                 {
+                    BaseName = partSprite[4..],
                     PngRelPath = $"animations/{slot.PlayerFolder}/{partSprite}.png",
                     AnimationMetaRelPath = GeneratedTomlItem.FromFileOrContents(
                         mod,

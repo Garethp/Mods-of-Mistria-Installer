@@ -4,7 +4,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Collector;
 // Example: "spr_foo_idle_east" and "poly_foo_idle_east" → BaseName "foo_idle_east"
 public class AnimationGroup
 {
-    public string BaseName { get; init; } = "";
+    public required string BaseName { get; init; }
 
     // Path relative to mod root, e.g. "animations/Animals/.../spr_foo_idle_east.meta.toml"
     public GeneratedTomlItem? AnimationMetaRelPath { get; set; }
