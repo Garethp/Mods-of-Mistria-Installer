@@ -89,7 +89,7 @@ Returning `undefined` from `collect`, or throwing before it returns, skips that 
 
 ## Hotkey
 
-Keyboard hotkeys through a shared registry, so mods do not fight over raw input polling.
+Keyboard hotkeys use a shared registry, so mods do not fight over raw input polling.
 
 ```gml
 var _vk = mmapi_hotkey_vk_from_name(my_mod_config().activation_button); // e.g. "HOME", "F7"
@@ -98,9 +98,17 @@ if (_vk != undefined) {
 }
 ```
 
-`mmapi_hotkey_vk_from_name` is case-sensitive. It accepts `F1` through `F12`, `NUMPAD_0` through `NUMPAD_9`, single digits, uppercase `A` through `Z`, and `INSERT`, `DELETE`, `HOME`, `PAGE_UP`, `PAGE_DOWN`, `SHIFT`, `ALT`, `CONTROL`, `PAUSE_BREAK`, `CAPS_LOCK`, `NUM_LOCK`, or `SCROLL_LOCK`. Lowercase and `GAMEPAD_*` names return `undefined`.
+`mmapi_hotkey_vk_from_name` is *case-sensitive*. It accepts `F1` through `F12`, single digits `0` through `9`, uppercase `A` through `Z`, and `INSERT`, `DELETE`, `HOME`, `PAGE_UP`, `PAGE_DOWN`, `SHIFT`, or `CONTROL`.
 
-The callback takes no arguments. Callback failures are isolated and rate-limited, and polling continues. Two mods on the same key both fire with a warning. Registrations are not de-duplicated, even when the mod, key, and callback are identical, so register once inside your latch.
+> [!WARNING]
+`ALT`, `PAUSE_BREAK`, `CAPS_LOCK`, `NUM_LOCK`, `SCROLL_LOCK`, and `NUMPAD_0` through `NUMPAD_9` are not supported. A mod configured with them will fall back to its default binding.
+
+> [!Note]
+> `GAMEPAD_*` names currently return `undefined`. Gamepad hotkeys are not currently supported.
+
+The callback takes no arguments. A key the engine cannot poll is rejected at registration with a warning (and disabled with a single warning if the engine rejects it later). Callback failures are isolated and rate-limited, and polling continues.
+
+Two mods on the same key both fire with a warning. Registrations are not de-duplicated, even when the mod, key, and callback are identical, so register once inside your latch.
 
 ## Combat
 

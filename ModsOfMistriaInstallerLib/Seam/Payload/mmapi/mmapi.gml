@@ -537,3 +537,6 @@ function mmapi_config_number(container, key, dflt, lo, hi) {
     if ((typeof(v) == "number" || typeof(v) == "int64") && v >= lo && v <= hi) { return real(v); }
     return dflt;
 }
+
+// ── Boot banner ───────────────────────────────────────────────────────
+mmapi_log_info("mmapi", "MMAPI starting.");
