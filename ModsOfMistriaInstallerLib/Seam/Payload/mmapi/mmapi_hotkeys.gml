@@ -25,25 +25,31 @@ function mmapi_hotkey_vk_from_name(name) {
         case "F7":  return vk_f7;  case "F8":  return vk_f8;  case "F9":  return vk_f9;
         case "F10": return vk_f10; case "F11": return vk_f11; case "F12": return vk_f12;
 
-        case "NUMPAD_0": return vk_numpad0; case "NUMPAD_1": return vk_numpad1;
-        case "NUMPAD_2": return vk_numpad2; case "NUMPAD_3": return vk_numpad3;
-        case "NUMPAD_4": return vk_numpad4; case "NUMPAD_5": return vk_numpad5;
-        case "NUMPAD_6": return vk_numpad6; case "NUMPAD_7": return vk_numpad7;
-        case "NUMPAD_8": return vk_numpad8; case "NUMPAD_9": return vk_numpad9;
-
         case "INSERT":      return vk_insert;
         case "DELETE":      return vk_delete;
         case "HOME":        return vk_home;
         case "PAGE_UP":     return vk_pageup;
         case "PAGE_DOWN":   return vk_pagedown;
         case "SHIFT":       return vk_shift;
-        case "ALT":         return vk_alt;
         case "CONTROL":     return vk_control;
-        case "PAUSE_BREAK": return vk_pause;
-        // No GML vk_ constants exist for these, so use the raw Windows codes.
-        case "CAPS_LOCK":   return 20;
-        case "NUM_LOCK":    return 144;
-        case "SCROLL_LOCK": return 145;
+
+        // The engine's KeyCode table only covers letters, digits, F1-F12, the
+        // navigation cluster (INSERT/DELETE/HOME/PAGE_UP/PAGE_DOWN), SHIFT, and
+        // CONTROL. Everything below is NOT in it: the vk_ constants are unbound and
+        // keyboard_check rejects the raw Windows codes (18/19, 96-105, 20/144/145) as
+        // "a number out of range". Resolve them to undefined so mods take their
+        // designed invalid-name path (warn + default binding). The boot capability
+        // sweep (mmapi_hotkey_capability_report) verifies this table every session and
+        // warns if the engine ever starts accepting or rejecting differently.
+        case "ALT":         return undefined;
+        case "PAUSE_BREAK": return undefined;
+        case "NUMPAD_0": case "NUMPAD_1": case "NUMPAD_2": case "NUMPAD_3":
+        case "NUMPAD_4": case "NUMPAD_5": case "NUMPAD_6": case "NUMPAD_7":
+        case "NUMPAD_8": case "NUMPAD_9":
+            return undefined;
+        case "CAPS_LOCK":   return undefined;
+        case "NUM_LOCK":    return undefined;
+        case "SCROLL_LOCK": return undefined;
     }
 
     return undefined;
@@ -94,6 +100,27 @@ function mmapi_hotkey_register(vk, callback, opts) {
     var mod_name = mmapi_current_mod();
     if (opts != undefined && opts[$ "mod_name"] != undefined) { mod_name = opts.mod_name; }
 
+    // The engine validates KeyCodes: keyboard_check throws "expected a valid numerical
+    // KeyCode" for codes outside its key table. Probe ONCE at registration so a bad
+    // binding is one clear warn and a cleanly absent hotkey, never a per-tick failure
+    // storm from the poll. The rejection only counts when
+    // keyboard_check demonstrably WORKS in this environment (a known-good code succeeds):
+    // headless test VMs without the keyboard builtins must not reject every registration -
+    // there the poll's own per-entry guard remains the backstop.
+    var probe_failed = false;
+    try { keyboard_check(vk); } catch (__mmapi_hotkey_probe) { probe_failed = true; }
+    if (probe_failed) {
+        var env_has_keyboard = false;
+        try { keyboard_check(vk_shift); env_has_keyboard = true; } catch (__mmapi_hotkey_env) {}
+        if (env_has_keyboard) {
+            mmapi_log_warn(mod_name,
+                "mmapi hotkey " + mmapi_hotkey_name_from_vk(vk) + " (vk " + string(vk)
+                + ") from " + mod_name + " rejected: the engine has no KeyCode for it. "
+                + "The hotkey is disabled");
+            return;
+        }
+    }
+
     for (var i = 0; i < array_length(hotkeys); i++) {
         if (hotkeys[i].vk == vk) {
             mmapi_log_warn(mod_name,
@@ -106,13 +133,119 @@ function mmapi_hotkey_register(vk, callback, opts) {
     array_push(hotkeys, { vk: vk, callback: callback, mod_name: mod_name });
 }
 
+// One-shot boot sweep: probe EVERY name in the hotkey vocabulary (plus the raw codes
+// of every resolver-unsupported key) against the live engine's KeyCode table and log
+// the verdict. Quiet on
+// the expected outcome (one TRACE-gated [PROBE] line, flushed immediately while the
+// debug agent is on); a WARN per name that RESOLVES to a
+// code the engine then rejects (a resolver bug). Probes
+// the CODE SPACE only: a supported code does not guarantee the physical key delivers
+// (numpad-as-navigation with Num Lock off, for example). Skips silently in
+// environments without the keyboard builtins (headless test VMs). Re-runnable on
+// demand through the debug agent as mmapi_debug_hotkey_capability.
+function mmapi_hotkey_capability_report() {
+    var env_ok = false;
+    try { keyboard_check(vk_shift); env_ok = true; } catch (__mmapi_cap_env) {}
+    if (!env_ok) { return "no_keyboard_env"; }
+
+    var names = [
+        "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
+        "NUMPAD_0", "NUMPAD_1", "NUMPAD_2", "NUMPAD_3", "NUMPAD_4",
+        "NUMPAD_5", "NUMPAD_6", "NUMPAD_7", "NUMPAD_8", "NUMPAD_9",
+        "INSERT", "DELETE", "HOME", "PAGE_UP", "PAGE_DOWN", "SHIFT", "ALT",
+        "CONTROL", "PAUSE_BREAK", "CAPS_LOCK", "NUM_LOCK", "SCROLL_LOCK",
+        "0", "9", "A", "Z",
+    ];
+    var ok_count = 0;
+    var no_code = "";
+    var rejected = "";
+    for (var i = 0; i < array_length(names); i++) {
+        var vk = undefined;
+        try { vk = mmapi_hotkey_vk_from_name(names[i]); } catch (__mmapi_cap_resolve) {}
+        if (vk == undefined) {
+            no_code += (no_code == "" ? "" : ", ") + names[i];
+            continue;
+        }
+        var accepted = false;
+        try { keyboard_check(vk); accepted = true; } catch (__mmapi_cap_probe) {}
+        if (accepted) {
+            ok_count += 1;
+        } else {
+            rejected += (rejected == "" ? "" : ", ") + names[i] + "(vk " + string(vk) + ")";
+        }
+    }
+    // Engine-side sentinel for every key the RESOLVER declares unsupported: probe the
+    // raw Windows codes directly (the resolver has no path to them, so nothing else
+    // would notice the engine's key table gaining one). The expected outcome is
+    // compact ("none"); any code the engine now ACCEPTS is named - that is the signal
+    // to re-add resolver support for its key (acceptance means the code is valid,
+    // not necessarily that the physical key delivers - re-test before re-adding).
+    var raw_codes = [18, 19, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 20, 144, 145];
+    var raw_names = ["alt", "pause",
+        "numpad0", "numpad1", "numpad2", "numpad3", "numpad4",
+        "numpad5", "numpad6", "numpad7", "numpad8", "numpad9",
+        "capslock", "numlock", "scrolllock"];
+    var raw_accepted = "";
+    for (var r = 0; r < array_length(raw_codes); r++) {
+        var raw_ok = false;
+        try { keyboard_check(raw_codes[r]); raw_ok = true; } catch (__mmapi_cap_raw) {}
+        if (raw_ok) {
+            raw_accepted += (raw_accepted == "" ? "" : ", ")
+                + raw_names[r] + "(" + string(raw_codes[r]) + ")";
+        }
+    }
+    if (raw_accepted == "") { raw_accepted = "none"; }
+
+    var summary = "hotkey keycode capability: " + string(ok_count) + " name(s) supported"
+        + (no_code == "" ? "" : "; no keycode (by design): " + no_code)
+        + "; raw_accepted=" + raw_accepted;
+    // A development diagnostic in the standard [PROBE] idiom: TRACE-gated, and the log
+    // sink flushes [PROBE] lines immediately while the debug agent is on, so the line
+    // is on disk right after boot in a --debug deploy with no forced flush of its own.
+    // The WARN below is the user-facing signal.
+    if (mmapi_log_get_level() <= MmapiLogLevel.Trace) {
+        mmapi_log_trace("mmapi", "[PROBE] hotkeys|capability|supported=" + string(ok_count)
+            + "|no_keycode=" + (no_code == "" ? "none" : no_code)
+            + "|raw_accepted=" + raw_accepted);
+        mmapi_log_flush("mmapi");
+    }
+    if (rejected != "") {
+        // A name the resolver maps to a code the engine refuses is a resolver bug -
+        // loud, so it reaches user reports.
+        mmapi_log_warn("mmapi", "hotkey names resolving to ENGINE-REJECTED keycodes: " + rejected);
+    }
+    return summary;
+}
+
 function mmapi_hotkeys_poll() {
+    if (global[$ "__mmapi_hotkey_caps_done"] != true) {
+        global.__mmapi_hotkey_caps_done = true;
+        mmapi_hotkey_capability_report();
+        try {
+            mmapi_debug_register_fn("mmapi_debug_hotkey_capability", mmapi_hotkey_capability_report,
+                { description: "Re-run the hotkey keycode capability sweep and return the summary line.", mod_name: "mmapi" });
+        } catch (__mmapi_cap_reg) {}
+    }
     var hotkeys = global[$ "__mmapi_hotkeys"];
     if (hotkeys == undefined) { return; }
     var count = array_length(hotkeys);
     for (var i = 0; i < count; i++) {
         var entry = hotkeys[i];
-        if (keyboard_check_pressed(entry.vk)) {
+        if (entry[$ "dead"] == true) { continue; }
+        // Belt-and-suspenders for the register-time probe: if the engine rejects this
+        // entry's KeyCode at poll time anyway, disable the ENTRY (one warn), never the
+        // whole poll - an unguarded throw here fails every registrant every tick.
+        var pressed = false;
+        try {
+            pressed = keyboard_check_pressed(entry.vk);
+        } catch (err) {
+            entry.dead = true;
+            mmapi_log_warn(entry.mod_name,
+                "mmapi hotkey " + mmapi_hotkey_name_from_vk(entry.vk) + " from "
+                + entry.mod_name + " disabled: the engine rejected its KeyCode: " + string(err));
+            continue;
+        }
+        if (pressed) {
             try {
                 entry.callback();
             } catch (err) {
