@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **96 hooks**, fed by **103 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **98 hooks**, fed by **106 seams**, **5 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -26,7 +26,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [game.room_transition_pre](hooks/game.room_transition_pre.md) | event | React to a room transition before it starts, and redirect it. |
 | [game.room_transition_post](hooks/game.room_transition_post.md) | event | Know the moment a room transition has finished, destination settled. |
 | [game.save_guard](hooks/game.save_guard.md) | guard | Block a game save before anything is written. |
-| [game.title_entered](hooks/game.title_entered.md) | event | Know when the game returns to the title screen. |
+| [game.title_entered](hooks/game.title_entered.md) | event | Know when the title screen comes up, at boot or when a session ends. |
 | [save.game_loaded](hooks/save.game_loaded.md) | event | Know the moment a save file starts loading. |
 | [save.game_saving](hooks/save.game_saving.md) | event | Know the moment the game commits to writing a save. |
 | [clock.time_advance](hooks/clock.time_advance.md) | filter | Adjust or freeze how much game time passes each frame. |
@@ -44,6 +44,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [request_board.fetch_pool](hooks/request_board.fetch_pool.md) | filter | Change the request board's daily candidate pool and draw cap. |
 | [request_board.fetch_pool_ready](hooks/request_board.fetch_pool_ready.md) | event | Know the finished request board the moment it is built each day. |
 | [furniture.place_guard](hooks/furniture.place_guard.md) | guard | Veto a furniture placement before it is written. |
+| [furniture.floor_sprite](hooks/furniture.floor_sprite.md) | filter | Swap a furniture piece's floor sprite as its renderer is built. |
 | [object.interact](hooks/object.interact.md) | override | Take over any grid object's interaction. |
 | [object.node_sprite](hooks/object.node_sprite.md) | filter | Swap the sprite of any world node before it draws. |
 | [store.item_added](hooks/store.item_added.md) | event | Know when an item lands in the shopping basket. |
@@ -104,6 +105,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [item.display_description](hooks/item.display_description.md) | filter | Reword the description an item's tooltip renders. |
 | [crafting.max_crafts](hooks/crafting.max_crafts.md) | override | Take over how many of a recipe can be crafted. |
 | [crafting.pay_component_costs](hooks/crafting.pay_component_costs.md) | guard | Veto a recipe's material payment, craft for free. |
+| [crafting.component_count](hooks/crafting.component_count.md) | filter | Adjust one recipe component's effective cost - including making crafts instant via a zero duration. |
 
 ### UI, Text, And Presentation
 
@@ -147,6 +149,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [save_game_saving](seams/save_game_saving.md) | Announces an imminent save, right after the engine records the save path. |
 | [save_game_loaded](seams/save_game_loaded.md) | Announces the start of a save load, right after the save path is recorded. |
 | [new_day_complete](seams/new_day_complete.md) | Emits the completion of the engine's new-day work inside `new_day()`, ahead of the end-of-day autosave. |
+| [setup_title_entry](seams/setup_title_entry.md) | Emits the title-screen entry from Setup's create, right after the title menu is spawned, at boot and on quit-to-title. |
 | [camera_culls_processed](seams/camera_culls_processed.md) | Emits the end-of-cull moment so mods can refresh renderers the camera just reactivated. |
 | [dungeon_runner_created](seams/dungeon_runner_created.md) | Emits the birth of a dungeon run, after `DUNGEON_RUNNER` is constructed and before the first floor loads. |
 | [dungeon_floor_bracket](seams/dungeon_floor_bracket.md) | Brackets dungeon floor entry with three emits: floor enter, room-build begin, and floor built. |
@@ -160,6 +163,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [request_board_fetch_pool](seams/request_board_fetch_pool.md) | Rewrites the request board's daily random top-up so the candidate pool and draw cap pass through a filter. |
 | [request_board_fetch_pool_ready](seams/request_board_fetch_pool_ready.md) | Emits the finished request board at the tail of the daily build, final pool included. |
 | [furniture_place_guard](seams/furniture_place_guard.md) | Puts a veto check in front of every furniture placement. |
+| [furniture_floor_sprite](seams/furniture_floor_sprite.md) | Filters the floor sprite as a furniture renderer is built. |
 | [object_interact](seams/object_interact.md) | Puts a claim-scoped override in front of every grid-object interaction. |
 | [node_renderer_set_sprite](seams/node_renderer_set_sprite.md) | Filters the sprite every world node renderer is about to wear. |
 | [store_item_added](seams/store_item_added.md) | Announces every shelf tap that puts an item in the shopping basket. |
@@ -226,6 +230,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [item_display_description](seams/item_display_description.md) | Wraps the item-description getter, the string the tooltip body actually renders. |
 | [crafting_max_crafts](seams/crafting_max_crafts.md) | Puts an override in front of the craft-count ceiling before the engine computes it. |
 | [crafting_pay_component_costs](seams/crafting_pay_component_costs.md) | Puts a veto check in front of a recipe's material payment. |
+| [crafting_component_count](seams/crafting_component_count.md) | Filters every crafting cost read by wrapping the component-count resolver. |
 
 ### UI, Text, And Presentation
 
@@ -267,6 +272,8 @@ Hook-less edits the catalog also carries:
 | [game_step_begin_installs](seams/game_step_begin_installs.md) | engine fix | Installs the MMAPI per-frame drain at the top of the game's `step_begin`, the framework's lifecycle root. |
 | [shroom_puddle_mask](seams/shroom_puddle_mask.md) | engine fix | Corrects the acid puddle's damage-tarball collision mask, a beta-wiring fix. |
 | [statue_hp_death_sweep](seams/statue_hp_death_sweep.md) | engine fix | Adds the Living Griffin Statue's missing depleted-hp death check, closing a potential soft-lock and matching every other monster's sweep. |
+| [tarball_chop_burn_flag](seams/tarball_chop_burn_flag.md) | engine fix | Passes the tarball's real fire flag to its grid chop, so non-fire chops stop being burn-throttled by stump/fruit-tree iframes. |
+| [max_crafts_zero_component](seams/max_crafts_zero_component.md) | engine fix | Skips zero-cost components in the craft-ceiling loop, mirroring the zero guard the duration branch already has. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Growing The Catalog

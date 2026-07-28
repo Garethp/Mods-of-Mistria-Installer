@@ -23,8 +23,12 @@
 # Anchors are matched after normalizing \r\n to \n.
 # Apply order is catalog order plus `depends_on` edges (topo-sorted, stable).
 # Hook-less edits live in [[engine_fix]]: game_step_begin_installs (the mmapi
-# lifecycle root), shroom_puddle_mask (a beta-wiring fix), and
-# statue_hp_death_sweep (the griffin statue's missing depleted-hp death check).
+# lifecycle root), shroom_puddle_mask (a beta-wiring fix),
+# statue_hp_death_sweep (the griffin statue's missing depleted-hp death check),
+# tarball_chop_burn_flag (the tarball chop's hardcoded is_burn, which
+# burn-throttled every non-fire tarball chop against stump/fruit-tree iframes),
+# and max_crafts_zero_component (the Item-loop division missing the zero guard
+# its own Duration branch has, so a zero-cost component crashed the craft menu).
 
 version = 2
 
@@ -33,9 +37,9 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 96
-seams = 103
-engine_fixes = 3
+hooks = 98
+seams = 106
+engine_fixes = 5
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -82,6 +86,11 @@ kind = "guard"
 doc  = "Fires at the top of pay_component_costs(components, item_id, quantity, context), before a recipe's materials are deducted. ctx is { item_id, quantity, context } (context is the crafting discipline). Return false to skip the payment (craft for free); undefined or true pays normally."
 
 [[hook]]
+name = "crafting.component_count"
+kind = "filter"
+doc  = "Fires as get_modified_component_count(component, context, item_id) returns - the single point every crafting cost read flows through (maximum_crafts' ceiling, can_fulfill_component, and pay_component_costs all call it, and the engine's own crafting perks apply their reductions inside it). The filtered value is the engine-computed count for ONE recipe component: the perk-modified item/essence/gold/tag count, or, for a RecipeComponentType.Duration component, the craft time in seconds (paid as a CLOCK.jump). ctx is { component, context, item_id }; read ctx.component.type for the component kind and ctx.context for the crafting discipline (RecipeContext). Return a replacement count, or undefined to keep the engine's. Returning 0 for a Duration component is safe and makes the craft instant (maximum_crafts guards the zero denominator and pay_component_costs skips the zero clock jump). Returning 0 for an Item component makes that ingredient free and ceiling-less (maximum_crafts skips zero-count components via the max_crafts_zero_component engine fix; the MAX button stays bounded by the engine's own 999 quantity clamp) - though a mod wanting fully free materials is better served by crafting.max_crafts + crafting.pay_component_costs, which bypass the cost computation wholesale."
+
+[[hook]]
 name = "npc.gift_received"
 kind = "event"
 doc  = "Fires at the top of par_NPC.receive_gift(item), when the player gives an NPC a gift, before the NPC's give_gift bookkeeping. ctx is { npc, item }: npc is the NPC instance, item is the gifted item. Observation only."
@@ -123,6 +132,11 @@ doc  = "Fires at the top of interact(node) (Interact.gml, the shared grid-object
 name = "furniture.place_guard"
 kind = "guard"
 doc  = "Fires at the top of write_furniture_to_location(grid, xx, yy, proto, stack_count, rotation), before the placement is validated or written. ctx is { grid, x, y, proto, stack_count, rotation }; proto is the furniture NODE_PROTOTYPE (proto.object_id identifies which furniture). Return false to veto the placement (write_furniture_to_location returns undefined, so nothing is placed and the item stays in hand); undefined or true allows. stack_count > 0 indicates a recursive child-grid placement (furniture on furniture). Use it to cap or forbid placing a mod's furniture under mod-specific conditions."
+
+[[hook]]
+name = "furniture.floor_sprite"
+kind = "filter"
+doc  = "Fires in create_furniture_renderer(node) as a furniture node's floor sprite is resolved, after the engine's native winter_floor_sprite override and before the floor renderer instance is created. The filtered value is the floor sprite. ctx is the furniture node (read ctx.object_id, ctx.prototype, ctx.cardinal_index). Return the replacement sprite, or undefined to keep the current value. Fires once per furniture render BUILD (placement, room/grid load), not per frame, so a changed decision (e.g. a season change) applies on the node's next build, not instantly on a live world. Furniture floor sprites never route through obj_node_renderer.set_sprite, so object.node_sprite cannot reach them."
 
 [[hook]]
 name = "dialogue.line"
@@ -240,8 +254,7 @@ doc  = "Fires at the top of save_game(), before the saver is created. ctx is { s
 [[hook]]
 name = "game.title_entered"
 kind = "event"
-provider = "runtime"
-doc  = "Fires from the begin_step derived-events poll when the room changes into the title/menu room from a non-title room. ctx is {} (empty struct). Observation only. Fires after game.room_changed for the same room change."
+doc  = "Fires from Setup's title-entry create, right after the title menu is spawned and started, on every title-screen entry: at boot and again whenever a play session quits back to the title. ctx is { from_game } - false for the boot entry, true when a play session has just ended. Observation only. Gate session-teardown handlers on ctx.from_game."
 
 [[hook]]
 name = "input.check_value_id"
@@ -620,6 +633,17 @@ on_veto = "return;"
 marker  = "mmapi_crafting_run_pay_guards"
 
 [[seam]]
+id      = "crafting_component_count"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+target  = { fn = "get_modified_component_count" }
+op      = "wrap"
+hook    = "crafting.component_count"
+ctx     = "{ component: component, context: context, item_id: item_id }"
+blank_before = true
+catch_var = "__mmapi_component_count"
+marker  = "mmapi_crafting_component_count"
+
+[[seam]]
 id      = "npc_receive_gift"
 file    = "gml/objects/system/parents/par_NPC.gml"
 context_after = '''
@@ -841,6 +865,27 @@ hook    = "furniture.place_guard"
 ctx     = '{ grid: grid, x: xx, y: yy, proto: proto, stack_count: stack_count, rotation: rotation }'
 on_veto = "return undefined;"
 indent  = 4
+
+[[seam]]
+id      = "furniture_floor_sprite"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
+context_before = '''
+        if CALENDAR.season() == Season.Winter && cardinal_data[$ "winter_floor_sprite"] != undefined {
+            sprite_to_use = cardinal_data.winter_floor_sprite;
+        }
+'''
+context_after = '''
+
+        node.renderer.floor_renderer = instance_create_layer(node.renderer.x, node.renderer.y, "Instances", obj_node_renderer_top);
+'''
+op      = "filter"
+hook    = "furniture.floor_sprite"
+ctx     = "node"
+var     = "sprite_to_use"
+indent  = 8
+try_catch = true
+catch_var = "__mmapi_floor_sprite"
+marker  = "mmapi_furniture_floor_sprite"
 
 [[seam]]
 id      = "items_use_guard"
@@ -1819,6 +1864,22 @@ ctx     = "{ total_days: total_days() }"
 catch_var = "__mmapi_new_day"
 marker  = "mmapi_run_new_day_callbacks"
 
+# Placement constraint: the emit must stay on the spawn pair. FROM_GAME is cleared at the
+# end of Setup's create, and the title menu's own start chain (setup_background /
+# setup_main_screen) runs frames later - any later emit point always reads from_game false.
+[[seam]]
+id      = "setup_title_entry"
+file    = "gml/objects/Setup.gml"
+anchor  = '''
+            var menu = ANCHOR.spawn_menu(Menu.Title);
+            menu.start();'''
+replace = '''
+            var menu = ANCHOR.spawn_menu(Menu.Title);
+            menu.start();
+            try { mmapi_emit("game.title_entered", { from_game: FROM_GAME }); } catch (__mmapi_setup_title_entry) {} // mmapi_game_run_title_entered'''
+marker  = "mmapi_game_run_title_entered"
+provides = ["game.title_entered"]
+
 [[seam]]
 id      = "combat_damage_pre"
 file    = "gml/objects/Combat/obj_damage_receiver.gml"
@@ -2171,6 +2232,37 @@ replace = '''
             }
         },'''
 marker  = "mmapi_statue_hp_sweep"
+
+[[engine_fix]]
+name    = "tarball_chop_burn_flag"
+file    = "gml/objects/Combat/obj_damage_tarball.gml"
+anchor  = '''
+                                    var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, true);
+                                    if success && has_flag(self.flags, CombatFlag.Fire) {
+'''
+replace = '''
+                                    var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, has_flag(self.flags, CombatFlag.Fire)); // mmapi_tarball_chop_burn_flag
+                                    if success && has_flag(self.flags, CombatFlag.Fire) {
+'''
+marker  = "mmapi_tarball_chop_burn_flag"
+
+[[engine_fix]]
+name    = "max_crafts_zero_component"
+file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
+anchor  = '''
+        for (var i = 0; i < recipe.count(); i++) {
+            var comp = recipe.get(i);
+            var denominator = get_modified_component_count(comp, self.context, item.item_id);
+            var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
+'''
+replace = '''
+        for (var i = 0; i < recipe.count(); i++) {
+            var comp = recipe.get(i);
+            var denominator = get_modified_component_count(comp, self.context, item.item_id);
+            if denominator == 0 { continue; } // mmapi_max_crafts_zero_component
+            var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
+'''
+marker  = "mmapi_max_crafts_zero_component"
 
 # The remaining entries are appended after the earlier ones on purpose. Catalog
 # order is apply order, and two of them stack onto files already seamed above

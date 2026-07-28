@@ -64,7 +64,6 @@ public class ShippedCatalogTest
             .ToList();
         Assert.That(runtime, Does.Contain("game.room_changed"));
         Assert.That(runtime, Does.Contain("game.day_changed"));
-        Assert.That(runtime, Does.Contain("game.title_entered"));
 
         // The rename kept the old name resolving: game.day_changed carries the
         // catalog's first alias.
