@@ -22,8 +22,11 @@ public class SpriteToml
     [TomlPropertyName("location")]
     public string Location;
 
-    [TomlPropertyName("fom_folder")]
-    public string? FoMFolder
+    [TomlPropertyName("sprite_type")]
+    public string Type;
+
+    [TomlPropertyName("install_location")]
+    public string? InstallLocation
     {
         get;
         set
@@ -61,9 +64,15 @@ public class SpriteToml
     [TomlPropertyName("create_poly_file")]
     public bool CreatePoly;
 
-    [TomlPropertyName("meta")]
-    public SpriteMetaFileAssetProperties? MetaProperties;
-    
-    [TomlPropertyName("poly")]
-    public ShapeMetaAsset? PolyProperties;
+    [TomlPropertyName("duration")]
+    public double Duration;
+
+    [TomlPropertyName("offset")]
+    public List<int> Offset;
+
+    [TomlPropertyName("poly_kind")]
+    public string PolyKind;
+
+    [TomlPropertyName("poly_offset")]
+    public List<int> PolyOffset;
 }

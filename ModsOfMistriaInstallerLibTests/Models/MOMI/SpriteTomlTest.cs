@@ -21,10 +21,10 @@ public class SpriteTomlTest
     {
         var sprite = new SpriteToml
         {
-            FoMFolder = "/location"
+            InstallLocation = "/location"
         };
         
-        Assert.That(sprite.FoMFolder, Is.EqualTo("location"));
+        Assert.That(sprite.InstallLocation, Is.EqualTo("location"));
     }
 
     [Test]
@@ -32,10 +32,10 @@ public class SpriteTomlTest
     {
         var sprite = new SpriteToml
         {
-            FoMFolder = "assets/location"
+            InstallLocation = "assets/location"
         };
         
-        Assert.That(sprite.FoMFolder, Is.EqualTo("location"));
+        Assert.That(sprite.InstallLocation, Is.EqualTo("location"));
     }
 
     [Test]
@@ -43,10 +43,10 @@ public class SpriteTomlTest
     {
         var sprite = new SpriteToml
         {
-            FoMFolder = "animations/location"
+            InstallLocation = "animations/location"
         };
         
-        Assert.That(sprite.FoMFolder, Is.EqualTo("location"));
+        Assert.That(sprite.InstallLocation, Is.EqualTo("location"));
     }
 
     [Test]
@@ -54,10 +54,10 @@ public class SpriteTomlTest
     {
         var sprite = new SpriteToml
         {
-            FoMFolder = "/assets/animations/location"
+            InstallLocation = "/assets/animations/location"
         };
         
-        Assert.That(sprite.FoMFolder, Is.EqualTo("location"));
+        Assert.That(sprite.InstallLocation, Is.EqualTo("location"));
     }
 
     [Test]
@@ -65,9 +65,9 @@ public class SpriteTomlTest
     {
         var sprite = new SpriteToml
         {
-            FoMFolder = @"fom\location"
+            InstallLocation = @"fom\location"
         };
         
-        Assert.That(sprite.FoMFolder, Is.EqualTo("fom/location"));
+        Assert.That(sprite.InstallLocation, Is.EqualTo("fom/location"));
     }
 }
