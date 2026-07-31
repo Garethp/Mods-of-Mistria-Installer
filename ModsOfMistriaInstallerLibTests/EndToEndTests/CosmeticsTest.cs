@@ -57,15 +57,15 @@ public class CosmeticsTest
         new MockInstaller().InstallMod(mod, fileModifier);
         
         // Check that a UI Item .meta.toml and poly file was created
-        Assert.That(fileModifier.Exists("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_lryn_celine_summer_skirt_ui.meta.toml"), Is.True);
+        Assert.That(fileModifier.Exists("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_ui_item_wearable_lryn_celine_summer_skirt.meta.toml"), Is.True);
         Assert.That(
-            fileModifier.GetFile("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_lryn_celine_summer_skirt_ui.meta.toml"),
+            fileModifier.GetFile("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_ui_item_wearable_lryn_celine_summer_skirt.meta.toml"),
             new ContainsTomlConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/ui.meta.toml"))
         );
         
-        Assert.That(fileModifier.Exists("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_lryn_celine_summer_skirt_ui.meta.toml"), Is.True);
+        Assert.That(fileModifier.Exists("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_ui_item_wearable_lryn_celine_summer_skirt.meta.toml"), Is.True);
         Assert.That(
-            fileModifier.GetFile("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_lryn_celine_summer_skirt_ui.meta.toml"),
+            fileModifier.GetFile("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_ui_item_wearable_lryn_celine_summer_skirt.meta.toml"),
             new ContainsTomlConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/ui.poly.toml"))    
         );
         
@@ -347,45 +347,45 @@ public class CosmeticsTest
         
         new MockInstaller().InstallMod(mod, fileModifier);
         
-        Assert.That(fileModifier.Exists("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_lryn_celine_summer_skirt_ui.meta.toml"), Is.False);
-        Assert.That(fileModifier.Exists("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_lryn_celine_summer_skirt_ui.meta.toml"), Is.False);
+        Assert.That(fileModifier.Exists("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_ui_item_wearable_lryn_celine_summer_skirt.meta.toml"), Is.False);
+        Assert.That(fileModifier.Exists("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_ui_item_wearable_lryn_celine_summer_skirt.meta.toml"), Is.False);
         
         Assert.That(fileModifier.Exists("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_lryn_celine_summer_skirt_outline.meta.toml"), Is.False);
         Assert.That(fileModifier.Exists("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_lryn_celine_summer_skirt_outline.meta.toml"), Is.False);
         
         Assert.That(
-            fileModifier.GetFile("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_lryn_celine_summer_skirt_asset.meta.toml"),
+            fileModifier.GetFile("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_ui_item_wearable_lryn_celine_summer_skirt_asset.meta.toml"),
             new ContainsTomlConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/ui.meta.toml"))
         );
         Assert.That(
-            fileModifier.GetFile("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_lryn_celine_summer_skirt_asset.meta.toml"),
+            fileModifier.GetFile("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_ui_item_wearable_lryn_celine_summer_skirt_asset.meta.toml"),
             new ContainsTomlConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/ui.poly.toml"))
         );
         
         Assert.That(
-            fileModifier.GetFile("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_lryn_celine_summer_skirt_body.meta.toml"),
+            fileModifier.GetFile("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_ui_item_wearable_lryn_celine_summer_skirt_body.meta.toml"),
             new ContainsTomlConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/ui.meta.toml"))
         );
         Assert.That(
-            fileModifier.GetFile("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_lryn_celine_summer_skirt_body.meta.toml"),
+            fileModifier.GetFile("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_ui_item_wearable_lryn_celine_summer_skirt_body.meta.toml"),
             new ContainsTomlConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/ui.poly.toml"))
         );
         
         Assert.That(
-            fileModifier.GetFile("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_lryn_celine_summer_skirt_merged.meta.toml"),
+            fileModifier.GetFile("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_ui_item_wearable_lryn_celine_summer_skirt_merged.meta.toml"),
             new ContainsTomlConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/ui.meta.toml"))
         );
         Assert.That(
-            fileModifier.GetFile("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_lryn_celine_summer_skirt_merged.meta.toml"),
+            fileModifier.GetFile("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_ui_item_wearable_lryn_celine_summer_skirt_merged.meta.toml"),
             new ContainsTomlConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/ui.poly.toml"))
         );
         
         Assert.That(
-            fileModifier.GetFile("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_lryn_celine_summer_skirt_merged_outline.meta.toml"),
+            fileModifier.GetFile("assets/animations/mock.mod/lryn_celine_summer_skirt/spr_ui_item_wearable_lryn_celine_summer_skirt_merged_outline.meta.toml"),
             new ContainsTomlConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/ui.meta.toml"))
         );
         Assert.That(
-            fileModifier.GetFile("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_lryn_celine_summer_skirt_merged_outline.meta.toml"),
+            fileModifier.GetFile("assets/shapes/mock.mod/lryn_celine_summer_skirt/poly_ui_item_wearable_lryn_celine_summer_skirt_merged_outline.meta.toml"),
             new ContainsTomlConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/ui.poly.toml"))
         );
         
@@ -395,7 +395,7 @@ public class CosmeticsTest
             fileModifier.GetFile("assets/data_files/animation/outlines.json"),
             new ContainsJsonConstraint(new JObject
             {
-                { "spr_lryn_celine_summer_skirt_merged", "spr_lryn_celine_summer_skirt_merged_outline" }
+                { "spr_ui_item_wearable_lryn_celine_summer_skirt_merged", "spr_ui_item_wearable_lryn_celine_summer_skirt_merged_outline" }
             })
         );
     }
