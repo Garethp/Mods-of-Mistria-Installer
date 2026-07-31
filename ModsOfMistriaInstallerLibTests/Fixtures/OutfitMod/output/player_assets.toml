@@ -1,0 +1,6 @@
+﻿[lryn_celine_summer_skirt]
+name = "Celine's summer skirt"
+lut = "spr_player_lryn_celine_summer_skirt_lut"
+ui_slot = "bottom"
+default_unlocked = true
+ui_sub_category = "skirt"

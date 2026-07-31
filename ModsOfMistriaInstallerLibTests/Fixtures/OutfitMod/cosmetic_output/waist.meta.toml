@@ -1,0 +1,12 @@
+﻿[meta_properties]
+asset_kind = "Animation"
+
+[asset_properties]
+atlas = "Default"
+frame_size = [32, 32]
+frame_len = 48
+duration = 0.025
+
+[asset_properties.offset]
+horizontal = "Left"
+vertical = "Top"

@@ -25,4 +25,8 @@ public class FixtureHandler
         
         return Path.Combine(finalPath, "Fixtures", relativePath);
     }
+    
+    public static string ReadAllText(string relativePath) => File.ReadAllText(GetFixturePath(relativePath));
+    
+    public static byte[] ReadAllBytes(string relativePath) => File.ReadAllBytes(GetFixturePath(relativePath));
 }

@@ -34,7 +34,7 @@ public class TOMLInstallerTest
     // Installs one animation meta and returns the text written into assets/
     private static string InstallAnimationMeta(string metaToml)
     {
-        var mod = new MockMod(new Dictionary<string, string>
+        var mod = new MockMod(new Dictionary<string, object>
         {
             { "animations/Modded/spr_test_thing.meta.toml", metaToml },
         });
