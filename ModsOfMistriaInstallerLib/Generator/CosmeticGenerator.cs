@@ -17,7 +17,7 @@ public class CosmeticGenerator
     {
         var information = new GeneratedInformation();
 
-        foreach (var file in mod.GetFilesInFolder("momi/cosmetic", ".toml"))
+        foreach (var file in mod.GetFilesInFolder("momi/cosmetics", ".toml"))
         {
             var content = mod.ReadFile(file);
             if (string.IsNullOrEmpty(content)) continue;
@@ -42,9 +42,9 @@ public class CosmeticGenerator
         var information = new GeneratedInformation();
         var playerAssetParts = new JObject();
 
-        foreach (var part in cosmetic.AnimationFiles.Keys)
+        foreach (var part in cosmetic.CosmeticSprites.Keys)
         {
-            var partFile = cosmetic.AnimationFiles[part];
+            var partFile = cosmetic.CosmeticSprites[part];
             var frameCount = cosmetic.GetPartFrameCount(part);
             var (width, height) = DetectSize(mod, partFile, frameCount);
 
@@ -97,13 +97,13 @@ public class CosmeticGenerator
             // @TODO: Throw an error here
         }
         
-        Dictionary<string, string> outlineFiles;
-        if (cosmetic.IsSimpleIcon())
+        Dictionary<string, string> outlineFiles = new();
+        if (cosmetic.UiSprites.UiFile is not null)
         {
             outlineFiles = new Dictionary<string, string>
             {
-                { $"ui_item_wearable_{cosmetic.Id}", cosmetic.UiFile! },
-                { $"{cosmetic.Id}_outline", cosmetic.OutlineFile! }
+                { $"ui_item_wearable_{cosmetic.Id}", cosmetic.UiSprites.UiFile! },
+                { $"{cosmetic.Id}_outline", cosmetic.UiSprites.OutlineFile! }
             };
             
             information.Json.Add(new JsonItem
@@ -115,14 +115,14 @@ public class CosmeticGenerator
                 }.ToString(Formatting.None)
             });
         }
-        else
+        else if (cosmetic.UiSprites.AssetFile is not null)
         {
             outlineFiles = new Dictionary<string, string>
             {
-                { $"ui_item_wearable_{cosmetic.Id}_asset", cosmetic.AssetFile! },
-                { $"ui_item_wearable_{cosmetic.Id}_body", cosmetic.BodyFile! },
-                { $"ui_item_wearable_{cosmetic.Id}_merged", cosmetic.MergedFile! },
-                { $"ui_item_wearable_{cosmetic.Id}_merged_outline", cosmetic.MergedOutlineFile! }
+                { $"ui_item_wearable_{cosmetic.Id}_asset", cosmetic.UiSprites.AssetFile! },
+                { $"ui_item_wearable_{cosmetic.Id}_body", cosmetic.UiSprites.BodyFile! },
+                { $"ui_item_wearable_{cosmetic.Id}_merged", cosmetic.UiSprites.MergedFile! },
+                { $"ui_item_wearable_{cosmetic.Id}_merged_outline", cosmetic.UiSprites.MergedOutlineFile! }
             };
             
             information.Json.Add(new JsonItem

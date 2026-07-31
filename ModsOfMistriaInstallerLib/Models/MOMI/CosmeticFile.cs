@@ -40,7 +40,7 @@ public class CosmeticFile
     /**
      * Either this or lut_sprite must be defined
      */
-    [TomlPropertyName("lut_file")]
+    [TomlPropertyName("lut")]
     public string? LutFile { get; set; }
     
     /**
@@ -49,29 +49,11 @@ public class CosmeticFile
     [TomlPropertyName("lut_sprite")]
     public string? LutSprite { get; set; }
 
-    /**
-     * Either the UiFile should be defined OR the Below files should be defined
-     */
-    [TomlPropertyName("ui_file")]
-    public string? UiFile { get; set; }
-    
-    [TomlPropertyName("asset_file")]
-    public string? AssetFile { get; set; }
-    
-    [TomlPropertyName("body_file")]
-    public string? BodyFile { get; set; }
+    [TomlPropertyName("ui_sprites")]
+    public CosmeticUiSprites UiSprites { get; set; } = new();
 
-    [TomlPropertyName("merged_file")]
-    public string? MergedFile { get; set; }
-    
-    [TomlPropertyName("merged_outline_file")]
-    public string? MergedOutlineFile { get; set; }
-    
-    [TomlPropertyName("outline_file")]
-    public string? OutlineFile { get; set; }
-
-    [TomlPropertyName("animation_files")]
-    public Dictionary<string, string> AnimationFiles { get; set; }
+    [TomlPropertyName("cosmetic_sprites")]
+    public Dictionary<string, string> CosmeticSprites { get; set; } = new();
 
     [TomlPropertyName("price_override")]
     public int? PriceOverride { get; set; }
@@ -85,9 +67,28 @@ public class CosmeticFile
 
         return PartsFrameCount[part];
     }
+}
 
-    public bool IsSimpleIcon()
-    {
-        return UiFile is not null;
-    }
+public class CosmeticUiSprites
+{
+    /**
+ * Either the UiFile should be defined OR the Below files should be defined
+ */
+    [TomlPropertyName("ui")]
+    public string? UiFile { get; set; }
+    
+    [TomlPropertyName("asset")]
+    public string? AssetFile { get; set; }
+    
+    [TomlPropertyName("body")]
+    public string? BodyFile { get; set; }
+
+    [TomlPropertyName("merged")]
+    public string? MergedFile { get; set; }
+    
+    [TomlPropertyName("merged_outline")]
+    public string? MergedOutlineFile { get; set; }
+    
+    [TomlPropertyName("outline")]
+    public string? OutlineFile { get; set; }
 }
