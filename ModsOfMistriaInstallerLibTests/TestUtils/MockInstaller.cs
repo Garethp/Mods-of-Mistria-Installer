@@ -17,6 +17,7 @@ public class MockInstaller
         // 0. Expand momi/ compact definitions into virtual overlay files
         var generated = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         generatedInformation.Merge(new OutfitGenerator().Generate(mod));
+        generatedInformation.Merge(new CosmeticGenerator().Generate(mod));
         
         foreach (var kvp in new FurnitureGenerator().Generate(mod))
             generated.TryAdd(kvp.Key, kvp.Value);
@@ -29,6 +30,7 @@ public class MockInstaller
             : mod;
   
         generatedInformation.Merge(new TOMLCollector().Collect(effectiveMod));
+        generatedInformation.Merge(new JsonGenerator().Generate(effectiveMod));
         
         // 2. Install TOML files (uses IDs populated above)
         new TOMLInstaller(fileNameUIDMapping, fileModifier)

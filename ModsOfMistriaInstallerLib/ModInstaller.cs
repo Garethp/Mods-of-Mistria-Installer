@@ -205,6 +205,7 @@ public class ModInstaller
         reportPhase(modName, "Preparing");
         var generated = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         generatedInformation.Merge(new OutfitGenerator().Generate(mod));
+        generatedInformation.Merge(new CosmeticGenerator().Generate(mod));
         
         foreach (var kvp in new FurnitureGenerator().Generate(mod))
             generated.TryAdd(kvp.Key, kvp.Value);
@@ -217,6 +218,7 @@ public class ModInstaller
             : mod;
 
         generatedInformation.Merge(new TOMLCollector().Collect(effectiveMod));
+        generatedInformation.Merge(new JsonGenerator().Generate(effectiveMod));
         
         // 1. Pack images into atlases first so IDs are ready for TOML
         reportPhase(modName, "Installing Images");

@@ -71,7 +71,7 @@ public class SkipPassTest
     [Test]
     public void ShouldSkipAnIntraModDuplicateExport()
     {
-        var mock = new MockMod(new Dictionary<string, string>
+        var mock = new MockMod(new Dictionary<string, object>
         {
             { "gml/core/State.gml", "function dupmod_util() {\n}\n" },
             { "gml/core/Second.gml", "function dupmod_util() {\n}\n" },

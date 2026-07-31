@@ -29,10 +29,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="EndToEndTests\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="..\ModsOfMistriaInstallerLib\Seam\Payload\mmapi\*.gml" LinkBase="Payload\mmapi" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
