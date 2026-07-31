@@ -76,7 +76,7 @@ public class CosmeticGenerator
             information.AnimationGroups[$"{cosmetic.Id}_lut"] = new AnimationGroup
             {
                 BaseName = $"{cosmetic.Id}_lut",
-                PngRelPath = cosmetic.LutSprite,
+                PngRelPath = cosmetic.LutFile,
                 AnimationMetaRelPath = new GeneratedTomlItem
                 {
                     FilePath = $"animations/{mod.GetId()}/{cosmetic.Id}/{lutSprite}.meta.toml",
@@ -102,7 +102,7 @@ public class CosmeticGenerator
         {
             outlineFiles = new Dictionary<string, string>
             {
-                { $"{cosmetic.Id}_ui", cosmetic.UiFile! },
+                { $"ui_item_wearable_{cosmetic.Id}", cosmetic.UiFile! },
                 { $"{cosmetic.Id}_outline", cosmetic.OutlineFile! }
             };
             
@@ -111,7 +111,7 @@ public class CosmeticGenerator
                 FilePath = "data_files/animation/outlines.json",
                 Contents = new JObject
                 {
-                    { $"spr_{cosmetic.Id}_ui", $"spr_{cosmetic.Id}_outline" }
+                    { $"spr_ui_item_wearable_{cosmetic.Id}", $"spr_{cosmetic.Id}_outline" }
                 }.ToString(Formatting.None)
             });
         }
@@ -119,10 +119,10 @@ public class CosmeticGenerator
         {
             outlineFiles = new Dictionary<string, string>
             {
-                { $"{cosmetic.Id}_asset", cosmetic.AssetFile! },
-                { $"{cosmetic.Id}_body", cosmetic.BodyFile! },
-                { $"{cosmetic.Id}_merged", cosmetic.MergedFile! },
-                { $"{cosmetic.Id}_merged_outline", cosmetic.MergedOutlineFile! }
+                { $"ui_item_wearable_{cosmetic.Id}_asset", cosmetic.AssetFile! },
+                { $"ui_item_wearable_{cosmetic.Id}_body", cosmetic.BodyFile! },
+                { $"ui_item_wearable_{cosmetic.Id}_merged", cosmetic.MergedFile! },
+                { $"ui_item_wearable_{cosmetic.Id}_merged_outline", cosmetic.MergedOutlineFile! }
             };
             
             information.Json.Add(new JsonItem
@@ -130,7 +130,7 @@ public class CosmeticGenerator
                 FilePath = "data_files/animation/outlines.json",
                 Contents = new JObject
                 {
-                    { $"spr_{cosmetic.Id}_merged", $"spr_{cosmetic.Id}_merged_outline" }
+                    { $"spr_ui_item_wearable_{cosmetic.Id}_merged", $"spr_ui_item_wearable_{cosmetic.Id}_merged_outline" }
                 }.ToString(Formatting.None)
             });
         }
