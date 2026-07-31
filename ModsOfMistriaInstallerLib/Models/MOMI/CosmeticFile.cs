@@ -27,9 +27,6 @@ public class CosmeticFile
 
     [TomlPropertyName("name")] 
     public string Name { get; set; }
-    
-    [TomlPropertyName("description")]
-    public string Description { get; set; }
 
     [TomlPropertyName("ui_slot")]
     public string UiSlot { get; set; }
