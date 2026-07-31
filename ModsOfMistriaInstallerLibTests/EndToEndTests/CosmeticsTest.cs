@@ -15,17 +15,20 @@ public class CosmeticsTest
         return new MockMod(new Dictionary<string, object>
         {
             {
-                "momi/cosmetic/lryn_celine_cosmetic.toml",
+                "momi/cosmetics/lryn_celine_cosmetic.toml",
                 """
                 [lryn_celine_summer_skirt]
                 name = "Celine's summer skirt"
                 ui_slot = "bottom"
                 ui_sub_category = "skirt"
 
-                lut_file = "images/lut.png"
-                ui_file = "images/ui.png"
-                outline_file = "images/outline.png"
-                animation_files = { waist = "images/skirt.png" }
+                lut = "images/lut.png"
+                ui_sprites = {
+                    ui = "images/ui.png",
+                    outline = "images/outline.png"
+                }
+                
+                cosmetic_sprites = { waist = "images/skirt.png" }
                 """
             },
             {
@@ -125,7 +128,7 @@ public class CosmeticsTest
         var mod = GetSimpleMod();
         
         mod.SetFile(
-            "momi/cosmetic/lryn_celine_cosmetic.toml", 
+            "momi/cosmetics/lryn_celine_cosmetic.toml", 
             """
             [lryn_celine_summer_skirt]
             name = "Celine's summer skirt"
@@ -133,10 +136,13 @@ public class CosmeticsTest
             ui_sub_category = "skirt"
             default_unlocked = true
 
-            lut_file = "images/lut.png"
-            ui_file = "images/ui.png"
-            outline_file = "images/outline.png"
-            animation_files = { waist = "images/skirt.png" }
+            lut = "images/lut.png"
+            ui_sprites = {
+                ui = "images/ui.png",
+                outline = "images/outline.png"
+            }
+            
+            cosmetic_sprites = { waist = "images/skirt.png" }
             """
         );
 
@@ -168,7 +174,7 @@ public class CosmeticsTest
 
         var mod = GetSimpleMod();
         mod.SetFile(
-            "momi/cosmetic/lryn_celine_cosmetic.toml", 
+            "momi/cosmetics/lryn_celine_cosmetic.toml", 
             """
             [lryn_celine_summer_skirt]
             name = "Celine's summer skirt"
@@ -176,9 +182,12 @@ public class CosmeticsTest
             ui_sub_category = "skirt"
             default_unlocked = true
 
-            ui_file = "images/ui.png"
-            outline_file = "images/outline.png"
-            animation_files = { waist = "images/skirt.png" }
+            ui_sprites = {
+                ui = "images/ui.png",
+                outline = "images/outline.png"
+            }
+            
+            cosmetic_sprites = { waist = "images/skirt.png" }
             """
         );
         
@@ -195,7 +204,7 @@ public class CosmeticsTest
         
         var mod = GetSimpleMod();
         mod.SetFile(
-            "momi/cosmetic/lryn_celine_cosmetic.toml", 
+            "momi/cosmetics/lryn_celine_cosmetic.toml", 
             """
             [lryn_celine_summer_skirt]
             name = "Celine's summer skirt"
@@ -203,10 +212,13 @@ public class CosmeticsTest
             ui_sub_category = "skirt"
             default_unlocked = true
 
-            lut_file = "images/lut.png"
-            ui_file = "images/ui.png"
-            outline_file = "images/outline.png"
-            animation_files = { waist = "images/skirt.png" }
+            lut = "images/lut.png"
+            ui_sprites = {
+                ui = "images/ui.png",
+                outline = "images/outline.png"
+            }
+            
+            cosmetic_sprites = { waist = "images/skirt.png" }
             """
         );
         
@@ -233,17 +245,20 @@ public class CosmeticsTest
         
         var mod = GetSimpleMod();
         mod.SetFile(
-            "momi/cosmetic/lryn_celine_cosmetic.toml", 
+            "momi/cosmetics/lryn_celine_cosmetic.toml", 
             """
             [lryn_celine_summer_skirt]
             name = "Celine's summer skirt"
             ui_slot = "bottom"
             ui_sub_category = "skirt"
 
-            lut_file = "images/lut.png"
-            ui_file = "images/ui.png"
-            outline_file = "images/outline.png"
-            animation_files = { waist = "images/skirt.png" }
+            lut = "images/lut.png"
+            ui_sprites = {
+                ui = "images/ui.png",
+                outline = "images/outline.png"
+            }
+            
+            cosmetic_sprites = { waist = "images/skirt.png" }
             """
         );
         
@@ -262,7 +277,7 @@ public class CosmeticsTest
         
         var mod = GetSimpleMod();
         mod.SetFile(
-            "momi/cosmetic/lryn_celine_cosmetic.toml", 
+            "momi/cosmetics/lryn_celine_cosmetic.toml", 
             """
             [lryn_celine_summer_skirt]
             name = "Celine's summer skirt"
@@ -271,10 +286,13 @@ public class CosmeticsTest
             default_unlocked = true
             price_override = 10
 
-            lut_file = "images/lut.png"
-            ui_file = "images/ui.png"
-            outline_file = "images/outline.png"
-            animation_files = { waist = "images/skirt.png" }
+            lut = "images/lut.png"
+            ui_sprites = {
+                ui = "images/ui.png",
+                outline = "images/outline.png"
+            }
+            
+            cosmetic_sprites = { waist = "images/skirt.png" }
             """
         );
         
@@ -301,17 +319,20 @@ public class CosmeticsTest
         
         var mod = GetSimpleMod();
         mod.SetFile(
-            "momi/cosmetic/lryn_celine_cosmetic.toml", 
+            "momi/cosmetics/lryn_celine_cosmetic.toml", 
             """
             [lryn_celine_summer_skirt]
             name = "Celine's summer skirt"
             ui_slot = "bottom"
             ui_sub_category = "skirt"
 
-            lut_file = "images/lut.png"
-            ui_file = "images/ui.png"
-            outline_file = "images/outline.png"
-            animation_files = { waist = "images/skirt.png" }
+            lut = "images/lut.png"
+            ui_sprites = {
+                ui = "images/ui.png",
+                outline = "images/outline.png"
+            }
+            
+            cosmetic_sprites = { waist = "images/skirt.png" }
             """
         );
         
@@ -329,19 +350,22 @@ public class CosmeticsTest
         var fileModifier = new MockFileModifier(new ());
         var mod = GetSimpleMod();
         mod.SetFile(
-            "momi/cosmetic/lryn_celine_cosmetic.toml",
+            "momi/cosmetics/lryn_celine_cosmetic.toml",
             """
             [lryn_celine_summer_skirt]
             name = "Celine's summer skirt"
             ui_slot = "bottom"
             ui_sub_category = "skirt"
 
-            lut_file = "images/lut.png"
-            asset_file = "images/ui.png"
-            body_file = "images/ui.png"
-            merged_file = "images/ui.png"
-            merged_outline_file = "images/outline.png"
-            animation_files = { waist = "images/skirt.png" }
+            lut = "images/lut.png"
+            ui_sprites = {
+                asset = "images/ui.png",
+                body = "images/ui.png",
+                merged = "images/ui.png",
+                merged_outline = "images/outline.png"
+            }
+            
+            cosmetic_sprites = { waist = "images/skirt.png" }
             """
         );
         
