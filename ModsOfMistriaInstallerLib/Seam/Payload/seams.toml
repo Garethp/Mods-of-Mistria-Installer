@@ -37,8 +37,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 98
-seams = 106
+hooks = 99
+seams = 107
 engine_fixes = 5
 call_rewrites = 1
 
@@ -127,6 +127,12 @@ name = "object.interact"
 kind = "override"
 contention = "claim-scoped"
 doc  = "Fires at the top of interact(node) (Interact.gml, the shared grid-object interaction dispatcher), before can_interact. ctx is the grid node being interacted with (read node.object_id, node.prototype, node.top_left_x/y, node.renderer). Return a non-undefined value to replace the interaction entirely: the engine's interact for this node is skipped and your value becomes interact's return (return true for a handled interaction). Return undefined to defer to the engine's normal handling. This gives a mod's placed furniture custom interact behavior, since the engine dispatches every furniture interaction through this one function."
+
+[[hook]]
+name = "date.run"
+kind = "override"
+contention = "claim-scoped"
+doc  = "Fires at the top of run_date(date, npc) (Dates.gml), before the DateAcceptance conversation is requested and played and before the NPC is posed. ctx is { date, npc }: date is the Date enum id, npc is the NpcId. Return a non-undefined value to replace run_date entirely (the acceptance conversation and NPC posing are skipped and your value becomes run_date's return; return true for a handled date). Return undefined to defer to the engine's normal handling: request the DateAcceptance conversation, pose the NPC, then start_date_cutscene(npc, date) once it is accepted. run_date is the single entry point the date-selection UI routes every date through (await_popup(run_date, [date, npc])), so this hook sees every player-initiated date. Claim-scoped: many mods may register, but return undefined for the dates/partners you do not own; the first non-undefined return claims the date. A handler that wants to start the cutscene directly can call the engine's start_date_cutscene(npc, date)."
 
 [[hook]]
 name = "furniture.place_guard"
@@ -850,6 +856,20 @@ function interact(node) {
 '''
 marker  = "mmapi_object_interact_override"
 provides = ["object.interact"]
+
+[[seam]]
+id      = "date_run"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+function run_date(date, npc) {
+'''
+replace = '''
+function run_date(date, npc) {
+    var __mmapi_date_run = mmapi_run_override("date.run", { date: date, npc: npc }); // mmapi_date_run_override
+    if (__mmapi_date_run != undefined) { return __mmapi_date_run; }
+'''
+marker  = "mmapi_date_run_override"
+provides = ["date.run"]
 
 [[seam]]
 id      = "furniture_place_guard"
