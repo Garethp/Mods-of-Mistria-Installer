@@ -240,13 +240,13 @@ public class ModInstaller
         IMod effectiveMod = generated.Count > 0 || redirects.Count > 0
             ? new GeneratedOverlayMod(mod, generated, redirects)
             : mod;
-
-        generatedInformation.Merge(new TOMLCollector().Collect(effectiveMod));
         
         foreach (var generator in GetGenerators())
         {
             generatedInformation.Merge(generator.Generate(mod));
         }
+        
+        generatedInformation.Merge(new TOMLCollector().Collect(effectiveMod));
         
         // 1. Pack images into atlases first so IDs are ready for TOML
         reportPhase(modName, "Installing Images");
