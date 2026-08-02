@@ -207,10 +207,10 @@
   <data name="CoreSpriteFolderIsEmpty" xml:space="preserve">
     <value>{0} points to a sprite folder at {1} but that directory is empty</value>
   </data>
-  <data name="CoreCouldNotParseJSON" xml:space="preserve">
+  <data name="CoreCouldNotParseFile" xml:space="preserve">
     <value>Could not parse file with message: {0}</value>
   </data>
-  <data name="CoreNoDataInJSON" xml:space="preserve">
+  <data name="CoreNoDataInFile" xml:space="preserve">
     <value>No data was found in file</value>
   </data>
   <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve">
