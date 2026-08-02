@@ -11,7 +11,7 @@ public class CosmeticFile
     {
         { "back", ["capes", "backpacks"] },
         { "facial_hair", ["facial_hair"] },
-        { "top", ["dress", "robe", "top_misc", "suit", "long_sleeve", "sleeveless", "short_sleeve"] },
+        { "top", ["dress", "robe", "top_misc", "suit", "long_sleeve", "sleeveless", "short_sleeve", "jacket"] },
         { "eyes", ["eyes" ] },
         { "face_gear", ["face_accessory", "ear_accessory", "glasses"] },
         { "hair", ["medium_hair", "short_hair", "long_hair"] },
