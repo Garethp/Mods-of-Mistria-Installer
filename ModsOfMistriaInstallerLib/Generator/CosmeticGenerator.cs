@@ -1,4 +1,5 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Collector;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Models.MOMI;
 using Garethp.ModsOfMistriaInstallerLib.Models.SDK;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
@@ -35,6 +36,47 @@ public class CosmeticGenerator
         }
         
         return information;
+    }
+    
+    public bool CanGenerate(IMod mod) => mod.HasFilesInFolder("momi/cosmetics");
+    
+    public Validation Validate(IMod mod)
+    {
+        var validation = new Validation();
+        if (!CanGenerate(mod)) return validation;
+
+        foreach (var file in mod.GetFilesInFolder("momi/cosmetics"))
+        {
+            Dictionary<string, CosmeticFile>? cosmetics;
+            try
+            {
+                cosmetics = TomlSerializer.Deserialize<Dictionary<string, CosmeticFile>>(mod.ReadFile(file));
+            }
+            catch (Exception e)
+            {
+                validation.AddError(mod, file, string.Format(Resources.CoreCouldNotParseFile, e.Message));
+                continue;
+            }
+            
+            if (cosmetics is null)
+            {
+                validation.AddError(mod, file, Resources.CoreNoDataInFile);
+                continue;
+            }
+
+            if (cosmetics.Count == 0)
+            {
+                validation.AddWarning(mod, file, Resources.CoreOutfitFileHasNoOutfits);
+            }
+
+            foreach (var outfitName in cosmetics.Keys)
+            {
+                var outfit = cosmetics[outfitName];
+                validation = outfit.Validate(validation, mod, file, outfitName);
+            }
+        }
+
+        return validation;
     }
 
     private GeneratedInformation GenerateFiles(IMod mod, CosmeticFile cosmetic)

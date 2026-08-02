@@ -1,9 +1,25 @@
-﻿using Tomlyn.Serialization;
+﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Tomlyn.Serialization;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Models.MOMI;
 
 public class CosmeticFile
 {
+    public static Dictionary<string, List<string>> ValidSlots = new()
+    {
+        { "back", ["capes", "backpacks"] },
+        { "facial_hair", ["facial_hair"] },
+        { "top", ["dress", "robe", "top_misc", "suit", "long_sleeve", "sleeveless", "short_sleeve"] },
+        { "eyes", ["eyes" ] },
+        { "face_gear", ["face_accessory", "ear_accessory", "glasses"] },
+        { "hair", ["medium_hair", "short_hair", "long_hair"] },
+        { "head_gear", ["crown", "head_gear_misc", "hair_accessory", "hat", "helmet"] },
+        { "bottom", ["pants", "bottom_misc", "shorts", "skirt"] },
+        { "feet", ["boots", "feet_misc", "sandals", "shoes"] }
+    };
+    
     private static Dictionary<string, int> PartsFrameCount = new()
     {
         { "hair_front", 49 },
@@ -66,6 +82,78 @@ public class CosmeticFile
         // @TODO: Throw an exception if an incorrect part is passed in
 
         return PartsFrameCount[part];
+    }
+    
+    public Validation Validate(Validation validation, IMod mod, string file, string id)
+    {
+        if (string.IsNullOrWhiteSpace(Name))
+        {
+            validation.AddError(mod, file, Resources.CoreErrorOutfitNoName);
+        }
+
+        if (string.IsNullOrWhiteSpace(UiSlot))
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitNoUiSlot, id));
+        }
+        else if (!ValidSlots.ContainsKey(UiSlot))
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitUiSlotWrong, id, string.Join(", ", ValidSlots.Keys)));
+        }
+
+        if (string.IsNullOrWhiteSpace(UiSubCategory))
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitNoSubCategory, id));
+        } else if (!string.IsNullOrEmpty(UiSlot) && ValidSlots.ContainsKey(UiSlot) && !ValidSlots[UiSlot].Contains(UiSubCategory))
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitUiSubCategoryWrong, id, string.Join(", ", ValidSlots[UiSlot])));
+        }
+
+        // if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s lut", LutFile) is { } lutError)
+        // {
+        //     validation.AddError(mod, file, lutError);
+        // }
+
+        // if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiItem", UiItem) is { } uiItemError)
+        // {
+        //     validation.AddError(mod, file, uiItemError);
+        // }
+        //
+        // if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s outlineFile", OutlineFile) is { } outlineError)
+        // {
+        //     validation.AddError(mod, file, outlineError);
+        // }
+
+        // // if included (for face cosmetics), validate sprite files
+        // if (HasMergedAssetOutline && ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiAssetFile", UiAssetFile) is { } uiAssetError)
+        // {
+        //     validation.AddError(mod, file, uiAssetError);
+        // }
+        //
+        // if (HasMergedAssetOutline && ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiBodyFile", UiBodyFile) is { } uiBodyError)
+        // {
+        //     validation.AddError(mod, file, uiBodyError);
+        // }
+
+        if (CosmeticSprites.Count == 0)
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitNoAnimation, id));
+        }
+
+        foreach (var bodyPart in CosmeticSprites.Keys)
+        {
+            if (ValidationTools.CheckSpriteDirectoryExists(mod, $"Outfit {id}'s cosmetic_sprite file {bodyPart}",
+                    CosmeticSprites[bodyPart]) is { } animationError)
+            {
+                validation.AddError(mod, file, animationError);
+            }
+        }
+
+        if (PriceOverride is not null && PriceOverride < 0)
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitPriceOverrideNegative, id));
+        }
+        
+        return validation;
     }
 }
 
