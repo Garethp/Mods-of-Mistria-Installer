@@ -47,12 +47,12 @@ public class CosmeticFile
     [TomlPropertyName("ui_slot")]
     public string UiSlot { get; set; }
 
-    [TomlPropertyName("default_unlocked")]
-    public bool? DefaultUnlocked { get; set; }
-
     [TomlPropertyName("ui_sub_category")]
     public string UiSubCategory { get; set; }
-
+    
+    [TomlPropertyName("default_unlocked")]
+    public bool? DefaultUnlocked { get; set; }
+    
     /**
      * Either this or lut_sprite must be defined
      */
@@ -88,55 +88,40 @@ public class CosmeticFile
     {
         if (string.IsNullOrWhiteSpace(Name))
         {
-            validation.AddError(mod, file, Resources.CoreErrorOutfitNoName);
+            validation.AddError(mod, file, Resources.CoreErrorCosmeticNoName);
         }
 
         if (string.IsNullOrWhiteSpace(UiSlot))
         {
-            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitNoUiSlot, id));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticNoUiSlot, id));
         }
         else if (!ValidSlots.ContainsKey(UiSlot))
         {
-            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitUiSlotWrong, id, string.Join(", ", ValidSlots.Keys)));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticUiSlotWrong, id, string.Join(", ", ValidSlots.Keys)));
         }
 
         if (string.IsNullOrWhiteSpace(UiSubCategory))
         {
-            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitNoSubCategory, id));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticNoSubCategory, id));
         } else if (!string.IsNullOrEmpty(UiSlot) && ValidSlots.ContainsKey(UiSlot) && !ValidSlots[UiSlot].Contains(UiSubCategory))
         {
-            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitUiSubCategoryWrong, id, string.Join(", ", ValidSlots[UiSlot])));
+            validation.AddError(mod, file, string.Format(Resources.CoreCosmeticUiSubCategoryWrong, id, string.Join(", ", ValidSlots[UiSlot])));
         }
 
-        // if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s lut", LutFile) is { } lutError)
-        // {
-        //     validation.AddError(mod, file, lutError);
-        // }
+        if (string.IsNullOrWhiteSpace(LutFile) && string.IsNullOrWhiteSpace(LutSprite))
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticNoLut, id));
+        } else if (!string.IsNullOrEmpty(LutFile) &&
+                   ValidationTools.CheckSpriteFileExists(mod, $"Cosmetic {id}'s lut", LutFile) is { } lutError)
+        {
+            validation.AddError(mod, file, lutError);
+        }
 
-        // if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiItem", UiItem) is { } uiItemError)
-        // {
-        //     validation.AddError(mod, file, uiItemError);
-        // }
-        //
-        // if (ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s outlineFile", OutlineFile) is { } outlineError)
-        // {
-        //     validation.AddError(mod, file, outlineError);
-        // }
-
-        // // if included (for face cosmetics), validate sprite files
-        // if (HasMergedAssetOutline && ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiAssetFile", UiAssetFile) is { } uiAssetError)
-        // {
-        //     validation.AddError(mod, file, uiAssetError);
-        // }
-        //
-        // if (HasMergedAssetOutline && ValidationTools.CheckSpriteFileExists(mod, $"Outfit {id}'s uiBodyFile", UiBodyFile) is { } uiBodyError)
-        // {
-        //     validation.AddError(mod, file, uiBodyError);
-        // }
+        // @TODO: Check for the `ui_sprites` validity.
 
         if (CosmeticSprites.Count == 0)
         {
-            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitNoAnimation, id));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticNoCosmeticSprites, id));
         }
 
         foreach (var bodyPart in CosmeticSprites.Keys)
@@ -150,7 +135,7 @@ public class CosmeticFile
 
         if (PriceOverride is not null && PriceOverride < 0)
         {
-            validation.AddError(mod, file, string.Format(Resources.CoreErrorOutfitPriceOverrideNegative, id));
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticPriceOverrideNegative, id));
         }
         
         return validation;
@@ -160,8 +145,8 @@ public class CosmeticFile
 public class CosmeticUiSprites
 {
     /**
- * Either the UiFile should be defined OR the Below files should be defined
- */
+     * Either the UiFile should be defined OR the Below files should be defined
+     */
     [TomlPropertyName("ui")]
     public string? UiFile { get; set; }
     

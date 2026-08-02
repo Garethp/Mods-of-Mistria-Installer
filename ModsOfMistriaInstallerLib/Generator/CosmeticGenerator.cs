@@ -67,7 +67,7 @@ public class CosmeticGenerator: IGenerator
 
             if (cosmetics.Count == 0)
             {
-                validation.AddWarning(mod, file, Resources.CoreOutfitFileHasNoOutfits);
+                validation.AddWarning(mod, file, Resources.CoreCosmeticsFileHasNoCosmetics);
             }
 
             foreach (var outfitName in cosmetics.Keys)

@@ -114,6 +114,24 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cosmetics file has no cosmetics..
+        /// </summary>
+        public static string CoreCosmeticsFileHasNoCosmetics {
+            get {
+                return ResourceManager.GetString("CoreCosmeticsFileHasNoCosmetics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has incorrect ui_sub_category. Must be one of: {1}..
+        /// </summary>
+        public static string CoreCosmeticUiSubCategoryWrong {
+            get {
+                return ResourceManager.GetString("CoreCosmeticUiSubCategoryWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find the manifest file..
         /// </summary>
         public static string CoreCouldNotFindModManifest {
@@ -137,6 +155,69 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string CoreCouldNotParseFile {
             get {
                 return ResourceManager.GetString("CoreCouldNotParseFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has no cosmetic_sprites files..
+        /// </summary>
+        public static string CoreErrorCosmeticNoCosmeticSprites {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticNoCosmeticSprites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has no lut. You must either define lut or lut_sprite..
+        /// </summary>
+        public static string CoreErrorCosmeticNoLut {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticNoLut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic has no name..
+        /// </summary>
+        public static string CoreErrorCosmeticNoName {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticNoName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has not defined ui_sub_category..
+        /// </summary>
+        public static string CoreErrorCosmeticNoSubCategory {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticNoSubCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has not defined ui_slot..
+        /// </summary>
+        public static string CoreErrorCosmeticNoUiSlot {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticNoUiSlot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0}&apos;s price override must be a positive number..
+        /// </summary>
+        public static string CoreErrorCosmeticPriceOverrideNegative {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticPriceOverrideNegative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has incorrect ui_slot. Must be one of: {1}..
+        /// </summary>
+        public static string CoreErrorCosmeticUiSlotWrong {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticUiSlotWrong", resourceCulture);
             }
         }
         
