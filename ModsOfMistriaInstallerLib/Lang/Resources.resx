@@ -543,4 +543,7 @@
   <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve">
     <value>Cosmetic {0} has incorrect cosmetic_sprites value {1}. Must be one of: {2}.</value>
   </data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve">
+    <value>It looks like the Fields of Mistria Folder that has been selected is correct, but there was no assets.zip file in there. This version of the installer does not work with old versions of Fields of Mistria. Check if your installation is correct and make sure you have the latest version of Fields of Mistria.</value>
+  </data>
 </root>

@@ -213,7 +213,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cosmetic {0} doens&apos;t have ui_sprites.ui or ui_sprites.asset. You must define one or the other..
+        ///   Looks up a localized string similar to Cosmetic {0} doesn&apos;t have ui_sprites.ui or ui_sprites.asset. You must define one or the other..
         /// </summary>
         public static string CoreErrorCosmeticNoUiSprites {
             get {
@@ -1037,6 +1037,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string GUIEnableAllMods {
             get {
                 return ResourceManager.GetString("GUIEnableAllMods", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to It looks like the Fields of Mistria Folder that has been selected is correct, but there was no assets.zip file in there. This version of the installer does not work with old versions of Fields of Mistria. Check if your installation is correct and make sure you have the latest version of Fields of Mistria..
+        /// </summary>
+        public static string GUIErrorWrongMistriaVersion {
+            get {
+                return ResourceManager.GetString("GUIErrorWrongMistriaVersion", resourceCulture);
             }
         }
         
