@@ -495,4 +495,31 @@
   <data name="GUIUninstallFatalError" xml:space="preserve">
     <value>A fatal error occurred during mod uninstallation:</value>
   </data>
+  <data name="CoreCosmeticsFileHasNoCosmetics" xml:space="preserve">
+    <value>Cosmetics file has no cosmetics.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoUiSlot" xml:space="preserve">
+    <value>Cosmetic {0} has not defined ui_slot.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoName" xml:space="preserve">
+    <value>Cosmetic has no name.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSlotWrong" xml:space="preserve">
+    <value>Cosmetic {0} has incorrect ui_slot. Must be one of: {1}.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoSubCategory" xml:space="preserve">
+    <value>Cosmetic {0} has not defined ui_sub_category.</value>
+  </data>
+  <data name="CoreCosmeticUiSubCategoryWrong" xml:space="preserve">
+    <value>Cosmetic {0} has incorrect ui_sub_category. Must be one of: {1}.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoCosmeticSprites" xml:space="preserve">
+    <value>Cosmetic {0} has no cosmetic_sprites files.</value>
+  </data>
+  <data name="CoreErrorCosmeticPriceOverrideNegative" xml:space="preserve">
+    <value>Cosmetic {0}'s price override must be a positive number.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoLut" xml:space="preserve">
+    <value>Cosmetic {0} has no lut. You must either define lut or lut_sprite.</value>
+  </data>
 </root>
