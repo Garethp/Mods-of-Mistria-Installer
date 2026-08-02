@@ -12,7 +12,8 @@ using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Generator;
 
-public class CosmeticGenerator
+[InformationGenerator(2)]
+public class CosmeticGenerator: IGenerator
 {
     public GeneratedInformation Generate(IMod mod)
     {

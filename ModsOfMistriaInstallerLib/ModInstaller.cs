@@ -30,6 +30,31 @@ public class ModInstaller
         _atlasDirectory = Path.Combine(_assetsLocation, "atlases");
     }
 
+    public static IEnumerable<IGenerator> GetGenerators()
+    {
+        return (from app in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
+            from type in app.GetTypes()
+            where type.GetInterface(nameof(IGenerator)) is not null && !type.IsAbstract
+            let attributes = type.GetCustomAttributes(typeof(InformationGenerator), true)
+            where attributes is { Length: > 0 } &&
+                  attributes.Any(attribute => (InformationGenerator)attribute is { ManifestVersion: 2 })
+            select Activator.CreateInstance(type) as IGenerator).ToList();
+    }
+    
+    
+    public static void ValidateMods(List<IMod> mods)
+    {
+        var desiredGenerators = GetGenerators();
+        
+        mods.ForEach(mod =>
+        {
+            foreach (var generator in desiredGenerators)
+            {
+                mod.GetValidation().Merge(generator.Validate(mod));
+            }
+        });
+    }
+
     public InstallResult InstallMods(List<IMod> mods, Action<string, string> reportStatus,
         GmlLayerOptions? gmlOptions = null, CompileGateMode gateMode = CompileGateMode.Auto,
         Action<string, string>? reportPhase = null)
@@ -205,7 +230,6 @@ public class ModInstaller
         reportPhase(modName, "Preparing");
         var generated = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         generatedInformation.Merge(new OutfitGenerator().Generate(mod));
-        generatedInformation.Merge(new CosmeticGenerator().Generate(mod));
         
         foreach (var kvp in new FurnitureGenerator().Generate(mod))
             generated.TryAdd(kvp.Key, kvp.Value);
@@ -218,7 +242,11 @@ public class ModInstaller
             : mod;
 
         generatedInformation.Merge(new TOMLCollector().Collect(effectiveMod));
-        generatedInformation.Merge(new JsonGenerator().Generate(effectiveMod));
+        
+        foreach (var generator in GetGenerators())
+        {
+            generatedInformation.Merge(generator.Generate(mod));
+        }
         
         // 1. Pack images into atlases first so IDs are ready for TOML
         reportPhase(modName, "Installing Images");
