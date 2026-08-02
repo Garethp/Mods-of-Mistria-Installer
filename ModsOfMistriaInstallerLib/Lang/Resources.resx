@@ -522,4 +522,25 @@
   <data name="CoreErrorCosmeticNoLut" xml:space="preserve">
     <value>Cosmetic {0} has no lut. You must either define lut or lut_sprite.</value>
   </data>
+  <data name="CoreErrorCosmeticNoUiSprites" xml:space="preserve">
+    <value>Cosmetic {0} doesn't have ui_sprites.ui or ui_sprites.asset. You must define one or the other.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpritesAllDefined" xml:space="preserve">
+    <value>Cosmetic {0} has ui_sprites.ui and ui_sprites.asset. You can only have one or the other.</value>
+  </data>
+  <data name="CoreErrorCosmeticSpriteNoOutline" xml:space="preserve">
+    <value>Cosmetic {0} has no ui_sprites.outline.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve">
+    <value>Cosmetic {0} has no ui_sprites.body.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve">
+    <value>Cosmetic {0} has no ui_sprites.merged.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve">
+    <value>Cosmetic {0} has no ui_sprites.merged_outline.</value>
+  </data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve">
+    <value>Cosmetic {0} has incorrect cosmetic_sprites value {1}. Must be one of: {2}.</value>
+  </data>
 </root>

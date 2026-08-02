@@ -159,6 +159,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has incorrect cosmetic_sprites value {1}. Must be one of: {2}..
+        /// </summary>
+        public static string CoreErrorCosmeticCosmeticSpritesWrong {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticCosmeticSpritesWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cosmetic {0} has no cosmetic_sprites files..
         /// </summary>
         public static string CoreErrorCosmeticNoCosmeticSprites {
@@ -204,6 +213,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} doens&apos;t have ui_sprites.ui or ui_sprites.asset. You must define one or the other..
+        /// </summary>
+        public static string CoreErrorCosmeticNoUiSprites {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticNoUiSprites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cosmetic {0}&apos;s price override must be a positive number..
         /// </summary>
         public static string CoreErrorCosmeticPriceOverrideNegative {
@@ -213,11 +231,56 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has no ui_sprites.outline..
+        /// </summary>
+        public static string CoreErrorCosmeticSpriteNoOutline {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticSpriteNoOutline", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cosmetic {0} has incorrect ui_slot. Must be one of: {1}..
         /// </summary>
         public static string CoreErrorCosmeticUiSlotWrong {
             get {
                 return ResourceManager.GetString("CoreErrorCosmeticUiSlotWrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has no ui_sprites.body..
+        /// </summary>
+        public static string CoreErrorCosmeticUiSpriteNoBody {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticUiSpriteNoBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has ui_sprites.ui and ui_sprites.asset. You can only have one or the other..
+        /// </summary>
+        public static string CoreErrorCosmeticUiSpritesAllDefined {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticUiSpritesAllDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has no ui_sprites.merged..
+        /// </summary>
+        public static string CoreErrorCosmeticUiSpritesNoMerged {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticUiSpritesNoMerged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cosmetic {0} has no ui_sprites.merged_outline..
+        /// </summary>
+        public static string CoreErrorCosmeticUiSpritesNoMergedOutline {
+            get {
+                return ResourceManager.GetString("CoreErrorCosmeticUiSpritesNoMergedOutline", resourceCulture);
             }
         }
         

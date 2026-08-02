@@ -50,9 +50,6 @@ public class CosmeticFile
     [TomlPropertyName("ui_sub_category")]
     public string UiSubCategory { get; set; }
     
-    [TomlPropertyName("default_unlocked")]
-    public bool? DefaultUnlocked { get; set; }
-    
     /**
      * Either this or lut_sprite must be defined
      */
@@ -73,14 +70,18 @@ public class CosmeticFile
 
     [TomlPropertyName("price_override")]
     public int? PriceOverride { get; set; }
-
-    [TomlPropertyName("frame_width")]
-    public int? FrameWidth { get; set; }
+    
+    [TomlPropertyName("default_unlocked")]
+    public bool? DefaultUnlocked { get; set; }
 
     public int GetPartFrameCount(string part)
     {
-        // @TODO: Throw an exception if an incorrect part is passed in
-
+        if (!PartsFrameCount.ContainsKey(part))
+        {
+            throw new Exception(string.Format(Resources.CoreErrorCosmeticCosmeticSpritesWrong, Id, part,
+                string.Join(", ", PartsFrameCount.Keys)));
+        }
+        
         return PartsFrameCount[part];
     }
     
@@ -116,9 +117,7 @@ public class CosmeticFile
         {
             validation.AddError(mod, file, lutError);
         }
-
-        // @TODO: Check for the `ui_sprites` validity.
-
+        
         if (CosmeticSprites.Count == 0)
         {
             validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticNoCosmeticSprites, id));
@@ -126,12 +125,19 @@ public class CosmeticFile
 
         foreach (var bodyPart in CosmeticSprites.Keys)
         {
-            if (ValidationTools.CheckSpriteDirectoryExists(mod, $"Outfit {id}'s cosmetic_sprite file {bodyPart}",
+            if (!PartsFrameCount.ContainsKey(bodyPart))
+            {
+                validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticCosmeticSpritesWrong, id, bodyPart, string.Join(", ", PartsFrameCount.Keys)));
+            }
+            
+            if (ValidationTools.CheckSpriteFileExists(mod, $"Cosmetic {id}'s cosmetic_sprite file {bodyPart}",
                     CosmeticSprites[bodyPart]) is { } animationError)
             {
                 validation.AddError(mod, file, animationError);
             }
         }
+        
+        validation = UiSprites.Validate(validation, mod, file, id);
 
         if (PriceOverride is not null && PriceOverride < 0)
         {
@@ -150,6 +156,9 @@ public class CosmeticUiSprites
     [TomlPropertyName("ui")]
     public string? UiFile { get; set; }
     
+    [TomlPropertyName("outline")]
+    public string? OutlineFile { get; set; }
+    
     [TomlPropertyName("asset")]
     public string? AssetFile { get; set; }
     
@@ -161,7 +170,75 @@ public class CosmeticUiSprites
     
     [TomlPropertyName("merged_outline")]
     public string? MergedOutlineFile { get; set; }
-    
-    [TomlPropertyName("outline")]
-    public string? OutlineFile { get; set; }
+
+    public Validation Validate(Validation validation, IMod mod, string file, string id)
+    {
+        if (string.IsNullOrWhiteSpace(UiFile) && string.IsNullOrWhiteSpace(AssetFile))
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticNoUiSprites, id));
+            return validation;
+        }
+        
+        if (!string.IsNullOrWhiteSpace(UiFile) && !string.IsNullOrWhiteSpace(AssetFile))
+        {
+            validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticUiSpritesAllDefined, id));
+            return validation;
+        }
+
+        if (!string.IsNullOrEmpty(UiFile))
+        {
+            if (ValidationTools.CheckSpriteFileExists(mod, $"Cosmetic {id}'s ui_sprites.ui file", UiFile) is
+                { } uiFileError)
+            {
+                validation.AddError(mod, file, uiFileError);
+            }
+
+            if (string.IsNullOrEmpty(OutlineFile))
+            {
+                validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticSpriteNoOutline, id));
+            }
+            else if (ValidationTools.CheckSpriteFileExists(mod, $"Cosmetic {id}'s ui_sprites.outline file", OutlineFile) is { } outlineFileError)
+            {
+                validation.AddError(mod, file, outlineFileError);
+            }
+        }
+
+        if (!string.IsNullOrEmpty(AssetFile))
+        {
+            if (ValidationTools.CheckSpriteFileExists(mod, $"Cosmetic {id}'s ui_sprites.asset file", AssetFile) is
+                { } assetFileError)
+            {
+                validation.AddError(mod, file, assetFileError);
+            }
+
+            if (string.IsNullOrEmpty(BodyFile))
+            {
+                validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticUiSpriteNoBody, id));
+            } else if (ValidationTools.CheckSpriteFileExists(mod, $"Cosmetic {id}'s ui_sprites.body file", BodyFile) is
+                       { } bodyFileError)
+            {
+                validation.AddError(mod, file, bodyFileError);
+            }
+            
+            if (string.IsNullOrEmpty(MergedFile))
+            {
+                validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticUiSpritesNoMerged, id));
+            } else if (ValidationTools.CheckSpriteFileExists(mod, $"Cosmetic {id}'s ui_sprites.merged file", MergedFile) is
+                       { } mergedFileError)
+            {
+                validation.AddError(mod, file, mergedFileError);
+            }
+            
+            if (string.IsNullOrEmpty(MergedOutlineFile))
+            {
+                validation.AddError(mod, file, string.Format(Resources.CoreErrorCosmeticUiSpritesNoMergedOutline, id));
+            } else if (ValidationTools.CheckSpriteFileExists(mod, $"Cosmetic {id}'s ui_sprites.merged_outline file", MergedOutlineFile) is
+                       { } mergedOutlineFileError)
+            {
+                validation.AddError(mod, file, mergedOutlineFileError);
+            }
+        }
+
+        return validation;
+    }
 }
