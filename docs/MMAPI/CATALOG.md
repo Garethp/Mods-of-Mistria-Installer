@@ -46,10 +46,8 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [furniture.place_guard](hooks/furniture.place_guard.md) | guard | Veto a furniture placement before it is written. |
 | [furniture.floor_sprite](hooks/furniture.floor_sprite.md) | filter | Swap a furniture piece's floor sprite as its renderer is built. |
 | [object.interact](hooks/object.interact.md) | override | Take over any grid object's interaction. |
-| [date.run](hooks/date.run.md) | override | Take over a date the moment the player commits to it. |
 | [object.node_sprite](hooks/object.node_sprite.md) | filter | Swap the sprite of any world node before it draws. |
 | [store.item_added](hooks/store.item_added.md) | event | Know when an item lands in the shopping basket. |
-| [gossip.selections](hooks/gossip.selections.md) | filter | Change which NPCs the day's gossip offers. |
 
 ### Player, Actors, And Progression
 
@@ -71,8 +69,10 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [player.status_effect_cancel](hooks/player.status_effect_cancel.md) | event | Know when the game cancels a status effect. |
 | [player.status_effect_expired](hooks/player.status_effect_expired.md) | event | Know the moment a status effect runs out. |
 | [fishing.should_reel](hooks/fishing.should_reel.md) | filter | Change whether the player reels from the fishing Wait state this frame. |
+| [gossip.selections](hooks/gossip.selections.md) | filter | Change which NPCs the day's gossip offers. |
 | [npc.heart_points](hooks/npc.heart_points.md) | filter | Adjust the heart points a villager gains. |
 | [npc.gift_received](hooks/npc.gift_received.md) | event | Know when the player gives an NPC a gift. |
+| [date.run](hooks/date.run.md) | override | Take over a date the moment the player commits to it. |
 | [animal.heart_points](hooks/animal.heart_points.md) | filter | Adjust the heart points a barn animal gains. |
 | [animal.pet](hooks/animal.pet.md) | event | Know when the player pets or puts down an animal. |
 | [combat.damage](hooks/combat.damage.md) | filter | Change any hit before it resolves. |
@@ -166,10 +166,8 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [furniture_place_guard](seams/furniture_place_guard.md) | Puts a veto check in front of every furniture placement. |
 | [furniture_floor_sprite](seams/furniture_floor_sprite.md) | Filters the floor sprite as a furniture renderer is built. |
 | [object_interact](seams/object_interact.md) | Puts a claim-scoped override in front of every grid-object interaction. |
-| [date_run](seams/date_run.md) | Puts a claim-scoped override in front of every player-initiated date. |
 | [node_renderer_set_sprite](seams/node_renderer_set_sprite.md) | Filters the sprite every world node renderer is about to wear. |
 | [store_item_added](seams/store_item_added.md) | Announces every shelf tap that puts an item in the shopping basket. |
-| [gossip_selections](seams/gossip_selections.md) | Wraps the gossip picker so the day's NPC selection passes through a filter. |
 
 ### Player, Actors, And Progression
 
@@ -192,8 +190,10 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [player_status_effect_cancel](seams/player_status_effect_cancel.md) | Emits at the head of `StatusEffectManager.cancel()`, before any lookup. |
 | [player_status_effect_expired](seams/player_status_effect_expired.md) | Emits inside `update()`'s expiry branch, right after the effect is removed. |
 | [fishing_should_reel](seams/fishing_should_reel.md) | Filters the Wait state's reel decision before the complete vanilla reel block. |
+| [gossip_selections](seams/gossip_selections.md) | Wraps the gossip picker so the day's NPC selection passes through a filter. |
 | [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it applies. |
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
+| [date_run](seams/date_run.md) | Puts a claim-scoped override in front of every player-initiated date. |
 | [animal_heart_points](seams/animal_heart_points.md) | Reroutes every barn-animal heart-point delta through a filter before it applies. |
 | [animal_on_pet](seams/animal_on_pet.md) | Announces the moment the player pets a barn animal. |
 | [animal_put_down](seams/animal_put_down.md) | Announces the moment a held animal is set back down. |

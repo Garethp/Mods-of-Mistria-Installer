@@ -6,14 +6,14 @@ Take over a date the moment the player commits to it.
 
 ## Contract
 
-Fires at the top of `run_date(date, npc)` (`Dates.gml`), before the `DateAcceptance` conversation is requested and played and before the NPC is posed. ctx is `{ date, npc }`: `date` is the `Date` enum id, `npc` is the `NpcId`. Return a non-`undefined` value to replace `run_date` entirely — the acceptance conversation and NPC posing are skipped and your value becomes `run_date`'s return (return `true` for a handled date). Return `undefined` to defer to the engine's normal handling: request the `DateAcceptance` conversation, pose the NPC, then `start_date_cutscene(npc, date)` once it is accepted.
+Fires at the top of `run_date(date, npc)` (`Dates.gml`), before the `DateAcceptance` conversation is requested and played and before the NPC is posed. ctx is `{ date, npc }`: `date` is the `Date` enum id, `npc` is the `NpcId`. Return a non-`undefined` value to replace `run_date` entirely: the acceptance conversation and NPC posing are skipped, and your value becomes `run_date`'s return (return `true` for a handled date). Return `undefined` to defer to the engine's normal handling: request the `DateAcceptance` conversation, pose the NPC, then `start_date_cutscene(npc, date)` once it is accepted.
 
 `run_date` is the single entry point the date-selection UI routes every date through (`await_popup(run_date, [date, npc])`), so this hook sees every player-initiated date.
 
 | | |
 | --- | --- |
 | **Fires** | At the top of `run_date(date, npc)`, before the acceptance conversation and NPC posing. |
-| **ctx** | `{ date, npc }` — the `Date` id and the `NpcId`. |
+| **ctx** | `{ date, npc }`, the `Date` id and the `NpcId`. |
 | **Kind contract** | Claim-scoped: many mods may register; return `undefined` for dates you do not own. The first non-`undefined` value replaces the engine's behavior. |
 
 ### The ctx parameter

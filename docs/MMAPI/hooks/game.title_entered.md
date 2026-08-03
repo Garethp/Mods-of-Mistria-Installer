@@ -16,10 +16,10 @@ Fires from Setup's title-entry create, right after the title menu is spawned and
 
 ### The ctx struct
 
-- `from_game` — `false` for the boot entry, `true` when a play session has just ended. This is the engine's own boot-vs-session-ended flag.
+- `from_game` - `false` for the boot entry, `true` when a play session has just ended. This is the engine's own boot-vs-session-ended flag.
 
 > [!NOTE]
-> The quit-to-title entry is the per-session teardown moment: a save that was in play is over, so reset any per-save state your mod holds. The boot entry fires before any session has existed, so a reset handler is harmless there — but gate on `ctx.from_game` if your teardown must only run when a session actually ended. Handlers run during Setup's create, before the title menu is drawn or interactive.
+> The quit-to-title entry is the per-session teardown moment: a save that was in play is over, so reset any per-save state your mod holds. The boot entry fires before any session has existed, so a reset handler is harmless there, but gate on `ctx.from_game` if your teardown must only run when a session actually ended. Handlers run during Setup's create, before the title menu is drawn or interactive.
 
 ## Usage
 
@@ -39,7 +39,7 @@ mmapi_on("game.title_entered", session_stats_game_title_entered);
 
 ## Engine Wiring
 
-- The [`setup_title_entry`](../seams/setup_title_entry.md) seam places the emit in Setup's create, directly after the title menu is spawned and started — the one point that runs exactly once per title entry while the engine's `FROM_GAME` flag still distinguishes the boot entry from quit-to-title.
+- The [`setup_title_entry`](../seams/setup_title_entry.md) seam places the emit in Setup's create, directly after the title menu is spawned and started. That is the one point that runs exactly once per title entry while the engine's `FROM_GAME` flag still distinguishes the boot entry from quit-to-title.
 
 ## See Also
 
