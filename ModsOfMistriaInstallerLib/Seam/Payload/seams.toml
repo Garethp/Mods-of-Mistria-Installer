@@ -12,7 +12,7 @@
 # cannot say (control-flow rewrites, value capture, argument threading). The
 # TEMPLATE form states a locator plus an op (emit, guard, filter, filter_call,
 # ctx_filter, wrap), and the injected dispatch is generated with the uniform
-# try/catch shape (see mistweave/dispatch.py); provides derives from its
+# try/catch shape every template op shares; provides derives from its
 # `hook`. The locator is either pristine context stated once
 # (context_before/context_after, whose concatenation is the anchor) or a
 # structural `target` (fn + at + token anchor, matched token-wise inside the
@@ -2647,8 +2647,8 @@ marker  = "mmapi_animal_run_pet_put_down"
 # reactivates the in-view node renderers. A text seam (not target/at=after) because the anchor is the
 # multi-line instance_activate_region(...) call: instance_activate_region is unique to this function,
 # so the call + the closing brace anchor exactly once. Lets a mod refresh just-reactivated renderers
-# before they draw (crop_timers re-skins badges), closing the 1-frame scroll-in lag the begin_step tick
-# (which runs before this cull, Game.gml step_begin) leaves.
+# before they draw (re-applying per-instance sprite overrides), closing the 1-frame scroll-in lag the
+# begin_step tick (which runs before this cull, Game.gml step_begin) leaves.
 [[seam]]
 id      = "camera_culls_processed"
 file    = "gml/scripts/GameplaySystems/Camera/Camera.gml"

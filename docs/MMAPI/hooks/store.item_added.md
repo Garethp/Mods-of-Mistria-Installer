@@ -26,7 +26,7 @@ Adding more from a handler via `menu.basket.add` does not re-fire this event (th
 ```gml
 // store.item_added is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
-function bulk_buyer_store_item_added(_ctx) {
+function basket_bundler_store_item_added(_ctx) {
     // _ctx is { menu, item }.
     //   .menu - the StoreMenu; .menu.basket is the Inventory cart
     //           (.can_add(item) / .add(item)), and .menu.update_prices()
@@ -43,7 +43,7 @@ function bulk_buyer_store_item_added(_ctx) {
 }
 
 // inside your latched register function (see Mod Anatomy):
-mmapi_on("store.item_added", bulk_buyer_store_item_added);
+mmapi_on("store.item_added", basket_bundler_store_item_added);
 ```
 
 ## Engine Wiring

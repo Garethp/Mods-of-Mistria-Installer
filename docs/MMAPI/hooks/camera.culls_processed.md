@@ -30,11 +30,11 @@ Plainly: if your mod changes what world renderers look like, a renderer that scr
 ```gml
 // camera.culls_processed is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
-function crop_timers_camera_culls_processed(_ctx) {
+function fresh_coat_camera_culls_processed(_ctx) {
     // _ctx is the Camera struct whose process_culls() just ran.
     // HOT PATH: fires every frame culling runs for the room. Make your first
     // check the cheapest one and get out early when your mod has nothing to do.
-    if (!__crop_timers_runtime().has_overrides) return;
+    if (!__fresh_coat_runtime().has_overrides) return;
     // Re-apply your per-instance sprite state to the now-active renderers
     // so instances that just scrolled into view draw correctly this frame:
     // with (obj_node_renderer) {
@@ -43,7 +43,7 @@ function crop_timers_camera_culls_processed(_ctx) {
 }
 
 // inside your latched register function (see Mod Anatomy):
-mmapi_on("camera.culls_processed", crop_timers_camera_culls_processed);
+mmapi_on("camera.culls_processed", fresh_coat_camera_culls_processed);
 ```
 
 ## Engine Wiring
