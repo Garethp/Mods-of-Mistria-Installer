@@ -89,26 +89,29 @@ Returning `undefined` from `collect`, or throwing before it returns, skips that 
 
 ## Hotkey
 
-Keyboard hotkeys use a shared registry, so mods do not fight over raw input polling.
+Keyboard and gamepad hotkeys use a shared registry, so mods do not fight over raw input polling. A config value that may name either device resolves through both maps:
 
 ```gml
-var _vk = mmapi_hotkey_vk_from_name(my_mod_config().activation_button); // e.g. "HOME", "F7"
+var _button = my_mod_config().activation_button;   // e.g. "HOME", "F7", "GAMEPAD_Y"
+var _vk  = mmapi_hotkey_vk_from_name(_button);
+var _pad = mmapi_hotkey_pad_from_name(_button);
 if (_vk != undefined) {
     mmapi_hotkey_register(_vk, my_mod_on_hotkey);
+} else if (_pad != undefined) {
+    mmapi_hotkey_register_pad(_pad, my_mod_on_hotkey);
 }
 ```
 
 `mmapi_hotkey_vk_from_name` is *case-sensitive*. It accepts `F1` through `F12`, single digits `0` through `9`, uppercase `A` through `Z`, and `INSERT`, `DELETE`, `HOME`, `PAGE_UP`, `PAGE_DOWN`, `SHIFT`, or `CONTROL`.
 
+`mmapi_hotkey_pad_from_name` (also *case-sensitive*) accepts `GAMEPAD_A`, `GAMEPAD_B`, `GAMEPAD_X`, `GAMEPAD_Y`, `GAMEPAD_LEFT_SHOULDER`, `GAMEPAD_RIGHT_SHOULDER`, `GAMEPAD_LEFT_TRIGGER`, `GAMEPAD_RIGHT_TRIGGER`, `GAMEPAD_DPAD_UP`, `GAMEPAD_DPAD_DOWN`, `GAMEPAD_DPAD_LEFT`, `GAMEPAD_DPAD_RIGHT`, `GAMEPAD_LEFT_STICK`, `GAMEPAD_RIGHT_STICK`, `GAMEPAD_SELECT`, and `GAMEPAD_START`. Each map returns `undefined` for the other family's names, so validate a both-families config with `_vk != undefined || _pad != undefined`.
+
 > [!WARNING]
 `ALT`, `PAUSE_BREAK`, `CAPS_LOCK`, `NUM_LOCK`, `SCROLL_LOCK`, and `NUMPAD_0` through `NUMPAD_9` are not supported. A mod configured with them will fall back to its default binding.
 
-> [!Note]
-> `GAMEPAD_*` names currently return `undefined`. Gamepad hotkeys are not currently supported.
+The callback takes no arguments. A keyboard key the engine cannot poll is rejected at registration with a warning (and disabled with a single warning if the engine rejects it later). Gamepad bindings poll every connected controller and fire on any of them; a disconnected controller is not an error — the binding waits for one. Callback failures are isolated and rate-limited, and polling continues.
 
-The callback takes no arguments. A key the engine cannot poll is rejected at registration with a warning (and disabled with a single warning if the engine rejects it later). Callback failures are isolated and rate-limited, and polling continues.
-
-Two mods on the same key both fire with a warning. Registrations are not de-duplicated, even when the mod, key, and callback are identical, so register once inside your latch.
+Two mods on the same binding both fire with a warning (keyboard and gamepad are separate namespaces — `F1` and `GAMEPAD_A` never conflict). Registrations are not de-duplicated, even when the mod, key, and callback are identical, so register once inside your latch.
 
 ## Combat
 

@@ -1,13 +1,17 @@
-// mmapi_hotkeys.gml. The hotkey registry: mods register a vk → callback, and
-// the module polls keyboard_check_pressed once per frame through its own
-// lifecycle install. A vk registered by more than one mod logs a conflict Warn
-// and both stay registered, so a collision never silently drops one.
+// mmapi_hotkeys.gml. The hotkey registry: mods register a keyboard vk (or a
+// gamepad button) → callback, and the module polls once per frame through its
+// own lifecycle install - keyboard_check_pressed for keyboard entries,
+// gamepad_button_check_pressed across connected pads for gamepad entries. A
+// binding registered by more than one mod logs a conflict Warn and both stay
+// registered, so a collision never silently drops one.
 
 // Button name → keyboard virtual-key code, undefined when the name is not a
-// supported keyboard key. This is the vocabulary a mod's config validates
-// against: F1-F12, NUMPAD_0-9, single digits 0-9, single letters A-Z, and the
-// named specials. Gamepad names (GAMEPAD_*) return undefined: the poll reads
-// keyboard_check_pressed only.
+// supported keyboard key. This is the KEYBOARD vocabulary a mod's config
+// validates against: F1-F12, NUMPAD_0-9, single digits 0-9, single letters
+// A-Z, and the named specials. Gamepad names (GAMEPAD_*) return undefined
+// here BY DESIGN - they live in mmapi_hotkey_pad_from_name, so a config
+// accepting both families validates with
+// (vk_from_name(x) != undefined || pad_from_name(x) != undefined).
 function mmapi_hotkey_vk_from_name(name) {
     if (!is_string(name)) { return undefined; }
 
@@ -65,7 +69,7 @@ function mmapi_hotkey_name_from_vk(vk) {
 
     // Digit or letter: the forward map used the ASCII code directly (ord). Reverse it
     // by indexing the contiguous vocabulary (via string_char_at + ord rather than chr,
-    // which the live runtime has but the tier-1 VM's stdlib does not).
+    // which the live runtime has but a headless VM's stdlib may not).
     if (vk >= ord("0") && vk <= ord("9")) {
         return string_char_at("0123456789", vk - ord("0") + 1);
     }
@@ -76,7 +80,7 @@ function mmapi_hotkey_name_from_vk(vk) {
     // Named keys: find the name whose forward lookup yields this vk. This only runs on
     // a conflict (or a failed callback), so a linear scan of the vocabulary is fine.
     // Each probe is guarded: the forward map reads bare vk_* constants, which the live
-    // runtime defines and the tier-1 VM does not, and a diagnostics path must never
+    // runtime defines and a headless VM does not, and a diagnostics path must never
     // throw - a name that does not resolve just falls through to the "vk <ordinal>" form.
     var names = [
         "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
@@ -91,6 +95,64 @@ function mmapi_hotkey_name_from_vk(vk) {
         if (candidate == vk) { return names[i]; }
     }
     return "vk " + string(vk);
+}
+
+// The GAMEPAD half of the vocabulary: button name → gp_* button code, undefined
+// when the name is not a supported pad button. This is the pad vocabulary a
+// mod's config validates against: face buttons, shoulders/triggers, dpad,
+// stick clicks, SELECT, and START.
+// The gp_* constants are live-engine bindings a headless VM does not define, the
+// same way the vk_* constants are: callers on a diagnostics path guard the call.
+// Shoulder naming follows the engine's own keycode_to_string: gp_shoulderl/r are
+// the bumpers, gp_shoulderlb/rb the triggers.
+function mmapi_hotkey_pad_from_name(name) {
+    if (!is_string(name)) { return undefined; }
+    switch (name) {
+        case "GAMEPAD_A": return gp_face1;
+        case "GAMEPAD_B": return gp_face2;
+        case "GAMEPAD_X": return gp_face3;
+        case "GAMEPAD_Y": return gp_face4;
+        case "GAMEPAD_LEFT_SHOULDER":  return gp_shoulderl;
+        case "GAMEPAD_RIGHT_SHOULDER": return gp_shoulderr;
+        case "GAMEPAD_LEFT_TRIGGER":   return gp_shoulderlb;
+        case "GAMEPAD_RIGHT_TRIGGER":  return gp_shoulderrb;
+        case "GAMEPAD_DPAD_UP":    return gp_padu;
+        case "GAMEPAD_DPAD_DOWN":  return gp_padd;
+        case "GAMEPAD_DPAD_LEFT":  return gp_padl;
+        case "GAMEPAD_DPAD_RIGHT": return gp_padr;
+        case "GAMEPAD_LEFT_STICK":  return gp_stickl;
+        case "GAMEPAD_RIGHT_STICK": return gp_stickr;
+        case "GAMEPAD_SELECT": return gp_select;
+        case "GAMEPAD_START":  return gp_start;
+    }
+    return undefined;
+}
+
+// The pad-name vocabulary, shared by the reverse lookup and the capability sweep.
+function __mmapi_hotkey_pad_names() {
+    return [
+        "GAMEPAD_A", "GAMEPAD_B", "GAMEPAD_X", "GAMEPAD_Y",
+        "GAMEPAD_LEFT_SHOULDER", "GAMEPAD_RIGHT_SHOULDER",
+        "GAMEPAD_LEFT_TRIGGER", "GAMEPAD_RIGHT_TRIGGER",
+        "GAMEPAD_DPAD_UP", "GAMEPAD_DPAD_DOWN", "GAMEPAD_DPAD_LEFT", "GAMEPAD_DPAD_RIGHT",
+        "GAMEPAD_LEFT_STICK", "GAMEPAD_RIGHT_STICK",
+        "GAMEPAD_SELECT", "GAMEPAD_START",
+    ];
+}
+
+// Reverse of mmapi_hotkey_pad_from_name, for the pad conflict / poll-failure
+// Warns. Same guarded-probe shape as mmapi_hotkey_name_from_vk: a diagnostics
+// path must never throw, so an unresolvable code (a headless VM, or a raw code
+// no name maps to) falls back to "pad button <ordinal>".
+function mmapi_hotkey_name_from_pad(button) {
+    if (!is_real(button)) { return "pad button " + string(button); }
+    var names = __mmapi_hotkey_pad_names();
+    for (var i = 0; i < array_length(names); i++) {
+        var candidate = undefined;
+        try { candidate = mmapi_hotkey_pad_from_name(names[i]); } catch (__mmapi_hotkey_pad_probe) {}
+        if (candidate == button) { return names[i]; }
+    }
+    return "pad button " + string(button);
 }
 
 function mmapi_hotkey_register(vk, callback, opts) {
@@ -131,6 +193,34 @@ function mmapi_hotkey_register(vk, callback, opts) {
     }
 
     array_push(hotkeys, { vk: vk, callback: callback, mod_name: mod_name });
+}
+
+// The gamepad twin of mmapi_hotkey_register: button is a gp_* code (resolve a
+// config name through mmapi_hotkey_pad_from_name first). A separate registry
+// keeps the namespaces distinct - F1 and GAMEPAD_A can never conflict - and the
+// keyboard path byte-identical for existing registrants. No register-time engine
+// probe: the keyboard probe leans on keyboard_check being side-effect-free and
+// always answerable, but a pad code's validity is only observable against a
+// CONNECTED device, and none may be plugged in at registration. The poll's
+// per-entry dead-marking is the backstop for a genuinely bad code, and an
+// unplugged controller is NOT an error - the entry just waits for one.
+function mmapi_hotkey_register_pad(button, callback, opts) {
+    if (global[$ "__mmapi_pad_hotkeys"] == undefined) { global.__mmapi_pad_hotkeys = []; }
+    var hotkeys = global.__mmapi_pad_hotkeys;
+
+    var mod_name = mmapi_current_mod();
+    if (opts != undefined && opts[$ "mod_name"] != undefined) { mod_name = opts.mod_name; }
+
+    for (var i = 0; i < array_length(hotkeys); i++) {
+        if (hotkeys[i].button == button) {
+            mmapi_log_warn(mod_name,
+                "mmapi hotkey conflict: " + mmapi_hotkey_name_from_pad(button) + " is registered by "
+                + hotkeys[i].mod_name + " and now also by " + mod_name
+                + ". Both will fire");
+        }
+    }
+
+    array_push(hotkeys, { button: button, callback: callback, mod_name: mod_name });
 }
 
 // One-shot boot sweep: probe EVERY name in the hotkey vocabulary (plus the raw codes
@@ -196,9 +286,44 @@ function mmapi_hotkey_capability_report() {
     }
     if (raw_accepted == "") { raw_accepted = "none"; }
 
+    // Gamepad leg: resolve every pad name (each probe guarded - the gp_* constants
+    // are live-engine bindings) and count connected devices. A pad name that fails
+    // to resolve on the LIVE engine is the pad-side resolver bug, warned exactly
+    // like the keyboard's rejected list. pads_connected=0 is a normal outcome, not
+    // an error - bindings wait for a controller.
+    var pad_names = __mmapi_hotkey_pad_names();
+    var pad_ok = 0;
+    var pad_unresolved = "";
+    for (var g = 0; g < array_length(pad_names); g++) {
+        var pad_code = undefined;
+        try { pad_code = mmapi_hotkey_pad_from_name(pad_names[g]); } catch (__mmapi_cap_pad) {}
+        if (pad_code == undefined) {
+            pad_unresolved += (pad_unresolved == "" ? "" : ", ") + pad_names[g];
+        } else {
+            pad_ok += 1;
+        }
+    }
+    var pads_connected = 0;
+    var pad_env = "ok";
+    try {
+        var pad_cap = undefined;
+        try { pad_cap = GAMEPADS_COUNT; } catch (__mmapi_cap_pad_cap) {}
+        if (pad_cap == undefined) { pad_cap = 12; }
+        for (var pd = 0; pd < pad_cap; pd++) {
+            if (gamepad_is_connected(pd)) { pads_connected += 1; }
+        }
+    } catch (__mmapi_cap_pad_env) {
+        pad_env = "no_gamepad_env";
+    }
+    if (pad_unresolved != "" && pad_env == "ok") {
+        mmapi_log_warn("mmapi", "gamepad hotkey names failing to resolve on the live engine: " + pad_unresolved);
+    }
+
     var summary = "hotkey keycode capability: " + string(ok_count) + " name(s) supported"
         + (no_code == "" ? "" : "; no keycode (by design): " + no_code)
-        + "; raw_accepted=" + raw_accepted;
+        + "; raw_accepted=" + raw_accepted
+        + "; pad: " + string(pad_ok) + "/" + string(array_length(pad_names)) + " name(s) resolved"
+        + ", env=" + pad_env + ", pads_connected=" + string(pads_connected);
     // A development diagnostic in the standard [PROBE] idiom: TRACE-gated, and the log
     // sink flushes [PROBE] lines immediately while the debug agent is on, so the line
     // is on disk right after boot in a --debug deploy with no forced flush of its own.
@@ -206,7 +331,10 @@ function mmapi_hotkey_capability_report() {
     if (mmapi_log_get_level() <= MmapiLogLevel.Trace) {
         mmapi_log_trace("mmapi", "[PROBE] hotkeys|capability|supported=" + string(ok_count)
             + "|no_keycode=" + (no_code == "" ? "none" : no_code)
-            + "|raw_accepted=" + raw_accepted);
+            + "|raw_accepted=" + raw_accepted
+            + "|pad_supported=" + string(pad_ok)
+            + "|pad_env=" + pad_env
+            + "|pads_connected=" + string(pads_connected));
         mmapi_log_flush("mmapi");
     }
     if (rejected != "") {
@@ -254,6 +382,53 @@ function mmapi_hotkeys_poll() {
                     entry.mod_name,
                     "mmapi hotkey " + mmapi_hotkey_name_from_vk(entry.vk) + " from "
                     + entry.mod_name + " failed: " + string(err));
+            }
+        }
+    }
+
+    // Gamepad entries: the engine's own idiom (Input.begin_frame) - scan device
+    // slots up to GAMEPADS_COUNT, skip disconnected, edge-check the button. The
+    // slot cap is a live-engine constant; where it is unbound (a headless VM)
+    // fall back to 12, the conventional slot count. Skipped entirely while no
+    // pad entry exists, so keyboard-only environments never touch a gamepad builtin.
+    var pad_hotkeys = global[$ "__mmapi_pad_hotkeys"];
+    if (pad_hotkeys == undefined) { return; }
+    var pad_count = array_length(pad_hotkeys);
+    if (pad_count == 0) { return; }
+    var device_cap = undefined;
+    try { device_cap = GAMEPADS_COUNT; } catch (__mmapi_pad_cap) {}
+    if (device_cap == undefined) { device_cap = 12; }
+    for (var p = 0; p < pad_count; p++) {
+        var pad_entry = pad_hotkeys[p];
+        if (pad_entry[$ "dead"] == true) { continue; }
+        // Same belt-and-suspenders as the keyboard loop: a throw (missing gamepad
+        // builtins, or a code the engine refuses) disables the ENTRY, never the
+        // poll. A disconnected pad is no error - the entry stays live and waits.
+        var pad_pressed = false;
+        try {
+            for (var d = 0; d < device_cap; d++) {
+                if (gamepad_is_connected(d) == false) { continue; }
+                if (gamepad_button_check_pressed(d, pad_entry.button)) {
+                    pad_pressed = true;
+                    break;
+                }
+            }
+        } catch (pad_err) {
+            pad_entry.dead = true;
+            mmapi_log_warn(pad_entry.mod_name,
+                "mmapi hotkey " + mmapi_hotkey_name_from_pad(pad_entry.button) + " from "
+                + pad_entry.mod_name + " disabled: the engine rejected its pad poll: " + string(pad_err));
+            continue;
+        }
+        if (pad_pressed) {
+            try {
+                pad_entry.callback();
+            } catch (pad_err) {
+                mmapi_warn_rate_limited(
+                    "hotkey_pad:" + string(pad_entry.button) + ":" + pad_entry.mod_name,
+                    pad_entry.mod_name,
+                    "mmapi hotkey " + mmapi_hotkey_name_from_pad(pad_entry.button) + " from "
+                    + pad_entry.mod_name + " failed: " + string(pad_err));
             }
         }
     }
