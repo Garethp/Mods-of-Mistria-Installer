@@ -43,7 +43,7 @@ checksum = "91622ff5e7162018101f2fea40d6ebf4a78bbe5a49736a2020649edf9693679e"
 [[package]]
 name = "fabricator-compiler"
 version = "0.1.0"
-source = "git+https://github.com/kyren/fabricator.git?rev=d7f0cbdce2ac877c90304261a0793ceaf85f21e9#d7f0cbdce2ac877c90304261a0793ceaf85f21e9"
+source = "git+https://github.com/kyren/fabricator.git?rev=087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33#087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33"
 dependencies = [
  "arrayvec",
  "either",
@@ -57,7 +57,7 @@ dependencies = [
 [[package]]
 name = "fabricator-stdlib"
 version = "0.1.0"
-source = "git+https://github.com/kyren/fabricator.git?rev=d7f0cbdce2ac877c90304261a0793ceaf85f21e9#d7f0cbdce2ac877c90304261a0793ceaf85f21e9"
+source = "git+https://github.com/kyren/fabricator.git?rev=087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33#087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33"
 dependencies = [
  "fabricator-vm",
  "gc-arena",
@@ -70,7 +70,7 @@ dependencies = [
 [[package]]
 name = "fabricator-util"
 version = "0.1.0"
-source = "git+https://github.com/kyren/fabricator.git?rev=d7f0cbdce2ac877c90304261a0793ceaf85f21e9#d7f0cbdce2ac877c90304261a0793ceaf85f21e9"
+source = "git+https://github.com/kyren/fabricator.git?rev=087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33#087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33"
 dependencies = [
  "thiserror",
 ]
@@ -78,7 +78,7 @@ dependencies = [
 [[package]]
 name = "fabricator-vm"
 version = "0.1.0"
-source = "git+https://github.com/kyren/fabricator.git?rev=d7f0cbdce2ac877c90304261a0793ceaf85f21e9#d7f0cbdce2ac877c90304261a0793ceaf85f21e9"
+source = "git+https://github.com/kyren/fabricator.git?rev=087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33#087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33"
 dependencies = [
  "fabricator-util",
  "gc-arena",
