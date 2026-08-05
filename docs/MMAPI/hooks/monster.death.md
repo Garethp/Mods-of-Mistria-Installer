@@ -39,7 +39,7 @@ mmapi_on("monster.death", trophy_hunter_monster_death);
 
 ## Engine Wiring
 
-- Seam [`monster_death`](../seams/monster_death.md) dispatches from `gml/scripts/Combat/MonsterUtils.gml`, immediately before `instance_destroy(self.owner)` destroys the monster (and before the void-powder drop roll).
+- Seam [`monster_death`](../seams/monster_death.md) dispatches from `gml/scripts/Combat/MonsterUtils.gml`, immediately before `instance_destroy(self.owner)` destroys the monster (after the engine has paid out the death loot and recorded kill stats).
 
 ## See Also
 
