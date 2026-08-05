@@ -26,4 +26,3 @@ The locator is structural (function + position + token anchor, matched token-wis
 
 - [monster.shroom.should_hide](../hooks/monster.shroom.should_hide.md) - This is the hook that this seam dispatches.
 - [monster_spirit_projectile_step](monster_spirit_projectile_step.md) - This seam is the other monster-behavior guard.
-- [shroom_puddle_mask](shroom_puddle_mask.md) - This is the hook-less engine fix for the shroom's acid puddle collision mask.
