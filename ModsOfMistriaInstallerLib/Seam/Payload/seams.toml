@@ -23,7 +23,7 @@
 # Anchors are matched after normalizing \r\n to \n.
 # Apply order is catalog order plus `depends_on` edges (topo-sorted, stable).
 # Hook-less edits live in [[engine_fix]]: game_step_begin_installs (the mmapi
-# lifecycle root), shroom_puddle_mask (a beta-wiring fix),
+# lifecycle root),
 # statue_hp_death_sweep (the griffin statue's missing depleted-hp death check),
 # tarball_chop_burn_flag (the tarball chop's hardcoded is_burn, which
 # burn-throttled every non-fire tarball chop against stump/fruit-tree iframes),
@@ -39,7 +39,7 @@ version = 2
 [counts]
 hooks = 99
 seams = 107
-engine_fixes = 5
+engine_fixes = 4
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -555,11 +555,11 @@ id      = "animal_heart_points"
 file    = "gml/scripts/GameplaySystems/Ranching/Animal.gml"
 anchor  = '''
     function add_heart_points(points) {
-        static MAX_POINTS = animal_heart_level_to_points(10);'''
+        if ARI.perk_active(Perk.TrueTrust) && points < 0 {'''
 replace = '''
     function add_heart_points(points) {
-        static MAX_POINTS = animal_heart_level_to_points(10);
-        points = mmapi_apply_filters("animal.heart_points", points, self); // mmapi_animal_run_heart_filters'''
+        points = mmapi_apply_filters("animal.heart_points", points, self); // mmapi_animal_run_heart_filters
+        if ARI.perk_active(Perk.TrueTrust) && points < 0 {'''
 marker  = "mmapi_animal_run_heart_filters"
 provides = ["animal.heart_points"]
 
@@ -1255,14 +1255,12 @@ anchor  = '''
             var speaker = is_cameo
                 ? new CameoSpeaker(string_to_cameo_id(action.speaker))
                 : new NpcSpeaker(string_to_npc_id(action.speaker));
-
             textbox.requested_speaker = speaker;'''
 replace = '''
             var is_cameo = try_string_to_cameo_id(action.speaker) != undefined;
             var speaker = is_cameo
                 ? new CameoSpeaker(string_to_cameo_id(action.speaker))
                 : new NpcSpeaker(string_to_npc_id(action.speaker));
-
             var __mmapi_dialogue_conversation_name = undefined;
             try { __mmapi_dialogue_conversation_name = ctx.conversation_name; } catch (__mmapi_dialogue_conversation_name_err) {}
             try {
@@ -1285,7 +1283,7 @@ id      = "items_consumed"
 file    = "gml/scripts/Player/AriFsm.gml"
 context_before = '''
                         array_push(GAME_STATS.items_eaten, {
-                            item: self.live_item.pretty_print(),
+                            item: item_id_to_string(self.live_item.item_id),
                             day: total_days(),
                             hour: CLOCK.hour(),
                             minute: CLOCK.minute(),
@@ -2209,21 +2207,6 @@ replace = '''
             TICK++;'''
 marker  = "mmapi_run_installs();"
 
-[[engine_fix]]
-name    = "shroom_puddle_mask"
-file    = "gml/objects/Combat/obj_hot_patch.gml"
-anchor  = '''
-                .set_acid()
-                .set_mask_index(self.mask_index)
-                .set_provenance(self.owner.monster_id, self.owner.stats_entry)
-'''
-replace = '''
-                .set_acid()
-                .set_mask_index(self.sprite_index) // mmapi_hot_patch_damage_mask
-                .set_provenance(self.owner.monster_id, self.owner.stats_entry)
-'''
-marker  = "mmapi_hot_patch_damage_mask"
-
 # The Living Griffin Statue is the one hp-driven monster with no depleted-hp death
 # check outside its damage drain. Its only Dying transition sits inside
 # `if hit_points > 0 { ... if took_any_damage { ... } }`, so hp reaching zero without
@@ -2653,7 +2636,7 @@ marker  = "mmapi_animal_run_pet_on_pet"
 [[seam]]
 id      = "animal_put_down"
 file    = "gml/objects/obj_player_animal.gml"
-target  = { fn = "put_down", at = "after", anchor = "obj_ari.par.held_item_render_callback = undefined;" }
+target  = { fn = "put_down", at = "after", anchor = "obj_ari.par.held_animal_render_callback = undefined;" }
 op      = "emit"
 hook    = "animal.pet"
 ctx     = "self"
