@@ -106,6 +106,9 @@ if (_vk != undefined) {
 
 `mmapi_hotkey_pad_from_name` (also *case-sensitive*) accepts `GAMEPAD_A`, `GAMEPAD_B`, `GAMEPAD_X`, `GAMEPAD_Y`, `GAMEPAD_LEFT_SHOULDER`, `GAMEPAD_RIGHT_SHOULDER`, `GAMEPAD_LEFT_TRIGGER`, `GAMEPAD_RIGHT_TRIGGER`, `GAMEPAD_DPAD_UP`, `GAMEPAD_DPAD_DOWN`, `GAMEPAD_DPAD_LEFT`, `GAMEPAD_DPAD_RIGHT`, `GAMEPAD_LEFT_STICK`, `GAMEPAD_RIGHT_STICK`, `GAMEPAD_SELECT`, and `GAMEPAD_START`. Each map returns `undefined` for the other family's names, so validate a both-families config with `_vk != undefined || _pad != undefined`.
 
+> [!Note]
+> The `A`/`B`/`X`/`Y` names follow the Xbox (XInput) layout by *position*: `GAMEPAD_Y` is the top face button, `GAMEPAD_A` the bottom. Controllers with other label layouts (e.g. a Switch Pro Controller through Steam Input) fire by position, so the label printed on the button may differ unless the player enables their controller's native-layout option in Steam.
+
 > [!WARNING]
 `ALT`, `PAUSE_BREAK`, `CAPS_LOCK`, `NUM_LOCK`, `SCROLL_LOCK`, and `NUMPAD_0` through `NUMPAD_9` are not supported. A mod configured with them will fall back to its default binding.
 
