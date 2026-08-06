@@ -25,10 +25,10 @@ public class TOMLInstallerTest
         var installed = InstallAnimationMeta("""
             [asset_properties]
             frame_size = [8, 8]
-            atlas = "DeepDungeonWorld"
+            atlas = "MossCavernWorld"
             """);
 
-        Assert.That(installed, Does.Contain("atlas = \"DeepDungeonWorld\""));
+        Assert.That(installed, Does.Contain("atlas = \"MossCavernWorld\""));
     }
 
     // Installs one animation meta and returns the text written into assets/
