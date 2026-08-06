@@ -37,8 +37,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 99
-seams = 107
+hooks = 101
+seams = 109
 engine_fixes = 4
 call_rewrites = 1
 
@@ -408,9 +408,14 @@ kind = "event"
 doc  = "Fires right after an item's max_health_modifier raises ARI.base_health, before the vitals menu updates. ctx is { player, amount, live_item }."
 
 [[hook]]
+name = "player.mount_speed"
+kind = "filter"
+doc  = "Fires in the player's move speed computation, only when the speed is being computed for mounted movement, right after the mounted base speed is chosen (MOUNT_WALK_SPEED when walking; MOUNT_RUN_SPEED, or MOUNT_HORSEPOWER_RUN_SPEED with the Horsepower perk, when running) and before the shared status effect multipliers (MineTime, SlimeDash, KillHaste) and the final player.move_speed filter. Never fires on foot. The filtered value is the mounted base speed. ctx is { player }; read ctx.player.run_toggle to tell walk from run, and ctx.player.mount for the mount's Animal struct (its kind and variant are cosmetic only - the engine never varies mount speed by mount). Return the replacement base speed, or undefined to keep the current value. Prefer this hook to give a mount an absolute base speed that still composes with the engine's status multipliers; prefer player.move_speed with ctx.on_mount for multiplicative tweaks to the final speed."
+
+[[hook]]
 name = "player.move_speed"
 kind = "filter"
-doc  = "Fires at the end of the player's move speed computation, after the status effect multipliers. The filtered value is the speed. ctx is { player, on_mount }. Return the replacement speed, or undefined to keep the current value."
+doc  = "Fires at the end of the player's move speed computation, after the status effect multipliers. The filtered value is the speed. ctx is { player, on_mount }. Return the replacement speed, or undefined to keep the current value. Mounted movement routes through this computation too (ctx.on_mount is true); the mounted base speed is separately filterable earlier in the computation via player.mount_speed. Swimming does not route through here - that is player.swim_speed."
 
 [[hook]]
 name = "player.renown_delta"
@@ -436,6 +441,11 @@ doc  = "Fires in StatusEffectManager.update() when an effect's finish time lapse
 name = "player.status_effect_register"
 kind = "filter"
 doc  = "Fires at the top of StatusEffectManager.register(). The filtered value is the struct { type, amount, start_time, finish_time, can_stack, show_hud }. ctx is the manager. Return the replacement struct. The seam tolerates an undefined return and re-reads each field defensively."
+
+[[hook]]
+name = "player.swim_speed"
+kind = "filter"
+doc  = "Fires at the end of Ari.get_swim_speed(), after the fast/slow stroke branch. The filtered value is the swim speed: with the run toggle held it is HUMAN_SWIM_FAST with the Hasty infusion and Speedy status effect folded in, otherwise it is bare HUMAN_SWIM_SLOW (the slow drift gets no engine modifiers at all). ctx is { player }; read ctx.player.run_toggle to tell the fast stroke from the slow drift. Return the replacement speed, or undefined to keep the current value. Covers both engine callers: the Swim state's per-frame movement, and the Underwater state's magnetic pull toward the dive point, which moves at half the filtered value. Fires every swimming frame, so keep handlers cheap. Disjoint from player.move_speed and player.mount_speed - the swim states never consult get_move_speed."
 
 [[hook]]
 name = "player.xp_delta"
@@ -1725,6 +1735,29 @@ indent  = 8
 try_catch = false
 marker  = "mmapi_player_run_renown_delta_filters"
 
+# The mounted base speed, filtered where get_move_speed chose it and before
+# the status-effect multipliers shared with on-foot movement, so a replacement
+# base still composes with MineTime/SlimeDash/KillHaste and with the final
+# player.move_speed filter. Text form: the dispatch is conditional on
+# on_mount, which no template op can say.
+[[seam]]
+id      = "player_mount_speed"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+anchor  = '''
+        } else {
+            spd = on_mount ? MOUNT_WALK_SPEED : HUMAN_WALK_SPEED;
+        }'''
+replace = '''
+        } else {
+            spd = on_mount ? MOUNT_WALK_SPEED : HUMAN_WALK_SPEED;
+        }
+
+        if on_mount {
+            try { spd = mmapi_apply_filters("player.mount_speed", spd, { player: self }); } catch (__mmapi_player_mount_speed) {} // mmapi_player_mount_speed
+        }'''
+marker  = "mmapi_player_mount_speed"
+provides = ["player.mount_speed"]
+
 [[seam]]
 id      = "player_move_speed"
 file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
@@ -1743,6 +1776,16 @@ var     = "spd"
 indent  = 8
 try_catch = false
 marker  = "mmapi_player_run_move_speed_filters"
+
+[[seam]]
+id      = "player_swim_speed"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+target  = { fn = "get_swim_speed", at = "before", anchor = "return spd;" }
+op      = "filter"
+hook    = "player.swim_speed"
+ctx     = "{ player: self }"
+var     = "spd"
+indent  = 8
 
 [[seam]]
 id      = "dungeon_runner_created"
