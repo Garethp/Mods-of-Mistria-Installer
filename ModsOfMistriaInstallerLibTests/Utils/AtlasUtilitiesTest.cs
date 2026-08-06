@@ -76,11 +76,11 @@ public class AtlasUtilitiesTest
     [Test]
     public void ShouldKeepACustomAtlasType()
     {
-        WithUtils(utils => utils.AddStrip("DeepDungeonWorld", 4, 4, 1,
+        WithUtils(utils => utils.AddStrip("MossCavernWorld", 4, 4, 1,
             Strip(4, 4, new Rectangle(0, 0, 4, 4)),
             new Dictionary<string, string>(), "world_sprite"));
 
-        Assert.That(AtlasEntries(), Does.Contain("assets/atlases/DeepDungeonWorldAtlas_0.meta.toml"));
+        Assert.That(AtlasEntries(), Does.Contain("assets/atlases/MossCavernWorldAtlas_0.meta.toml"));
     }
 
     [Test]
