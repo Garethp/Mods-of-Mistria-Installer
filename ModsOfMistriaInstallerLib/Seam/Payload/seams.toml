@@ -2051,11 +2051,7 @@ provides = ["monster.spawn"]
 [[seam]]
 id      = "monster_death"
 file    = "gml/scripts/Combat/MonsterUtils.gml"
-context_before = '''
-        if self.owner != undefined && instance_exists(self.owner) {
-'''
-context_after = '''
-            instance_destroy(self.owner);'''
+target  = { fn = "monster_death_poof", at = "before", anchor = "instance_destroy(self.owner);" }
 op      = "emit"
 hook    = "monster.death"
 ctx_fields = [["monster", "self.owner"], ["monster_id", "self.owner.monster_id"], ["x", "self.x"], ["y", "self.y"]]
