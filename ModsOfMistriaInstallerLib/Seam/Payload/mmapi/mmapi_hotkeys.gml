@@ -354,11 +354,9 @@ function mmapi_hotkey_register_binding(binding, callback, opts) {
             if (singles != undefined) {
                 for (var i = 0; i < array_length(singles); i++) {
                     if (singles[i].vk == trigger.code) {
-                        mmapi_log_warn(mod_name,
-                            "mmapi hotkey overlap: " + name + " from " + mod_name
-                            + " shares its trigger with " + mmapi_hotkey_name_from_vk(trigger.code)
-                            + " registered by " + singles[i].mod_name
-                            + ". The bare binding stays quiet whenever the chord matches");
+                        __mmapi_hotkey_overlap_warn(mod_name,
+                            mmapi_hotkey_name_from_vk(trigger.code), singles[i].mod_name,
+                            name, mod_name);
                     }
                 }
             }
@@ -367,11 +365,9 @@ function mmapi_hotkey_register_binding(binding, callback, opts) {
             if (pad_singles != undefined) {
                 for (var i = 0; i < array_length(pad_singles); i++) {
                     if (pad_singles[i].button == trigger.code) {
-                        mmapi_log_warn(mod_name,
-                            "mmapi hotkey overlap: " + name + " from " + mod_name
-                            + " shares its trigger with " + mmapi_hotkey_name_from_pad(trigger.code)
-                            + " registered by " + pad_singles[i].mod_name
-                            + ". The bare binding stays quiet whenever the chord matches");
+                        __mmapi_hotkey_overlap_warn(mod_name,
+                            mmapi_hotkey_name_from_pad(trigger.code), pad_singles[i].mod_name,
+                            name, mod_name);
                     }
                 }
             }
@@ -379,6 +375,18 @@ function mmapi_hotkey_register_binding(binding, callback, opts) {
     }
 
     array_push(hotkeys, { binding: binding, callback: callback, mod_name: mod_name });
+}
+
+// The overlap advisory, one symmetric shape for both registration directions.
+// Deliberately fault-neutral: both bindings are named identically, the routing
+// rule is stated as a property of the pair, and the closing sentence says the
+// bare binding is otherwise untouched. warn_to is the registrant whose log
+// carries the line.
+function __mmapi_hotkey_overlap_warn(warn_to, bare_name, bare_mod, chord_name, chord_mod) {
+    mmapi_log_warn(warn_to,
+        "mmapi hotkey overlap: " + bare_name + " (" + bare_mod + ") and "
+        + chord_name + " (" + chord_mod + ") share a trigger. The compound keybind "
+        + "takes precedence. " + bare_name + " by itself works as normal");
 }
 
 // The overlap advisory's other direction: a bare registration landing on a code
@@ -395,11 +403,9 @@ function __mmapi_hotkey_warn_bare_overlap(device, code, mod_name) {
         var bare_name = (device == "pad")
             ? mmapi_hotkey_name_from_pad(code)
             : mmapi_hotkey_name_from_vk(code);
-        mmapi_log_warn(mod_name,
-            "mmapi hotkey overlap: " + bare_name + " from " + mod_name
-            + " is the trigger of " + mmapi_hotkey_name_from_binding(chords[i].binding)
-            + " registered by " + chords[i].mod_name
-            + ". The bare binding stays quiet whenever the chord matches");
+        __mmapi_hotkey_overlap_warn(mod_name,
+            bare_name, mod_name,
+            mmapi_hotkey_name_from_binding(chords[i].binding), chords[i].mod_name);
     }
 }
 
