@@ -116,7 +116,7 @@ The callback takes no arguments. A keyboard key the engine cannot poll is reject
 
 Two mods on the same binding both fire with a warning. Keyboard and gamepad are separate namespaces, so `F1` and `GAMEPAD_A` never conflict. Registrations are not de-duplicated, even when the mod, key, and callback are identical, so register once inside your latch.
 
-### Compound bindings
+### Compound Bindings
 
 A binding may also be a chord of `"+"`-joined names from the vocabularies above, in any device mix. Examples include `"SHIFT+F5"`, `"GAMEPAD_LEFT_SHOULDER+GAMEPAD_A"`, and `"CONTROL+GAMEPAD_Y"`. The **last** name is the trigger and fires on its press edge. Every earlier name must be held at that moment. Resolve and register through the binding pair:
 
@@ -134,6 +134,26 @@ A matched chord **consumes its trigger for that frame**. Bare registrations on t
 Pad parts of a chord must all read from a single connected controller. Keyboard parts are read globally, which is what makes mixed-device chords work.
 
 Held-pattern mods act while a binding is down rather than on a press. For them, `mmapi_hotkey_binding_held(_binding)` answers whether every part is currently held. It involves no registration, no edges, and no suppression, and the mod polls it on its own schedule.
+
+### Registering Multiple Keybinds For One Action
+
+Register each binding against the same callback. The recommended config shape is a pair of fields, each holding one binding:
+
+```gml
+// config: { "main_keybind": "F7", "alternate_keybind": "GAMEPAD_RIGHT_TRIGGER" }
+var _cfg = my_mod_config();
+var _main = mmapi_hotkey_binding_from_name(_cfg.main_keybind);
+if (_main != undefined) {
+    mmapi_hotkey_register_binding(_main, my_mod_open_menu);
+}
+var _alt = mmapi_hotkey_binding_from_name(_cfg.alternate_keybind);
+if (_alt != undefined) {
+    mmapi_hotkey_register_binding(_alt, my_mod_open_menu);
+}
+```
+
+> [!TIP]
+Validate the two fields independently. The main binding should fall back to the mod's default when it is invalid, and an absent alternate simply registers nothing.
 
 ## Combat
 
