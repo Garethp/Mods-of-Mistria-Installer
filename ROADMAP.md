@@ -1,5 +1,12 @@
 # Roadmap
 
+## 0.15.1
+* [x] Rebuild `assets.zip` transactionally from a verified pristine archive
+* [x] Validate staged archives before replacing the live game archive
+* [x] Detect game updates and unknown external archive changes
+* [x] Restore the pristine archive transactionally during uninstall
+* [x] Provide improved installation diagnostics and adaptive UI sizing
+
 ## 0.2.0
 * [x] Add Aurie Integration
 
@@ -19,9 +26,9 @@
 ## Future/Unknown
 * [ ] Allow all "localised" text in easy JSON structures to be multi-lingual
 * [ ] Add Validators for Simple Conversations
-* [ ] Store selected/deselected mods in the Mods folder
-* [ ] Allow load order modifying
-* [ ] Allow mods to declare dependencies on other mods
+* [x] Store selected/deselected mods in the Mods folder
+* [x] Allow load order modifying
+* [x] Allow mods to declare dependencies on other mods
 * [ ] Automatic updating
 * [ ] `player_tools.json` installer
 * [ ] `farms.json` installer
