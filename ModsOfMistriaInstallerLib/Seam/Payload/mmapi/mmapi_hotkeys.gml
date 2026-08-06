@@ -1,9 +1,10 @@
-// mmapi_hotkeys.gml. The hotkey registry: mods register a keyboard vk (or a
-// gamepad button) → callback, and the module polls once per frame through its
-// own lifecycle install - keyboard_check_pressed for keyboard entries,
-// gamepad_button_check_pressed across connected pads for gamepad entries. A
-// binding registered by more than one mod logs a conflict Warn and both stay
-// registered, so a collision never silently drops one.
+// mmapi_hotkeys.gml. The hotkey registry: mods register a keyboard vk, a
+// gamepad button, or a compound binding (a chord like SHIFT+F5) → callback,
+// and the module polls once per frame through its own lifecycle install -
+// press edges for triggers, level checks for a chord's held parts. A matched
+// chord consumes its trigger for that frame, so bare registrations on the same
+// code stay quiet. A binding registered by more than one mod logs a conflict
+// Warn and both stay registered, so a collision never silently drops one.
 
 // Button name → keyboard virtual-key code, undefined when the name is not a
 // supported keyboard key. This is the KEYBOARD vocabulary a mod's config
@@ -155,6 +156,253 @@ function mmapi_hotkey_name_from_pad(button) {
     return "pad button " + string(button);
 }
 
+// "SHIFT+F5" → ["SHIFT", "F5"]. Empty tokens ("+F5", "F5+", "A++B") make the
+// whole name invalid, so a typo takes the designed invalid-name path.
+function __mmapi_hotkey_split_name(name) {
+    var tokens = [];
+    var current = "";
+    var len = string_length(name);
+    for (var i = 1; i <= len; i++) {
+        var c = string_char_at(name, i);
+        if (c == "+") {
+            if (current == "") { return undefined; }
+            array_push(tokens, current);
+            current = "";
+        } else {
+            current += c;
+        }
+    }
+    if (current == "") { return undefined; }
+    array_push(tokens, current);
+    return tokens;
+}
+
+// Compound-binding resolver: a "+"-joined name over the two device vocabularies
+// ("SHIFT+F5", "GAMEPAD_LEFT_SHOULDER+GAMEPAD_A", mixed devices allowed).
+// Returns { parts: [{ device: "kb"|"pad", code }] } with the LAST part as the
+// trigger, or undefined when any token fails both resolvers. A plain single
+// name resolves to a one-part binding, so this can validate ANY hotkey config
+// value in one call.
+function mmapi_hotkey_binding_from_name(name) {
+    if (!is_string(name)) { return undefined; }
+    var tokens = __mmapi_hotkey_split_name(name);
+    if (tokens == undefined) { return undefined; }
+    var parts = [];
+    for (var i = 0; i < array_length(tokens); i++) {
+        var vk = mmapi_hotkey_vk_from_name(tokens[i]);
+        if (vk != undefined) {
+            array_push(parts, { device: "kb", code: vk });
+            continue;
+        }
+        var pad = mmapi_hotkey_pad_from_name(tokens[i]);
+        if (pad != undefined) {
+            array_push(parts, { device: "pad", code: pad });
+            continue;
+        }
+        return undefined;
+    }
+    return { parts: parts };
+}
+
+// Reverse of mmapi_hotkey_binding_from_name, for diagnostics ("SHIFT+F5" in a
+// warn, never a struct dump). Guarded like the other reverse lookups: a
+// malformed binding falls back to "binding ?" rather than throwing.
+function mmapi_hotkey_name_from_binding(binding) {
+    var out = "";
+    try {
+        var parts = binding.parts;
+        var part_count = array_length(parts);
+        if (part_count == 0) { return "binding ?"; }
+        for (var i = 0; i < part_count; i++) {
+            var part = parts[i];
+            var piece = (part.device == "pad")
+                ? mmapi_hotkey_name_from_pad(part.code)
+                : mmapi_hotkey_name_from_vk(part.code);
+            out += (i == 0 ? "" : "+") + piece;
+        }
+    } catch (__mmapi_binding_name_err) {
+        return "binding ?";
+    }
+    return out;
+}
+
+// Chord match test for the poll: the LAST part is the trigger (edge-checked),
+// every other part must be held (level-checked). Pad parts must all read from
+// ONE connected device; keyboard parts are global. Throws propagate - the poll
+// dead-marks the entry.
+function __mmapi_hotkey_chord_matched(parts, device_cap) {
+    var part_count = array_length(parts);
+    var trigger_index = part_count - 1;
+
+    // Keyboard phase: every kb held part down; a kb trigger on its press edge.
+    for (var i = 0; i < part_count; i++) {
+        var part = parts[i];
+        if (part.device != "kb") { continue; }
+        if (i == trigger_index) {
+            if (!keyboard_check_pressed(part.code)) { return false; }
+        } else {
+            if (!keyboard_check(part.code)) { return false; }
+        }
+    }
+
+    // Pad phase: all pad parts (helds, plus a pad trigger's edge) on ONE device.
+    var has_pad = false;
+    for (var i = 0; i < part_count; i++) {
+        if (parts[i].device == "pad") { has_pad = true; break; }
+    }
+    if (!has_pad) { return true; }
+    for (var d = 0; d < device_cap; d++) {
+        if (gamepad_is_connected(d) == false) { continue; }
+        var all_on_device = true;
+        for (var i = 0; i < part_count; i++) {
+            var part = parts[i];
+            if (part.device != "pad") { continue; }
+            if (i == trigger_index) {
+                if (!gamepad_button_check_pressed(d, part.code)) { all_on_device = false; break; }
+            } else {
+                if (!gamepad_button_check(d, part.code)) { all_on_device = false; break; }
+            }
+        }
+        if (all_on_device) { return true; }
+    }
+    return false;
+}
+
+// Level twin for held-pattern mods (a mod polls this itself, on its own
+// schedule, the way bulk-buy style held gates already poll one code): are ALL
+// of the binding's parts down right now? No edge anywhere, no registration, no
+// suppression involvement. Never throws - a missing input builtin (a headless
+// VM without the stubs) reads as "not held".
+function mmapi_hotkey_binding_held(binding) {
+    var held = false;
+    try {
+        var parts = binding.parts;
+        var part_count = array_length(parts);
+        if (part_count == 0) { return false; }
+        for (var i = 0; i < part_count; i++) {
+            var part = parts[i];
+            if (part.device == "kb" && !keyboard_check(part.code)) { return false; }
+        }
+        var has_pad = false;
+        for (var i = 0; i < part_count; i++) {
+            if (parts[i].device == "pad") { has_pad = true; break; }
+        }
+        if (!has_pad) { return true; }
+        var device_cap = undefined;
+        try { device_cap = GAMEPADS_COUNT; } catch (__mmapi_bh_cap) {}
+        if (device_cap == undefined) { device_cap = 12; }
+        for (var d = 0; d < device_cap; d++) {
+            if (gamepad_is_connected(d) == false) { continue; }
+            var all_on_device = true;
+            for (var i = 0; i < part_count; i++) {
+                var part = parts[i];
+                if (part.device != "pad") { continue; }
+                if (!gamepad_button_check(d, part.code)) { all_on_device = false; break; }
+            }
+            if (all_on_device) { held = true; break; }
+        }
+    } catch (__mmapi_binding_held_err) {
+        return false;
+    }
+    return held;
+}
+
+// Compound (chord) registration: binding comes from mmapi_hotkey_binding_from_name.
+// The LAST part is the trigger; the rest must be held when its press lands. A
+// matched chord CONSUMES its trigger for that frame - bare registrations on the
+// same code stay quiet. That is a guarantee, not an option: SHIFT+F5 is not F5.
+// Chord-vs-chord conflicts warn and both fire, like the single registries. A
+// multi-part chord whose trigger overlaps an existing bare registration warns
+// an advisory, because that bare bind goes quiet whenever the chord matches.
+// No register-time engine probe, for the register_pad reason: parts may be pad
+// codes whose validity is only observable against a connected device. The
+// poll's per-entry dead-marking is the backstop.
+function mmapi_hotkey_register_binding(binding, callback, opts) {
+    if (global[$ "__mmapi_binding_hotkeys"] == undefined) { global.__mmapi_binding_hotkeys = []; }
+    var hotkeys = global.__mmapi_binding_hotkeys;
+
+    var mod_name = mmapi_current_mod();
+    if (opts != undefined && opts[$ "mod_name"] != undefined) { mod_name = opts.mod_name; }
+
+    var parts_ok = false;
+    if (is_struct(binding)) {
+        try { parts_ok = array_length(binding.parts) > 0; } catch (__mmapi_binding_shape) {}
+    }
+    if (!parts_ok) {
+        mmapi_log_warn(mod_name,
+            "mmapi hotkey binding from " + mod_name + " rejected: not a binding "
+            + "(resolve the config name through mmapi_hotkey_binding_from_name first)");
+        return;
+    }
+
+    var name = mmapi_hotkey_name_from_binding(binding);
+    for (var i = 0; i < array_length(hotkeys); i++) {
+        if (mmapi_hotkey_name_from_binding(hotkeys[i].binding) == name) {
+            mmapi_log_warn(mod_name,
+                "mmapi hotkey conflict: " + name + " is registered by "
+                + hotkeys[i].mod_name + " and now also by " + mod_name
+                + ". Both will fire");
+        }
+    }
+
+    // The subset advisory: this chord's trigger over an existing bare bind.
+    var parts = binding.parts;
+    if (array_length(parts) > 1) {
+        var trigger = parts[array_length(parts) - 1];
+        if (trigger.device == "kb") {
+            var singles = global[$ "__mmapi_hotkeys"];
+            if (singles != undefined) {
+                for (var i = 0; i < array_length(singles); i++) {
+                    if (singles[i].vk == trigger.code) {
+                        mmapi_log_warn(mod_name,
+                            "mmapi hotkey overlap: " + name + " from " + mod_name
+                            + " shares its trigger with " + mmapi_hotkey_name_from_vk(trigger.code)
+                            + " registered by " + singles[i].mod_name
+                            + ". The bare binding stays quiet whenever the chord matches");
+                    }
+                }
+            }
+        } else {
+            var pad_singles = global[$ "__mmapi_pad_hotkeys"];
+            if (pad_singles != undefined) {
+                for (var i = 0; i < array_length(pad_singles); i++) {
+                    if (pad_singles[i].button == trigger.code) {
+                        mmapi_log_warn(mod_name,
+                            "mmapi hotkey overlap: " + name + " from " + mod_name
+                            + " shares its trigger with " + mmapi_hotkey_name_from_pad(trigger.code)
+                            + " registered by " + pad_singles[i].mod_name
+                            + ". The bare binding stays quiet whenever the chord matches");
+                    }
+                }
+            }
+        }
+    }
+
+    array_push(hotkeys, { binding: binding, callback: callback, mod_name: mod_name });
+}
+
+// The overlap advisory's other direction: a bare registration landing on a code
+// that is already some chord's trigger. Shared by register and register_pad.
+function __mmapi_hotkey_warn_bare_overlap(device, code, mod_name) {
+    var chords = global[$ "__mmapi_binding_hotkeys"];
+    if (chords == undefined) { return; }
+    for (var i = 0; i < array_length(chords); i++) {
+        var chord_parts = undefined;
+        try { chord_parts = chords[i].binding.parts; } catch (__mmapi_overlap_shape) { continue; }
+        if (array_length(chord_parts) < 2) { continue; }
+        var trigger = chord_parts[array_length(chord_parts) - 1];
+        if (trigger.device != device || trigger.code != code) { continue; }
+        var bare_name = (device == "pad")
+            ? mmapi_hotkey_name_from_pad(code)
+            : mmapi_hotkey_name_from_vk(code);
+        mmapi_log_warn(mod_name,
+            "mmapi hotkey overlap: " + bare_name + " from " + mod_name
+            + " is the trigger of " + mmapi_hotkey_name_from_binding(chords[i].binding)
+            + " registered by " + chords[i].mod_name
+            + ". The bare binding stays quiet whenever the chord matches");
+    }
+}
+
 function mmapi_hotkey_register(vk, callback, opts) {
     if (global[$ "__mmapi_hotkeys"] == undefined) { global.__mmapi_hotkeys = []; }
     var hotkeys = global.__mmapi_hotkeys;
@@ -192,6 +440,7 @@ function mmapi_hotkey_register(vk, callback, opts) {
         }
     }
 
+    __mmapi_hotkey_warn_bare_overlap("kb", vk, mod_name);
     array_push(hotkeys, { vk: vk, callback: callback, mod_name: mod_name });
 }
 
@@ -220,6 +469,7 @@ function mmapi_hotkey_register_pad(button, callback, opts) {
         }
     }
 
+    __mmapi_hotkey_warn_bare_overlap("pad", button, mod_name);
     array_push(hotkeys, { button: button, callback: callback, mod_name: mod_name });
 }
 
@@ -354,12 +604,68 @@ function mmapi_hotkeys_poll() {
                 { description: "Re-run the hotkey keycode capability sweep and return the summary line.", mod_name: "mmapi" });
         } catch (__mmapi_cap_reg) {}
     }
+    // Compound entries first: a matched chord fires AND consumes its trigger, so
+    // the single loops below skip that code this frame. SHIFT+F5 is not F5.
+    // Single-part bindings registered through register_binding consume nothing -
+    // they ARE the bare bind.
+    var consumed_vk = [];
+    var consumed_pad = [];
+    var chord_hotkeys = global[$ "__mmapi_binding_hotkeys"];
+    if (chord_hotkeys != undefined && array_length(chord_hotkeys) > 0) {
+        var chord_device_cap = undefined;
+        try { chord_device_cap = GAMEPADS_COUNT; } catch (__mmapi_chord_cap) {}
+        if (chord_device_cap == undefined) { chord_device_cap = 12; }
+        for (var b = 0; b < array_length(chord_hotkeys); b++) {
+            var chord_entry = chord_hotkeys[b];
+            if (chord_entry[$ "dead"] == true) { continue; }
+            // Same per-entry dead-marking as the single loops: a throw disables
+            // the ENTRY, never the poll.
+            var chord_matched = false;
+            try {
+                chord_matched = __mmapi_hotkey_chord_matched(chord_entry.binding.parts, chord_device_cap);
+            } catch (chord_err) {
+                chord_entry.dead = true;
+                mmapi_log_warn(chord_entry.mod_name,
+                    "mmapi hotkey " + mmapi_hotkey_name_from_binding(chord_entry.binding) + " from "
+                    + chord_entry.mod_name + " disabled: the engine rejected its poll: " + string(chord_err));
+                continue;
+            }
+            if (chord_matched) {
+                var chord_parts = chord_entry.binding.parts;
+                if (array_length(chord_parts) > 1) {
+                    var chord_trigger = chord_parts[array_length(chord_parts) - 1];
+                    if (chord_trigger.device == "kb") {
+                        array_push(consumed_vk, chord_trigger.code);
+                    } else {
+                        array_push(consumed_pad, chord_trigger.code);
+                    }
+                }
+                try {
+                    chord_entry.callback();
+                } catch (chord_err) {
+                    mmapi_warn_rate_limited(
+                        "hotkey_binding:" + mmapi_hotkey_name_from_binding(chord_entry.binding) + ":" + chord_entry.mod_name,
+                        chord_entry.mod_name,
+                        "mmapi hotkey " + mmapi_hotkey_name_from_binding(chord_entry.binding) + " from "
+                        + chord_entry.mod_name + " failed: " + string(chord_err));
+                }
+            }
+        }
+    }
+
+    // No early return on an empty keyboard registry: pad and chord registrants
+    // must poll regardless of whether any keyboard single exists.
     var hotkeys = global[$ "__mmapi_hotkeys"];
-    if (hotkeys == undefined) { return; }
-    var count = array_length(hotkeys);
+    var count = (hotkeys == undefined) ? 0 : array_length(hotkeys);
     for (var i = 0; i < count; i++) {
         var entry = hotkeys[i];
         if (entry[$ "dead"] == true) { continue; }
+        // A chord consumed this code this frame: the bare bind stays quiet.
+        var suppressed = false;
+        for (var s = 0; s < array_length(consumed_vk); s++) {
+            if (consumed_vk[s] == entry.vk) { suppressed = true; break; }
+        }
+        if (suppressed) { continue; }
         // Belt-and-suspenders for the register-time probe: if the engine rejects this
         // entry's KeyCode at poll time anyway, disable the ENTRY (one warn), never the
         // whole poll - an unguarded throw here fails every registrant every tick.
@@ -401,6 +707,12 @@ function mmapi_hotkeys_poll() {
     for (var p = 0; p < pad_count; p++) {
         var pad_entry = pad_hotkeys[p];
         if (pad_entry[$ "dead"] == true) { continue; }
+        // A chord consumed this button this frame: the bare bind stays quiet.
+        var pad_suppressed = false;
+        for (var s = 0; s < array_length(consumed_pad); s++) {
+            if (consumed_pad[s] == pad_entry.button) { pad_suppressed = true; break; }
+        }
+        if (pad_suppressed) { continue; }
         // Same belt-and-suspenders as the keyboard loop: a throw (missing gamepad
         // builtins, or a code the engine refuses) disables the ENTRY, never the
         // poll. A disconnected pad is no error - the entry stays live and waits.

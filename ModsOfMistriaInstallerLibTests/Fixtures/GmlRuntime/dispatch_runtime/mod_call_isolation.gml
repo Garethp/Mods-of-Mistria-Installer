@@ -101,3 +101,48 @@ global.mci_log = "";
 global.__test_pressed_vk = -1;
 mmapi_hotkeys_poll();
 deq("nothing pressed on either device means no callback", global.mci_log, "");
+
+// ── Compound bindings: chord semantics + the suppression guarantee ──────────
+// keyboard_check is the chord's LEVEL primitive; stub the down channel the way
+// the press channel is stubbed above (the pad stubs already cover both).
+global.__test_down_vk = -1;
+function keyboard_check(vk) { return vk == global.__test_down_vk; }
+
+function mci_chord_boom() { throw "chord exploded"; }
+function mci_chord_ok()   { global.mci_log += "c"; }
+function mci_bare_ok()    { global.mci_log += "b"; }
+
+// Raw codes again: 16 stands in for vk_shift, 114 for vk_f3.
+mmapi_hotkey_register(114, mci_bare_ok, { mod_name: "bare_mod" });
+mmapi_hotkey_register_binding(
+    { parts: [ { device: "kb", code: 16 }, { device: "kb", code: 114 } ] },
+    mci_chord_ok, { mod_name: "chord_mod" });
+
+// Trigger edge with the modifier UP: the chord does not match, the bare fires.
+global.mci_log = "";
+global.__test_pressed_vk = 114;
+mmapi_hotkeys_poll();
+deq("modifier up: bare fires, chord does not", global.mci_log, "b");
+
+// Modifier DOWN + trigger edge: the chord fires and consumes - the bare stays quiet.
+global.mci_log = "";
+global.__test_down_vk = 16;
+mmapi_hotkeys_poll();
+deq("modifier down: chord fires and consumes the trigger", global.mci_log, "c");
+
+// A throwing chord callback is isolated AND still consumes its trigger. The
+// bare bind on 113 (mci_hotkey_ok, registered above) must stay quiet too.
+mmapi_hotkey_register_binding(
+    { parts: [ { device: "kb", code: 16 }, { device: "kb", code: 113 } ] },
+    mci_chord_boom, { mod_name: "bad_mod" });
+global.mci_log = "";
+global.__test_pressed_vk = 113;
+mmapi_hotkeys_poll();
+dcheck("a throwing chord callback did not propagate out of the poll", true);
+deq("  and it still consumed its trigger (the bare bind stayed quiet)", global.mci_log, "");
+
+// Modifier released: the same press edge reaches the bare bind again.
+global.__test_down_vk = -1;
+global.mci_log = "";
+mmapi_hotkeys_poll();
+deq("modifier released: the bare bind fires again", global.mci_log, "k");

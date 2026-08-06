@@ -112,9 +112,28 @@ if (_vk != undefined) {
 > [!WARNING]
 `ALT`, `PAUSE_BREAK`, `CAPS_LOCK`, `NUM_LOCK`, `SCROLL_LOCK`, and `NUMPAD_0` through `NUMPAD_9` are not supported. A mod configured with them will fall back to its default binding.
 
-The callback takes no arguments. A keyboard key the engine cannot poll is rejected at registration with a warning (and disabled with a single warning if the engine rejects it later). Gamepad bindings poll every connected controller and fire on any of them; a disconnected controller is not an error — the binding waits for one. Callback failures are isolated and rate-limited, and polling continues.
+The callback takes no arguments. A keyboard key the engine cannot poll is rejected at registration with a warning (and disabled with a single warning if the engine rejects it later). Gamepad bindings poll every connected controller and fire on any of them. A disconnected controller is not an error, and the binding simply waits for one. Callback failures are isolated and rate-limited, and polling continues.
 
-Two mods on the same binding both fire with a warning (keyboard and gamepad are separate namespaces — `F1` and `GAMEPAD_A` never conflict). Registrations are not de-duplicated, even when the mod, key, and callback are identical, so register once inside your latch.
+Two mods on the same binding both fire with a warning. Keyboard and gamepad are separate namespaces, so `F1` and `GAMEPAD_A` never conflict. Registrations are not de-duplicated, even when the mod, key, and callback are identical, so register once inside your latch.
+
+### Compound bindings
+
+A binding may also be a chord of `"+"`-joined names from the vocabularies above, in any device mix. Examples include `"SHIFT+F5"`, `"GAMEPAD_LEFT_SHOULDER+GAMEPAD_A"`, and `"CONTROL+GAMEPAD_Y"`. The **last** name is the trigger and fires on its press edge. Every earlier name must be held at that moment. Resolve and register through the binding pair:
+
+```gml
+var _binding = mmapi_hotkey_binding_from_name(my_mod_config().activation_button); // "SHIFT+F5", or any single name
+if (_binding != undefined) {
+    mmapi_hotkey_register_binding(_binding, my_mod_on_hotkey);
+}
+```
+
+`mmapi_hotkey_binding_from_name` accepts everything the two single-name maps accept, and a plain `"F7"` resolves to a one-part binding, so it can validate any hotkey config value in one call. Any unrecognized or empty token makes the whole name invalid.
+
+A matched chord **consumes its trigger for that frame**. Bare registrations on the same key or button stay quiet, so `SHIFT+F5` is not also `F5`. This is a guarantee, not an option. Registering a chord over an existing bare binding (or the reverse) logs a one-time overlap warning naming both mods.
+
+Pad parts of a chord must all read from a single connected controller. Keyboard parts are read globally, which is what makes mixed-device chords work.
+
+Held-pattern mods act while a binding is down rather than on a press. For them, `mmapi_hotkey_binding_held(_binding)` answers whether every part is currently held. It involves no registration, no edges, and no suppression, and the mod polls it on its own schedule.
 
 ## Combat
 
