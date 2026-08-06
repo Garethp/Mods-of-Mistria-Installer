@@ -444,11 +444,11 @@ public class AssetsStoreTest
         var store = new AssetsStore(_fom);
         store.EnsureBackup();
         var modifier = store.BeginRebuild();
-        modifier.Write("assets/localization/test.txt", "Български тест");
+        modifier.Write("assets/localization/test.txt", "Unicode test: café — 日本語");
         store.Commit();
 
         Assert.That(ReadEntries(LivePath)["assets/localization/test.txt"],
-            Is.EqualTo(Encoding.UTF8.GetBytes("Български тест")));
+            Is.EqualTo(Encoding.UTF8.GetBytes("Unicode test: café — 日本語")));
     }
 
     [Test]

@@ -13,8 +13,8 @@ public class ProfileManagerTest
         try
         {
             var manager = new ProfileManager(directory);
-            manager.CreateProfile("Bulgarian");
-            manager.SwitchProfile("Bulgarian");
+            manager.CreateProfile("Secondary Profile");
+            manager.SwitchProfile("Secondary Profile");
             manager.SaveCurrentProfile(
                 ["deulo.wiki", "atd.atds_farmer"],
                 ["deulo.wiki", "atd.atds_farmer"]);
@@ -22,7 +22,7 @@ public class ProfileManagerTest
             var reloaded = new ProfileManager(directory);
             var (enabled, order) = reloaded.GetCurrentProfile();
 
-            Assert.That(reloaded.CurrentProfileName, Is.EqualTo("Bulgarian"));
+            Assert.That(reloaded.CurrentProfileName, Is.EqualTo("Secondary Profile"));
             Assert.That(enabled, Is.EqualTo(new[] { "deulo.wiki", "atd.atds_farmer" }));
             Assert.That(order, Is.EqualTo(new[] { "deulo.wiki", "atd.atds_farmer" }));
         }

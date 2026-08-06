@@ -9,10 +9,6 @@
 * [x] Persist profiles, enabled mods, and load order
 * [x] Provide adaptive UI sizing, version information, and update notifications
 
-The current release does not yet include the Fields of Mistria 1.0.x
-Bulgarian localization. That work is tracked separately and must not add
-copyrighted game localization data to this repository.
-
 ## 0.2.0
 * [x] Add Aurie Integration
 
