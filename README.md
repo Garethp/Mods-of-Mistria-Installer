@@ -1,8 +1,7 @@
 ﻿# Mods of Mistria Installer
 
-MOMI is a mod installer for Fields of Mistria. This fork is maintained for
-Fields of Mistria 1.0.x and is based on the upstream
-[Mods of Mistria Installer](https://github.com/Garethp/Mods-of-Mistria-Installer).
+MOMI is a mod installer for Fields of Mistria. The current release supports
+Fields of Mistria 1.0.x.
 
 The current application version is 0.15.1. The 1.0.x game update changed the
 game data and modding interfaces, so mods must explicitly support the current
@@ -20,7 +19,7 @@ game archive.
    * On Windows, you'll want to create "mods" folder inside your Fields of Mistria folder, next to the `FieldsOfMistria.exe`.
    * On the Steam Deck (or other Linux distributions) you can also create a mods folder inside your Fields of Mistria folder,
      or you can create a `mistria-mods` folder in your home directory.
-2. Download the installer from the [releases page](https://github.com/AcTePuKc/Mods-of-Mistria-Installer/releases).
+2. Download the installer from the [releases page](https://github.com/Garethp/Mods-of-Mistria-Installer/releases).
 3. Double-click the installer to run it. If it's not able to detect the Fields of Mistria location, try placing the
    installer in your Fields of Mistria folder, next to `Maybe.toml` file.
 4. Click the "Install" button to install the mods. If you have mods in your mods folder, they should appear in a list.

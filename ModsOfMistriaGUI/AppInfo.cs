@@ -4,7 +4,7 @@ namespace Garethp.ModsOfMistriaGUI;
 
 public static class AppInfo
 {
-    public const string GitHubUrl = "https://github.com/AcTePuKc/Mods-of-Mistria-Installer";
+    public const string GitHubUrl = "https://github.com/Garethp/Mods-of-Mistria-Installer";
     public const string ReleaseApiUrl = "https://api.github.com/repos/Garethp/Mods-of-Mistria-Installer/releases/latest";
     public const string SupportedGame = "Fields of Mistria 1.0.x";
 
