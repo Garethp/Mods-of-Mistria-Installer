@@ -13,6 +13,7 @@ public enum ModInstallState
     None,
     Installed,
     Skipped,
+    Failed,
 }
 
 public partial class ModModel : ObservableObject
@@ -68,6 +69,7 @@ public partial class ModModel : ObservableObject
 
     public bool WasInstalled      => _installState == ModInstallState.Installed;
     public bool WasSkipped        => _installState == ModInstallState.Skipped;
+    public bool WasFailed         => _installState == ModInstallState.Failed;
     public bool HasInstallOutcome => _installState != ModInstallState.None;
 
     // A skipped mod's reasons also land as validation errors; the red X and
@@ -86,6 +88,7 @@ public partial class ModModel : ObservableObject
         InstallDetail = detail;
         OnPropertyChanged(nameof(WasInstalled));
         OnPropertyChanged(nameof(WasSkipped));
+        OnPropertyChanged(nameof(WasFailed));
         OnPropertyChanged(nameof(HasInstallOutcome));
         OnPropertyChanged(nameof(InstallDetail));
         OnPropertyChanged(nameof(ShowErrorIcon));

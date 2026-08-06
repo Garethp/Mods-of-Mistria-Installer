@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Reflection;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -431,6 +432,7 @@ public partial class ModlistPageViewModel : PageViewBase
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private void InstallMods()
     {
+        Exception = "";
         // Auto-save profile state before installing so load order is persisted
         SaveCurrentProfileState();
 
@@ -452,6 +454,8 @@ public partial class ModlistPageViewModel : PageViewBase
         var files = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title           = Resources.GUIPickLogFile,
+            SuggestedFileName = $"momi-log-{DateTime.Now:yyyyMMdd-HHmmss}.txt",
+            DefaultExtension  = "txt",
             FileTypeChoices = [FilePickerFileTypes.TextPlain]
         });
 
@@ -499,14 +503,13 @@ public partial class ModlistPageViewModel : PageViewBase
             }
             catch (Exception e)
             {
-                // The failure surfaces globally and is TERMINAL for the session:
-                // the busy latch deliberately stays set, so installing,
-                // uninstalling and the list actions remain disabled under the
-                // error. Saving the log stays live - the error is a bug report.
+                var errorLogPath = WriteDiagnosticErrorLog("uninstall", e);
+                Logger.Log($"{Resources.GUIUninstallFatalError}\r\n{e}");
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
+                    IsInstalling  = false;
                     InstallStatus = "";
-                    Exception     = Resources.GUIUninstallFatalError + "\n" + e.Message;
+                    Exception     = FormatErrorMessage(Resources.GUIUninstallFatalError, e, errorLogPath);
                 });
             }
         });
@@ -548,15 +551,69 @@ public partial class ModlistPageViewModel : PageViewBase
         }
         catch (Exception e)
         {
-            // The failure surfaces globally and is TERMINAL for the session: the
-            // busy latch deliberately stays set, so installing, uninstalling and
-            // the list actions remain disabled under the error. Saving the log
-            // stays live - the error is a bug report.
+            var errorLogPath = WriteDiagnosticErrorLog("install", e);
+            Logger.Log($"{Resources.GUIInstallFatalError}\r\n{e}");
+            var failedModId = (e as ModInstallationException)?.ModId;
+
             Dispatcher.UIThread.InvokeAsync(() =>
             {
+                if (!string.IsNullOrEmpty(failedModId))
+                {
+                    var failedMod = Mods.FirstOrDefault(m =>
+                        string.Equals(m.Mod.GetId(), failedModId, StringComparison.OrdinalIgnoreCase));
+                    failedMod?.SetInstallOutcome(
+                        ModInstallState.Failed,
+                        e.Message + "\r\nReason: " + GetRootCauseMessage(e));
+                }
+
+                IsInstalling  = false;
                 InstallStatus = "";
-                Exception     = Resources.GUIInstallFatalError + "\n" + e.Message;
+                Exception     = FormatErrorMessage(Resources.GUIInstallFatalError, e, errorLogPath);
             });
+        }
+    }
+
+    private static string FormatErrorMessage(string heading, Exception exception, string? errorLogPath)
+    {
+        var rootCause = GetRootCauseMessage(exception);
+        var message = heading + "\n" + exception.Message;
+        if (!string.Equals(rootCause, exception.Message, StringComparison.Ordinal))
+            message += "\n\nReason: " + rootCause;
+        if (!string.IsNullOrEmpty(errorLogPath))
+            message += $"\n\nError details saved to:\n{errorLogPath}";
+        return message;
+    }
+
+    private static string GetRootCauseMessage(Exception exception)
+    {
+        while (exception.InnerException is not null)
+            exception = exception.InnerException;
+        return exception.Message;
+    }
+
+    private static string? WriteDiagnosticErrorLog(string operation, Exception exception)
+    {
+        try
+        {
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var root = string.IsNullOrWhiteSpace(localAppData) ? AppContext.BaseDirectory : localAppData;
+            var directory = Path.Combine(root, "MOMI", "logs");
+            Directory.CreateDirectory(directory);
+            var path = Path.Combine(directory, $"momi-error-{DateTime.Now:yyyyMMdd-HHmmssfff}.txt");
+            var contents = $"MOMI diagnostic error log\r\n" +
+                           $"Timestamp (UTC): {DateTime.UtcNow:O}\r\n" +
+                           $"Application: {Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "unknown"}\r\n" +
+                           $"Operation: {operation}\r\n\r\n" +
+                           "Exception:\r\n" + exception + "\r\n\r\n" +
+                           "Recent MOMI log:\r\n" + string.Join("\r\n", Logger.GetLogs());
+            File.WriteAllText(path, contents, new System.Text.UTF8Encoding(false));
+            Logger.Log($"Diagnostic error log written to: {path}");
+            return path;
+        }
+        catch (Exception logException)
+        {
+            Logger.Log($"Could not write diagnostic error log: {logException.Message}");
+            return null;
         }
     }
 

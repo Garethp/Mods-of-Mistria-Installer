@@ -490,9 +490,9 @@
     <value>Uninstalling</value>
   </data>
   <data name="GUIInstallFatalError" xml:space="preserve">
-    <value>A fatal error occurred during mod installation:</value>
+    <value>Installation failed; no archive changes were committed:</value>
   </data>
   <data name="GUIUninstallFatalError" xml:space="preserve">
-    <value>A fatal error occurred during mod uninstallation:</value>
+    <value>Uninstallation failed; no archive changes were committed:</value>
   </data>
 </root>

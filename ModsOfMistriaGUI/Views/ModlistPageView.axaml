@@ -70,7 +70,7 @@
             </StackPanel>
 
             <!-- Mod list -->
-            <ScrollViewer Margin="15 5 0 0" IsVisible="{Binding !Exception.Length}">
+            <ScrollViewer Margin="15 5 0 0">
                 <ItemsRepeater ItemsSource="{Binding Mods}" x:Name="ModRepeater">
                     <ItemsRepeater.ItemTemplate>
                         <DataTemplate>
