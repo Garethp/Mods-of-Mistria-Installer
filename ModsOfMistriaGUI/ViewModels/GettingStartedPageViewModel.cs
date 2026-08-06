@@ -11,6 +11,22 @@ public partial class GettingStartedPageViewModel(Settings settings) : PageViewBa
 {
     [ObservableProperty] private Settings _settings = settings;
 
+    public string GameLocationStatus => LocationDiagnostics.DescribeGame(Settings.MistriaLocation);
+    public string ModsLocationStatus => LocationDiagnostics.DescribeMods(Settings.MistriaLocation, Settings.ModsLocation);
+
+    public GettingStartedPageViewModel() : this(new Settings())
+    {
+    }
+
+    partial void OnSettingsChanged(Settings value)
+    {
+        value.PropertyChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(GameLocationStatus));
+            OnPropertyChanged(nameof(ModsLocationStatus));
+        };
+    }
+
     public bool CanCreateModsFolder =>  Settings.ValidMistriaLocation() && !Settings.ValidModsLocation();
 
     [RelayCommand]

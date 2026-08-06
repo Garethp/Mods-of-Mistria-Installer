@@ -19,6 +19,23 @@ public partial class MainWindowViewModel : ViewModelBase
     private GameRestartMonitor? _restartMonitor;
 
     [ObservableProperty] private PageViewBase _currentPage;
+    [ObservableProperty] private bool _updateAvailable;
+    [ObservableProperty] private string _updateMessage = "";
+
+    public string ApplicationVersion => AppInfo.DisplayVersion;
+    public string SupportedGame => AppInfo.SupportedGame;
+
+    public void ShowUpdateAvailable(string version)
+    {
+        UpdateMessage = $"MOMI {version} is available.";
+        UpdateAvailable = true;
+    }
+
+    public void SaveCurrentState()
+    {
+        if (CurrentPage is ModlistPageViewModel modlist)
+            modlist.SaveCurrentProfileState();
+    }
 
     public MainWindowViewModel()
     {

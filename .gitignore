@@ -10,3 +10,11 @@ ModsOfMistriaInstaller.sln.DotSettings.user
 .vs/
 /tools/checker/target/
 /tools/checker/dist/
+
+# Local game archives and generated inspection output must never be committed.
+assets.zip
+assets.bak.zip
+assets.vanilla.zip
+assets.momi.tmp.zip
+assets.momi.state.toml
+localization_inspection/

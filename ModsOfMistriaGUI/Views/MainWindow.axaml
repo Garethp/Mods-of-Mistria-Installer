@@ -9,7 +9,9 @@
         x:DataType="vm:MainWindowViewModel"
         Title="{x:Static lang:Resources.GUIApplicationTitle}"
         Icon="/Assets/small_icon.png"
-        Width="1000" Height="800">
+        Width="900" Height="700"
+        MinWidth="680" MinHeight="500"
+        WindowStartupLocation="CenterScreen">
     
     <Window.Resources>
         <ResourceDictionary>
@@ -28,11 +30,30 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*">
-        <Image Source="/Assets/header.jpg" MaxHeight="350"/>
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Image Source="/Assets/header.jpg" Height="190" MaxHeight="220" Stretch="UniformToFill"/>
 
-        <Panel Grid.Row="1" Margin="50 20 50 0">
+        <Panel Grid.Row="1" Margin="32 16 32 0" ClipToBounds="True">
             <TransitioningContentControl Content="{Binding CurrentPage}" />
         </Panel>
+
+        <StackPanel Grid.Row="2" Spacing="6" Margin="32 12 32 16">
+            <Border IsVisible="{Binding UpdateAvailable}" Background="#2D6B4A" CornerRadius="4" Padding="12 8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding UpdateMessage}" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Content="Open GitHub" Click="OpenGitHubClick" Margin="12 0 0 0" />
+                </Grid>
+            </Border>
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding ApplicationVersion}" FontWeight="SemiBold" />
+                    <StackPanel Orientation="Horizontal" Spacing="4" Opacity="0.75">
+                        <TextBlock Text="Supported game:" />
+                        <TextBlock Text="{Binding SupportedGame}" />
+                    </StackPanel>
+                </StackPanel>
+                <Button Grid.Column="1" Content="GitHub" Click="OpenGitHubClick" VerticalAlignment="Center" Margin="16 0 0 0" />
+            </Grid>
+        </StackPanel>
     </Grid>
 </Window>

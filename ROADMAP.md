@@ -1,5 +1,18 @@
 # Roadmap
 
+## 0.15.1
+* [x] Support the Fields of Mistria 1.0.x engine seams
+* [x] Rebuild `assets.zip` transactionally from a verified pristine archive
+* [x] Validate staged ZIP archives, duplicate paths, CRCs, and TOML files before publication
+* [x] Detect game updates and unknown external archive changes using hashes
+* [x] Restore the pristine archive transactionally during uninstall
+* [x] Persist profiles, enabled mods, and load order
+* [x] Provide adaptive UI sizing, version information, and update notifications
+
+The current release does not yet include the Fields of Mistria 1.0.x
+Bulgarian localization. That work is tracked separately and must not add
+copyrighted game localization data to this repository.
+
 ## 0.2.0
 * [x] Add Aurie Integration
 
@@ -19,10 +32,10 @@
 ## Future/Unknown
 * [ ] Allow all "localised" text in easy JSON structures to be multi-lingual
 * [ ] Add Validators for Simple Conversations
-* [ ] Store selected/deselected mods in the Mods folder
-* [ ] Allow load order modifying
-* [ ] Allow mods to declare dependencies on other mods
-* [ ] Automatic updating
+* [x] Store selected/deselected mods in the Mods folder
+* [x] Allow load order modifying
+* [x] Allow mods to declare dependencies on other mods
+* [ ] Automatic updating of MOMI releases
 * [ ] `player_tools.json` installer
 * [ ] `farms.json` installer
 * [ ] `hyper_points.json` installer

@@ -37,7 +37,10 @@ public partial class ModlistPageViewModel : PageViewBase
 
     public ObservableCollection<string> Profiles { get; } = [];
 
-    [ObservableProperty] private string _currentProfile = "Default";
+    // Starts empty so the first profile refresh raises a notification even when
+    // the clean-folder fallback profile is Default; otherwise the ComboBox can
+    // contain Default while rendering no selected item.
+    [ObservableProperty] private string _currentProfile = "";
 
     [RelayCommand]
     private async Task SwitchProfile(string profileName)
@@ -91,7 +94,7 @@ public partial class ModlistPageViewModel : PageViewBase
         ApplyProfileToMods();
     }
 
-    private void SaveCurrentProfileState()
+    public void SaveCurrentProfileState()
     {
         if (_profileManager is null) return;
         var enabled   = Mods.Where(m => m.Enabled).Select(m => m.Mod.GetId()).ToList();
@@ -103,8 +106,14 @@ public partial class ModlistPageViewModel : PageViewBase
     private void RefreshProfileList()
     {
         var names = _profileManager?.GetProfileNames() ?? ["Default"];
+        var active = _profileManager?.CurrentProfileName ?? "Default";
         Profiles.Clear();
         foreach (var n in names) Profiles.Add(n);
+
+        // Re-select the persisted profile after rebuilding the ComboBox source.
+        // Clearing an ObservableCollection can otherwise make the UI fall back
+        // to the first profile even though ProfileManager retained another one.
+        CurrentProfile = names.Contains(active) ? active : "Default";
     }
 
     private void ApplyProfileToMods()
@@ -212,6 +221,16 @@ public partial class ModlistPageViewModel : PageViewBase
 
     private void UpdateModlist(bool force)
     {
+        // UpdateModlist is requested from background tasks because manifest
+        // discovery can involve many archives. ObservableCollection mutations
+        // must nevertheless happen on Avalonia's UI thread; otherwise
+        // ItemsRepeater virtualization can display one mod's row for another.
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            Dispatcher.UIThread.Post(() => UpdateModlist(force));
+            return;
+        }
+
         if (_updating) return;
         if (MistriaLocation == _settings.MistriaLocation && ModsLocation == _settings.ModsLocation && !force) return;
         _updating = true;
@@ -275,6 +294,7 @@ public partial class ModlistPageViewModel : PageViewBase
                             }
                         }
                         finally { _cascading = false; }
+                        UnInstallModsCommand.NotifyCanExecuteChanged();
 
                         if (missing.Count > 0)
                         {
@@ -342,8 +362,6 @@ public partial class ModlistPageViewModel : PageViewBase
             }
 
             RefreshProfileList();
-            if (_profileManager is not null)
-                CurrentProfile = _profileManager.CurrentProfileName;
         }
 
         _isDirty = false;
@@ -356,6 +374,7 @@ public partial class ModlistPageViewModel : PageViewBase
         {
             InstallStatus = "";
             InstallModsCommand.NotifyCanExecuteChanged();
+            UnInstallModsCommand.NotifyCanExecuteChanged();
 
             if (MistriaLocation.Equals(""))
                 InstallStatus = Resources.GUICouldNotFindMistria;
@@ -560,7 +579,8 @@ public partial class ModlistPageViewModel : PageViewBase
         }
     }
 
-    private bool CanRemove()  => !MistriaLocation.Equals("") && !IsInstalling;
+    private bool CanRemove() =>
+        !MistriaLocation.Equals("") && !IsInstalling && Mods.Any(m => m.Mod.IsInstalled());
 
     private bool CanInstall() =>
         !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !IsInstalling;

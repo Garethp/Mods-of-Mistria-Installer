@@ -1,4 +1,3 @@
-﻿using System.Reflection;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -14,9 +13,10 @@ namespace Garethp.ModsOfMistriaGUI;
 public class App : Application
 {
     public static TopLevel? TopLevel { get; private set; }
-    
-    private readonly MainWindowViewModel _mainViewModel = new ();
-    
+
+    private readonly MainWindowViewModel _mainViewModel = new();
+    private CancellationTokenSource? _updateCheckCancellation;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -26,12 +26,16 @@ public class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            var mainWindow = new MainWindow { DataContext = _mainViewModel };
+            desktop.MainWindow = mainWindow;
+            TopLevel = TopLevel.GetTopLevel(mainWindow);
+
+            _updateCheckCancellation = new CancellationTokenSource();
+            mainWindow.Closed += (_, _) =>
             {
-                DataContext = _mainViewModel
+                _mainViewModel.SaveCurrentState();
+                _updateCheckCancellation.Cancel();
             };
-            
-            TopLevel = TopLevel.GetTopLevel(desktop.MainWindow);
 
             if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)
             {
@@ -43,41 +47,42 @@ public class App : Application
                     ).ShowAsync();
                 });
             }
-            
-            var upgradeMessage = MessageBoxManager.GetMessageBoxStandard(ModsOfMistriaInstallerLib.Lang.Resources.GUIUpdateNagTitle,
-                ModsOfMistriaInstallerLib.Lang.Resources.GUIUpdateNagMessage);
-        
-            Task.Run(async () =>
-            {
-                try
-                {
-                    var currentExe = Assembly.GetEntryAssembly();
-                    var currentVersionString =
-                        currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
-                    var currentVersion = new Version(currentVersionString);
-                    
-                    using var client = new HttpClient();
-                    client.DefaultRequestHeaders.Add("User-Agent", "request");
-                    var json = await client.GetStringAsync(
-                        "https://api.github.com/repos/Garethp/Mods-of-Mistria-Installer/releases/latest");
 
-                    var output = JObject.Parse(json);
-                    if (output["tag_name"]?.ToString() is not { } tagName) return;
-                
-                    var latestVersion = new Version(tagName.Replace("v", ""));
-                
-                    if (latestVersion.CompareTo(currentVersion) > 0)
-                    {
-                        Dispatcher.UIThread.InvokeAsync(() => { upgradeMessage.ShowAsync(); });
-                    }
-                }
-                catch (Exception)
-                {
-                    // ignored
-                }
-            });
+            _ = CheckForUpdatesAsync(_updateCheckCancellation.Token);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private async Task CheckForUpdatesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var currentVersion = Version.Parse(AppInfo.Version);
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "MOMI");
+            using var response = await client.GetAsync(AppInfo.ReleaseApiUrl, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync(cancellationToken);
+            var tagName = JObject.Parse(json)["tag_name"]?.ToString();
+            if (tagName is null) return;
+
+            var latestVersion = Version.Parse(tagName.TrimStart('v'));
+            if (latestVersion <= currentVersion || cancellationToken.IsCancellationRequested) return;
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (!cancellationToken.IsCancellationRequested)
+                    _mainViewModel.ShowUpdateAvailable(latestVersion.ToString(3));
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when the main window closes during the request.
+        }
+        catch (Exception)
+        {
+            // Update checks are advisory and must never prevent startup.
+        }
     }
 }

@@ -9,6 +9,18 @@ public class MistriaLocator
 {
     public static string? GetMistriaLocation()
     {
+        // Test and portable deployments can explicitly select an install.
+        // This must take precedence over Steam discovery so an integration
+        // test can never accidentally operate on the user's live game.
+        var overrideLocation = Environment.GetEnvironmentVariable("MOMI_GAME_LOCATION");
+        if (!string.IsNullOrWhiteSpace(overrideLocation))
+        {
+            var selected = Path.GetFullPath(overrideLocation);
+            return Directory.Exists(selected) && File.Exists(Path.Combine(selected, "Maybe.toml"))
+                ? selected
+                : null;
+        }
+
         var steamLocations = GetSteamLocations();
         steamLocations
             .Select(location => Path.Combine(location, "common", "Fields of Mistria"))
@@ -42,6 +54,15 @@ public class MistriaLocator
     
     public static string? GetModsLocation(string? mistriaLocation)
     {
+        // Test and portable deployments can explicitly select a mods directory
+        // without changing the game's real installation or user profile.
+        var overrideLocation = Environment.GetEnvironmentVariable("MOMI_MODS_LOCATION");
+        if (!string.IsNullOrWhiteSpace(overrideLocation))
+        {
+            var selected = Path.GetFullPath(overrideLocation);
+            return Directory.Exists(selected) ? selected : null;
+        }
+
         var possibleLocations = new List<string>();
         if (mistriaLocation is not null && File.Exists(Path.Combine(mistriaLocation, "Maybe.toml")))
         {

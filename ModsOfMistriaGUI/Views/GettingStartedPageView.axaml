@@ -20,6 +20,7 @@
                 </Image>
             </Button>
         </WrapPanel>
+        <TextBlock Text="{Binding GameLocationStatus}" TextWrapping="Wrap" Margin="0 0 0 8" />
 
         <WrapPanel>
             <TextBlock Text="{x:Static lang:Resources.GUISetupModsLocation}" />
@@ -32,6 +33,7 @@
                 </Image>
             </Button>
         </WrapPanel>
+        <TextBlock Text="{Binding ModsLocationStatus}" TextWrapping="Wrap" Margin="0 0 0 8" />
 
         <WrapPanel IsVisible="{Binding CanCreateModsFolder}">
             <TextBlock Text="{x:Static lang:Resources.GUICanCreateModsFolder}" />

@@ -1,32 +1,47 @@
 ﻿# Mods of Mistria Installer
 
-This is the in-progress installer for Fields of Mistria mods. As it's currently very early in development, please keep
-in mind that it may have many bugs and may not work on all systems. Similarly, because of the engine change that happened
-on **July 7th 2026, all mods made before the engine change will be outdated and won't be supported anymore**. As a rule
-of thumb, all mods that have been released before July 2026 will need to be updated to work with this installer, which
-many modders are already doing. Make sure the mods you download are not too old !
+MOMI is a mod installer for Fields of Mistria. This fork is maintained for
+Fields of Mistria 1.0.x and is based on the upstream
+[Mods of Mistria Installer](https://github.com/Garethp/Mods-of-Mistria-Installer).
+
+The current application version is 0.15.1. The 1.0.x game update changed the
+game data and modding interfaces, so mods must explicitly support the current
+game and MOMI version. Always keep a backup of your game installation and
+check the mod author's compatibility notes.
+
+MOMI rebuilds `assets.zip` from a verified pristine archive whenever mods are
+installed. Changes are staged and validated before the live archive is
+replaced. This allows disabled or removed mods to be removed on the next
+successful rebuild and prevents a failed installation from leaving a partial
+game archive.
 
 ## Installation
 1. Create a mods folder to put your mods
    * On Windows, you'll want to create "mods" folder inside your Fields of Mistria folder, next to the `FieldsOfMistria.exe`.
-   * On the Steam Deck (or other Linux distros) you can also create a mods folder inside your Fields of Mistria folder, 
+   * On the Steam Deck (or other Linux distributions) you can also create a mods folder inside your Fields of Mistria folder,
      or you can create a `mistria-mods` folder in your home directory.
-2. Download the installer from the [releases page](https://github.com/Garethp/Mods-of-Mistria-Installer/releases).
+2. Download the installer from the [releases page](https://github.com/AcTePuKc/Mods-of-Mistria-Installer/releases).
 3. Double-click the installer to run it. If it's not able to detect the Fields of Mistria location, try placing the
    installer in your Fields of Mistria folder, next to `Maybe.toml` file.
 4. Click the "Install" button to install the mods. If you have mods in your mods folder, they should appear in a list.
-5. Next time the game updates, run the installer again to re-install your mods.
+5. After a game update, start MOMI again and reinstall the enabled mods. MOMI
+   will detect an archive it does not recognize and will preserve it instead
+   of overwriting it automatically.
+
+For technical details about archive transactions and update detection, see
+[`docs/ASSETS_STORE_TRANSACTION_DESIGN.md`](docs/ASSETS_STORE_TRANSACTION_DESIGN.md).
 
 ## Troubleshooting
 **I installed a new cosmetic, but it's not appearing in existing games**  
-First try downloading the latest version of MOMI and re-installing. If you are still encountering the issue, open the page where you
-downloaded the mod. First check its latest update date (anything prior to **July 2026** won't work), then check the mod description
-to see if it mentions a specific shop where you can buy the item or another way to obtain it. If nothing is mentionned, check the
-general store. If you're still having issues, feel free to come to the Discord Server to ask for help.
+First try downloading the latest version of MOMI and reinstalling. If you are still encountering the issue, open the page where you
+downloaded the mod. Check whether the mod explicitly supports Fields of Mistria 1.0.x, then check the mod description to see if it
+mentions a specific shop where you can buy the item or another way to obtain it. If nothing is mentioned, check the general store.
+If you are still having issues, feel free to come to the Discord server to ask for help.
 
-**The installer says it cannot find the Fields of Mistria Location**  
-Try placing the installer in your Fields of Mistria folder, next to `Maybe.toml` file, this should allow the installer to find
-the game.
+**The installer says it cannot find the Fields of Mistria location**
+Try placing the installer in your Fields of Mistria folder, next to
+`Maybe.toml`. This gives MOMI a direct location to inspect. Also verify that
+the game installation is complete through Steam.
 
 **The installer says it cannot find the mods folder**  
 Make sure you have created a folder called "mods" in your Fields of Mistria folder, next to `Maybe.toml` file, or a folder
@@ -34,14 +49,15 @@ called `mistria-mods` in your home directory if you're on the Steam Deck/Linux.
 
 **The installer says it didn't find any mods to install**  
 Make sure you have mods in your mods folder and the mods are compatible with the installer. If you're unsure, check the
-mod folder, inside it there should be a `manifest.toml` file. If there's not, the mod is not compatible and will have to
-be updated by the mod author.
+mod folder. It should contain a `manifest.json` or `manifest.toml` file. If neither is present, the mod is not compatible
+and will have to be updated by the mod author.
 
-The installer cannot install mods that are `.zip` files, so make sure the mods are extracted. When extracting, make sure
-that the mod folder is directly inside the mods folder, not inside another folder. For example, if you're installing
-"Effe's Decor - Fridge", make sure that the folder structure is `mods -> Effe's Decor - Fridge -> manifest.toml` and not
-`mods -> Effe's Decor - Fridge -> Effe's Decor - Fridge -> manifest.toml`. Noticed the duplicate name ? This is called 
-"nested folders", which stops MOMI from finding the `manifest.toml` file and thus detecting the mod.
+MOMI can read supported mod packages such as `.zip` files. When extracting a
+package manually, make sure the mod folder is directly inside the mods folder,
+not inside another folder. For example, if you're installing
+"Effe's Decor - Fridge", make sure that the folder structure is `mods -> Effe's Decor - Fridge -> manifest.json` and not
+`mods -> Effe's Decor - Fridge -> Effe's Decor - Fridge -> manifest.json`. The duplicated folder is called a
+"nested folder". It prevents MOMI from finding the manifest and detecting the mod.
 
 **I've got a different problem**  
 If your problem isn't listed above, please come and ask in the [Fields of Mistria Discord](https://discord.com/invite/j6bTZvMtsg).
@@ -49,7 +65,7 @@ There's a `#modding-game-help` channel that you'll see after you accept the rule
 more information, try downloading the `-cli` version of the installer, running that and then screenshotting the window
 that popped up. The `-cli` version doesn't look as nice, but should provide more information about what's going wrong.
 
-## Mod Format [need to be updated for the engine change]
+## Mod format
 If you're a modder and want to make your mod compatible with this installer, feel free to refer to the [`mods`](./mods)
 folder for example mods. Below is information for what you'll need. This is not a comprehensive list and more
 documentation will be added in the future.
@@ -75,19 +91,18 @@ if large changes are made to how mods are structured.
 JSON files in the `fiddle/` folder will get merged into the game's `__fiddle__.json` file. You can name the files however
 you want and have multiple JSON values in one file or split them up into multiple files as you see fit.
 
-### `localisation/`
-JSON files in the `localisation/` folder will get merged into the game's `__localisation__.json` file. You can name them
-however you want, but they should end in `.eng.json` or `.jpn.json` (or using a similar language code) to specify the
-language they're for. For now Mistria only supports English, but more languages may be supported in the future. Here's
-an example file:
+### Localization
 
-`localisation/first_mod.eng.json`
-```json
-{
-  "letters/first_mod/subject_line": "Olrics Favour",
-  "letters/first_mod/local": "I found something when rummaging through my items the other day and I want you to have it.\n\nCome see me at the Blacksmith shop when you have a moment."
-}
-```
+The Fields of Mistria 1.0.x release uses localization files inside `assets.zip`:
+
+- `assets/localization/l10n.meta.toml`
+- `assets/localization/translations/`
+- `assets/localization/source_caches/`
+
+The pre-1.0 `__localisation__.json` workflow described in older MOMI
+documentation is no longer current. MOMI's supported mod format and
+localization workflow are being updated for the 1.0.x format; do not copy
+pre-1.0 localization files into a current game installation.
 
 ### `outfits/`
 If you want to add new outfits to the game, you can do so by placing a JSON definition for the outfit in the `outfits/`

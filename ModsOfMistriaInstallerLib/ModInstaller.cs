@@ -37,6 +37,12 @@ public class ModInstaller
         if (!Directory.Exists(_fomLocation))
             throw new DirectoryNotFoundException(Resources.CoreMistriaLocationDoesNotExist);
 
+        // Reject malformed source TOML before creating or replacing any game
+        // archive. The source mod and relative path are part of the error so
+        // users can fix the correct file instead of guessing from a merge
+        // stack trace.
+        TomlFileValidator.ValidateMods(mods);
+
         // Coarse progress for a status line: the current mod (or "" for a
         // whole-install step) and the phase it is in. reportStatus stays the
         // verbose per-file channel.
@@ -94,8 +100,10 @@ public class ModInstaller
             installMods = mods.Where(m => !excludedMods.Contains(m)).ToList();
         }
 
-        _fileModifier = store.BeginRebuild();
-        _fileModifier.Write("manifest.toml", "");
+        try
+        {
+            _fileModifier = store.BeginRebuild();
+            _fileModifier.Write("manifest.toml", "");
 
         if (plan is not null)
         {
@@ -132,7 +140,7 @@ public class ModInstaller
         atlasUtils.Flush();
 
         phase("", "Writing game archive");
-        store.Commit();
+            store.Commit(installMods.Select(mod => new InstalledModState(mod.GetId(), mod.GetVersion())));
 
         // After the archive commits, so the Mods tab never describes an
         // archive that failed to land. The Mods tab lists exactly what runs (D12).
@@ -141,8 +149,14 @@ public class ModInstaller
         totalTime.Stop();
         reportStatus(Resources.CoreInstallCompleted, totalTime.Elapsed.ToString());
 
-        result.Installed.AddRange(installMods);
-        return result;
+            result.Installed.AddRange(installMods);
+            return result;
+        }
+        catch
+        {
+            store.Abort();
+            throw;
+        }
     }
 
     private GmlLayerPlan StageGmlLayer(AssetsStore store, List<GmlModCode> gmlMods,
