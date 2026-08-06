@@ -2,6 +2,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using Garethp.ModsOfMistriaInstallerLib.Store;
+using Tomlyn;
 
 namespace ModsOfMistriaInstallerLibTests.Store;
 
@@ -210,7 +211,7 @@ public class AssetsStoreTest
     // handle never blocks the rebuild there
     [Test]
     [Platform("Win")]
-    public void ShouldFailInBeginRebuildWithTheRunningGameHint()
+    public void ShouldKeepLiveArchiveUntouchedUntilCommitAndFailSafelyWhenLocked()
     {
         WriteInstalledLive();
         WriteVanillaBackup();
@@ -221,23 +222,25 @@ public class AssetsStoreTest
 
         using (File.Open(LivePath, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            var exception = Assert.Throws<IOException>(() => store.BeginRebuild());
-            Assert.That(exception!.Message, Does.Contain("running"));
+            var modifier = store.BeginRebuild();
+            modifier.Write("assets/gml/scripts/example_mod/State.gml", Encoding.UTF8.GetBytes("// staged\n"));
+            Assert.That(File.ReadAllBytes(LivePath), Is.EqualTo(before));
+            Assert.Throws<IOException>(() => store.Commit());
         }
 
         Assert.That(File.ReadAllBytes(LivePath), Is.EqualTo(before));
+        Assert.That(File.Exists(Path.Combine(_fom, "assets.momi.tmp.zip")), Is.False);
     }
 
     // Windows-only: Unix does not enforce FileShare semantics, so an open
     // handle never blocks the rebuild there
     [Test]
     [Platform("Win")]
-    public void ShouldCarryTheRunningGameHintWhenTheOpenIsBlocked()
+    public void ShouldStageEvenWhenLiveArchiveAllowsSharedReads()
     {
-        // a game launched between the copy and the open: this handle's share
-        // lets File.Copy succeed but blocks ZipFile.Open's Update mode
         WriteInstalledLive();
         WriteVanillaBackup();
+        var before = File.ReadAllBytes(LivePath);
 
         var store = new AssetsStore(_fom);
         store.EnsureBackup();
@@ -245,12 +248,12 @@ public class AssetsStoreTest
         using (File.Open(LivePath, FileMode.Open, FileAccess.Read,
                    FileShare.ReadWrite | FileShare.Delete))
         {
-            var exception = Assert.Throws<IOException>(() => store.BeginRebuild());
-            Assert.That(exception!.Message, Does.Contain("running"));
+            store.BeginRebuild();
+            Assert.That(File.ReadAllBytes(LivePath), Is.EqualTo(before));
+            store.Abort();
         }
 
-        // the copy itself went through, so the failure was the open's
-        Assert.That(File.ReadAllBytes(LivePath), Is.EqualTo(File.ReadAllBytes(BackupPath)));
+        Assert.That(File.Exists(Path.Combine(_fom, "assets.momi.tmp.zip")), Is.False);
     }
 
     // The Unix mirror of the two tests above: .NET's advisory locks make the
@@ -292,6 +295,7 @@ public class AssetsStoreTest
         modifier.Write("assets/gml/scripts/example_mod/State.gml", Encoding.UTF8.GetBytes("// state\n"));
         store.Commit();
         var first = EntryHashes(LivePath);
+        var firstBytes = File.ReadAllBytes(LivePath);
 
         store = new AssetsStore(_fom);
         store.EnsureBackup();
@@ -301,6 +305,7 @@ public class AssetsStoreTest
         store.Commit();
 
         Assert.That(EntryHashes(LivePath), Is.EqualTo(first));
+        Assert.That(File.ReadAllBytes(LivePath), Is.EqualTo(firstBytes));
     }
 
     [Test]
@@ -378,6 +383,114 @@ public class AssetsStoreTest
 
         Assert.That(restored, Is.False);
         Assert.That(File.Exists(LivePath), Is.False);
+    }
+
+    [Test]
+    public void ShouldWriteTransactionalStateWithInstalledMods()
+    {
+        WriteVanillaLive();
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+        var modifier = store.BeginRebuild();
+        modifier.Write("manifest.toml", "");
+        store.Commit([new("example.mod", "1.2.3")]);
+
+        Assert.That(File.Exists(Path.Combine(_fom, "assets.momi.state.toml")), Is.True);
+        var state = File.ReadAllText(Path.Combine(_fom, "assets.momi.state.toml"));
+        Assert.That(state, Does.Contain("pristine_sha256"));
+        Assert.That(state, Does.Contain("generated_live_sha256"));
+        Assert.That(state, Does.Contain("example.mod"));
+        Assert.That(state, Does.Contain("1.2.3"));
+    }
+
+    [Test]
+    public void ShouldRefuseAnUnknownUnmarkedArchiveAfterAKnownInstall()
+    {
+        WriteVanillaLive();
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+        var modifier = store.BeginRebuild();
+        modifier.Write("manifest.toml", "");
+        store.Commit();
+        var backupBefore = File.ReadAllBytes(BackupPath);
+
+        WriteZip(LivePath, ("assets/gml/objects/Game.gml", "new game build\n"));
+
+        var exception = Assert.Throws<InvalidOperationException>(() => new AssetsStore(_fom).EnsureBackup());
+        Assert.That(exception!.Message, Does.Contain("game update or external modification"));
+        Assert.That(File.ReadAllBytes(BackupPath), Is.EqualTo(backupBefore));
+    }
+
+    [Test]
+    public void ShouldKeepLiveArchiveWhenStagedTomlIsInvalid()
+    {
+        WriteVanillaLive();
+        var before = File.ReadAllBytes(LivePath);
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+        var modifier = store.BeginRebuild();
+        modifier.Write("assets/bad.toml", "not = [valid");
+
+        var exception = Assert.Throws<InvalidDataException>(() => store.Commit());
+        Assert.That(exception!.Message, Does.Contain("assets/bad.toml"));
+        Assert.That(File.ReadAllBytes(LivePath), Is.EqualTo(before));
+        Assert.That(File.Exists(Path.Combine(_fom, "assets.momi.tmp.zip")), Is.False);
+    }
+
+    [Test]
+    public void ShouldPreserveUtf8TextInStagedEntries()
+    {
+        WriteVanillaLive();
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+        var modifier = store.BeginRebuild();
+        modifier.Write("assets/localization/test.txt", "Български тест");
+        store.Commit();
+
+        Assert.That(ReadEntries(LivePath)["assets/localization/test.txt"],
+            Is.EqualTo(Encoding.UTF8.GetBytes("Български тест")));
+    }
+
+    [Test]
+    public void ShouldReplaceStaleOwnedTemporaryArchiveBeforeRebuild()
+    {
+        WriteVanillaLive();
+        File.WriteAllText(Path.Combine(_fom, "assets.momi.tmp.zip"), "stale");
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+        Assert.DoesNotThrow(() => store.BeginRebuild());
+        store.Abort();
+        Assert.That(File.Exists(Path.Combine(_fom, "assets.momi.tmp.zip")), Is.False);
+    }
+
+    [Test]
+    public void ShouldRejectDuplicateNormalizedArchivePaths()
+    {
+        WriteVanillaLive();
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+
+        using (var archive = ZipFile.Open(BackupPath, ZipArchiveMode.Update))
+            using (var stream = archive.CreateEntry("assets\\gml\\objects\\Game.gml").Open())
+                stream.Write(Encoding.UTF8.GetBytes("duplicate\n"));
+
+        Assert.Throws<InvalidDataException>(() => new AssetsStore(_fom).EnsureBackup());
+    }
+
+    [Test]
+    public void ShouldRejectAStateFileThatDoesNotMatchThePristineBackup()
+    {
+        WriteVanillaLive();
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+        var modifier = store.BeginRebuild();
+        modifier.Write("manifest.toml", "");
+        store.Commit();
+
+        WriteZip(BackupPath, ("assets/gml/objects/Game.gml", "different pristine\n"));
+
+        var exception = Assert.Throws<InvalidOperationException>(() => new AssetsStore(_fom).EnsureBackup());
+        Assert.That(exception!.Message, Does.Contain("does not match"));
     }
 
 }

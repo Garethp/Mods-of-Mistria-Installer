@@ -199,6 +199,23 @@ public class ModInstallerTest
             new ModInstaller(Path.Combine(_fom, "not-there"), "").InstallMods([], (_, _) => { }));
     }
 
+    [Test]
+    public void ShouldIdentifyTheSourceFileWhenModTomlIsInvalid()
+    {
+        var mod = new MockMod(new Dictionary<string, string>
+        {
+            ["data/broken.toml"] = "broken = [toml"
+        }) { Id = "broken.mod", Name = "Broken Mod" };
+
+        var exception = Assert.Throws<InvalidDataException>(() =>
+            new ModInstaller(_fom, "").InstallMods([mod], (_, _) => { }));
+
+        Assert.That(exception!.Message, Does.Contain("Broken Mod"));
+        Assert.That(exception.Message, Does.Contain("data/broken.toml"));
+        Assert.That(File.Exists(new AssetsStore(_fom).BackupPath), Is.False,
+            "source validation must happen before creating a pristine backup");
+    }
+
     // ── Fixtures and helpers ───────────────────────────────────────────────────
 
     private static MockMod GmlMod(string id, List<string>? requiresHooks = null) =>

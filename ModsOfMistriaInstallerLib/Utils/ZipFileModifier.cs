@@ -1,10 +1,14 @@
 ﻿using System.IO.Compression;
 using SixLabors.ImageSharp.Advanced;
+using System.Text;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 
 public class ZipFileModifier(ZipArchive archive) : IFileModifier
 {
+    private static readonly DateTimeOffset DeterministicEntryTime =
+        new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
     private ZipArchive _archive = archive;
 
     public bool Exists(string file)
@@ -49,11 +53,9 @@ public class ZipFileModifier(ZipArchive archive) : IFileModifier
 
     public void Write(string file, string contents)
     {
-        var stream = GetWriteStream(file);
-        stream.SetLength(contents.Length);
-        using var writer = new StreamWriter(stream);
-        writer.Write(contents);
-        writer.Close();
+        // String length is UTF-16 code units, not the UTF-8 byte count used by
+        // the archive entry. Direct byte writes preserve Cyrillic text.
+        Write(file, Encoding.UTF8.GetBytes(contents));
     }
 
     public void Write(string file, byte[] contents)
@@ -70,7 +72,12 @@ public class ZipFileModifier(ZipArchive archive) : IFileModifier
         file = file.Replace('\\', '/');
         var entry = _archive.GetEntry(file);
         if (entry == null)
+        {
             entry = _archive.CreateEntry(file);
+            // Mod-generated entries must not receive the current clock time;
+            // otherwise identical rebuilds produce different ZIP bytes.
+            entry.LastWriteTime = DeterministicEntryTime;
+        }
         
         var stream = entry.Open();
         return stream;

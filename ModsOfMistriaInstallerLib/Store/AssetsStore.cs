@@ -1,141 +1,393 @@
 using System.IO.Compression;
+using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Tomlyn;
+using Tomlyn.Model;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Store;
 
-// The two-file assets store: assets.zip is live (the game loads it) and
-// assets.bak.zip is pristine. Every install is a whole-archive rebuild from
-// pristine: copy the backup over the live archive, write both layers into it
-// in update mode, commit on dispose. No temp file and no atomic swap; a crash
-// mid-install leaves the complete vanilla copy on disk (update mode buffers in
-// memory), and the copy and flush windows stay a known risk (D4).
+public sealed record InstalledModState(string Id, string Version);
+
+// Owns the assets.zip transaction. The live archive is never opened for
+// writing: every install is rebuilt from a verified pristine archive into a
+// same-directory temporary archive and published only after validation.
 public class AssetsStore(string fomLocation)
 {
     private ZipArchive? _archive;
+    private string? _temporaryPath;
 
     public string LivePath { get; } = Path.Combine(fomLocation, "assets.zip");
-
     public string BackupPath { get; } = Path.Combine(fomLocation, "assets.bak.zip");
+    public string TemporaryPath { get; } = Path.Combine(fomLocation, "assets.momi.tmp.zip");
+    public string StatePath { get; } = Path.Combine(fomLocation, "assets.momi.state.toml");
 
-    // What the live archive tells us. Unreadable is its own state, never
-    // unmarked: the unmarked branch copies the live archive over the backup,
-    // which against a truncated archive would destroy the only pristine copy.
-    private enum LiveState
-    {
-        Absent,
-        Unmarked,
-        Marked,
-        Unreadable,
-    }
+    private enum LiveState { Absent, Unmarked, Marked, Unreadable }
 
-    // Make sure assets.bak.zip is the pristine source before anything writes.
-    // An unmarked live archive is vanilla (fresh install, or the game
-    // updated) → copy it over the backup. A marked or unreadable one needs the
-    // backup already there; a missing pair means no game assets at all.
     public void EnsureBackup()
     {
-        switch (ReadLiveState())
+        var backupHash = EnsureReadableBackup();
+        var state = ReadState();
+        var liveState = ReadLiveState();
+
+        if (state is not null && backupHash is null)
+            throw new InvalidOperationException(string.Format(Resources.CoreStoreBackupMissing, LivePath, BackupPath));
+
+        if (state is not null && backupHash != state.PristineSha256)
+            throw new InvalidOperationException("The MOMI state file does not match the verified pristine archive; the backup was preserved.");
+
+        if (liveState == LiveState.Absent)
         {
-            case LiveState.Unmarked:
-                File.Copy(LivePath, BackupPath, true);
-                return;
-            case LiveState.Marked when !File.Exists(BackupPath):
-                throw new InvalidOperationException(
-                    string.Format(Resources.CoreStoreBackupMissing, LivePath, BackupPath));
-            case LiveState.Unreadable when !File.Exists(BackupPath):
-                throw new InvalidOperationException(
-                    string.Format(Resources.CoreStoreUnreadableNoBackup, LivePath, BackupPath));
-            case LiveState.Absent when !File.Exists(BackupPath):
-                throw new FileNotFoundException(
-                    string.Format(Resources.CoreStoreNoArchives, LivePath, BackupPath), LivePath);
+            if (backupHash is null)
+                throw new FileNotFoundException(string.Format(Resources.CoreStoreNoArchives, LivePath, BackupPath), LivePath);
+            return;
         }
+
+        if (liveState == LiveState.Unreadable)
+        {
+            if (backupHash is null)
+                throw new InvalidOperationException(string.Format(Resources.CoreStoreUnreadableNoBackup, LivePath, BackupPath));
+            return;
+        }
+
+        var liveHash = Sha256File(LivePath);
+        if (state is not null)
+        {
+            if (liveHash == state.GeneratedLiveSha256 || liveHash == state.PristineSha256)
+                return;
+
+            throw UnknownLiveArchive(liveHash, state);
+        }
+
+        // Legacy installs have no state file. An unmarked live archive is the
+        // only safe legacy signal that it is vanilla; establish the backup.
+        // Once state exists, the branch above refuses to overwrite a verified
+        // pristine archive merely because manifest.toml is absent.
+        if (liveState == LiveState.Unmarked)
+        {
+            CopyVerified(LivePath, BackupPath);
+            return;
+        }
+
+        if (backupHash is null)
+            throw new InvalidOperationException(string.Format(Resources.CoreStoreBackupMissing, LivePath, BackupPath));
     }
 
-    // Copy the backup over the live archive and open it for the rebuild. The
-    // copy is the first write action, so a running game fails here with the
-    // previous install still live. The open sits in the same guard: a game
-    // launched after the copy still holds the file when Update acquires it.
     public IFileModifier BeginRebuild()
     {
+        EnsureReadableBackup();
+        Abort();
+
         try
         {
-            File.Copy(BackupPath, LivePath, true);
-            _archive = ZipFile.Open(LivePath, ZipArchiveMode.Update);
+            File.Copy(BackupPath, TemporaryPath, true);
+            _temporaryPath = TemporaryPath;
+            _archive = ZipFile.Open(TemporaryPath, ZipArchiveMode.Update);
+            return new ZipFileModifier(_archive);
         }
         catch (IOException exception) when (exception is not FileNotFoundException)
         {
+            Abort();
             throw new IOException(string.Format(Resources.CoreStoreRebuildFailed, LivePath), exception);
         }
-
-        return new ZipFileModifier(_archive);
     }
 
-    // Dispose the archive, which is the flush. A failure here leaves the
-    // bootable vanilla copy on disk; re-running the installer heals it.
-    public void Commit()
+    public void Commit() => Commit([]);
+
+    public void Commit(IEnumerable<InstalledModState> installedMods)
     {
-        if (_archive is null)
+        if (_archive is null || _temporaryPath is null)
             throw new InvalidOperationException("Commit without BeginRebuild");
 
         try
         {
             _archive.Dispose();
+            _archive = null;
+
+            ValidateArchive(_temporaryPath);
+            var pristineHash = Sha256File(BackupPath);
+            var generatedHash = Sha256File(_temporaryPath);
+            var stateText = SerializeState(pristineHash, generatedHash, installedMods);
+            Toml.ParseToml(stateText);
+            var stateTemp = StatePath + ".tmp";
+            SafeDelete(stateTemp);
+            WriteExclusiveReplacement(stateTemp, stateText);
+
+            AtomicReplace(_temporaryPath, LivePath);
+            _temporaryPath = null;
+
+            AtomicReplace(stateTemp, StatePath);
         }
-        catch (IOException exception)
+        catch (IOException exception) when (_archive is null)
         {
+            CleanupTemporary();
+            SafeDelete(StatePath + ".tmp");
             throw new IOException(string.Format(Resources.CoreStoreFlushFailed, LivePath), exception);
         }
-        finally
+        catch
         {
-            _archive = null;
+            Abort();
+            SafeDelete(StatePath + ".tmp");
+            throw;
         }
     }
 
-    // The uninstall guard ladder (D15). Unmarked → the game updated or nothing
-    // was ever installed, so clean up the stale backup instead of copying old
-    // game files over new ones. Marked or unreadable → restore the pristine
-    // copy, refusing when there is none. True when the store changed.
+    public void Abort()
+    {
+        try { _archive?.Dispose(); } catch { /* best effort; live is untouched */ }
+        _archive = null;
+        CleanupTemporary();
+    }
+
     public bool Uninstall()
     {
-        var state = ReadLiveState();
-        switch (state)
+        var backupHash = EnsureReadableBackup();
+        var state = ReadState();
+        var liveState = ReadLiveState();
+
+        if (state is not null && backupHash is null)
+            throw new InvalidOperationException(string.Format(Resources.CoreStoreBackupMissing, LivePath, BackupPath));
+        if (state is not null && backupHash != state.PristineSha256)
+            throw new InvalidOperationException("The MOMI state file does not match the verified pristine archive; the backup was preserved.");
+
+        if (liveState == LiveState.Absent)
         {
-            case LiveState.Unmarked:
-                if (File.Exists(BackupPath)) File.Delete(BackupPath);
-                return true;
-            case LiveState.Absent when !File.Exists(BackupPath):
+            if (backupHash is null)
+            {
                 Logger.Log(Resources.CoreStoreNothingToUninstall);
                 return false;
-            case LiveState.Marked or LiveState.Unreadable when !File.Exists(BackupPath):
-                throw new InvalidOperationException(
-                    string.Format(Resources.CoreStoreBackupMissing, LivePath, BackupPath));
+            }
+            RestoreBackupTransactionally();
+            if (state is null) RemoveState();
+            else WritePristineState(backupHash!);
+            return true;
         }
 
+        if (liveState == LiveState.Unmarked && state is null)
+        {
+            // A legacy unmarked archive is treated as vanilla. Keep the
+            // live archive and remove only the legacy, untracked backup.
+            if (File.Exists(BackupPath)) File.Delete(BackupPath);
+            return true;
+        }
+
+        if (backupHash is null)
+            throw new InvalidOperationException(string.Format(Resources.CoreStoreBackupMissing, LivePath, BackupPath));
+
+        if (state is not null && (liveState is LiveState.Unmarked or LiveState.Marked))
+        {
+            var liveHash = Sha256File(LivePath);
+            if (liveHash != state.GeneratedLiveSha256 && liveHash != state.PristineSha256)
+                throw UnknownLiveArchive(liveHash, state);
+        }
+
+        if (state is null && liveState == LiveState.Marked && backupHash is null)
+            throw new InvalidOperationException(string.Format(Resources.CoreStoreBackupMissing, LivePath, BackupPath));
+
+        RestoreBackupTransactionally();
+        if (state is null) RemoveState();
+        else WritePristineState(backupHash);
+        return true;
+    }
+
+    private void RestoreBackupTransactionally()
+    {
+        EnsureReadableBackup();
+        Abort();
+        File.Copy(BackupPath, TemporaryPath, true);
         try
         {
-            File.Copy(BackupPath, LivePath, true);
+            ValidateArchive(TemporaryPath);
+            AtomicReplace(TemporaryPath, LivePath);
         }
-        catch (IOException exception) when (exception is not FileNotFoundException)
+        catch (IOException exception)
         {
+            CleanupTemporary();
             throw new IOException(string.Format(Resources.CoreStoreRestoreFailed, LivePath), exception);
         }
+    }
 
-        return true;
+    private string? EnsureReadableBackup()
+    {
+        if (!File.Exists(BackupPath)) return null;
+        ValidateArchive(BackupPath);
+        return Sha256File(BackupPath);
     }
 
     private LiveState ReadLiveState()
     {
         if (!File.Exists(LivePath)) return LiveState.Absent;
-
         try
         {
+            ValidateArchive(LivePath);
             using var archive = ZipFile.OpenRead(LivePath);
             return archive.GetEntry("manifest.toml") is null ? LiveState.Unmarked : LiveState.Marked;
         }
-        catch (InvalidDataException)
+        catch (InvalidDataException) { return LiveState.Unreadable; }
+        catch (IOException) { return LiveState.Unreadable; }
+    }
+
+    private StoreState? ReadState()
+    {
+        if (!File.Exists(StatePath)) return null;
+        try
         {
-            return LiveState.Unreadable;
+            var root = Toml.ParseToml(File.ReadAllText(StatePath));
+            if (!root.TryGetValue("schema_version", out var schema) || schema is not long version || version != 1)
+                throw new FormatException("Unsupported state schema version");
+            return new StoreState(
+                GetString(root, "pristine_sha256"),
+                GetString(root, "generated_live_sha256"));
+        }
+        catch (Exception exception) when (exception is FormatException or IOException or TomlException)
+        {
+            throw new InvalidOperationException($"MOMI state file is invalid: {StatePath}", exception);
         }
     }
+
+    private static string GetString(TomlTable root, string key) =>
+        root.TryGetValue(key, out var value) && value is string text && !string.IsNullOrWhiteSpace(text)
+            ? text
+            : throw new FormatException($"Missing state field '{key}'");
+
+    private string SerializeState(string pristineHash, string generatedHash, IEnumerable<InstalledModState> installedMods)
+    {
+        var root = new TomlTable
+        {
+            ["schema_version"] = 1L,
+            ["pristine_sha256"] = pristineHash,
+            ["generated_live_sha256"] = generatedHash,
+            ["momi_version"] = Assembly.GetEntryAssembly()?.GetName().Version?.ToString()
+                               ?? GetType().Assembly.GetName().Version?.ToString() ?? "unknown",
+            ["installed_at_utc"] = DateTimeOffset.UtcNow.ToString("O"),
+        };
+        var mods = new TomlTableArray();
+        foreach (var mod in installedMods.OrderBy(m => m.Id, StringComparer.Ordinal))
+            mods.Add(new TomlTable { ["id"] = mod.Id, ["version"] = mod.Version });
+        root["mods"] = mods;
+        return TomlSerializer.Serialize(root);
+    }
+
+    private static void ValidateArchive(string path)
+    {
+        using var archive = ZipFile.OpenRead(path);
+        var normalized = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var hasAssets = false;
+        foreach (var entry in archive.Entries)
+        {
+            var name = entry.FullName.Replace('\\', '/');
+            var key = name.TrimEnd('/');
+            if (key.Length == 0 || !normalized.Add(key))
+                throw new InvalidDataException($"Archive contains a duplicate or invalid normalized path: {entry.FullName}");
+            if (name.StartsWith("assets/", StringComparison.OrdinalIgnoreCase)) hasAssets = true;
+
+            using var input = entry.Open();
+            input.CopyTo(Stream.Null); // verifies the entry CRC while reading
+
+            if (name.EndsWith(".toml", StringComparison.OrdinalIgnoreCase))
+            {
+                using var text = entry.Open();
+                using var reader = new StreamReader(text, new UTF8Encoding(false, true), detectEncodingFromByteOrderMarks: true);
+                try
+                {
+                    Toml.ParseToml(reader.ReadToEnd());
+                }
+                catch (Exception exception) when (exception is TomlException or FormatException)
+                {
+                    throw new InvalidDataException($"Invalid TOML in archive entry '{name}'.", exception);
+                }
+            }
+        }
+        if (!hasAssets) throw new InvalidDataException("Archive contains no assets/ game entries");
+    }
+
+    private static void CopyVerified(string source, string destination)
+    {
+        ValidateArchive(source);
+        var temp = destination + ".tmp";
+        SafeDelete(temp);
+        try
+        {
+            File.Copy(source, temp, false);
+            AtomicReplace(temp, destination);
+            if (Sha256File(source) != Sha256File(destination))
+                throw new IOException("Pristine archive hash verification failed");
+        }
+        finally
+        {
+            SafeDelete(temp);
+        }
+    }
+
+    private void WritePristineState(string pristineHash)
+    {
+        var stateTemp = StatePath + ".tmp";
+        SafeDelete(stateTemp);
+        var stateText = SerializeState(pristineHash, pristineHash, []);
+        Toml.ParseToml(stateText);
+        WriteExclusiveReplacement(stateTemp, stateText);
+        AtomicReplace(stateTemp, StatePath);
+    }
+
+    private static void WriteExclusiveReplacement(string path, string text) =>
+        WriteExclusiveReplacement(path, Encoding.UTF8.GetBytes(text));
+
+    private static void WriteExclusiveReplacement(string path, byte[] bytes)
+    {
+        using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        stream.Write(bytes);
+        stream.Flush(true);
+    }
+
+    private static void SafeDelete(string path)
+    {
+        if (!File.Exists(path)) return;
+        File.Delete(path);
+    }
+
+    private static void AtomicReplace(string source, string destination)
+    {
+        try
+        {
+            if (File.Exists(destination))
+                File.Replace(source, destination, null, ignoreMetadataErrors: true);
+            else
+                File.Move(source, destination);
+        }
+        catch (PlatformNotSupportedException)
+        {
+            File.Move(source, destination, overwrite: true);
+        }
+        catch (IOException) when (!File.Exists(destination))
+        {
+            File.Move(source, destination);
+        }
+    }
+
+    private void CleanupTemporary()
+    {
+        _temporaryPath = null;
+        if (File.Exists(TemporaryPath))
+        {
+            try { File.Delete(TemporaryPath); } catch { /* next run reports a stale temp */ }
+        }
+    }
+
+    private void RemoveState()
+    {
+        if (File.Exists(StatePath)) File.Delete(StatePath);
+    }
+
+    private static string Sha256File(string path)
+    {
+        using var stream = File.OpenRead(path);
+        return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+    }
+
+    private static InvalidOperationException UnknownLiveArchive(string liveHash, StoreState state) =>
+        new($"The live assets archive is not the known MOMI output or pristine archive (SHA-256 {liveHash}); possible game update or external modification. The verified backup was preserved. Reinstall/verify the game before retrying.");
+
+    private sealed record StoreState(string PristineSha256, string GeneratedLiveSha256);
 }
