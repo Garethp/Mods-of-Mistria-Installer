@@ -37,8 +37,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 101
-seams = 109
+hooks = 102
+seams = 110
 engine_fixes = 4
 call_rewrites = 1
 
@@ -313,9 +313,14 @@ kind = "filter"
 doc  = "Fires at the top of give_item(), after the item is coerced to a LiveItem. The filtered value is the struct { item, item_id, count, show_toast, show_new_popup, play_sound }. ctx is the player. Return the replacement struct. The seam tolerates an undefined return and re-reads each field defensively (item_id is informational and is not read back)."
 
 [[hook]]
+name = "items.infusion_chance"
+kind = "filter"
+doc  = "Fires in Recipe.craft_into(), once per crafted item, right before the infusion roll. The filtered value is the roll chance percent (the engine computes 15, +5 per Empowered perk tier, so 15-25). ctx is { recipe, candidates }; candidates is the LIVE engine List of { infusion, perk } entries the uniform pick draws from, so a handler may also prune or push entries to shape the selection (a pushed entry's perk may be undefined). Return the replacement percent, or undefined to keep the current value. chance_percent treats 0 as never (an explicit zero check) and 100 or more as always. The hook fires even when the candidate list is empty - an empty list yields no infusion regardless of the returned chance (this includes items with a default_infusion, whose generation returns empty by design)."
+
+[[hook]]
 name = "items.infusion_generate"
 kind = "guard"
-doc  = "Fires at the top of Recipe.generate_infusions(). ctx is the recipe struct. Return false to veto infusion generation (an empty list is returned). Undefined or true allows."
+doc  = "Fires at the top of Recipe.generate_infusions(). ctx is the recipe struct. Return false to veto infusion generation (an empty list is returned). Undefined or true allows. To change the ODDS of the roll (or shape the candidate pool) rather than veto generation, use the items.infusion_chance filter."
 
 [[hook]]
 name = "items.treasure_distribution"
@@ -2474,6 +2479,23 @@ replace = '''
         }'''
 marker  = "mmapi_items_run_give_filters"
 provides = ["items.give"]
+
+# The infusion roll chance, hoisted out of craft_into's roll condition and
+# filtered before chance_percent consumes it, with the live candidate list in
+# ctx so a handler can shape both the odds and the pool the uniform pick draws
+# from. Text form: the chance lives inline inside a compound if condition,
+# which no template op can rewrite.
+[[seam]]
+id      = "items_infusion_chance"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+            if !infusions.is_empty() && chance_percent(15 + bonus_infusion_chance) {'''
+replace = '''
+            var __mmapi_infusion_chance = 15 + bonus_infusion_chance;
+            try { __mmapi_infusion_chance = mmapi_apply_filters("items.infusion_chance", __mmapi_infusion_chance, { recipe: self, candidates: infusions }); } catch (__mmapi_items_infusion_chance) {} // mmapi_items_infusion_chance
+            if !infusions.is_empty() && chance_percent(__mmapi_infusion_chance) {'''
+marker  = "mmapi_items_infusion_chance"
+provides = ["items.infusion_chance"]
 
 [[seam]]
 id      = "items_infusion_generate"

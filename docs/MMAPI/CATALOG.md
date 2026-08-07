@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **101 hooks**, fed by **109 seams**, **4 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **102 hooks**, fed by **110 seams**, **4 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -105,6 +105,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [items.dig_artifact](hooks/items.dig_artifact.md) | filter | Swap the artifact an archaeology dig spot yields. |
 | [items.treasure_distribution](hooks/items.treasure_distribution.md) | filter | Change what the dungeon treasure roll drops. |
 | [items.infusion_generate](hooks/items.infusion_generate.md) | guard | Stop a recipe from rolling infusions. |
+| [items.infusion_chance](hooks/items.infusion_chance.md) | filter | Change the odds that a crafted item rolls an infusion. |
 | [item.display_description](hooks/item.display_description.md) | filter | Reword the description an item's tooltip renders. |
 | [crafting.max_crafts](hooks/crafting.max_crafts.md) | override | Take over how many of a recipe can be crafted. |
 | [crafting.pay_component_costs](hooks/crafting.pay_component_costs.md) | guard | Veto a recipe's material payment, craft for free. |
@@ -233,6 +234,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [items_treasure_distribution_none](seams/items_treasure_distribution_none.md) | Filters the treasure roll's empty exit so mods can inject a drop where there was none. |
 | [items_treasure_distribution_result](seams/items_treasure_distribution_result.md) | Filters the treasure roll's rolled result on its way out. |
 | [items_infusion_generate](seams/items_infusion_generate.md) | Puts a veto check in front of a recipe's infusion generation. |
+| [items_infusion_chance](seams/items_infusion_chance.md) | Filters the infusion roll chance in `craft_into()`, hoisted out of the roll condition before `chance_percent` consumes it. |
 | [item_display_description](seams/item_display_description.md) | Wraps the item-description getter, the string the tooltip body actually renders. |
 | [crafting_max_crafts](seams/crafting_max_crafts.md) | Puts an override in front of the craft-count ceiling before the engine computes it. |
 | [crafting_pay_component_costs](seams/crafting_pay_component_costs.md) | Puts a veto check in front of a recipe's material payment. |
