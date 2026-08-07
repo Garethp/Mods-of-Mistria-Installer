@@ -8,6 +8,7 @@ public static class AppInfo
     public const string ReleaseApiUrl = "https://api.github.com/repos/AcTePuKc/Mods-of-Mistria-Installer/releases/latest";
     public const string SupportedGame = "Fields of Mistria 1.0.x";
     public const string GameLaunchUri = "steam://rungameid/2142790";
+    public const string BuildLabel = "AI";
 
     public static string Version
     {
@@ -26,7 +27,7 @@ public static class AppInfo
         }
     }
 
-    public static string DisplayVersion => $"MOMI {Version}";
+    public static string DisplayVersion => $"MOMI {Version} {BuildLabel}";
 
     private static string TrimBuildSuffix(string value)
     {
