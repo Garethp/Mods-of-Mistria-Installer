@@ -25,4 +25,5 @@ The dispatch calls `mmapi_check_guards("items.infusion_generate", self)` in the 
 ## See Also
 
 - [items.infusion_generate](../hooks/items.infusion_generate.md) - This is the hook this seam dispatches.
-- [crafting_pay_component_costs](crafting_pay_component_costs.md) - This is the other `Recipe.gml` seam, which guards the material payment.
+- [items_infusion_chance](items_infusion_chance.md) - This is the downstream dispatch in the same file, which filters the roll chance in `craft_into()`.
+- [crafting_pay_component_costs](crafting_pay_component_costs.md) - This is the sibling `Recipe.gml` seam that guards the material payment.
