@@ -633,7 +633,7 @@ anchor  = '''
 replace = '''
     function maximum_crafts(item) {
         var __mmapi_max_crafts = mmapi_run_override("crafting.max_crafts", { menu: self, item: item }); // mmapi_crafting_max_crafts_override
-        if (__mmapi_max_crafts != undefined) { return __mmapi_max_crafts; }
+        if (typeof(__mmapi_max_crafts) != "undefined") { return __mmapi_max_crafts; }
         var maximum = I32_MAX;'''
 marker  = "mmapi_crafting_max_crafts_override"
 provides = ["crafting.max_crafts"]
@@ -862,7 +862,7 @@ function interact(node) {
 replace = '''
 function interact(node) {
     var __mmapi_object_interact = mmapi_run_override("object.interact", node); // mmapi_object_interact_override
-    if (__mmapi_object_interact != undefined) { return __mmapi_object_interact; }
+    if (typeof(__mmapi_object_interact) != "undefined") { return __mmapi_object_interact; }
 '''
 marker  = "mmapi_object_interact_override"
 provides = ["object.interact"]
@@ -876,7 +876,7 @@ function run_date(date, npc) {
 replace = '''
 function run_date(date, npc) {
     var __mmapi_date_run = mmapi_run_override("date.run", { date: date, npc: npc }); // mmapi_date_run_override
-    if (__mmapi_date_run != undefined) { return __mmapi_date_run; }
+    if (typeof(__mmapi_date_run) != "undefined") { return __mmapi_date_run; }
 '''
 marker  = "mmapi_date_run_override"
 provides = ["date.run"]
@@ -1395,7 +1395,7 @@ function can_cast_spell(spell) {
 replace = '''
 function can_cast_spell(spell) {
     var __mmapi_can_cast_spell = mmapi_run_override("spells.can_cast", spell); // mmapi_spell_can_cast_filter
-    if (__mmapi_can_cast_spell != undefined) { return __mmapi_can_cast_spell; }
+    if (typeof(__mmapi_can_cast_spell) != "undefined") { return __mmapi_can_cast_spell; }
 '''
 marker  = "mmapi_spell_can_cast_filter"
 provides = ["spells.can_cast"]
