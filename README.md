@@ -4,6 +4,16 @@ This is an independent fork of [Mods of Mistria Installer](https://github.com/Ga
 
 The `AI` label identifies this fork build. The numeric application version remains `0.15.2` so update checks and release tooling continue to use a normal semantic version.
 
+## Fork-specific improvements
+
+Compared with the upstream 0.15.1 line, this fork focuses on Fields of Mistria 1.0.x support and safer everyday use:
+
+- Rebuilds are staged from a verified pristine archive and validated before the live `assets.zip` is replaced.
+- Failed installations keep the previous working archive and provide a mod-specific diagnostic log where possible.
+- TOML validation, custom font installation and manual-load animation content are supported for current 1.0.x mods.
+- The UI remembers profiles and load order, behaves better on high-DPI displays, and includes a guarded **Play** button.
+- Update checks, release uploads and the GitHub link belong to this fork rather than the upstream repository.
+
 ## What this fork supports
 
 - Fields of Mistria 1.0.x mod installations.
