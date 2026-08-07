@@ -487,7 +487,7 @@ doc  = "Fires at the top of can_cast_spell(). ctx is the spell id. Return a non-
 name = "spells.cast"
 kind = "override"
 contention = "claim-scoped"
-doc  = "Fires at the top of cast_spell(). ctx is the spell id. Return any value other than undefined or false to consume the cast, skipping the engine cast and emitting spells.cast_done. Undefined defers to the engine cast (false also falls through, but still ends the override chain)."
+doc  = "Fires at the top of cast_spell(). ctx is the spell id. Return any value other than undefined to consume the cast, skipping the engine cast and emitting spells.cast_done. Undefined is the only deferral token: it lets later overrides run, and the engine cast proceeds when every handler declines. The consume test is type-exact, so false and numeric zero consume like any other defined result."
 
 [[hook]]
 name = "spells.cast_done"
@@ -1421,7 +1421,7 @@ function cast_spell(spell) {
 replace = '''
 function cast_spell(spell) {
     var __mmapi_spell_cast_handled = mmapi_run_override("spells.cast", spell); // mmapi_spell_cast_override
-    if (__mmapi_spell_cast_handled != undefined && __mmapi_spell_cast_handled != false) {
+    if (typeof(__mmapi_spell_cast_handled) != "undefined") {
         try { mmapi_emit("spells.cast_done", spell); } catch (__mmapi_spell_cast_override_callback) {}
         return;
     }
