@@ -60,6 +60,7 @@ public class MockFileModifier: IFileModifier
 
     public void Write(string file, byte[] contents)
     {
+        file = file.Replace("\\", "/");
         _resultingFiles[file] = System.Text.Encoding.UTF8.GetString(contents);
     }
 
@@ -87,4 +88,5 @@ public class MockFileModifier: IFileModifier
         
         return _resultingFiles[file];
     }
+
 }

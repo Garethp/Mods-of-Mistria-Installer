@@ -242,6 +242,12 @@ public class ModInstaller
         new TOMLInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, generatedInformation, reportStatus);
 
+        // TOMLInstaller installs the font metadata, while this step installs
+        // the binary .ttf required by the game's asset loader.
+        reportPhase(modName, "Installing Fonts");
+        new FontInstaller(_fileModifier)
+            .Install(effectiveMod, reportStatus);
+
         // 3. Install JSON files
         reportPhase(modName, "Installing JSON");
         new JSONInstaller(fileNameUIDMapping, _fileModifier)
