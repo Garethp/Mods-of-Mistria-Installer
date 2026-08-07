@@ -1,5 +1,13 @@
 # Roadmap
 
+## 0.15.2 AI fork release
+* [x] Target Fields of Mistria 1.0.x archive and localization workflows
+* [x] Stage and validate `assets.zip` rebuilds before replacing the live archive
+* [x] Preserve the previous working archive when installation fails
+* [x] Add TOML validation, custom font installation and manual-load support
+* [x] Add installation diagnostics, high-DPI UI sizing and guarded game launch
+* [x] Point update checks and release tooling at the maintained fork
+
 ## 0.15.1
 * [x] Rebuild `assets.zip` transactionally from a verified pristine archive
 * [x] Validate staged archives before replacing the live game archive
