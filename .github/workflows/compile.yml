@@ -4,6 +4,11 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag in this repository"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -58,8 +63,6 @@ jobs:
         configuration: [Release]
 
     runs-on: ubuntu-latest
-    environment: NEXUS_TOKEN
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -79,12 +82,14 @@ jobs:
         run: dotnet build
       - name: Test
         run: dotnet test
-      - name: Publish ${{ matrix.arch }} CLI
+      - name: Publish ${{ matrix.project }} ${{ matrix.arch }}
         run: dotnet publish ${{ matrix.project }} -c ${{ matrix.configuration }} -r ${{ matrix.arch }} -o Release
-      - name: Upload binaries to release
+      - name: Upload binaries to this repository release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           ls -l Release
-          gh release upload ${{ github.ref_name }} Release/*
+          gh release upload "${{ github.event.release.tag_name || inputs.tag }}" Release/* \
+            --repo "${{ github.repository }}" \
+            --clobber

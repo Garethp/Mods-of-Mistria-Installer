@@ -13,6 +13,7 @@ public enum ModInstallState
     None,
     Installed,
     Skipped,
+    Failed,
 }
 
 public partial class ModModel : ObservableObject
@@ -68,12 +69,18 @@ public partial class ModModel : ObservableObject
 
     public bool WasInstalled      => _installState == ModInstallState.Installed;
     public bool WasSkipped        => _installState == ModInstallState.Skipped;
+    public bool WasFailed         => _installState == ModInstallState.Failed;
     public bool HasInstallOutcome => _installState != ModInstallState.None;
 
     // A skipped mod's reasons also land as validation errors; the red X and
     // InstallDetail already carry them, so the error triangle and error text
     // stand down while the skip is showing
     public bool ShowErrorIcon => InError && !WasSkipped;
+
+    public Avalonia.Media.IBrush StatusBackground =>
+        WasFailed
+            ? new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#5C1F1F"))
+            : Avalonia.Media.Brushes.LightGray;
 
     // The plain checkbox row is for a valid mod with nothing to report; any
     // validation message or install outcome swaps in the expander
@@ -86,8 +93,10 @@ public partial class ModModel : ObservableObject
         InstallDetail = detail;
         OnPropertyChanged(nameof(WasInstalled));
         OnPropertyChanged(nameof(WasSkipped));
+        OnPropertyChanged(nameof(WasFailed));
         OnPropertyChanged(nameof(HasInstallOutcome));
         OnPropertyChanged(nameof(InstallDetail));
+        OnPropertyChanged(nameof(StatusBackground));
         OnPropertyChanged(nameof(ShowErrorIcon));
         OnPropertyChanged(nameof(ShowPlainRow));
         OnPropertyChanged(nameof(ShowStatusRow));

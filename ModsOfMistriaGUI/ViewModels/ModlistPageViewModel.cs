@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -7,6 +8,7 @@ using Garethp.ModsOfMistriaGUI.Models;
 using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Garethp.ModsOfMistriaInstallerLib.Store;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using UpdateChecker = Garethp.ModsOfMistriaInstallerLib.UpdateChecker;
@@ -107,13 +109,16 @@ public partial class ModlistPageViewModel : PageViewBase
     {
         var names = _profileManager?.GetProfileNames() ?? ["Default"];
         var active = _profileManager?.CurrentProfileName ?? "Default";
+        var selected = names.Contains(active) ? active : "Default";
+
+        // Clearing the collection clears ComboBox.SelectedItem. Resetting the
+        // backing value first is important when the same profile remains
+        // active (especially Default), otherwise no property notification is
+        // raised and the ComboBox stays visually unselected.
+        CurrentProfile = "";
         Profiles.Clear();
         foreach (var n in names) Profiles.Add(n);
-
-        // Re-select the persisted profile after rebuilding the ComboBox source.
-        // Clearing an ObservableCollection can otherwise make the UI fall back
-        // to the first profile even though ProfileManager retained another one.
-        CurrentProfile = names.Contains(active) ? active : "Default";
+        CurrentProfile = selected;
     }
 
     private void ApplyProfileToMods()
@@ -373,6 +378,7 @@ public partial class ModlistPageViewModel : PageViewBase
         Dispatcher.UIThread.InvokeAsync(() =>
         {
             InstallStatus = "";
+            RefreshGameReady();
             InstallModsCommand.NotifyCanExecuteChanged();
             UnInstallModsCommand.NotifyCanExecuteChanged();
 
@@ -441,7 +447,11 @@ public partial class ModlistPageViewModel : PageViewBase
 
     [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))]
     [NotifyCanExecuteChangedFor(nameof(UnInstallModsCommand))]
+    [NotifyCanExecuteChangedFor(nameof(LaunchGameCommand))]
     [ObservableProperty] private bool _isInstalling;
+
+    [NotifyCanExecuteChangedFor(nameof(LaunchGameCommand))]
+    [ObservableProperty] private bool _gameReady;
 
     public ObservableCollection<ModModel> Mods { get; } = [];
 
@@ -450,6 +460,8 @@ public partial class ModlistPageViewModel : PageViewBase
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private void InstallMods()
     {
+        Exception = "";
+
         // Auto-save profile state before installing so load order is persisted
         SaveCurrentProfileState();
 
@@ -470,8 +482,10 @@ public partial class ModlistPageViewModel : PageViewBase
         var logs  = Logger.GetLogs();
         var files = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title           = Resources.GUIPickLogFile,
-            FileTypeChoices = [FilePickerFileTypes.TextPlain]
+            Title             = Resources.GUIPickLogFile,
+            SuggestedFileName = $"momi-log-{DateTime.Now:yyyyMMdd-HHmmss}.txt",
+            DefaultExtension  = "txt",
+            FileTypeChoices   = [FilePickerFileTypes.TextPlain]
         });
 
         if (files is not null)
@@ -479,7 +493,11 @@ public partial class ModlistPageViewModel : PageViewBase
     }
 
     [RelayCommand]
-    private void ReloadModlist() => UpdateModlist(true);
+    private void ReloadModlist()
+    {
+        Exception = "";
+        UpdateModlist(true);
+    }
 
     [RelayCommand]
     private void EnableAllMods()
@@ -500,6 +518,7 @@ public partial class ModlistPageViewModel : PageViewBase
     [RelayCommand(CanExecute = nameof(CanRemove))]
     private void UnInstallMods()
     {
+        Exception     = "";
         IsInstalling  = true;
         InstallStatus = Resources.GUIUninstallingText;
 
@@ -512,20 +531,24 @@ public partial class ModlistPageViewModel : PageViewBase
                 {
                     IsInstalling  = false;
                     InstallStatus = Resources.GUIUninstallCompleteText;
+                    RefreshGameReady();
                     // Nothing is installed any more; the outcome icons are stale
                     foreach (var mod in Mods) mod.SetInstallOutcome(ModInstallState.None);
                 });
             }
             catch (Exception e)
             {
-                // The failure surfaces globally and is TERMINAL for the session:
-                // the busy latch deliberately stays set, so installing,
-                // uninstalling and the list actions remain disabled under the
-                // error. Saving the log stays live - the error is a bug report.
+                var errorLogPath = WriteDiagnosticErrorLog("uninstall", e);
+                Logger.Log($"{Resources.GUIUninstallFatalError}\r\n{e}");
+
+                // Keep the page recoverable. The archive transaction has already
+                // aborted, so the user can inspect the error and retry.
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    InstallStatus = "";
-                    Exception     = Resources.GUIUninstallFatalError + "\n" + e.Message;
+                    IsInstalling  = false;
+                    InstallStatus = Resources.GUIUninstallFatalError;
+                    RefreshGameReady();
+                    Exception     = FormatErrorMessage(Resources.GUIUninstallFatalError, e, errorLogPath);
                 });
             }
         });
@@ -549,6 +572,7 @@ public partial class ModlistPageViewModel : PageViewBase
             {
                 IsInstalling  = false;
                 InstallStatus = result.Summary();
+                RefreshGameReady();
 
                 // Checkmark for what landed, red X with the reasons for what
                 // was skipped; a skipped mod's reasons also landed as
@@ -567,20 +591,130 @@ public partial class ModlistPageViewModel : PageViewBase
         }
         catch (Exception e)
         {
-            // The failure surfaces globally and is TERMINAL for the session: the
-            // busy latch deliberately stays set, so installing, uninstalling and
-            // the list actions remain disabled under the error. Saving the log
-            // stays live - the error is a bug report.
+            // Write the diagnostic first so its Recent MOMI log contains only
+            // the progress leading up to the failure, not a second copy of the
+            // same full exception.
+            var errorLogPath = WriteDiagnosticErrorLog("install", e);
+            Logger.Log($"{Resources.GUIInstallFatalError}\r\n{e}");
+            var failedModId = (e as ModInstallationException)?.ModId;
+
+            // Keep the page recoverable. The archive transaction has already
+            // aborted, so the user can disable the failing mod and retry.
             Dispatcher.UIThread.InvokeAsync(() =>
             {
-                InstallStatus = "";
-                Exception     = Resources.GUIInstallFatalError + "\n" + e.Message;
+                if (!string.IsNullOrEmpty(failedModId))
+                {
+                    var failedMod = Mods.FirstOrDefault(m =>
+                        string.Equals(m.Mod.GetId(), failedModId, StringComparison.OrdinalIgnoreCase));
+                    failedMod?.SetInstallOutcome(
+                        ModInstallState.Failed,
+                        e.Message + "\r\nReason: " + GetRootCauseMessage(e));
+                }
+
+                IsInstalling  = false;
+                InstallStatus = Resources.GUIInstallFatalError;
+                RefreshGameReady();
+                Exception     = FormatErrorMessage(Resources.GUIInstallFatalError, e, errorLogPath);
             });
         }
     }
 
+    private static string FormatErrorMessage(string heading, Exception exception, string? errorLogPath)
+    {
+        var rootCause = GetRootCauseMessage(exception);
+        var message = heading + "\n" + exception.Message;
+        if (!string.Equals(rootCause, exception.Message, StringComparison.Ordinal))
+            message += "\n\nReason: " + rootCause;
+
+        if (!string.IsNullOrEmpty(errorLogPath))
+        {
+            message += $"\n\nError details saved to:\n{errorLogPath}";
+        }
+
+        return message;
+    }
+
+    private static string GetRootCauseMessage(Exception exception)
+    {
+        while (exception.InnerException is not null)
+            exception = exception.InnerException;
+
+        return exception.Message;
+    }
+
+    private static string? WriteDiagnosticErrorLog(string operation, Exception exception)
+    {
+        try
+        {
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var root = string.IsNullOrWhiteSpace(localAppData)
+                ? AppContext.BaseDirectory
+                : localAppData;
+            var directory = Path.Combine(root, "MOMI", "logs");
+            Directory.CreateDirectory(directory);
+
+            var path = Path.Combine(directory, $"momi-error-{DateTime.Now:yyyyMMdd-HHmmssfff}.txt");
+            var contents = $"MOMI diagnostic error log\r\n" +
+                           $"Timestamp (UTC): {DateTime.UtcNow:O}\r\n" +
+                           $"Application: {AppInfo.DisplayVersion}\r\n" +
+                           $"Operation: {operation}\r\n\r\n" +
+                           "Exception:\r\n" + exception + "\r\n\r\n" +
+                           "Recent MOMI log:\r\n" + string.Join("\r\n", Logger.GetLogs());
+            File.WriteAllText(path, contents, new System.Text.UTF8Encoding(false));
+            Logger.Log($"Diagnostic error log written to: {path}");
+            return path;
+        }
+        catch (Exception logException)
+        {
+            Logger.Log($"Could not write diagnostic error log: {logException.Message}");
+            return null;
+        }
+    }
+
     private bool CanRemove() =>
-        !MistriaLocation.Equals("") && !IsInstalling && Mods.Any(m => m.Mod.IsInstalled());
+        !MistriaLocation.Equals("") && !IsInstalling &&
+        new AssetsStore(MistriaLocation).HasMomiInstallation();
+
+    [RelayCommand(CanExecute = nameof(CanLaunchGame))]
+    private void LaunchGame()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = AppInfo.GameLaunchUri,
+                UseShellExecute = true
+            });
+            return;
+        }
+        catch
+        {
+            // Fall back to the installed executable when Steam URI handling is
+            // unavailable on the current desktop environment.
+        }
+
+        var executable = Path.Combine(MistriaLocation, "FieldsOfMistria.exe");
+        if (!File.Exists(executable)) return;
+
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = executable,
+                WorkingDirectory = MistriaLocation,
+                UseShellExecute = true
+            });
+        }
+        catch { /* Launching the game must not crash MOMI. */ }
+    }
+
+    private bool CanLaunchGame() => GameReady && !IsInstalling;
+
+    private void RefreshGameReady()
+    {
+        GameReady = !string.IsNullOrWhiteSpace(MistriaLocation) &&
+                    new AssetsStore(MistriaLocation).HasMomiInstallation();
+    }
 
     private bool CanInstall() =>
         !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !IsInstalling;

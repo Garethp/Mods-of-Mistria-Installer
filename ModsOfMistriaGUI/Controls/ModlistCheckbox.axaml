@@ -18,7 +18,8 @@
             </CheckBox>
         </WrapPanel>
 
-        <Expander IsVisible="{Binding ShowStatusRow}" Foreground="Black">
+        <Expander IsVisible="{Binding ShowStatusRow}"
+                  Background="{Binding StatusBackground}">
             <Expander.Styles>
                 <Style Selector="Expander ToggleButton">
                     <Style
@@ -69,6 +70,17 @@
                            IsVisible="{Binding WasSkipped}">
                         <ToolTip.Tip>
                             <TextBlock Text="{x:Static lang:Resources.GUIModSkipped}" />
+                        </ToolTip.Tip>
+                        <Image.Source>
+                            <i:IconImage Value="fa-circle-xmark"
+                                         Brush="Red" />
+                        </Image.Source>
+                    </Image>
+
+                    <Image Height="16" Margin="5 0 0 0"
+                           IsVisible="{Binding WasFailed}">
+                        <ToolTip.Tip>
+                            <TextBlock Text="Installation failed for this mod" />
                         </ToolTip.Tip>
                         <Image.Source>
                             <i:IconImage Value="fa-circle-xmark"

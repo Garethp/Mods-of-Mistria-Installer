@@ -18,6 +18,6 @@ public class Tests
         // Open window:
         window.Show();
 
-        Assert.AreEqual("Mods Of Mistria Installer", window.Title);
+        Assert.That(window.Title, Is.EqualTo($"Mods of Mistria Installer — {AppInfo.DisplayVersion}"));
     }
 }

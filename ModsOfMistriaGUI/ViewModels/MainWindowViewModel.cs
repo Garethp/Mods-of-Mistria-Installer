@@ -22,8 +22,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private bool _updateAvailable;
     [ObservableProperty] private string _updateMessage = "";
 
-    public string ApplicationVersion => AppInfo.DisplayVersion;
-    public string SupportedGame => AppInfo.SupportedGame;
+    public string WindowTitle => $"Mods of Mistria Installer — {AppInfo.DisplayVersion}";
 
     public void ShowUpdateAvailable(string version)
     {

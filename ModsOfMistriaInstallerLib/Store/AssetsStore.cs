@@ -192,6 +192,41 @@ public class AssetsStore(string fomLocation)
         return true;
     }
 
+    /// <summary>
+    /// Returns whether the live archive has a MOMI installation that can be
+    /// offered to the user for removal. This is deliberately independent of
+    /// the enabled state of the currently displayed mod list.
+    /// </summary>
+    public bool HasMomiInstallation()
+    {
+        try
+        {
+            var state = ReadState();
+            if (state is not null)
+            {
+                if (!File.Exists(LivePath) || state.GeneratedLiveSha256 == state.PristineSha256)
+                    return false;
+
+                // A stale state file must not enable Uninstall after a game
+                // update or manual restoration. The live archive must still
+                // carry MOMI's marker before it is considered removable.
+                using var markedArchive = ZipFile.OpenRead(LivePath);
+                return markedArchive.GetEntry("manifest.toml") is not null;
+            }
+
+            if (!File.Exists(LivePath)) return false;
+            using var archive = ZipFile.OpenRead(LivePath);
+            return archive.GetEntry("manifest.toml") is not null;
+        }
+        catch
+        {
+            // A damaged or unknown archive must not enable a destructive
+            // action. The installer will report the detailed diagnostic if
+            // the user repairs the archive and retries.
+            return false;
+        }
+    }
+
     private void RestoreBackupTransactionally()
     {
         EnsureReadableBackup();

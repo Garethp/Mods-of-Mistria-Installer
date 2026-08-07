@@ -4,15 +4,18 @@ namespace Garethp.ModsOfMistriaGUI;
 
 public static class AppInfo
 {
-    public const string GitHubUrl = "https://github.com/Garethp/Mods-of-Mistria-Installer";
-    public const string ReleaseApiUrl = "https://api.github.com/repos/Garethp/Mods-of-Mistria-Installer/releases/latest";
+    public const string GitHubUrl = "https://github.com/AcTePuKc/Mods-of-Mistria-Installer";
+    public const string ReleaseApiUrl = "https://api.github.com/repos/AcTePuKc/Mods-of-Mistria-Installer/releases/latest";
     public const string SupportedGame = "Fields of Mistria 1.0.x";
+    public const string GameLaunchUri = "steam://rungameid/2142790";
 
     public static string Version
     {
         get
         {
-            var assembly = Assembly.GetEntryAssembly();
+            // Use MOMI's assembly rather than EntryAssembly. The latter is the
+            // test host when this code runs under the headless UI test suite.
+            var assembly = typeof(AppInfo).Assembly;
             // InformationalVersion may be supplied by CI/source-control tooling
             // (for example, a game/mod version). The project FileVersion is the
             // authoritative MOMI application version shown to users.

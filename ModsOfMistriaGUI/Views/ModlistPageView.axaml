@@ -31,6 +31,9 @@
 
             <WrapPanel DockPanel.Dock="Right" Height="50" Margin="0 10 0 0" HorizontalAlignment="Right">
                 <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
+                <Button Margin="0 0 10 0"
+                        Command="{Binding LaunchGameCommand}"
+                        Content="Play" />
                 <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}"
                         Content="{Binding InstallButtonText}" />
                 <Button Command="{Binding UnInstallModsCommand}"
@@ -39,12 +42,7 @@
         </DockPanel>
 
         <DockPanel LastChildFill="True">
-            <!-- Error panel -->
-            <StackPanel IsVisible="{Binding Exception.Length}" DockPanel.Dock="Top">
-                <SelectableTextBlock Text="{Binding Exception}" />
-            </StackPanel>
-
-            <StackPanel IsVisible="{Binding !Exception.Length}" DockPanel.Dock="Top">
+            <StackPanel DockPanel.Dock="Top">
                 <!-- Greeting / location info -->
                 <TextBlock Text="{Binding GreetingText}" />
                 <TextBlock></TextBlock>
@@ -69,49 +67,68 @@
                 </WrapPanel>
             </StackPanel>
 
-            <!-- Mod list -->
-            <ScrollViewer Margin="15 5 0 0" IsVisible="{Binding !Exception.Length}">
-                <ItemsRepeater ItemsSource="{Binding Mods}" x:Name="ModRepeater">
-                    <ItemsRepeater.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="0 2 0 2">
-                                <!-- Load-order controls -->
-                                <StackPanel Orientation="Vertical" Width="22" Margin="0 0 4 0"
-                                            VerticalAlignment="Center">
-                                    <Button Padding="2 0"
-                                            FontSize="10"
-                                            Command="{Binding $parent[ItemsRepeater].DataContext.MoveModUpCommand}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip.Tip="Move up in load order">▲</Button>
-                                    <Button Padding="2 0"
-                                            FontSize="10"
-                                            Command="{Binding $parent[ItemsRepeater].DataContext.MoveModDownCommand}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip.Tip="Move down in load order">▼</Button>
+            <!-- Mod list. The recoverable error is an overlay so it does not
+                 reduce the list viewport or move the normal page content. -->
+            <Grid>
+                <ScrollViewer Margin="15 5 0 0">
+                    <ItemsRepeater ItemsSource="{Binding Mods}" x:Name="ModRepeater">
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0 2 0 2">
+                                    <!-- Load-order controls -->
+                                    <StackPanel Orientation="Vertical" Width="22" Margin="0 0 4 0"
+                                                VerticalAlignment="Center">
+                                        <Button Padding="2 0"
+                                                FontSize="10"
+                                                Command="{Binding $parent[ItemsRepeater].DataContext.MoveModUpCommand}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip.Tip="Move up in load order">▲</Button>
+                                        <Button Padding="2 0"
+                                                FontSize="10"
+                                                Command="{Binding $parent[ItemsRepeater].DataContext.MoveModDownCommand}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip.Tip="Move down in load order">▼</Button>
+                                    </StackPanel>
+                                    <!-- Position number -->
+                                    <TextBlock Width="24" VerticalAlignment="Center"
+                                               Text="{Binding Position}"
+                                               HorizontalAlignment="Right"
+                                               Margin="0 0 6 0"
+                                               Foreground="Gray" />
+                                    <!-- Mod checkbox + warnings -->
+                                    <controls:ModlistCheckbox DataContext="{Binding}" />
+                                    <!-- Update available badge -->
+                                    <Button IsVisible="{Binding UpdateAvailable}"
+                                            Command="{Binding OpenUpdateUrlCommand}"
+                                            Margin="6 0 0 0"
+                                            Padding="5 1"
+                                            Background="#2e7d32"
+                                            Foreground="White"
+                                            CornerRadius="4"
+                                            VerticalAlignment="Center"
+                                            ToolTip.Tip="{Binding UpdateTooltip}">↑ Update</Button>
                                 </StackPanel>
-                                <!-- Position number -->
-                                <TextBlock Width="24" VerticalAlignment="Center"
-                                           Text="{Binding Position}"
-                                           HorizontalAlignment="Right"
-                                           Margin="0 0 6 0"
-                                           Foreground="Gray" />
-                                <!-- Mod checkbox + warnings -->
-                                <controls:ModlistCheckbox DataContext="{Binding}" />
-                                <!-- Update available badge -->
-                                <Button IsVisible="{Binding UpdateAvailable}"
-                                        Command="{Binding OpenUpdateUrlCommand}"
-                                        Margin="6 0 0 0"
-                                        Padding="5 1"
-                                        Background="#2e7d32"
-                                        Foreground="White"
-                                        CornerRadius="4"
-                                        VerticalAlignment="Center"
-                                        ToolTip.Tip="{Binding UpdateTooltip}">↑ Update</Button>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
-            </ScrollViewer>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </ScrollViewer>
+
+                <!-- Recoverable install error: keep the mod list available so
+                     the user can disable the failing mod and retry. -->
+                <Border IsVisible="{Binding Exception.Length}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        MaxHeight="92"
+                        Margin="15 5 0 0"
+                        Background="#5C1F1F"
+                        CornerRadius="4"
+                        Padding="8">
+                    <ScrollViewer MaxHeight="76">
+                        <SelectableTextBlock Text="{Binding Exception}"
+                                             TextWrapping="Wrap" />
+                    </ScrollViewer>
+                </Border>
+            </Grid>
         </DockPanel>
     </DockPanel>
 </UserControl>

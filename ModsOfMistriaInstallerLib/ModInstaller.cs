@@ -14,6 +14,17 @@ using Microsoft.Win32;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
+public sealed class ModInstallationException : InvalidOperationException
+{
+    public string ModId { get; }
+
+    public ModInstallationException(string modId, string message, Exception innerException)
+        : base(message, innerException)
+    {
+        ModId = modId;
+    }
+}
+
 // Coordinates mod installation and uninstallation.
 // Delegates file-type-specific work to Installer subclasses.
 public class ModInstaller
@@ -130,7 +141,17 @@ public class ModInstaller
             var modTimer = Stopwatch.StartNew();
             reportStatus($"Installing {mod.GetName()} {mod.GetVersion()} by {mod.GetAuthor()}", "");
 
-            RunInstallers(mod, fileNameUIDMapping, atlasUtils, reportStatus, phase);
+            try
+            {
+                RunInstallers(mod, fileNameUIDMapping, atlasUtils, reportStatus, phase);
+            }
+            catch (Exception exception)
+            {
+                throw new ModInstallationException(
+                    mod.GetId(),
+                    $"Mod '{mod.GetName()}' v{mod.GetVersion()} by {mod.GetAuthor()} failed during installation.",
+                    exception);
+            }
 
             modTimer.Stop();
             reportStatus($"Finished {mod.GetName()}", modTimer.Elapsed.ToString());
