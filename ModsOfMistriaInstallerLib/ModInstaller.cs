@@ -237,6 +237,9 @@ public class ModInstaller
         new ImageInstaller(fileNameUIDMapping, atlasUtils, _fileModifier)
             .Install(effectiveMod, generatedInformation, reportStatus);
 
+        new ManualLoadInstaller(_fileModifier)
+            .Install(effectiveMod, generatedInformation, reportStatus);
+
         // 2. Install TOML files (uses IDs populated above)
         reportPhase(modName, "Installing TOML");
         new TOMLInstaller(fileNameUIDMapping, _fileModifier)
