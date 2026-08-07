@@ -25,5 +25,7 @@ This seam sets `try_catch = false`: the dispatch is a direct assignment, not wra
 ## See Also
 
 - [player.move_speed](../hooks/player.move_speed.md) - This is the hook this seam dispatches.
+- [player_mount_speed](player_mount_speed.md) - This is the mounted base-speed dispatch earlier in the same computation.
+- [player_swim_speed](player_swim_speed.md) - This is the swimming counterpart in the same file.
 - [player_health_delta](player_health_delta.md) - This is a sibling `Ari.gml` direct-dispatch filter.
 - [player_stamina_delta](player_stamina_delta.md) - This is a sibling `Ari.gml` direct-dispatch filter.
