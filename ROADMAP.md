@@ -1,5 +1,10 @@
 # Roadmap
 
+## 0.15.3 AI fork release
+* [x] Add focused MMAPI hooks for fishing selection, museum donation attempts, maximum stamina, pet rewards and crop harvest lifecycle.
+* [x] Update the shipped MMAPI catalog to 104 hooks and 113 seams.
+* [x] Validate the new catalog entries with focused and full test coverage.
+
 ## 0.15.2 AI fork release
 * [x] Target Fields of Mistria 1.0.x archive and localization workflows
 * [x] Stage and validate `assets.zip` rebuilds before replacing the live archive

@@ -37,8 +37,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 99
-seams = 107
+hooks = 104
+seams = 113
 engine_fixes = 4
 call_rewrites = 1
 
@@ -208,6 +208,31 @@ doc  = "Filters the spawn chance passed to try_create_side_room() at the head of
 name = "fishing.should_reel"
 kind = "filter"
 doc  = "Fires every step of the player fishing FSM's Wait state, after bite notification handling and before the retract sound, caught/missed handling, and Reel transitions. The filtered value is whether the player requested a reel through the normal tool inputs. ctx is { bite_active }, true while FISHING.bite_timer is positive. Return a replacement boolean, or undefined to keep the current value. The final true value runs the complete vanilla reel block; false remains in Wait. Hot while waiting for a fish."
+
+[[hook]]
+name = "fishing.fish_selected"
+kind = "event"
+doc  = "Fires after the fishing hub accepts a fish candidate from either a normal fish or a fish school, after interested_fish is set and the nibble/bite state is reset. ctx is { fishing, fish }: fishing is the global fishing hub and fish is the selected fish value. Observation only; this hook does not replace the selected fish."
+
+[[hook]]
+name = "museum.donation_attempted"
+kind = "event"
+doc  = "Fires at the start of donate_item_to_museum(), before the item is registered and before renown or completed-set results are calculated. ctx is { item_id }. This is an attempted donation event, not a completed-result event; the donation function has several result paths and the item may already be in the museum. Observation only."
+
+[[hook]]
+name = "player.max_stamina"
+kind = "filter"
+doc  = "Fires when Ari.get_max_stamina() computes the player's stamina ceiling. The filtered value is the maximum stamina after the Tireless equipment bonus. ctx is { player }. Return a replacement non-negative numeric maximum, or undefined to keep the current value. Non-numeric and negative handler results are ignored or clamped safely."
+
+[[hook]]
+name = "pet.reward_generated"
+kind = "event"
+doc  = "Fires once for each concrete item appended to PET.items_to_pop by a pet's scheduled job reward. ctx is { pet, job, item }: pet is the global Pet struct, job is the PetJob enum value, and item is the generated item id. It fires immediately during the afternoon management transition, before the item is shown or collected at the end of the day. Observation only."
+
+[[hook]]
+name = "crop.harvest_destroy"
+kind = "filter"
+doc  = "Fires in process_crop_harvest() after the engine has determined the crop's normal managed/regrowing/forageable state and before the node is destroyed or retained. The filtered value is the destroy boolean. ctx is { node, harvester_cardinal }: node is the crop node and harvester_cardinal is the direction used for the harvest sway. Return a replacement boolean, or undefined to keep the engine decision. This changes only crop node lifecycle; item drops, XP, and harvest statistics are handled by the caller and are not changed by this hook."
 
 [[hook]]
 name = "fsm.transition"
@@ -1505,6 +1530,110 @@ replace = '''
                             var fishing_sfx = fiddle_get("tool_fx/fishing");'''
 marker  = "mmapi_fishing_run_should_reel_filters"
 provides = ["fishing.should_reel"]
+
+[[seam]]
+id      = "fishing_fish_selected"
+file    = "gml/scripts/Player/FishingHub.gml"
+context_before = '''
+        self.bite_timer = 0;
+'''
+context_after = '''
+    }
+
+    function try_bite() {'''
+op      = "emit"
+hook    = "fishing.fish_selected"
+ctx_fields = [["fishing", "self"], ["fish", "fish"]]
+indent  = 8
+catch_var = "__mmapi_fishing_fish_selected"
+marker  = "mmapi_fishing_run_fish_selected_callbacks"
+
+[[seam]]
+id      = "museum_donation_attempted"
+file    = "gml/scripts/Museum.gml"
+context_before = '''
+function donate_item_to_museum(item_id) {
+'''
+context_after = '''
+    register_item_to_museum(item_id);'''
+op      = "emit"
+hook    = "museum.donation_attempted"
+ctx_fields = [["item_id", "item_id"]]
+indent  = 4
+catch_var = "__mmapi_museum_donation_attempted"
+marker  = "mmapi_museum_run_donation_attempted_callbacks"
+
+[[seam]]
+id      = "player_max_stamina"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+anchor  = '''
+    function get_max_stamina() {
+        return self.base_stamina + get_equipment_bonus_from(Infusion.Tireless, "amount");
+    }'''
+replace = '''
+    function get_max_stamina() {
+        var __mmapi_max_stamina = self.base_stamina + get_equipment_bonus_from(Infusion.Tireless, "amount");
+        try {
+            var __mmapi_filtered_max_stamina = mmapi_apply_filters("player.max_stamina", __mmapi_max_stamina, { player: self }); // mmapi_player_run_max_stamina_filters
+            if (is_real(__mmapi_filtered_max_stamina) || is_int64(__mmapi_filtered_max_stamina)) {
+                __mmapi_max_stamina = max(0, __mmapi_filtered_max_stamina);
+            }
+        } catch (__mmapi_max_stamina_error) {}
+        return __mmapi_max_stamina;
+    }'''
+marker  = "mmapi_player_run_max_stamina_filters"
+provides = ["player.max_stamina"]
+
+[[seam]]
+id      = "pet_reward_generated_forageable"
+file    = "gml/scripts/Pet.gml"
+context_before = '''
+                                array_push(PET.items_to_pop, NODE_PROTOTYPES[forageable].harvest);
+'''
+context_after = '''
+                            }
+'''
+op      = "emit"
+hook    = "pet.reward_generated"
+ctx     = "{ pet: PET, job: PET.job, item: NODE_PROTOTYPES[forageable].harvest }"
+indent  = 28
+catch_var = "__mmapi_pet_reward_forageable"
+marker  = "mmapi_pet_run_forageable_reward_callbacks"
+
+[[seam]]
+id      = "pet_reward_generated_item"
+file    = "gml/scripts/Pet.gml"
+context_before = '''
+                            array_push(PET.items_to_pop, job_data.reward);
+'''
+context_after = '''
+                        }
+'''
+op      = "emit"
+hook    = "pet.reward_generated"
+ctx     = "{ pet: PET, job: PET.job, item: job_data.reward }"
+indent  = 24
+catch_var = "__mmapi_pet_reward_item"
+marker  = "mmapi_pet_run_item_reward_callbacks"
+
+[[seam]]
+id      = "crop_harvest_destroy"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Crops.gml"
+context_before = '''
+    if has_flag(node.ctx, CropFlag.FORAGEABLE) {
+        destroy = true;
+    }
+
+'''
+context_after = '''
+    if destroy {'''
+op      = "filter"
+hook    = "crop.harvest_destroy"
+ctx     = "{ node: node, harvester_cardinal: harvester_cardinal }"
+var     = "destroy"
+indent  = 4
+try_catch = false
+marker  = "mmapi_crop_run_harvest_destroy_filters"
 
 [[seam]]
 id      = "player_equipment_bonus"

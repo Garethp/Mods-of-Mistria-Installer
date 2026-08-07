@@ -72,6 +72,85 @@ public class ShippedCatalogTest
     }
 
     [Test]
+    public void ShouldDeclareTheFishSelectionEventAtTheFishingHubBoundary()
+    {
+        var hook = _catalog.Hook("fishing.fish_selected");
+        Assert.That(hook, Is.Not.Null);
+        Assert.That(hook!.Kind, Is.EqualTo(HookKind.Event));
+        Assert.That(hook.Doc, Does.Contain("selected fish"));
+
+        var seam = _catalog.Seams.Single(s => s.Id == "fishing_fish_selected");
+        Assert.That(seam.File, Is.EqualTo("assets/gml/scripts/Player/FishingHub.gml"));
+        Assert.That(seam.Hooks, Is.EqualTo(new[] { "fishing.fish_selected" }));
+        Assert.That(seam.Marker, Is.EqualTo("mmapi_fishing_run_fish_selected_callbacks"));
+        Assert.That(seam.Op, Is.EqualTo(DispatchOp.Emit));
+    }
+
+    [Test]
+    public void ShouldDeclareTheMuseumDonationAttemptEventBeforeRegistration()
+    {
+        var hook = _catalog.Hook("museum.donation_attempted");
+        Assert.That(hook, Is.Not.Null);
+        Assert.That(hook!.Kind, Is.EqualTo(HookKind.Event));
+        Assert.That(hook.Doc, Does.Contain("attempted donation"));
+
+        var seam = _catalog.Seams.Single(s => s.Id == "museum_donation_attempted");
+        Assert.That(seam.File, Is.EqualTo("assets/gml/scripts/Museum.gml"));
+        Assert.That(seam.Hooks, Is.EqualTo(new[] { "museum.donation_attempted" }));
+        Assert.That(seam.Marker, Is.EqualTo("mmapi_museum_run_donation_attempted_callbacks"));
+        Assert.That(seam.Op, Is.EqualTo(DispatchOp.Emit));
+    }
+
+    [Test]
+    public void ShouldDeclareTheMaxStaminaFilterAtThePlayerStatBoundary()
+    {
+        var hook = _catalog.Hook("player.max_stamina");
+        Assert.That(hook, Is.Not.Null);
+        Assert.That(hook!.Kind, Is.EqualTo(HookKind.Filter));
+        Assert.That(hook.Doc, Does.Contain("stamina ceiling"));
+
+        var seam = _catalog.Seams.Single(s => s.Id == "player_max_stamina");
+        Assert.That(seam.File, Is.EqualTo("assets/gml/scripts/GameplaySystems/Player/Ari.gml"));
+        Assert.That(seam.Hooks, Is.EqualTo(new[] { "player.max_stamina" }));
+        Assert.That(seam.Marker, Is.EqualTo("mmapi_player_run_max_stamina_filters"));
+    }
+
+    [Test]
+    public void ShouldDeclareBothPetRewardSitesForOnePetRewardEvent()
+    {
+        var hook = _catalog.Hook("pet.reward_generated");
+        Assert.That(hook, Is.Not.Null);
+        Assert.That(hook!.Kind, Is.EqualTo(HookKind.Event));
+        Assert.That(hook.Doc, Does.Contain("each concrete item"));
+
+        var seams = _catalog.Seams
+            .Where(s => s.Hooks.Contains("pet.reward_generated"))
+            .ToList();
+        Assert.That(seams.Select(s => s.Id), Is.EquivalentTo(new[]
+        {
+            "pet_reward_generated_forageable",
+            "pet_reward_generated_item",
+        }));
+        Assert.That(seams, Has.All.Matches<SeamEntry>(s =>
+            s.File == "assets/gml/scripts/Pet.gml" && s.Op == DispatchOp.Emit));
+    }
+
+    [Test]
+    public void ShouldDeclareTheCropHarvestDestroyFilterBeforeTheDestroyBranch()
+    {
+        var hook = _catalog.Hook("crop.harvest_destroy");
+        Assert.That(hook, Is.Not.Null);
+        Assert.That(hook!.Kind, Is.EqualTo(HookKind.Filter));
+        Assert.That(hook.Doc, Does.Contain("item drops, XP"));
+
+        var seam = _catalog.Seams.Single(s => s.Id == "crop_harvest_destroy");
+        Assert.That(seam.File, Is.EqualTo("assets/gml/scripts/GameplaySystems/Data/Grid/Crops.gml"));
+        Assert.That(seam.Hooks, Is.EqualTo(new[] { "crop.harvest_destroy" }));
+        Assert.That(seam.Marker, Is.EqualTo("mmapi_crop_run_harvest_destroy_filters"));
+        Assert.That(seam.Op, Is.EqualTo(DispatchOp.Filter));
+    }
+
+    [Test]
     public void ShouldKeepTheDocCountSentencesInStepWithTheCatalog()
     {
         var repoRoot = FindRepoRoot();
