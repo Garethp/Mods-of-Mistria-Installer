@@ -49,4 +49,15 @@ public class EngineClaimsTest
         // mmapi_check_guards' ordering is defensive rather than load-bearing.
         AssertProbePasses("quirk2_undefined_false.gml");
     }
+
+    [Test]
+    public void ShouldDecideUndefinedIdenticallyByLooseAndTypeofTests()
+    {
+        // `v != undefined` and `typeof(v) != "undefined"` decide identically
+        // for every value shape on every data path a dispatch result travels,
+        // so the override seams can use either form interchangeably. If this
+        // fails, the forms diverge on the pinned VM and the seams' comparisons
+        // are load-bearing in whichever form they currently use.
+        AssertProbePasses("undefined_typeof_equivalence.gml");
+    }
 }
