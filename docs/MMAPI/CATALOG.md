@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **104 hooks**, fed by **113 seams**, **4 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **103 hooks**, fed by **112 seams**, **4 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -71,7 +71,6 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [fishing.should_reel](hooks/fishing.should_reel.md) | filter | Change whether the player reels from the fishing Wait state this frame. |
 | [fishing.fish_selected](hooks/fishing.fish_selected.md) | event | Observe when fishing accepts a fish candidate. |
 | [museum.donation_attempted](hooks/museum.donation_attempted.md) | event | Observe an attempted museum donation before it is registered. |
-| [player.max_stamina](hooks/player.max_stamina.md) | filter | Change the player's maximum stamina. |
 | [pet.reward_generated](hooks/pet.reward_generated.md) | event | Observe each pet reward item as it is generated. |
 | [crop.harvest_destroy](hooks/crop.harvest_destroy.md) | filter | Change whether a harvested crop node is destroyed. |
 | [gossip.selections](hooks/gossip.selections.md) | filter | Change which NPCs the day's gossip offers. |

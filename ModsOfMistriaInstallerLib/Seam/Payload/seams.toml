@@ -37,8 +37,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 104
-seams = 113
+hooks = 103
+seams = 112
 engine_fixes = 4
 call_rewrites = 1
 
@@ -218,11 +218,6 @@ doc  = "Fires after the fishing hub accepts a fish candidate from either a norma
 name = "museum.donation_attempted"
 kind = "event"
 doc  = "Fires at the start of donate_item_to_museum(), before the item is registered and before renown or completed-set results are calculated. ctx is { item_id }. This is an attempted donation event, not a completed-result event; the donation function has several result paths and the item may already be in the museum. Observation only."
-
-[[hook]]
-name = "player.max_stamina"
-kind = "filter"
-doc  = "Fires when Ari.get_max_stamina() computes the player's stamina ceiling. The filtered value is the maximum stamina after the Tireless equipment bonus. ctx is { player }. Return a replacement non-negative numeric maximum, or undefined to keep the current value. Non-numeric and negative handler results are ignored or clamped safely."
 
 [[hook]]
 name = "pet.reward_generated"
@@ -1562,27 +1557,6 @@ ctx_fields = [["item_id", "item_id"]]
 indent  = 4
 catch_var = "__mmapi_museum_donation_attempted"
 marker  = "mmapi_museum_run_donation_attempted_callbacks"
-
-[[seam]]
-id      = "player_max_stamina"
-file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
-anchor  = '''
-    function get_max_stamina() {
-        return self.base_stamina + get_equipment_bonus_from(Infusion.Tireless, "amount");
-    }'''
-replace = '''
-    function get_max_stamina() {
-        var __mmapi_max_stamina = self.base_stamina + get_equipment_bonus_from(Infusion.Tireless, "amount");
-        try {
-            var __mmapi_filtered_max_stamina = mmapi_apply_filters("player.max_stamina", __mmapi_max_stamina, { player: self }); // mmapi_player_run_max_stamina_filters
-            if (is_real(__mmapi_filtered_max_stamina) || is_int64(__mmapi_filtered_max_stamina)) {
-                __mmapi_max_stamina = max(0, __mmapi_filtered_max_stamina);
-            }
-        } catch (__mmapi_max_stamina_error) {}
-        return __mmapi_max_stamina;
-    }'''
-marker  = "mmapi_player_run_max_stamina_filters"
-provides = ["player.max_stamina"]
 
 [[seam]]
 id      = "pet_reward_generated_forageable"

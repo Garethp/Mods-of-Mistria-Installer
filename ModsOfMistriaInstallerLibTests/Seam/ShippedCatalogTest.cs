@@ -102,20 +102,6 @@ public class ShippedCatalogTest
     }
 
     [Test]
-    public void ShouldDeclareTheMaxStaminaFilterAtThePlayerStatBoundary()
-    {
-        var hook = _catalog.Hook("player.max_stamina");
-        Assert.That(hook, Is.Not.Null);
-        Assert.That(hook!.Kind, Is.EqualTo(HookKind.Filter));
-        Assert.That(hook.Doc, Does.Contain("stamina ceiling"));
-
-        var seam = _catalog.Seams.Single(s => s.Id == "player_max_stamina");
-        Assert.That(seam.File, Is.EqualTo("assets/gml/scripts/GameplaySystems/Player/Ari.gml"));
-        Assert.That(seam.Hooks, Is.EqualTo(new[] { "player.max_stamina" }));
-        Assert.That(seam.Marker, Is.EqualTo("mmapi_player_run_max_stamina_filters"));
-    }
-
-    [Test]
     public void ShouldDeclareBothPetRewardSitesForOnePetRewardEvent()
     {
         var hook = _catalog.Hook("pet.reward_generated");
