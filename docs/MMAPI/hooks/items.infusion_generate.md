@@ -6,7 +6,7 @@ Stop a recipe from rolling infusions.
 
 ## Contract
 
-Fires at the top of `Recipe.generate_infusions()`. ctx is the recipe struct. Return `false` to veto infusion generation (an empty list is returned). Every other return allows.
+Fires at the top of `Recipe.generate_infusions()`. ctx is the recipe struct. Return `false` to veto infusion generation (an empty list is returned). Every other return allows. To change the odds of the roll (or shape the candidate pool) rather than veto generation, use the [items.infusion_chance](items.infusion_chance.md) filter.
 
 | | |
 | --- | --- |
@@ -41,5 +41,6 @@ mmapi_guard("items.infusion_generate", pure_craft_items_infusion_generate);
 
 ## See Also
 
+- [items.infusion_chance](items.infusion_chance.md) - Change the odds that a crafted item rolls an infusion.
 - [crafting.pay_component_costs](crafting.pay_component_costs.md) - Veto a recipe's material payment.
 - [crafting.max_crafts](crafting.max_crafts.md) - Take over how many of a recipe can be crafted.
