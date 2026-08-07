@@ -6,7 +6,7 @@ Change the player's move speed after every engine modifier.
 
 ## Contract
 
-Fires at the end of the player's move speed computation, after the status effect multipliers (`StatusEffectId.MineTime`, `SlimeDash`, `KillHaste`). The filtered value is the speed. ctx is `{ player, on_mount }`. Return the replacement speed, or `undefined` to keep the current value. Your handler runs last, so what you return is what the engine returns.
+Fires at the end of the player's move speed computation, after the status effect multipliers (`StatusEffectId.MineTime`, `SlimeDash`, `KillHaste`). The filtered value is the speed. ctx is `{ player, on_mount }`. Return the replacement speed, or `undefined` to keep the current value. Your handler runs last, so what you return is what the engine returns. Mounted movement routes through this computation too, with `ctx.on_mount` set true, and the mounted base speed is separately filterable earlier in the computation via [player.mount_speed](player.mount_speed.md). Swimming does not route through here. That path is [player.swim_speed](player.swim_speed.md).
 
 | | |
 | --- | --- |
@@ -44,6 +44,8 @@ mmapi_filter("player.move_speed", swift_boots_player_move_speed);
 
 ## See Also
 
+- [player.mount_speed](player.mount_speed.md) - Change the mounted base speed before the shared status multipliers.
+- [player.swim_speed](player.swim_speed.md) - Change the swim speed the swim states read instead of this computation.
 - [player.status_effect_register](player.status_effect_register.md) - Rewrite the status effects whose multipliers feed this computation.
 - [player.stamina_delta](player.stamina_delta.md) - Change every stamina cost or gain before it applies.
 - [player.equipment_bonus](player.equipment_bonus.md) - Adjust the bonus an equipment infusion grants the player.
