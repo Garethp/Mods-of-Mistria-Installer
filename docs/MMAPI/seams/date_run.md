@@ -21,7 +21,7 @@ Two injected lines land at the head of `run_date(date, npc)`, before the `DateAc
 
 ```gml
 var __mmapi_date_run = mmapi_run_override("date.run", { date: date, npc: npc }); // mmapi_date_run_override
-if (__mmapi_date_run != undefined) { return __mmapi_date_run; }
+if (typeof(__mmapi_date_run) != "undefined") { return __mmapi_date_run; }
 ```
 
 A non-`undefined` return short-circuits the function: the engine's `run_date` for this date is skipped entirely (its acceptance conversation and NPC posing never run) and the override's value becomes `run_date`'s return (return `true` for a handled date). When every handler defers (`undefined`), execution falls straight through into the engine's normal handling.

@@ -17,9 +17,9 @@ Puts an override at the head of `cast_spell()` that can consume the whole cast.
 
 ## The Edit
 
-The injected block runs `mmapi_run_override("spells.cast", spell)` at the head of `cast_spell(spell)` and inspects the result. Anything other than `undefined` **and** other than `false` consumes the cast: the block emits [spells.cast_done](../hooks/spells.cast_done.md) with the spell id (in its own try/catch, so a throwing event handler cannot break the return) and then returns. The engine's cast switch never runs. That emit is the override-consumed path of `spells.cast_done`. The engine-cast path is the separate [spells_cast_done](spells_cast_done.md) seam at the end of the same function, so the event fires exactly once per completed cast either way.
+The injected block runs `mmapi_run_override("spells.cast", spell)` at the head of `cast_spell(spell)` and inspects the result. Any result other than `undefined` consumes the cast: the block emits [spells.cast_done](../hooks/spells.cast_done.md) with the spell id (in its own try/catch, so a throwing event handler cannot break the return) and then returns. The engine's cast switch never runs. That emit is the override-consumed path of `spells.cast_done`. The engine-cast path is the separate [spells_cast_done](spells_cast_done.md) seam at the end of the same function, so the event fires exactly once per completed cast either way.
 
-`undefined` defers to the engine cast. `false` also falls through to the engine cast, but, by override-chain semantics, a `false` return has already ended the chain, so overrides registered behind it never run. Note that the caller in the player FSM deducts mana around `cast_spell` through the [spells.cost](../hooks/spells.cost.md) filter regardless of who handled the cast.
+`undefined` is the only deferral: it lets later overrides run, and the engine cast proceeds when every handler declines. The consume test is type-exact (`typeof`), matching the dispatcher's own decline rule, so Boolean `false` and numeric zero consume like any other defined result. Note that the caller in the player FSM deducts mana around `cast_spell` through the [spells.cost](../hooks/spells.cost.md) filter regardless of who handled the cast.
 
 ## See Also
 

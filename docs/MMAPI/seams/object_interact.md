@@ -21,7 +21,7 @@ Two injected lines land at the head of `interact(node)`, before `can_interact` r
 
 ```gml
 var __mmapi_object_interact = mmapi_run_override("object.interact", node); // mmapi_object_interact_override
-if (__mmapi_object_interact != undefined) { return __mmapi_object_interact; }
+if (typeof(__mmapi_object_interact) != "undefined") { return __mmapi_object_interact; }
 ```
 
 A non-`undefined` return short-circuits the function: the engine's interact for this node is skipped entirely and the override's value becomes `interact`'s return (return `true` for a handled interaction). When every handler defers (`undefined`), execution falls straight through into the engine's normal handling.

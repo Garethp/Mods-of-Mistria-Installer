@@ -6,9 +6,7 @@ Replace a spell's cast with your own behavior.
 
 ## Contract
 
-Fires at the top of `cast_spell()`. ctx is the spell id. Return any value other than `undefined` or `false` to consume the cast: the engine cast is skipped and [spells.cast_done](spells.cast_done.md) is emitted. `undefined` defers to the engine cast.
-
-`false` is the quirk case: the override chain stops at the first non-`undefined` return, so `false` ends the chain (no later mod's override runs), but the seam's consume test excludes it, so the engine cast still runs. In effect `false` means "no mod handles this spell, run the engine cast". When you merely do not own the spell, return `undefined` instead so other mods keep their shot.
+Fires at the top of `cast_spell()`. ctx is the spell id. Return any value other than `undefined` to consume the cast: the engine cast is skipped and [spells.cast_done](spells.cast_done.md) is emitted. `undefined` is the only deferral token. When you merely do not own the spell, return `undefined` so other mods keep their shot, and the engine cast runs when every handler declines. Every defined return, including `false` and numeric zero, consumes the cast.
 
 | | |
 | --- | --- |
@@ -33,7 +31,6 @@ function spell_smith_spells_cast(_ctx) {
     // if (!spell_smith_owns(_ctx)) return undefined; // defer: not ours   [claim-scoped]
     // <your cast here>
     // return true;   // consume: engine cast skipped, spells.cast_done fires
-    // return false;  // quirk: ends the override chain, engine cast still runs
     return undefined; // defer to the engine (or another mod)
 }
 
@@ -42,7 +39,7 @@ mmapi_override("spells.cast", spell_smith_spells_cast);
 
 ## Engine Wiring
 
-- Seam [`spells_cast_override`](../seams/spells_cast_override.md) dispatches from `gml/scripts/Spells.gml`, at the head of `cast_spell(spell)`: on a return that is neither `undefined` nor `false` it emits `spells.cast_done` (in its own try/catch) and returns before the engine's spell switch.
+- Seam [`spells_cast_override`](../seams/spells_cast_override.md) dispatches from `gml/scripts/Spells.gml`, at the head of `cast_spell(spell)`: on any non-`undefined` return it emits `spells.cast_done` (in its own try/catch) and returns before the engine's spell switch.
 
 ## See Also
 
