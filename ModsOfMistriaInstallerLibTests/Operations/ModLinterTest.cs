@@ -13,7 +13,7 @@ namespace ModsOfMistriaInstallerLibTests.Operations;
 public class ModLinterTest
 {
     private static MockMod ContentOnlyMod() =>
-        new(new Dictionary<string, string> { { "images/icon.png", "" } })
+        new(new Dictionary<string, object> { { "images/icon.png", "" } })
         {
             Id = "mod.a",
             Version = "0.0.1",
@@ -24,7 +24,7 @@ public class ModLinterTest
         ModLinter.Lint(mod, SyntheticLayer.Pristine(), gate, options, SyntheticLayer.Catalog());
 
     private static MockMod GmlMod(string gml, List<string>? requiresHooks = null) =>
-        new(new Dictionary<string, string> { { "gml/core/State.gml", gml } })
+        new(new Dictionary<string, object> { { "gml/core/State.gml", gml } })
         {
             Id = "mod.a",
             DirName = "mod_a",

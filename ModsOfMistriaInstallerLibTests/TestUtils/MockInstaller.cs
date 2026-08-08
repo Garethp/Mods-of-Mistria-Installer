@@ -27,7 +27,12 @@ public class MockInstaller
         IMod effectiveMod = generated.Count > 0 || redirects.Count > 0
             ? new GeneratedOverlayMod(mod, generated, redirects)
             : mod;
-  
+        
+        foreach (var generator in ModInstaller.GetGenerators())
+        {
+            generatedInformation.Merge(generator.Generate(mod));
+        }
+        
         generatedInformation.Merge(new TOMLCollector().Collect(effectiveMod));
         
         // 2. Install TOML files (uses IDs populated above)

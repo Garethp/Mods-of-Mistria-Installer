@@ -28,7 +28,7 @@ public class GmlModLintTest
 
     private static GmlModCode Mod(string id, string text, string? dirName = null)
     {
-        var mock = new MockMod(new Dictionary<string, string> { { "gml/Main.gml", text } })
+        var mock = new MockMod(new Dictionary<string, object> { { "gml/Main.gml", text } })
         {
             Id = id,
             DirName = dirName ?? id,
@@ -179,7 +179,7 @@ public class GmlModLintTest
     [Test]
     public void ShouldRecordIntraModDuplicates()
     {
-        var mock = new MockMod(new Dictionary<string, string>
+        var mock = new MockMod(new Dictionary<string, object>
         {
             { "gml/A.gml", "function alpha_util() {\n}\n" },
             { "gml/B.gml", "function alpha_util() {\n}\n" },

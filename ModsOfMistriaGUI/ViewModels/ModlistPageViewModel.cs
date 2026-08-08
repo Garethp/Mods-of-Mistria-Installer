@@ -228,7 +228,8 @@ public partial class ModlistPageViewModel : PageViewBase
             catch { _profileManager = null; }
 
             var rawMods = MistriaLocator.GetMods(MistriaLocation, ModsLocation);
-
+            ModInstaller.ValidateMods(rawMods);
+            
             // Apply dependency resolution (auto-enable deps)
             if (_profileManager is not null)
             {

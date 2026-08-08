@@ -1,0 +1,10 @@
+﻿[meta_properties]
+asset_kind = "Animation"
+
+[asset_properties]
+atlas = "UI"
+frame_size = [18, 18]
+
+[asset_properties.offset]
+horizontal = 9.0
+vertical = 9.0

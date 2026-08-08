@@ -201,10 +201,10 @@
   <data name="CoreSpriteFolderIsEmpty" xml:space="preserve">
     <value>{0} verwijst naar een sprite-map op {1}, maar die map is leeg.</value>
   </data>
-  <data name="CoreCouldNotParseJSON" xml:space="preserve">
+  <data name="CoreCouldNotParseFile" xml:space="preserve">
     <value>Kon bestand niet parseren met de melding: {0}</value>
   </data>
-  <data name="CoreNoDataInJSON" xml:space="preserve">
+  <data name="CoreNoDataInFile" xml:space="preserve">
     <value>Er zijn geen gegevens gevonden in het bestand.</value>
   </data>
   <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve">

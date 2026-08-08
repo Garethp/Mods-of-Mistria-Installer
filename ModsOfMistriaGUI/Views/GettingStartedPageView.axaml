@@ -43,5 +43,9 @@
                 </Image>
             </Button>
         </WrapPanel>
+        
+        <WrapPanel IsVisible="{Binding WrongMistriaVersion}">
+            <TextBlock Text="{x:Static lang:Resources.GUIErrorWrongMistriaVersion}" TextWrapping="Wrap" />
+        </WrapPanel>
     </StackPanel>
 </UserControl>

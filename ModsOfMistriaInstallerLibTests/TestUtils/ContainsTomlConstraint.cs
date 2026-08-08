@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework.Constraints;
 using Tomlyn;
 using Tomlyn.Model;
@@ -8,6 +9,10 @@ namespace ModsOfMistriaInstallerLibTests.TestUtils;
 public class ContainsTomlConstraint(TomlTable expected): Constraint
 {
     private readonly TomlTable _object = expected;
+
+    public ContainsTomlConstraint(string toml) : this(TomlSerializer.Deserialize<TomlTable>(toml)!)
+    {
+    }
     
     public override ConstraintResult ApplyTo<TActual>(TActual actual)
     {
