@@ -10,7 +10,7 @@ public class FontInstallerTest
     [Test]
     public void CopiesTtfFromFontsFolderIntoAssets()
     {
-        var mod = new MockMod(new Dictionary<string, string>
+        var mod = new MockMod(new Dictionary<string, object>
         {
             ["fonts/fnt_mistria_birdseed_bul.ttf"] = "font-test-payload"
         });
@@ -32,7 +32,7 @@ public class FontInstallerTest
     [Test]
     public void IgnoresTtfOutsideFontsFolder()
     {
-        var mod = new MockMod(new Dictionary<string, string>
+        var mod = new MockMod(new Dictionary<string, object>
         {
             ["images/not-a-font.ttf"] = "font-test-payload"
         });

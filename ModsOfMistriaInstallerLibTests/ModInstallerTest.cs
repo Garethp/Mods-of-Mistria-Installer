@@ -202,7 +202,7 @@ public class ModInstallerTest
     [Test]
     public void ShouldIdentifyTheSourceFileWhenModTomlIsInvalid()
     {
-        var mod = new MockMod(new Dictionary<string, string>
+        var mod = new MockMod(new Dictionary<string, object>
         {
             ["data/broken.toml"] = "broken = [toml"
         }) { Id = "broken.mod", Name = "Broken Mod" };

@@ -12,7 +12,7 @@ public class ManualLoadInstallerTest
     [Test]
     public void CopiesPngForManualLoadAnimation()
     {
-        var mod = new MockMod(new Dictionary<string, string>
+        var mod = new MockMod(new Dictionary<string, object>
         {
             ["animations/UI NEW/Loading Screen/spr_loading_bird_bg.meta.toml"] = """
                 [asset_properties]
@@ -35,7 +35,7 @@ public class ManualLoadInstallerTest
     [Test]
     public void DoesNotCopyNormalAtlasAnimationPng()
     {
-        var mod = new MockMod(new Dictionary<string, string>
+        var mod = new MockMod(new Dictionary<string, object>
         {
             ["animations/Modded/spr_normal.meta.toml"] = """
                 [asset_properties]

@@ -1,5 +1,6 @@
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Models;
+using Garethp.ModsOfMistriaInstallerLib.Models.SDK;
 using Garethp.ModsOfMistriaInstallerLib.Utils;
 using Tomlyn;
 
