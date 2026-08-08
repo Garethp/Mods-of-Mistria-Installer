@@ -85,10 +85,8 @@ public class LocationInstaller
         // ── 5. Patch and copy each mod's TMX files ─────────────────────────────
         foreach (var mod in modList)
         {
-            var tiledDir = Path.Combine(mod.GetBasePath(), "tiled");
-            
-            // @TODO: We should not be calling Directory.Exists here
-            if (!Directory.Exists(tiledDir)) continue;
+            var tiledFiles = GetFilesUnder(mod, "tiled/");
+            if (tiledFiles.Count == 0) continue;
 
             var thisMod = modNewLocations[mod];
 
@@ -102,7 +100,7 @@ public class LocationInstaller
                 .Select((name, i) => (name, i))
                 .ToDictionary(x => x.i, x => x.name);
 
-            PatchModTmxFiles(mod, tiledDir, localIdToName, nameToGlobalId, reportStatus);
+            PatchModTmxFiles(mod, tiledFiles, localIdToName, nameToGlobalId, reportStatus);
         }
     }
 
@@ -110,16 +108,11 @@ public class LocationInstaller
 
     private static List<LocationDefinition> CollectLocationDefs(IMod mod)
     {
-        var locDir = Path.Combine(mod.GetBasePath(), "momi", "locations");
-        // @TODO: We should not be calling Directory.Exists here
-        if (!Directory.Exists(locDir))
-            return [];
-
         var defs = new List<LocationDefinition>();
-        // @TODO: We shouldn't be reading with paths like this, we should be using the mod functions to account for zip mods
-        foreach (var absPath in Directory.GetFiles(locDir, "*.toml", SearchOption.AllDirectories))
+        foreach (var path in GetFilesUnder(mod, "momi/locations/"))
         {
-            var content = File.ReadAllText(absPath);
+            if (!path.EndsWith(".toml", StringComparison.OrdinalIgnoreCase)) continue;
+            var content = mod.ReadFile(path);
             if (!string.IsNullOrWhiteSpace(content))
                 defs.AddRange(LocationDefinition.ParseAll(content));
         }
@@ -145,29 +138,27 @@ public class LocationInstaller
 
     private void PatchModTmxFiles(
         IMod mod,
-        string tiledDir,
+        IReadOnlyList<string> tiledFiles,
         Dictionary<int, string> localIdToName,
         Dictionary<string, int> nameToGlobalId,
         Action<string, string> reportStatus)
     {
-        // @TODO: We should not be calling Directory.Exists here
-        foreach (var absPath in Directory.GetFiles(tiledDir, "*", SearchOption.AllDirectories))
+        foreach (var path in tiledFiles)
         {
-            // Relative path within the mod root: "tiled\rooms\My Room\rm_my_room.tmx"
-            var relPath = Path.GetRelativePath(mod.GetBasePath(), absPath);
-            var dest    = Path.Combine("assets", relPath);
+            var relPath = RelativePath(mod, path);
+            var dest = Path.Combine("assets", relPath.Replace('/', Path.DirectorySeparatorChar));
 
-            if (!absPath.EndsWith(".tmx", StringComparison.OrdinalIgnoreCase))
+            if (!relPath.EndsWith(".tmx", StringComparison.OrdinalIgnoreCase))
             {
                 // Non-TMX tiled asset (tileset, template, etc.) — copy verbatim.
-                // @TODO: We shouldn't be reading mod files with the system File operations, it doesn't work for zip mods
-                _fileModifier.Write(Path.Combine("assets", relPath), File.ReadAllText(absPath));
-                // File.Copy(absPath, dest, overwrite: true);
+                using var source = mod.ReadFileAsStream(relPath);
+                using var buffer = new MemoryStream();
+                source.CopyTo(buffer);
+                _fileModifier.Write(dest, buffer.ToArray());
                 continue;
             }
 
-            // @TODO: We shouldn't be reading mod files with the system File operations, it doesn't work for zip mods
-            var original = File.ReadAllText(absPath);
+            var original = mod.ReadFile(relPath);
             var patched  = PatchTmx(original, localIdToName, nameToGlobalId, out int count);
 
             // @TODO: Check if we need that UTF8Encoding
@@ -175,8 +166,30 @@ public class LocationInstaller
             // File.WriteAllText(dest, patched, new System.Text.UTF8Encoding(false));
 
             if (count > 0)
-                reportStatus($"{Path.GetFileName(absPath)}: translated {count} destination_id(s)", "");
+                reportStatus($"{Path.GetFileName(relPath)}: translated {count} destination_id(s)", "");
         }
+    }
+
+    private static List<string> GetFilesUnder(IMod mod, string directory)
+    {
+        var prefix = directory.Replace('\\', '/').TrimStart('/');
+        if (!prefix.EndsWith('/')) prefix += "/";
+
+        return mod.GetAllFiles("")
+            .Where(path => RelativePath(mod, path).StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private static string RelativePath(IMod mod, string path)
+    {
+        var normalizedPath = path.Replace('\\', '/');
+        var normalizedBase = mod.GetBasePath().Replace('\\', '/').TrimEnd('/');
+
+        if (!string.IsNullOrEmpty(normalizedBase) &&
+            normalizedPath.StartsWith(normalizedBase + "/", StringComparison.OrdinalIgnoreCase))
+            return normalizedPath[(normalizedBase.Length + 1)..];
+
+        return normalizedPath.TrimStart('/');
     }
 
     private static string PatchTmx(
