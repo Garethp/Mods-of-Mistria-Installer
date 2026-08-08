@@ -52,6 +52,10 @@
                     <TextBlock Text="{Binding MistriaLocation}" />
                 </WrapPanel>
                 <TextBlock Text="{Binding ModsWillBeInstalledText}" />
+                <TextBlock Text="{Binding ArchiveStatus}"
+                           TextWrapping="Wrap"
+                           Foreground="Gray"
+                           Margin="0 4 0 0" />
 
                 <!-- Profile selector -->
                 <WrapPanel Margin="0 8 0 0" VerticalAlignment="Center">

@@ -154,6 +154,7 @@ public partial class ModlistPageViewModel : PageViewBase
         {
             _suppressDirty = false;
             _isDirty = false;
+            RefreshArchiveStatus();
         }
     }
 
@@ -285,6 +286,7 @@ public partial class ModlistPageViewModel : PageViewBase
                     {
                         if (e.PropertyName != nameof(ModModel.Enabled) || _suppressDirty) return;
                         _isDirty = true;
+                        RefreshArchiveStatus();
                         if (_cascading) return;
                         _cascading = true;
                         List<ModRequirement> missing;
@@ -420,6 +422,9 @@ public partial class ModlistPageViewModel : PageViewBase
 
     [ObservableProperty] private string _installStatus = "";
 
+    // Describes the archive on disk separately from the selected profile.
+    [ObservableProperty] private string _archiveStatus = "";
+
     private static readonly bool isAprilFools = DateTime.Today.Month == 4 && DateTime.Today.Day == 1;
 
     [ObservableProperty] private string _greetingText =
@@ -505,6 +510,7 @@ public partial class ModlistPageViewModel : PageViewBase
     {
         foreach (var m in Mods) m.Enabled = true;
         _isDirty = true;
+        RefreshArchiveStatus();
         InstallModsCommand.NotifyCanExecuteChanged();
     }
 
@@ -513,6 +519,7 @@ public partial class ModlistPageViewModel : PageViewBase
     {
         foreach (var m in Mods) m.Enabled = false;
         _isDirty = true;
+        RefreshArchiveStatus();
         InstallModsCommand.NotifyCanExecuteChanged();
     }
 
@@ -715,6 +722,53 @@ public partial class ModlistPageViewModel : PageViewBase
     {
         GameReady = !string.IsNullOrWhiteSpace(MistriaLocation) &&
                     new AssetsStore(MistriaLocation).HasMomiInstallation();
+        RefreshArchiveStatus();
+    }
+
+    private void RefreshArchiveStatus()
+    {
+        if (string.IsNullOrWhiteSpace(MistriaLocation))
+        {
+            ArchiveStatus = "No game archive detected.";
+            return;
+        }
+
+        var store = new AssetsStore(MistriaLocation);
+        if (!store.HasMomiInstallation())
+        {
+            ArchiveStatus = "No MOMI installation detected. Install will create one.";
+            return;
+        }
+
+        RecordedInstallState? recorded;
+        try { recorded = store.GetRecordedInstallState(); }
+        catch
+        {
+            ArchiveStatus = "MOMI installation detected, but its recorded state is unavailable.";
+            return;
+        }
+
+        if (recorded is null)
+        {
+            ArchiveStatus = "MOMI installation detected, but installed mod versions are unavailable.";
+            return;
+        }
+
+        var desired = Mods
+            .Where(mod => mod.Enabled)
+            .ToDictionary(mod => mod.Mod.GetId(), mod => mod.Mod.GetVersion(),
+                StringComparer.OrdinalIgnoreCase);
+        var actual = recorded.Mods
+            .ToDictionary(mod => mod.Id, mod => mod.Version,
+                StringComparer.OrdinalIgnoreCase);
+
+        var matches = desired.Count == actual.Count &&
+                      desired.All(pair => actual.TryGetValue(pair.Key, out var version) &&
+                                          string.Equals(version, pair.Value, StringComparison.OrdinalIgnoreCase));
+
+        ArchiveStatus = matches
+            ? $"MOMI installation: {actual.Count} mod(s) installed."
+            : "The installed mod set or version differs from this profile. Recommended: Uninstall, then Install. Install can also rebuild from the pristine backup.";
     }
 
     private bool CanInstall() =>

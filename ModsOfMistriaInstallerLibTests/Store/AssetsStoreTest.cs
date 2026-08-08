@@ -407,6 +407,26 @@ public class AssetsStoreTest
     }
 
     [Test]
+    public void ShouldReadInstalledModVersionsFromTransactionalState()
+    {
+        WriteVanillaLive();
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+        var modifier = store.BeginRebuild();
+        modifier.Write("manifest.toml", "");
+        store.Commit([new("example.mod", "1.2.3"), new("second.mod", "4.5.6")]);
+
+        var recorded = store.GetRecordedInstallState();
+
+        Assert.That(recorded, Is.Not.Null);
+        Assert.That(recorded!.Mods, Is.EquivalentTo(new[]
+        {
+            new InstalledModState("example.mod", "1.2.3"),
+            new InstalledModState("second.mod", "4.5.6")
+        }));
+    }
+
+    [Test]
     public void ShouldRefuseAnUnknownUnmarkedArchiveAfterAKnownInstall()
     {
         WriteVanillaLive();

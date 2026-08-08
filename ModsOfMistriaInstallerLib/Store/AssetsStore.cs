@@ -11,6 +11,12 @@ namespace Garethp.ModsOfMistriaInstallerLib.Store;
 
 public sealed record InstalledModState(string Id, string Version);
 
+public sealed record RecordedInstallState(
+    IReadOnlyList<InstalledModState> Mods,
+    string PristineSha256,
+    string GeneratedLiveSha256,
+    DateTimeOffset? InstalledAtUtc);
+
 // Owns the assets.zip transaction. The live archive is never opened for
 // writing: every install is rebuilt from a verified pristine archive into a
 // same-directory temporary archive and published only after validation.
@@ -256,6 +262,22 @@ public class AssetsStore(string fomLocation)
         }
     }
 
+    /// <summary>
+    /// Reads the mod IDs and versions recorded by the last successful MOMI
+    /// rebuild. A null result means that no valid MOMI state file exists.
+    /// </summary>
+    public RecordedInstallState? GetRecordedInstallState()
+    {
+        var state = ReadState();
+        if (state is null) return null;
+
+        return new RecordedInstallState(
+            state.Mods,
+            state.PristineSha256,
+            state.GeneratedLiveSha256,
+            state.InstalledAtUtc);
+    }
+
     private void RestoreBackupTransactionally()
     {
         EnsureReadableBackup();
@@ -310,11 +332,24 @@ public class AssetsStore(string fomLocation)
                 ? executableText
                 : null;
 
+            var installedMods = new List<InstalledModState>();
+            if (root.TryGetValue("mods", out var modsValue) && modsValue is TomlTableArray mods)
+            {
+                foreach (var item in mods)
+                {
+                    if (item is not TomlTable table) continue;
+                    if (table.TryGetValue("id", out var id) && id is string modId &&
+                        table.TryGetValue("version", out var modVersionValue) && modVersionValue is string modVersion)
+                        installedMods.Add(new InstalledModState(modId, modVersion));
+                }
+            }
+
             return new StoreState(
                 GetString(root, "pristine_sha256"),
                 GetString(root, "generated_live_sha256"),
                 installedAt,
-                executableHash);
+                executableHash,
+                installedMods);
         }
         catch (Exception exception) when (exception is FormatException or IOException or TomlException)
         {
@@ -505,5 +540,6 @@ public class AssetsStore(string fomLocation)
         string PristineSha256,
         string GeneratedLiveSha256,
         DateTimeOffset? InstalledAtUtc,
-        string? GameExecutableSha256);
+        string? GameExecutableSha256,
+        IReadOnlyList<InstalledModState> Mods);
 }
