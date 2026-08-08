@@ -204,10 +204,10 @@
   <data name="CoreSpriteFolderIsEmpty" xml:space="preserve">
     <value>{0} aponta para uma pasta de sprite em {1} mas esse diretório está vazio</value>
   </data>
-  <data name="CoreCouldNotParseJSON" xml:space="preserve">
+  <data name="CoreCouldNotParseFile" xml:space="preserve">
     <value>Não possível analisar o arquivo, mensagem: {0}</value>
   </data>
-  <data name="CoreNoDataInJSON" xml:space="preserve">
+  <data name="CoreNoDataInFile" xml:space="preserve">
     <value>Nenhuma informação foi localizada no arquivo</value>
   </data>
   <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve">

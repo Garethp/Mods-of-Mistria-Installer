@@ -35,7 +35,7 @@ public class GmlModCollectorTest
     [Test]
     public void ShouldCollectTheGmlTreeSortedAndModRelative()
     {
-        var mod = new MockMod(new Dictionary<string, string>
+        var mod = new MockMod(new Dictionary<string, object>
         {
             { "gml/core/State.gml", "// state\n" },
             { "gml/core/Alpha.gml", "// alpha\n" },
@@ -52,7 +52,7 @@ public class GmlModCollectorTest
     [Test]
     public void ShouldReturnNullWhenTheModShipsNoGml()
     {
-        var mod = new MockMod(new Dictionary<string, string> { { "images/icon.png", "" } });
+        var mod = new MockMod(new Dictionary<string, object> { { "images/icon.png", "" } });
 
         Assert.That(GmlModCollector.Collect(mod), Is.Null);
     }
@@ -60,7 +60,7 @@ public class GmlModCollectorTest
     [Test]
     public void ShouldFoldDotsAndDashesIntoTheSymbol()
     {
-        var mod = new MockMod(new Dictionary<string, string> { { "gml/Main.gml", "// x\n" } })
+        var mod = new MockMod(new Dictionary<string, object> { { "gml/Main.gml", "// x\n" } })
         {
             Id = "tester.my-mod",
         };

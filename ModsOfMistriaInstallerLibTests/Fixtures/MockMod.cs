@@ -6,7 +6,7 @@ namespace ModsOfMistriaInstallerLibTests.Fixtures;
 
 public class MockMod : IMod
 {
-    private readonly Dictionary<string, Dictionary<string, string>> _files = new();
+    private readonly Dictionary<string, Dictionary<string, object>> _files = new();
 
     private readonly Validation _validation = new();
 
@@ -41,22 +41,36 @@ public class MockMod : IMod
         });
     }
 
-    public MockMod(Dictionary<string, string> files)
+    public MockMod(Dictionary<string, object> files)
     {
-        files.Keys.ToList().ForEach(file =>
-        {
-            if (Path.HasExtension(file))
-            {
-                var folderName = Path.GetDirectoryName(file)?.Replace('\\', '/') ?? "";
+        files.Keys.ToList().ForEach(file => { SetFile(file, files[file]); });
+    }
 
-                if (!_files.ContainsKey(folderName)) _files[folderName] = new();
-                _files[folderName][file] = files[file];
-            }
-            else
-            {
-                if (!_files.ContainsKey(file)) _files[file] = new();
-            }
-        });
+    public void SetFile(string file, object contents)
+    {
+        if (Path.HasExtension(file))
+        {
+            var folderName = Path.GetDirectoryName(file)?.Replace('\\', '/') ?? "";
+
+            if (!_files.ContainsKey(folderName)) _files[folderName] = new();
+            if (contents is not string and not byte[])
+                throw new NotImplementedException();
+
+            _files[folderName][file] = contents;
+        }
+        else
+        {
+            if (!_files.ContainsKey(file)) _files[file] = new();
+        }
+    }
+
+    public void RemoveFile(string file)
+    {
+        if (!Path.HasExtension(file)) return;
+        var folderName = Path.GetDirectoryName(file)?.Replace('\\', '/') ?? "";
+
+        if (!_files.ContainsKey(folderName)) return;
+        _files[folderName].Remove(file);
     }
 
     public string GetAuthor() => Author;
@@ -109,20 +123,41 @@ public class MockMod : IMod
 
     public bool FolderExists(string path) => _files.Keys.Contains(path);
 
-    public string ReadFile(string path)
+    private object ReadFileInternal(string path)
     {
         foreach (var folder in _files.Keys)
         {
             foreach (var file in _files[folder])
             {
-                if (file.Key == path) return file.Value;
+                if (file.Key == path)
+                {
+                    return file.Value;
+                }
             }
         }
 
         throw new FileNotFoundException(path);
     }
 
-    public Stream ReadFileAsStream(string path) => new MemoryStream(Encoding.UTF8.GetBytes(ReadFile(path)));
+    public string ReadFile(string path)
+    {
+        return ReadFileInternal(path) switch
+        {
+            string stringValue => stringValue,
+            byte[] byteValue => Encoding.Default.GetString(byteValue),
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    public Stream ReadFileAsStream(string path)
+    {
+        return ReadFileInternal(path) switch
+        {
+            string stringValue => new MemoryStream(Encoding.UTF8.GetBytes(ReadFile(path))),
+            byte[] byteValue => new MemoryStream(byteValue),
+            _ => throw new NotImplementedException()
+        };
+    }
 
     public List<ModRequirement> GetRequirements() => [];
 

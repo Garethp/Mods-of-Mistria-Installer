@@ -6,6 +6,11 @@ namespace ModsOfMistriaInstallerLibTests.TestUtils;
 public class ContainsJsonConstraint(JObject expected): Constraint
 {
     private readonly JObject _object = expected;
+
+    public ContainsJsonConstraint(string json) : this(JObject.Parse(json))
+    {
+        
+    }
     
     public override ConstraintResult ApplyTo<TActual>(TActual actual)
     {

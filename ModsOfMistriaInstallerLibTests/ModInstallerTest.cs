@@ -219,7 +219,7 @@ public class ModInstallerTest
     // ── Fixtures and helpers ───────────────────────────────────────────────────
 
     private static MockMod GmlMod(string id, List<string>? requiresHooks = null) =>
-        new(new Dictionary<string, string> { { "gml/core/State.gml", "// state\n" } })
+        new(new Dictionary<string, object> { { "gml/core/State.gml", "// state\n" } })
         {
             Id = id,
             Name = id,
@@ -230,7 +230,7 @@ public class ModInstallerTest
         };
 
     private static MockMod ContentMod(string id) =>
-        new(new Dictionary<string, string>()) { Id = id, Name = id, Author = "tester" };
+        new(new Dictionary<string, object>()) { Id = id, Name = id, Author = "tester" };
 
     // The synthetic pristine engine, plus the empty vanilla locations table
     // the location pre-pass reads unconditionally

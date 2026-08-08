@@ -1,0 +1,10 @@
+﻿[meta_properties]
+asset_kind = "Animation"
+
+[asset_properties]
+atlas = "Default"
+frame_size = [16, 256]
+
+[asset_properties.offset]
+horizontal = "Middle"
+vertical = "Middle"

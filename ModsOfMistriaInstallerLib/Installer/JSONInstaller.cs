@@ -18,25 +18,17 @@ public class JSONInstaller(
         GeneratedInformation generatedInformation,
         Action<string, string> reportStatus
     ) {
-        var jsonFiles = mod.GetAllFiles(".json")
-            .Where(p => !p.EndsWith(".meta.json", StringComparison.OrdinalIgnoreCase))
-            .Select(p => RelativePath(mod, p))
-            .Where(p => !p.Equals("manifest.json", StringComparison.OrdinalIgnoreCase))
-            .Where(p => !p.StartsWith("points/", StringComparison.OrdinalIgnoreCase) &&
-                        !p.StartsWith("points\\", StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        foreach (var relPath in jsonFiles)
-            InstallJson(mod, relPath, reportStatus);
+        foreach (var item in generatedInformation.Json)
+            InstallJson(mod, item, reportStatus);
     }
-
-    private void InstallJson(IMod mod, string relPath, Action<string, string> reportStatus)
+    
+    private void InstallJson(IMod mod, JsonItem item, Action<string, string> reportStatus)
     {
-        var content = mod.ReadFile(relPath);
+        var content = item.ReadString(mod);
         if (string.IsNullOrEmpty(content)) return;
 
         var sourceToken = JToken.Parse(content);
-        var dest = DestinationPath(relPath);
+        var dest = DestinationPath(item.FilePath);
         
         if (fileModifier.Exists(dest) && sourceToken is JObject sourceObj)
         {
@@ -53,15 +45,6 @@ public class JSONInstaller(
             fileModifier.Write(dest, sourceToken.ToString(Formatting.Indented));
         }
 
-        reportStatus($"Installed JSON: {relPath}", "");
-    }
-
-    private static string RelativePath(IMod mod, string absolutePath)
-    {
-        var normalizedBase = mod.GetBasePath().Replace('\\', '/').TrimEnd('/') + '/';
-        var normalizedFull = absolutePath.Replace('\\', '/');
-        if (normalizedFull.StartsWith(normalizedBase, StringComparison.OrdinalIgnoreCase))
-            return normalizedFull[normalizedBase.Length..];
-        return normalizedFull;
+        reportStatus($"Installed JSON: {item.FilePath}", "");
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Newtonsoft.Json.Linq;
 using Tomlyn;
 using Tomlyn.Model;
 
@@ -9,11 +10,14 @@ public class GeneratedInformation
 {
     public List<GeneratedTomlItem> Toml = [];
     
+    public List<JsonItem> Json = [];
+    
     public Dictionary<string, AnimationGroup> AnimationGroups = [];
     
     public void Merge(GeneratedInformation information)
     {
         Toml.AddRange(information.Toml);
+        Json.AddRange(information.Json);
         
         foreach (var key in information.AnimationGroups.Keys)
         {
@@ -78,5 +82,46 @@ public class GeneratedTomlItem
             FilePath = filePath,
             Contents = contents
         };
+    }
+}
+
+public class JsonItem
+{
+    public string FilePath;
+    
+    public string? ReadFilePath;
+
+    public string? Contents;
+
+    public JObject ReadJson(IMod mod)
+    {
+        if (!string.IsNullOrEmpty(Contents))
+        {
+            return JObject.Parse(Contents);
+        }
+
+        if (!string.IsNullOrEmpty(ReadFilePath))
+        {
+            return JObject.Parse(mod.ReadFile(ReadFilePath))!;
+        }
+
+        // TODO: Should this throw an exception?
+        return new JObject();
+    }
+
+    public string ReadString(IMod mod)
+    {
+        if (!string.IsNullOrEmpty(Contents))
+        {
+            return Contents;
+        }
+
+        if (!string.IsNullOrEmpty(ReadFilePath))
+        {
+            return mod.ReadFile(ReadFilePath);
+        }
+
+        // TODO: Should this throw an exception?
+        return "";
     }
 }

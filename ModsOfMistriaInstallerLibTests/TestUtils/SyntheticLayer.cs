@@ -71,7 +71,7 @@ public static class SyntheticLayer
     public static GmlModCode Mod(string id, string gml = "// state\n", string? dirName = null,
         List<string>? requiresHooks = null)
     {
-        var mock = new MockMod(new Dictionary<string, string> { { "gml/core/State.gml", gml } })
+        var mock = new MockMod(new Dictionary<string, object> { { "gml/core/State.gml", gml } })
         {
             Id = id,
             DirName = dirName ?? id,

@@ -28,6 +28,7 @@ public partial class GettingStartedPageViewModel(Settings settings) : PageViewBa
     }
 
     public bool CanCreateModsFolder =>  Settings.ValidMistriaLocation() && !Settings.ValidModsLocation();
+    public bool WrongMistriaVersion => Settings.WrongMistriaVersion();
 
     [RelayCommand]
     private async Task SelectMistriaLocation()
@@ -60,6 +61,9 @@ public partial class GettingStartedPageViewModel(Settings settings) : PageViewBa
                 Settings.ModsLocation = MistriaLocator.GetModsLocation(Settings.MistriaLocation) ?? "";
             }
         }
+        
+        OnPropertyChanged(nameof(CanCreateModsFolder));
+        OnPropertyChanged(nameof(WrongMistriaVersion));
     }
     
     [RelayCommand]

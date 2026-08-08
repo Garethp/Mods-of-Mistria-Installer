@@ -207,10 +207,10 @@
   <data name="CoreSpriteFolderIsEmpty" xml:space="preserve">
     <value>{0} points to a sprite folder at {1} but that directory is empty</value>
   </data>
-  <data name="CoreCouldNotParseJSON" xml:space="preserve">
+  <data name="CoreCouldNotParseFile" xml:space="preserve">
     <value>Could not parse file with message: {0}</value>
   </data>
-  <data name="CoreNoDataInJSON" xml:space="preserve">
+  <data name="CoreNoDataInFile" xml:space="preserve">
     <value>No data was found in file</value>
   </data>
   <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve">
@@ -494,5 +494,56 @@
   </data>
   <data name="GUIUninstallFatalError" xml:space="preserve">
     <value>Uninstallation failed; no archive changes were committed:</value>
+  </data>
+  <data name="CoreCosmeticsFileHasNoCosmetics" xml:space="preserve">
+    <value>Cosmetics file has no cosmetics.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoUiSlot" xml:space="preserve">
+    <value>Cosmetic {0} has not defined ui_slot.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoName" xml:space="preserve">
+    <value>Cosmetic has no name.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSlotWrong" xml:space="preserve">
+    <value>Cosmetic {0} has incorrect ui_slot. Must be one of: {1}.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoSubCategory" xml:space="preserve">
+    <value>Cosmetic {0} has not defined ui_sub_category.</value>
+  </data>
+  <data name="CoreCosmeticUiSubCategoryWrong" xml:space="preserve">
+    <value>Cosmetic {0} has incorrect ui_sub_category. Must be one of: {1}.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoCosmeticSprites" xml:space="preserve">
+    <value>Cosmetic {0} has no cosmetic_sprites files.</value>
+  </data>
+  <data name="CoreErrorCosmeticPriceOverrideNegative" xml:space="preserve">
+    <value>Cosmetic {0}'s price override must be a positive number.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoLut" xml:space="preserve">
+    <value>Cosmetic {0} has no lut. You must either define lut or lut_sprite.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoUiSprites" xml:space="preserve">
+    <value>Cosmetic {0} doesn't have ui_sprites.ui or ui_sprites.asset. You must define one or the other.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpritesAllDefined" xml:space="preserve">
+    <value>Cosmetic {0} has ui_sprites.ui and ui_sprites.asset. You can only have one or the other.</value>
+  </data>
+  <data name="CoreErrorCosmeticSpriteNoOutline" xml:space="preserve">
+    <value>Cosmetic {0} has no ui_sprites.outline.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve">
+    <value>Cosmetic {0} has no ui_sprites.body.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve">
+    <value>Cosmetic {0} has no ui_sprites.merged.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve">
+    <value>Cosmetic {0} has no ui_sprites.merged_outline.</value>
+  </data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve">
+    <value>Cosmetic {0} has incorrect cosmetic_sprites value {1}. Must be one of: {2}.</value>
+  </data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve">
+    <value>It looks like the Fields of Mistria Folder that has been selected is correct, but there was no assets.zip file in there. This version of the installer does not work with old versions of Fields of Mistria. Check if your installation is correct and make sure you have the latest version of Fields of Mistria.</value>
   </data>
 </root>
