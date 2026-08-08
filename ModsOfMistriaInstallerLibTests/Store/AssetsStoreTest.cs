@@ -425,6 +425,73 @@ public class AssetsStoreTest
     }
 
     [Test]
+    public void ShouldAdoptAValidVanillaArchiveAfterTheGameExecutableUpdates()
+    {
+        var executable = Path.Combine(_fom, "FieldsOfMistria.exe");
+        File.WriteAllBytes(executable, [1, 2, 3]);
+        WriteVanillaLive();
+
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+        var modifier = store.BeginRebuild();
+        modifier.Write("manifest.toml", "");
+        store.Commit();
+        var oldBackup = File.ReadAllBytes(BackupPath);
+
+        File.WriteAllBytes(executable, [4, 5, 6]);
+        File.SetLastWriteTimeUtc(executable, DateTime.UtcNow.AddSeconds(2));
+        WriteZip(LivePath, ("assets/gml/objects/Game.gml", "new game build\n"));
+
+        Assert.DoesNotThrow(() => new AssetsStore(_fom).EnsureBackup());
+        Assert.That(File.ReadAllBytes(BackupPath), Is.EqualTo(File.ReadAllBytes(LivePath)));
+        Assert.That(File.ReadAllBytes(BackupPath), Is.Not.EqualTo(oldBackup));
+        Assert.That(Directory.GetFiles(_fom, "assets.bak.momi-previous-*.zip"), Has.Length.EqualTo(1));
+        Assert.That(File.ReadAllText(Path.Combine(_fom, "assets.momi.state.toml")),
+            Does.Contain("generated_live_sha256"));
+    }
+
+    [Test]
+    public void ShouldStillRefuseAnUnknownArchiveWhenTheGameExecutableDidNotUpdate()
+    {
+        var executable = Path.Combine(_fom, "FieldsOfMistria.exe");
+        File.WriteAllBytes(executable, [1, 2, 3]);
+        WriteVanillaLive();
+
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+        var modifier = store.BeginRebuild();
+        modifier.Write("manifest.toml", "");
+        store.Commit();
+
+        WriteZip(LivePath, ("assets/gml/objects/Game.gml", "external edit\n"));
+
+        var exception = Assert.Throws<InvalidOperationException>(() => new AssetsStore(_fom).EnsureBackup());
+        Assert.That(exception!.Message, Does.Contain("game update or external modification"));
+    }
+
+    [Test]
+    public void ShouldNotRestoreTheOldBackupWhenUninstallRunsAfterAGameUpdate()
+    {
+        var executable = Path.Combine(_fom, "FieldsOfMistria.exe");
+        File.WriteAllBytes(executable, [1, 2, 3]);
+        WriteVanillaLive();
+
+        var store = new AssetsStore(_fom);
+        store.EnsureBackup();
+        var modifier = store.BeginRebuild();
+        modifier.Write("manifest.toml", "");
+        store.Commit();
+
+        File.WriteAllBytes(executable, [4, 5, 6]);
+        WriteZip(LivePath, ("assets/gml/objects/Game.gml", "new game build\n"));
+        var updatedLive = File.ReadAllBytes(LivePath);
+
+        Assert.DoesNotThrow(() => new AssetsStore(_fom).Uninstall());
+        Assert.That(File.ReadAllBytes(LivePath), Is.EqualTo(updatedLive));
+        Assert.That(File.ReadAllBytes(BackupPath), Is.EqualTo(updatedLive));
+    }
+
+    [Test]
     public void ShouldKeepLiveArchiveWhenStagedTomlIsInvalid()
     {
         WriteVanillaLive();

@@ -23,6 +23,7 @@ public class AssetsStore(string fomLocation)
     public string BackupPath { get; } = Path.Combine(fomLocation, "assets.bak.zip");
     public string TemporaryPath { get; } = Path.Combine(fomLocation, "assets.momi.tmp.zip");
     public string StatePath { get; } = Path.Combine(fomLocation, "assets.momi.state.toml");
+    private string GameExecutablePath { get; } = Path.Combine(fomLocation, "FieldsOfMistria.exe");
 
     private enum LiveState { Absent, Unmarked, Marked, Unreadable }
 
@@ -57,6 +58,17 @@ public class AssetsStore(string fomLocation)
         {
             if (liveHash == state.GeneratedLiveSha256 || liveHash == state.PristineSha256)
                 return;
+
+            // Steam can replace assets.zip while leaving MOMI's state file and
+            // old pristine backup behind. A valid, unmarked archive plus a
+            // changed game executable is strong evidence of a game update.
+            // Adopt it as the new pristine source without trusting arbitrary
+            // external edits to assets.zip.
+            if (liveState == LiveState.Unmarked && IsGameUpdate(state))
+            {
+                AdoptVanillaUpdate(liveHash);
+                return;
+            }
 
             throw UnknownLiveArchive(liveHash, state);
         }
@@ -146,6 +158,23 @@ public class AssetsStore(string fomLocation)
         var backupHash = EnsureReadableBackup();
         var state = ReadState();
         var liveState = ReadLiveState();
+
+        // Uninstall can be the first operation after Steam updated the game.
+        // Bring the pristine source forward before comparing the old state;
+        // otherwise a harmless vanilla update would be reported as a damaged
+        // or externally modified installation.
+        if (state is not null && backupHash is not null &&
+            liveState == LiveState.Unmarked && File.Exists(LivePath))
+        {
+            var currentLiveHash = Sha256File(LivePath);
+            if (currentLiveHash != state.GeneratedLiveSha256 &&
+                currentLiveHash != state.PristineSha256 && IsGameUpdate(state))
+            {
+                AdoptVanillaUpdate(currentLiveHash);
+                backupHash = currentLiveHash;
+                state = ReadState();
+            }
+        }
 
         if (state is not null && backupHash is null)
             throw new InvalidOperationException(string.Format(Resources.CoreStoreBackupMissing, LivePath, BackupPath));
@@ -272,9 +301,20 @@ public class AssetsStore(string fomLocation)
             var root = Toml.ParseToml(File.ReadAllText(StatePath));
             if (!root.TryGetValue("schema_version", out var schema) || schema is not long version || version != 1)
                 throw new FormatException("Unsupported state schema version");
+            DateTimeOffset? installedAt = null;
+            if (root.TryGetValue("installed_at_utc", out var installed) && installed is string installedText &&
+                DateTimeOffset.TryParse(installedText, null, System.Globalization.DateTimeStyles.RoundtripKind, out var parsed))
+                installedAt = parsed;
+
+            var executableHash = root.TryGetValue("game_executable_sha256", out var executable) && executable is string executableText
+                ? executableText
+                : null;
+
             return new StoreState(
                 GetString(root, "pristine_sha256"),
-                GetString(root, "generated_live_sha256"));
+                GetString(root, "generated_live_sha256"),
+                installedAt,
+                executableHash);
         }
         catch (Exception exception) when (exception is FormatException or IOException or TomlException)
         {
@@ -298,6 +338,8 @@ public class AssetsStore(string fomLocation)
                                ?? GetType().Assembly.GetName().Version?.ToString() ?? "unknown",
             ["installed_at_utc"] = DateTimeOffset.UtcNow.ToString("O"),
         };
+        if (File.Exists(GameExecutablePath))
+            root["game_executable_sha256"] = Sha256File(GameExecutablePath);
         var mods = new TomlTableArray();
         foreach (var mod in installedMods.OrderBy(m => m.Id, StringComparer.Ordinal))
             mods.Add(new TomlTable { ["id"] = mod.Id, ["version"] = mod.Version });
@@ -424,5 +466,44 @@ public class AssetsStore(string fomLocation)
     private static InvalidOperationException UnknownLiveArchive(string liveHash, StoreState state) =>
         new($"The live assets archive is not the known MOMI output or pristine archive (SHA-256 {liveHash}); possible game update or external modification. The verified backup was preserved. Reinstall/verify the game before retrying.");
 
-    private sealed record StoreState(string PristineSha256, string GeneratedLiveSha256);
+    private bool IsGameUpdate(StoreState state)
+    {
+        if (!File.Exists(GameExecutablePath)) return false;
+
+        if (!string.IsNullOrWhiteSpace(state.GameExecutableSha256))
+            return Sha256File(GameExecutablePath) != state.GameExecutableSha256;
+
+        // State files written by older MOMI versions did not store an
+        // executable fingerprint. The timestamp is only a migration fallback;
+        // future state files use the stronger hash comparison above.
+        return state.InstalledAtUtc is not null &&
+               File.GetLastWriteTimeUtc(GameExecutablePath) > state.InstalledAtUtc.Value.UtcDateTime;
+    }
+
+    private void AdoptVanillaUpdate(string liveHash)
+    {
+        PreservePreviousBackup();
+        CopyVerified(LivePath, BackupPath);
+        WritePristineState(liveHash);
+    }
+
+    private void PreservePreviousBackup()
+    {
+        if (!File.Exists(BackupPath)) return;
+
+        var directory = Path.GetDirectoryName(BackupPath)!;
+        var stamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmssfff");
+        var previous = Path.Combine(directory, $"assets.bak.momi-previous-{stamp}.zip");
+        var temp = previous + ".tmp";
+        SafeDelete(temp);
+        File.Copy(BackupPath, temp, false);
+        ValidateArchive(temp);
+        AtomicReplace(temp, previous);
+    }
+
+    private sealed record StoreState(
+        string PristineSha256,
+        string GeneratedLiveSha256,
+        DateTimeOffset? InstalledAtUtc,
+        string? GameExecutableSha256);
 }

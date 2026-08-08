@@ -1,8 +1,8 @@
-# Mods of Mistria Installer — MOMI 0.15.3 AI
+# Mods of Mistria Installer — MOMI 0.15.4 AI
 
 This is an independent fork of [Mods of Mistria Installer](https://github.com/Garethp/Mods-of-Mistria-Installer), maintained for **Fields of Mistria 1.0.x**.
 
-The `AI` label identifies this fork build. The numeric application version is `0.15.3` so update checks and release tooling continue to use a normal semantic version.
+The `AI` label identifies this fork build. The numeric application version is `0.15.4`.
 
 ## Fork-specific improvements
 
@@ -30,8 +30,8 @@ This fork is intended for Fields of Mistria 1.0.x. Individual mods may still req
 ## Installation
 
 1. Download the latest release from the [AcTePuKc fork releases page](https://github.com/AcTePuKc/Mods-of-Mistria-Installer/releases).
-2. Create or select a `mods` folder next to `FieldsOfMistria.exe`, or use the supported `mistria-mods` location on Linux/Steam Deck.
-3. Put each mod directly in the mods folder. A mod must contain `manifest.toml` or `manifest.json` at its root; nested duplicate folders prevent detection.
+2. Create or select a mods folder. MOMI automatically checks the game directory and the directory containing the MOMI executable; `mods`, `Mods`, `MODS`, and `MODs` are accepted. On Linux/Steam Deck it also checks the supported per-user `mistria-mods` locations. A manually selected folder may be elsewhere.
+3. Put each mod directly in the selected mods folder. A mod must contain `manifest.toml` or `manifest.json` at its root; nested duplicate folders prevent detection.
 4. Start MOMI, select the mods to install, and click **Install**.
 5. Use **Play** only after the installation completes successfully.
 
@@ -39,12 +39,12 @@ MOMI preserves a pristine backup and writes a staged archive before replacing th
 
 ## Updating the game
 
-After a Fields of Mistria update, verify the game files through Steam if necessary, start MOMI, refresh the mod list, and reinstall the enabled mods. Mods made for an older game or installer version may need to be updated by their authors.
+After a Fields of Mistria update, start MOMI and reinstall the enabled mods. When the new `assets.zip` is a valid vanilla archive and the game executable also changed, MOMI automatically adopts it as the new pristine source; no manual `assets.bak.zip` creation is required. MOMI keeps the previous backup with a timestamped name until the update is accepted. If the archive is damaged or the update cannot be verified, MOMI preserves the existing backup and asks you to verify the game files through Steam. Mods made for an older game or installer version may still need to be updated by their authors.
 
 ## Troubleshooting
 
 - If the game location is not detected, place MOMI next to `Maybe.toml` or select the game directory in Settings.
-- If no mods appear, check that the manifest is at the mod root and that the mod supports Fields of Mistria 1.0.x.
+- If no mods appear, check that MOMI is looking at the intended mods folder, that the manifest is at the mod root, and that the mod supports Fields of Mistria 1.0.x. The folder may be next to the game, next to MOMI, or selected manually.
 - If installation fails, MOMI keeps the previous live archive, shows the failing mod when available, and writes a diagnostic log under the MOMI local data directory.
 - If the game was modified outside MOMI or the pristine backup is missing, restore/verify the game files through Steam before trying again.
 

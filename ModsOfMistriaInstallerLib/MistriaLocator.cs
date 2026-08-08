@@ -66,18 +66,33 @@ public class MistriaLocator
         var possibleLocations = new List<string>();
         if (mistriaLocation is not null && File.Exists(Path.Combine(mistriaLocation, "Maybe.toml")))
         {
-            possibleLocations.Add(Path.Combine(mistriaLocation, "mods"));
-            possibleLocations.Add(Path.Combine(mistriaLocation, "Mods"));
+            AddModsNameVariants(possibleLocations, mistriaLocation);
         }
-        
-        possibleLocations.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "mistria-mods"));
-        possibleLocations.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Mistria-Mods"));
+
+        // A portable MOMI release may be kept outside the game directory.
+        // The source-mod folder is allowed next to the installer as well.
+        AddModsNameVariants(possibleLocations, AppContext.BaseDirectory);
+
+        // These are the documented per-user locations for Linux/Steam Deck.
+        AddModsNameVariants(possibleLocations,
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "mistria-mods");
 
         return possibleLocations
             .Where(location => Directory.Exists(location))
             .Where(location => !RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || !new FileInfo(location).Attributes.HasFlag(FileAttributes.ReparsePoint))
             .Select(location => Path.GetFullPath(location))
             .FirstOrDefault();
+    }
+
+    private static void AddModsNameVariants(List<string> locations, string root, string? baseName = null)
+    {
+        if (string.IsNullOrWhiteSpace(root)) return;
+
+        IEnumerable<string> names = baseName is null
+            ? new[] { "mods", "Mods", "MODS", "MODs" }
+            : new[] { baseName, "Mistria-Mods" };
+        locations.AddRange(names.Select(name => Path.Combine(root, name)));
     }
 
     /// <summary>
