@@ -9,8 +9,8 @@
         x:DataType="vm:MainWindowViewModel"
         Title="{Binding WindowTitle}"
         Icon="/Assets/small_icon.png"
-        Width="900" Height="700"
-        MinWidth="680" MinHeight="500"
+        Width="820" Height="600"
+        MinWidth="640" MinHeight="480"
         WindowStartupLocation="CenterScreen">
     
     <Window.Resources>
@@ -31,7 +31,7 @@
     </Design.DataContext>
 
     <Grid RowDefinitions="Auto,*,Auto">
-        <Image Source="/Assets/header.jpg" Height="190" MaxHeight="220" Stretch="UniformToFill"/>
+        <Image Source="/Assets/header.jpg" Height="145" MaxHeight="160" Stretch="UniformToFill"/>
 
         <Panel Grid.Row="1" Margin="32 16 32 0" ClipToBounds="True">
             <TransitioningContentControl Content="{Binding CurrentPage}" />

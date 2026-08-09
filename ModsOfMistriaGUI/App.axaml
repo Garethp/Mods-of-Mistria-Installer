@@ -9,7 +9,22 @@
     </Application.DataTemplates>
     
     <Application.Resources>
-        
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="ModStatusBackgroundBrush" Color="#F0F0F0" />
+                    <SolidColorBrush x:Key="ModStatusForegroundBrush" Color="#202020" />
+                    <SolidColorBrush x:Key="ModFailureBackgroundBrush" Color="#FDE7E7" />
+                    <SolidColorBrush x:Key="ModFailureForegroundBrush" Color="#7A1F1F" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="ModStatusBackgroundBrush" Color="#2A2A2A" />
+                    <SolidColorBrush x:Key="ModStatusForegroundBrush" Color="#F5F5F5" />
+                    <SolidColorBrush x:Key="ModFailureBackgroundBrush" Color="#5C1F1F" />
+                    <SolidColorBrush x:Key="ModFailureForegroundBrush" Color="#FFFFFF" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
     
     <Application.Styles>

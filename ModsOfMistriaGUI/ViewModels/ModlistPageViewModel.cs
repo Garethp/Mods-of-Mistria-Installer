@@ -456,6 +456,9 @@ public partial class ModlistPageViewModel : PageViewBase
     [NotifyCanExecuteChangedFor(nameof(LaunchGameCommand))]
     [ObservableProperty] private bool _isInstalling;
 
+    [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))]
+    [ObservableProperty] private bool _installationNeedsRebuild;
+
     [NotifyCanExecuteChangedFor(nameof(LaunchGameCommand))]
     [ObservableProperty] private bool _gameReady;
 
@@ -720,15 +723,47 @@ public partial class ModlistPageViewModel : PageViewBase
 
     private void RefreshGameReady()
     {
-        GameReady = !string.IsNullOrWhiteSpace(MistriaLocation) &&
-                    new AssetsStore(MistriaLocation).HasMomiInstallation();
+        // Launching the game is independent from whether MOMI currently has
+        // mods installed. After Uninstall, the pristine game archive should
+        // still be launchable, so do not use HasMomiInstallation here.
+        GameReady = IsLaunchableGameInstallation(MistriaLocation);
         RefreshArchiveStatus();
+    }
+
+    private static bool IsLaunchableGameInstallation(string? location)
+    {
+        if (string.IsNullOrWhiteSpace(location) || !Directory.Exists(location))
+            return false;
+
+        if (!File.Exists(Path.Combine(location, "Maybe.toml")))
+            return false;
+
+        var unpackedAssets = Path.Combine(location, "assets");
+        if (Directory.Exists(unpackedAssets))
+            return true;
+
+        var archivePath = Path.Combine(location, "assets.zip");
+        if (!File.Exists(archivePath))
+            return false;
+
+        try
+        {
+            using var archive = System.IO.Compression.ZipFile.OpenRead(archivePath);
+            return archive.Entries.Any(entry =>
+                entry.FullName.Replace('\\', '/')
+                    .StartsWith("assets/", StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     private void RefreshArchiveStatus()
     {
         if (string.IsNullOrWhiteSpace(MistriaLocation))
         {
+            InstallationNeedsRebuild = false;
             ArchiveStatus = "No game archive detected.";
             return;
         }
@@ -736,6 +771,7 @@ public partial class ModlistPageViewModel : PageViewBase
         var store = new AssetsStore(MistriaLocation);
         if (!store.HasMomiInstallation())
         {
+            InstallationNeedsRebuild = true;
             ArchiveStatus = "No MOMI installation detected. Install will create one.";
             return;
         }
@@ -744,12 +780,14 @@ public partial class ModlistPageViewModel : PageViewBase
         try { recorded = store.GetRecordedInstallState(); }
         catch
         {
+            InstallationNeedsRebuild = true;
             ArchiveStatus = "MOMI installation detected, but its recorded state is unavailable.";
             return;
         }
 
         if (recorded is null)
         {
+            InstallationNeedsRebuild = true;
             ArchiveStatus = "MOMI installation detected, but installed mod versions are unavailable.";
             return;
         }
@@ -769,8 +807,10 @@ public partial class ModlistPageViewModel : PageViewBase
         ArchiveStatus = matches
             ? $"MOMI installation: {actual.Count} mod(s) installed."
             : "The installed mod set or version differs from this profile. Recommended: Uninstall, then Install. Install can also rebuild from the pristine backup.";
+        InstallationNeedsRebuild = !matches;
     }
 
     private bool CanInstall() =>
-        !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 && !IsInstalling;
+        !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 &&
+        !IsInstalling && InstallationNeedsRebuild;
 }

@@ -77,11 +77,6 @@ public partial class ModModel : ObservableObject
     // stand down while the skip is showing
     public bool ShowErrorIcon => InError && !WasSkipped;
 
-    public Avalonia.Media.IBrush StatusBackground =>
-        WasFailed
-            ? new Avalonia.Media.SolidColorBrush(Avalonia.Media.Color.Parse("#5C1F1F"))
-            : Avalonia.Media.Brushes.LightGray;
-
     // The plain checkbox row is for a valid mod with nothing to report; any
     // validation message or install outcome swaps in the expander
     public bool ShowPlainRow  => IsValid && !HasInstallOutcome;
@@ -96,7 +91,6 @@ public partial class ModModel : ObservableObject
         OnPropertyChanged(nameof(WasFailed));
         OnPropertyChanged(nameof(HasInstallOutcome));
         OnPropertyChanged(nameof(InstallDetail));
-        OnPropertyChanged(nameof(StatusBackground));
         OnPropertyChanged(nameof(ShowErrorIcon));
         OnPropertyChanged(nameof(ShowPlainRow));
         OnPropertyChanged(nameof(ShowStatusRow));

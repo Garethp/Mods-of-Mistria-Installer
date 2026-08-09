@@ -41,7 +41,10 @@ public class ZipMod() : IMod
 
     public ZipMod(ZipArchive zipFile, string basePath) : this()
     {
-        var manifestFile = zipFile.GetEntry(basePath + "manifest.json") ?? zipFile.GetEntry(basePath + "manifest.toml");
+        _zipFile = zipFile;
+        _basePath = NormalizeArchivePath(basePath).Trim('/');
+
+        var manifestFile = FindEntry(ResolvePath("manifest.json")) ?? FindEntry(ResolvePath("manifest.toml"));
         if (manifestFile is null) return;
 
         ModManifest manifest;
@@ -65,8 +68,30 @@ public class ZipMod() : IMod
         _requiredHooks = manifest.RequiresHooks;
         _requiredHooksValid = manifest.RequiresHooksValid;
 
-        _zipFile = zipFile;
-        _basePath = basePath;
+    }
+
+    private static string NormalizeArchivePath(string path) =>
+        path.Replace('\\', '/').TrimStart('/');
+
+    private string ResolvePath(string path)
+    {
+        var normalized = NormalizeArchivePath(path);
+        if (string.IsNullOrEmpty(_basePath)) return normalized;
+
+        var basePath = _basePath + "/";
+        return normalized.StartsWith(basePath, StringComparison.OrdinalIgnoreCase)
+            ? normalized
+            : basePath + normalized;
+    }
+
+    private ZipArchiveEntry? FindEntry(string path)
+    {
+        if (_zipFile is null) return null;
+
+        var normalized = NormalizeArchivePath(path);
+        return _zipFile.Entries.FirstOrDefault(entry =>
+            !entry.FullName.EndsWith('/') &&
+            NormalizeArchivePath(entry.FullName).Equals(normalized, StringComparison.OrdinalIgnoreCase));
     }
 
     private string readEntry(ZipArchive? zipFile, string entryName)
@@ -184,16 +209,19 @@ public class ZipMod() : IMod
 
     public bool HasFilesInFolder(string folder) => HasFilesInFolder(folder, "");
 
-    public bool HasFilesInFolder(string folder, string extension) => _zipFile is not null && _zipFile.Entries.Any(
-        entry =>
-            entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') &&
-            entry.FullName.EndsWith(extension));
+    public bool HasFilesInFolder(string folder, string extension) =>
+        GetFilesInFolder(folder, extension).Count > 0;
 
-    public bool FileExists(string path) => _zipFile is not null &&
-                                           _zipFile.Entries.Any(entry =>
-                                               entry.FullName == $"{_basePath}{path}" && !entry.FullName.EndsWith('/'));
+    public bool FileExists(string path) => FindEntry(ResolvePath(path)) is not null;
 
-    public bool FolderExists(string path) => _zipFile?.GetEntry($"{_basePath}{path}/") != null;
+    public bool FolderExists(string path)
+    {
+        if (_zipFile is null) return false;
+
+        var prefix = ResolvePath(path).TrimEnd('/') + "/";
+        return _zipFile.Entries.Any(entry =>
+            NormalizeArchivePath(entry.FullName).StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+    }
 
     public List<string> GetFilesInFolder(string folder) => GetFilesInFolder(folder, "");
 
@@ -202,30 +230,35 @@ public class ZipMod() : IMod
         if (_zipFile is null) return [];
 
         return _zipFile.Entries
-            .Where(entry => !entry.FullName.EndsWith('/') && entry.FullName.EndsWith(extension))
-            .Select(entry => entry.FullName)
+            .Where(entry => !entry.FullName.EndsWith('/') &&
+                            NormalizeArchivePath(entry.FullName).EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+            .Select(entry => NormalizeArchivePath(entry.FullName))
             .ToList();
     }
 
-    public List<string> GetFilesInFolder(string folder, string? extension) =>
-        _zipFile?.Entries
-            .Where(entry => entry.FullName.StartsWith($"{_basePath}{folder}") && !entry.FullName.EndsWith('/') &&
-                            entry.FullName.EndsWith(extension ?? ""))
-            .Select(entry => entry.FullName).ToList() ?? [];
+    public List<string> GetFilesInFolder(string folder, string? extension)
+    {
+        if (_zipFile is null) return [];
+
+        var prefix = ResolvePath(folder).TrimEnd('/') + "/";
+        return _zipFile.Entries
+            .Where(entry => !entry.FullName.EndsWith('/') &&
+                            NormalizeArchivePath(entry.FullName).StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                            NormalizeArchivePath(entry.FullName).EndsWith(extension ?? "", StringComparison.OrdinalIgnoreCase))
+            .Select(entry => NormalizeArchivePath(entry.FullName))
+            .ToList();
+    }
 
     public string ReadFile(string path)
     {
-        if (!path.StartsWith(_basePath)) path = $"{_basePath}{path}";
-
-        return readEntry(_zipFile, path);
+        var entry = FindEntry(ResolvePath(path));
+        return entry is null ? "" : readEntry(entry);
     }
 
     public Stream ReadFileAsStream(string path)
     {
-        if (!path.StartsWith(_basePath)) path = $"{_basePath}{path}";
-
         if (_zipFile is null) throw new Exception("Cannot read file from zip file");
-        var entry = _zipFile.GetEntry($"{path}");
+        var entry = FindEntry(ResolvePath(path));
         if (entry is null) throw new Exception("Cannot read file from zip file");
 
         return entry.Open();

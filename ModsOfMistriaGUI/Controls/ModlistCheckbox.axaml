@@ -19,8 +19,18 @@
         </WrapPanel>
 
         <Expander IsVisible="{Binding ShowStatusRow}"
-                  Background="{Binding StatusBackground}">
+                  Classes.failed="{Binding WasFailed}"
+                  Classes.warning="{Binding InWarning}">
             <Expander.Styles>
+                <Style Selector="Expander">
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="Background" Value="{DynamicResource ModStatusBackgroundBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource ModStatusForegroundBrush}" />
+                </Style>
+                <Style Selector="Expander.failed">
+                    <Setter Property="Background" Value="{DynamicResource ModFailureBackgroundBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource ModFailureForegroundBrush}" />
+                </Style>
                 <Style Selector="Expander ToggleButton">
                     <Style
                         Selector="^:pointerover /template/ Border#ToggleButtonBackground">
@@ -32,9 +42,8 @@
                     <Setter Property="Margin" Value="0" />
                 </Style>
 
-                <Style Selector="Expander">
-                    <Setter Property="BorderBrush" Value="Transparent" />
-                    <Setter Property="Background" Value="LightGray" />
+                <Style Selector="Expander CheckBox">
+                    <Setter Property="Foreground" Value="{DynamicResource ModStatusForegroundBrush}" />
                 </Style>
             </Expander.Styles>
             <Expander.Header>
@@ -103,10 +112,13 @@
 
             <StackPanel>
                 <SelectableTextBlock TextWrapping="WrapWithOverflow" IsVisible="{Binding HasInstallOutcome}"
-                                     Text="{Binding InstallDetail}" />
+                                     Text="{Binding InstallDetail}"
+                                     Foreground="{DynamicResource ModStatusForegroundBrush}" />
                 <SelectableTextBlock TextWrapping="WrapWithOverflow" IsVisible="{Binding ShowErrorIcon}"
-                                     Text="{Binding Errors}" />
-                <SelectableTextBlock IsVisible="{Binding InWarning}" Text="{Binding Warnings}" />
+                                     Text="{Binding Errors}"
+                                     Foreground="{DynamicResource ModStatusForegroundBrush}" />
+                <SelectableTextBlock IsVisible="{Binding InWarning}" Text="{Binding Warnings}"
+                                     Foreground="{DynamicResource ModStatusForegroundBrush}" />
             </StackPanel>
         </Expander>
     </WrapPanel>

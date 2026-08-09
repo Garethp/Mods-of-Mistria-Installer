@@ -1,8 +1,8 @@
-# Mods of Mistria Installer — MOMI 0.15.4 AI
+# Mods of Mistria Installer — MOMI 0.15.5 AI
 
 This is an independent fork of [Mods of Mistria Installer](https://github.com/Garethp/Mods-of-Mistria-Installer), maintained for **Fields of Mistria 1.0.x**.
 
-The `AI` label identifies this fork build. The numeric application version is `0.15.4`.
+The `AI` label identifies this fork build. The numeric application version is `0.15.5`.
 
 ## Fork-specific improvements
 
@@ -17,7 +17,8 @@ Compared with the upstream 0.15.1 line, this fork focuses on Fields of Mistria 1
 ## What this fork supports
 
 - Fields of Mistria 1.0.x mod installations.
-- Mod folders and archives containing either `manifest.toml` or `manifest.json`.
+- Mod folders, ZIP archives, and RAR archives containing either `manifest.toml` or `manifest.json`.
+- Archive-backed mods are read directly; they do not need to be extracted before installation.
 - TOML, JSON, image, outfit, furniture, item, object, store, shadow, font and manual-load mod content supported by the current MOMI installer modules.
 - GML mods using the MMAPI format documented in [`docs/MMAPI`](docs/MMAPI).
 - Profiles and persisted mod load order.
@@ -31,7 +32,8 @@ This fork is intended for Fields of Mistria 1.0.x. Individual mods may still req
 
 1. Download the latest release from the [AcTePuKc fork releases page](https://github.com/AcTePuKc/Mods-of-Mistria-Installer/releases).
 2. Create or select a mods folder. MOMI automatically checks the game directory and the directory containing the MOMI executable; `mods`, `Mods`, `MODS`, and `MODs` are accepted. On Linux/Steam Deck it also checks the supported per-user `mistria-mods` locations. A manually selected folder may be elsewhere.
-3. Put each mod directly in the selected mods folder. A mod must contain `manifest.toml` or `manifest.json` at its root; nested duplicate folders prevent detection.
+3. Put each mod directly in the selected mods folder. A mod folder, ZIP archive, or RAR archive must contain `manifest.toml` or `manifest.json` at its mod root; nested duplicate folders prevent detection.
+   Keep only one copy of a given mod in the active folder. Do not leave the same mod there both as an extracted folder and as a ZIP/RAR archive, because MOMI will discover both copies.
 4. Start MOMI, select the mods to install, and click **Install**.
 5. Use **Play** only after the installation completes successfully.
 
