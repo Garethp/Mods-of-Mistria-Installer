@@ -155,6 +155,7 @@ public partial class ModlistPageViewModel : PageViewBase
             _suppressDirty = false;
             _isDirty = false;
             RefreshArchiveStatus();
+            InstallModsCommand.NotifyCanExecuteChanged();
         }
     }
 
