@@ -21,7 +21,12 @@ public class MistriaLocatorTest
                 Directory.CreateDirectory(folder);
                 var found = MistriaLocator.GetModsLocation(root);
                 Assert.That(found, Is.Not.Null);
-                var comparison = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                // Standard Windows and macOS volumes are commonly
+                // case-insensitive. On those filesystems, mods/Mods/MODS
+                // are the same directory even though Linux can distinguish
+                // them.
+                var comparison = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ||
+                                  RuntimeInformation.IsOSPlatform(OSPlatform.OSX)
                     ? StringComparison.OrdinalIgnoreCase
                     : StringComparison.Ordinal;
                 Assert.That(string.Equals(found, Path.GetFullPath(folder), comparison), Is.True);
