@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.6
+
+- Fixed the Install button state after creating, switching, or deleting profiles.
+- Install is now disabled when no mods are selected, including after all mods are deselected.
+- Install state now refreshes immediately when profile selection changes.
+
 ## 0.15.5
 
 - Added direct support for ZIP and RAR mods without requiring them to be extracted first.
