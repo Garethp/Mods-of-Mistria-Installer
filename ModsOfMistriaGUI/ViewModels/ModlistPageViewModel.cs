@@ -302,6 +302,7 @@ public partial class ModlistPageViewModel : PageViewBase
                             }
                         }
                         finally { _cascading = false; }
+                        InstallModsCommand.NotifyCanExecuteChanged();
                         UnInstallModsCommand.NotifyCanExecuteChanged();
 
                         if (missing.Count > 0)
@@ -811,6 +812,6 @@ public partial class ModlistPageViewModel : PageViewBase
     }
 
     private bool CanInstall() =>
-        !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Count > 0 &&
+        !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Any(mod => mod.Enabled) &&
         !IsInstalling && InstallationNeedsRebuild;
 }
