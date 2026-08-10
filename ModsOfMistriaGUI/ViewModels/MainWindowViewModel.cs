@@ -24,6 +24,7 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private PageViewBase _currentPage;
     [ObservableProperty] private bool _updateAvailable;
     [ObservableProperty] private string _updateMessage = "";
+    private string? _availableVersion;
 
     public string WindowTitle => $"{Localization["GUIApplicationTitle"]} — {AppInfo.DisplayVersion}";
 
@@ -39,7 +40,8 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public void ShowUpdateAvailable(string version)
     {
-        UpdateMessage = string.Format(Localization["GUIUpdateAvailable"], version);
+        _availableVersion = version;
+        UpdateMessage = string.Format(Localization["GUIUpdateAvailable"], _availableVersion);
         UpdateAvailable = true;
     }
 
@@ -54,7 +56,8 @@ public partial class MainWindowViewModel : ViewModelBase
         Localization.LanguageChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(WindowTitle));
-            if (UpdateAvailable) OnPropertyChanged(nameof(UpdateMessage));
+            if (UpdateAvailable && _availableVersion is not null)
+                UpdateMessage = string.Format(Localization["GUIUpdateAvailable"], _availableVersion);
         };
         _settings.LoadPreferences();
         _settings.MistriaLocation = MistriaLocator.GetMistriaLocation() ?? "";

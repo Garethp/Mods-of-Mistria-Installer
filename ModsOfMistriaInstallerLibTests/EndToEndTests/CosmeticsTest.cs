@@ -119,7 +119,7 @@ public class CosmeticsTest
             new ContainsJsonConstraint(FixtureHandler.ReadAllText("OutfitMod/cosmetic_output/player_asset_parts.json"))
         );
     }
-    
+
     [Test]
     public void ShouldIncludeLutIfAvailable()
     {

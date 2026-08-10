@@ -319,7 +319,7 @@
     <value>Item {0} does not state if it overwrites another mod.</value>
   </data>
   <data name="GUIApplicationTitle" xml:space="preserve">
-    <value>Mods Of Mistria Installer</value>
+    <value>Mods of Mistria Installer</value>
   </data>
   <data name="GUIGreetingText" xml:space="preserve">
     <value>Welcome to the Mods of Mistria Installer!</value>
@@ -367,7 +367,7 @@
     <value>New Version Available</value>
   </data>
   <data name="GUIUpdateNagMessage" xml:space="preserve">
-    <value>A new version of the Mods Of Mistria Installer is available, please update</value>
+    <value>A new version of the Mods of Mistria Installer is available, please update</value>
   </data>
   <data name="GUIUninstallButtonText" xml:space="preserve">
     <value>Uninstall All</value>

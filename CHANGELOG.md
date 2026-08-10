@@ -13,6 +13,10 @@
 - Added resource validation coverage for duplicate keys and malformed `.resx` files.
 - Added a language-menu checkmark showing the currently selected UI language.
 - Updated the application and CLI version metadata to 0.15.7.
+- Known limitation: legacy cosmetic mods that use the old 49-frame `back_gear`
+  format are not automatically converted to the current 59-frame animation
+  layout. Such mods need an updated release from their author; changing only
+  the TOML validation or offset is not sufficient to make them compatible.
 
 ## 0.15.6
 
