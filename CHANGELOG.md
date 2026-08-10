@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.1.0 — AIM
+
+- Renamed the user-facing application to **AIM — Alternative Installer for Mistria**.
+- Reset the new AIM release line to version `0.1.0`; the published `0.15.7` history remains unchanged.
+- Added Ukrainian as a selectable interface language.
+- Added the first Ukrainian translations for the main window, profiles, installation flow, archive state, phases, and location detection.
+- Documented direct ZIP/RAR mod reading; archives no longer need to be extracted before installation.
+- Documented the gear-menu **Launch game directly** toggle, which starts the detected game executable and falls back to Steam when needed.
+- Documented the current duplicate-version limitation: remove the older copy before adding a newer version of the same mod.
+- Documented that AIM should be closed before moving or replacing mod archives, which may otherwise remain locked while the application is open.
+- Kept technical MOMI namespaces, state paths, manifest keys, and migration compatibility unchanged.
+- Clarified that AIM is an independently maintained fork of MOMI and retains MMAPI compatibility and upstream attribution.
+
 ## 0.15.7 AI
 
 - Added runtime UI language switching without restarting MOMI.

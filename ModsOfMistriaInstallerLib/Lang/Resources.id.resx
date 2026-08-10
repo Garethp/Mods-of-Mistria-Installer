@@ -13,7 +13,7 @@
   <data name="GUILanguageDutch" xml:space="preserve"><value>Belanda</value></data>
   <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>Portugis (Brasil)</value></data>
   <data name="GUILanguageIndonesian" xml:space="preserve"><value>Indonesia</value></data>
-  <data name="GUIApplicationTitle" xml:space="preserve"><value>Penginstal Mod Fields of Mistria</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>AIM — Penginstal Alternatif untuk Fields of Mistria</value></data>
   <data name="GUILanguageMenu" xml:space="preserve"><value>Bahasa</value></data>
   <data name="GUIPlayButtonText" xml:space="preserve"><value>Mainkan</value></data>
   <data name="GUIProfileLabel" xml:space="preserve"><value>Profil:</value></data>
@@ -45,6 +45,7 @@
   <data name="GUILanguageKorean" xml:space="preserve"><value>Korea</value></data>
   <data name="GUILanguageJapanese" xml:space="preserve"><value>Jepang</value></data>
   <data name="GUILanguageSpanish" xml:space="preserve"><value>Spanyol</value></data>
+  <data name="GUILanguageUkrainian" xml:space="preserve"><value>Ukraina</value></data>
   <data name="GUISetupMistriaLocation" xml:space="preserve"><value>Lokasi Fields of Mistria:</value></data>
   <data name="GUISetupModsLocation" xml:space="preserve"><value>Folder mod:</value></data>
   <data name="GUICanCreateModsFolder" xml:space="preserve"><value>Folder mod tidak ditemukan, tetapi dapat dibuat secara otomatis.</value></data>
@@ -85,11 +86,135 @@ Buka halaman unduhan di browser?</value></data>
 {0}</value></data>
   <data name="GUIErrorReason" xml:space="preserve"><value>Alasan: </value></data>
   <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>Detail kesalahan disimpan di:</value></data>
-  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Versi Fields of Mistria ini tidak didukung oleh MOMI.</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Versi Fields of Mistria ini tidak didukung oleh AIM.</value></data>
   <data name="GUIInstallFatalError" xml:space="preserve"><value>Pemasangan gagal; arsip tidak diubah:</value></data>
   <data name="GUIUninstallFatalError" xml:space="preserve"><value>Pencopotan gagal; arsip tidak diubah:</value></data>
   <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve"><value>Fields of Mistria terdeteksi di: </value></data>
   <data name="GUIMoveUp" xml:space="preserve"><value>Naik dalam urutan pemuatan</value></data>
   <data name="GUIMoveDown" xml:space="preserve"><value>Turun dalam urutan pemuatan</value></data>
   <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>Centang semua mod yang ingin kamu instal:</value></data>
+  <data name="CLIRunningBuild" xml:space="preserve"><value>Menjalankan build {0}</value></data>
+  <data name="CLICompleted" xml:space="preserve"><value>Selesai. Tekan tombol apa saja untuk keluar.</value></data>
+  <data name="CLIUninstallComplete" xml:space="preserve"><value>Semua mod telah dihapus. Tekan tombol apa saja untuk keluar.</value></data>
+  <data name="CLIWarning32Bit" xml:space="preserve"><value>Anda menggunakan sistem operasi 64-bit, tetapi tidak sengaja mengunduh versi AIM 32-bit. Unduh versi yang tidak memiliki "-x86".</value></data>
+  <data name="CLICompileCheckUsage" xml:space="preserve"><value>--compile-check harus berupa "on", "off", atau "require".</value></data>
+  <data name="CLILintUsage" xml:space="preserve"><value>--lint memerlukan folder mod: --lint &lt;folder mod&gt; [pristine zip]</value></data>
+  <data name="CoreLookingForMistriaAt" xml:space="preserve"><value>Mencari Mistria di {0}</value></data>
+  <data name="CoreMistriaNotFoundFallback" xml:space="preserve"><value>Fields of Mistria tidak ditemukan; menggunakan folder saat ini</value></data>
+  <data name="CoreCouldNotFindModManifest" xml:space="preserve"><value>File manifest tidak ditemukan.</value></data>
+  <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve"><value>File manifest harus bernama manifest.json.</value></data>
+  <data name="CoreManifestHasNoAuthor" xml:space="preserve"><value>Manifest harus berisi pembuat.</value></data>
+  <data name="CoreManifestHasNoName" xml:space="preserve"><value>Manifest harus berisi nama.</value></data>
+  <data name="CoreManifestHasNoVersion" xml:space="preserve"><value>Manifest harus berisi versi.</value></data>
+  <data name="CoreModRequiresNewerInstaller" xml:space="preserve"><value>Mod ini memerlukan versi installer yang lebih baru.</value></data>
+  <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve"><value>Lokasi Fields of Mistria tidak ada.</value></data>
+  <data name="CoreModDirectoryDoesNotExist" xml:space="preserve"><value>Lokasi mod tidak ada.</value></data>
+  <data name="CoreGeneratingInformationForMod" xml:space="preserve"><value>Membuat informasi untuk {0}</value></data>
+  <data name="CoreMistriaNotFound" xml:space="preserve"><value>Lokasi Fields of Mistria tidak ditemukan.</value></data>
+  <data name="CoreCouldNotGuessModsAt" xml:space="preserve"><value>Folder mod tidak ditemukan di {0}.</value></data>
+  <data name="CoreGuessedMistriaAt" xml:space="preserve"><value>Lokasi yang diperkirakan: {0}</value></data>
+  <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve"><value>Melewati {0} karena memerlukan versi installer yang lebih baru.</value></data>
+  <data name="CoreSkippingModBecauseErrors" xml:space="preserve"><value>Melewati {0} karena kesalahan berikut:</value></data>
+  <data name="CoreModHasWarnings" xml:space="preserve"><value>{0} memiliki peringatan berikut, tetapi tetap akan dipasang:</value></data>
+  <data name="CoreInstalledInReporter" xml:space="preserve"><value>{0} dipasang di {1}</value></data>
+  <data name="CoreModsInstalledInTime" xml:space="preserve"><value>Mod dipasang dalam {0}</value></data>
+  <data name="CoreItemDoesNotHaveValue" xml:space="preserve"><value>{0} tidak memiliki nilai</value></data>
+  <data name="CoreSpriteFileDoesNotExist" xml:space="preserve"><value>{0} menunjuk ke sprite di {1}, tetapi file tersebut tidak ada</value></data>
+  <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve"><value>{0} menunjuk ke folder sprite di {1}, tetapi folder tersebut tidak ada</value></data>
+  <data name="CoreSpriteFolderIsEmpty" xml:space="preserve"><value>{0} menunjuk ke folder sprite di {1}, tetapi folder tersebut kosong</value></data>
+  <data name="CoreCouldNotParseFile" xml:space="preserve"><value>File tidak dapat diurai. Pesan: {0}</value></data>
+  <data name="CoreNoDataInFile" xml:space="preserve"><value>Tidak ada data yang ditemukan di dalam file.</value></data>
+  <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve"><value>File pakaian tidak berisi pakaian.</value></data>
+  <data name="CoreSpriteFileHasNoSprites" xml:space="preserve"><value>File sprite tidak berisi sprite.</value></data>
+  <data name="CoreStoreFileHasNoData" xml:space="preserve"><value>File toko tidak berisi kategori atau item.</value></data>
+  <data name="CoreTilesetsFileEmpty" xml:space="preserve"><value>File tileset tidak berisi tileset.</value></data>
+  <data name="CoreReadingSprites" xml:space="preserve"><value>Membaca tekstur/sprite</value></data>
+  <data name="CoreImportingSprites" xml:space="preserve"><value>Mengimpor tekstur/sprite</value></data>
+  <data name="CoreWritingSprites" xml:space="preserve"><value>Menulis tekstur/sprite</value></data>
+  <data name="CoreErrorOutfitNoName" xml:space="preserve"><value>Pakaian tidak memiliki nama.</value></data>
+  <data name="CoreErrorOutfitNoDescription" xml:space="preserve"><value>Pakaian tidak memiliki deskripsi.</value></data>
+  <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve"><value>Pakaian {0} tidak mendefinisikan ui_slot.</value></data>
+  <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve"><value>Pakaian {0} tidak mendefinisikan ui_sub_category.</value></data>
+  <data name="CoreErrorOutfitNoAnimation" xml:space="preserve"><value>Pakaian {0} tidak memiliki file animasi.</value></data>
+  <data name="CoreErrorStoreCategoryNoName" xml:space="preserve"><value>Kategori tidak memiliki nama ikon.</value></data>
+  <data name="CoreErrorShadowHasNoLocation" xml:space="preserve"><value>Bayangan {0} tidak memiliki lokasi.</value></data>
+  <data name="CoreWarningShadowFileNoShadows" xml:space="preserve"><value>File bayangan tidak berisi bayangan.</value></data>
+  <data name="CoreErrorShadowHasNoSprite" xml:space="preserve"><value>Bayangan {0} tidak memiliki regular_sprite_name.</value></data>
+  <data name="CoreErrorModRequiresWindows" xml:space="preserve"><value>Mod ini hanya berjalan di Windows dan tidak akan dipasang.</value></data>
+  <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve"><value>Pakaian {0} memiliki ui_slot yang salah. Harus salah satu dari: {1}.</value></data>
+  <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve"><value>Pakaian {0} memiliki ui_sub_category yang salah. Harus salah satu dari: {1}.</value></data>
+  <data name="CoreErrorReadingVersionForMod" xml:space="preserve"><value>Terjadi kesalahan saat membaca versi mod: {0}</value></data>
+  <data name="CorePreinstallWillInstallAurie" xml:space="preserve"><value>AIM akan memasang Aurie terlebih dahulu.</value></data>
+  <data name="CorePreinstallWillRemoveAurie" xml:space="preserve"><value>AIM akan menghapus Aurie yang sudah ada terlebih dahulu.</value></data>
+  <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve"><value>Item toko tidak memiliki toko.</value></data>
+  <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve"><value>Item toko tidak memiliki kategori.</value></data>
+  <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve"><value>Item toko memiliki musim yang tidak valid.</value></data>
+  <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve"><value>Item toko tidak memiliki item.</value></data>
+  <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve"><value>Kategori toko tidak memiliki toko.</value></data>
+  <data name="CoreErrorNewObjectNoName" xml:space="preserve"><value>Objek baru tidak memiliki nama.</value></data>
+  <data name="CoreErrorNewObjectNoCategory" xml:space="preserve"><value>Objek baru tidak memiliki kategori.</value></data>
+  <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve"><value>Objek baru memiliki kategori yang tidak valid.</value></data>
+  <data name="CoreErrorNewObjectNoData" xml:space="preserve"><value>Objek baru tidak memiliki data.</value></data>
+  <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve"><value>File objek baru tidak berisi objek.</value></data>
+  <data name="CoreWarningItemFileHasNoItems" xml:space="preserve"><value>File item baru tidak berisi item.</value></data>
+  <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve"><value>Objek baru tidak menimpa objek dari mod lain.</value></data>
+  <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve"><value>Item baru tidak menimpa item dari mod lain.</value></data>
+  <data name="GUIGreetingText" xml:space="preserve"><value>Selamat datang di AIM</value></data>
+  <data name="GUIModByAuthorWithVersion" xml:space="preserve"><value>{0} oleh {1} — Versi {2}</value></data>
+  <data name="GUICouldNotFindMistria" xml:space="preserve"><value>Instalasi Fields of Mistria tidak ditemukan.</value></data>
+  <data name="GUICouldNotFindMods" xml:space="preserve"><value>Folder mod tidak ditemukan. Pilih folder atau buat folder secara otomatis.</value></data>
+  <data name="GUINoModsToInstall" xml:space="preserve"><value>Tidak ada mod yang dipilih untuk dipasang.</value></data>
+  <data name="GUIModsRequireNewerVersion" xml:space="preserve"><value>Mod berikut memerlukan versi AIM yang lebih baru: {0}</value></data>
+  <data name="GUIUpdateNagTitle" xml:space="preserve"><value>Pembaruan AIM tersedia</value></data>
+  <data name="GUIUpdateNagMessage" xml:space="preserve"><value>Versi AIM yang lebih baru tersedia. Anda dapat mengunduhnya dari GitHub.</value></data>
+  <data name="GUIPreinstallInformationTitle" xml:space="preserve"><value>Informasi pemasangan</value></data>
+  <data name="GUIUninstallInformationTitle" xml:space="preserve"><value>Informasi penghapusan mod</value></data>
+  <data name="GUIWarning32Bit" xml:space="preserve"><value>Anda menggunakan AIM 32-bit. Beberapa mod mungkin tidak berfungsi.</value></data>
+  <data name="GUIWarning32BitTitle" xml:space="preserve"><value>Peringatan 32-bit</value></data>
+  <data name="GUIPickLogFile" xml:space="preserve"><value>Pilih file log</value></data>
+  <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve"><value>Item hewan toko tidak memiliki kosmetik.</value></data>
+  <data name="GUIGreetingText_April" xml:space="preserve"><value>Selamat datang di AIM!</value></data>
+  <data name="GUIInstallButtonText_April" xml:space="preserve"><value>Pasang mod!</value></data>
+  <data name="GUIInstallInProgress_April" xml:space="preserve"><value>Mod sedang dipasang...</value></data>
+  <data name="GUINoModsToInstall_April" xml:space="preserve"><value>Mod tidak ditemukan!</value></data>
+  <data name="GUIModsWillBeInstalled_April" xml:space="preserve"><value>{0} mod akan dipasang!</value></data>
+  <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve"><value>Pakaian memiliki price_override negatif.</value></data>
+  <data name="CoreRunningInstaller" xml:space="preserve"><value>Menjalankan pemasang</value></data>
+  <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve"><value>Sprite {0} tidak memiliki lokasi.</value></data>
+  <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve"><value>Manifest tidak mendefinisikan versi AIM minimum.</value></data>
+  <data name="CoreModRequiresIncorrectVersion" xml:space="preserve"><value>Mod memerlukan versi AIM yang tidak cocok.</value></data>
+  <data name="CoreStoreRebuildFailed" xml:space="preserve"><value>Gagal membangun ulang arsip game.</value></data>
+  <data name="CoreStoreFlushFailed" xml:space="preserve"><value>Gagal menulis perubahan arsip game.</value></data>
+  <data name="CoreStoreRestoreFailed" xml:space="preserve"><value>Gagal memulihkan arsip game.</value></data>
+  <data name="CoreStoreBackupMissing" xml:space="preserve"><value>Cadangan arsip game tidak ditemukan.</value></data>
+  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve"><value>Arsip game tidak dapat dibaca dan tidak memiliki cadangan.</value></data>
+  <data name="CoreStoreNoArchives" xml:space="preserve"><value>Tidak ada arsip game yang ditemukan.</value></data>
+  <data name="CoreStoreNothingToUninstall" xml:space="preserve"><value>Tidak ada yang dapat dihapus.</value></data>
+  <data name="CoreGameGmlChanged" xml:space="preserve"><value>File GML game telah berubah.</value></data>
+  <data name="CoreModRequiresMissingHooks" xml:space="preserve"><value>Mod memerlukan hook yang tidak tersedia: {0}</value></data>
+  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve"><value>Manifest memiliki daftar hook yang tidak valid.</value></data>
+  <data name="CoreSkippedModReason" xml:space="preserve"><value>Mod dilewati: {0}</value></data>
+  <data name="CoreVerifyNoBackup" xml:space="preserve"><value>Tidak dapat memverifikasi arsip tanpa cadangan bersih.</value></data>
+  <data name="GUIUninstallingText" xml:space="preserve"><value>Menghapus mod...</value></data>
+  <data name="CoreCosmeticsFileHasNoCosmetics" xml:space="preserve"><value>File kosmetik tidak berisi kosmetik.</value></data>
+  <data name="CoreErrorCosmeticNoUiSlot" xml:space="preserve"><value>Kosmetik {0} tidak memiliki ui_slot.</value></data>
+  <data name="CoreErrorCosmeticNoName" xml:space="preserve"><value>Kosmetik tidak memiliki nama.</value></data>
+  <data name="CoreErrorCosmeticUiSlotWrong" xml:space="preserve"><value>Kosmetik {0} memiliki ui_slot yang salah. Harus salah satu dari: {1}.</value></data>
+  <data name="CoreErrorCosmeticNoSubCategory" xml:space="preserve"><value>Kosmetik {0} tidak memiliki ui_sub_category.</value></data>
+  <data name="CoreCosmeticUiSubCategoryWrong" xml:space="preserve"><value>Kosmetik {0} memiliki ui_sub_category yang salah. Harus salah satu dari: {1}.</value></data>
+  <data name="CoreErrorCosmeticNoCosmeticSprites" xml:space="preserve"><value>Kosmetik {0} tidak memiliki cosmetic_sprites.</value></data>
+  <data name="CoreErrorCosmeticPriceOverrideNegative" xml:space="preserve"><value>Kosmetik memiliki price_override negatif.</value></data>
+  <data name="CoreErrorCosmeticNoLut" xml:space="preserve"><value>Kosmetik {0} tidak memiliki LUT.</value></data>
+  <data name="CoreErrorCosmeticNoUiSprites" xml:space="preserve"><value>Kosmetik {0} tidak memiliki ui_sprites.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesAllDefined" xml:space="preserve"><value>Semua ui_sprites kosmetik {0} sudah didefinisikan.</value></data>
+  <data name="CoreErrorCosmeticSpriteNoOutline" xml:space="preserve"><value>Sprite kosmetik tidak memiliki outline.</value></data>
+  <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>UI sprite kosmetik tidak memiliki body.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>UI sprite kosmetik tidak memiliki sprite gabungan.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>UI sprite kosmetik tidak memiliki outline gabungan.</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>Kosmetik {0} memiliki cosmetic_sprites yang salah. Harus salah satu dari: {1}.</value></data>
+  <data name="GUIUpdateAvailable" xml:space="preserve"><value>Pembaruan tersedia</value></data>
+  <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>Arsip game tidak ditemukan.</value></data>
+  <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Status arsip tidak tersedia.</value></data>
+  <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Versi arsip tidak tersedia.</value></data>
+  <data name="GUIArchiveDifferent" xml:space="preserve"><value>Arsip game berbeda dari versi yang terakhir dikelola AIM.</value></data>
 </root>

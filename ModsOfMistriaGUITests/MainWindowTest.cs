@@ -22,7 +22,7 @@ public class Tests
         // Open window:
         window.Show();
 
-        Assert.That(window.Title, Is.EqualTo($"Mods of Mistria Installer — {AppInfo.DisplayVersion}"));
+        Assert.That(window.Title, Is.EqualTo($"AIM — Alternative Installer for Mistria — {AppInfo.DisplayVersion}"));
     }
 
     [AvaloniaTest]
@@ -34,7 +34,7 @@ public class Tests
 
         LocalizationService.Instance.SetLanguage("bg");
 
-        Assert.That(mainViewModel.UpdateMessage, Is.EqualTo("Налична е нова версия на MOMI: 0.15.8."));
+        Assert.That(mainViewModel.UpdateMessage, Is.EqualTo("Налична е нова версия на AIM: 0.15.8."));
         LocalizationService.Instance.SetLanguage("en");
     }
 }

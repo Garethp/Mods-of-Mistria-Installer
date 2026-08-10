@@ -16,7 +16,7 @@
   <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>번체 중국어</value></data>
   <data name="GUILanguageRussian" xml:space="preserve"><value>러시아어</value></data>
   <data name="GUILanguageIndonesian" xml:space="preserve"><value>인도네시아어</value></data>
-  <data name="GUIApplicationTitle" xml:space="preserve"><value>Fields of Mistria 모드 설치 관리자</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>AIM — Fields of Mistria 대체 설치 관리자</value></data>
   <data name="GUILanguageMenu" xml:space="preserve"><value>언어</value></data>
   <data name="GUIPlayButtonText" xml:space="preserve"><value>게임 시작</value></data>
   <data name="GUIProfileLabel" xml:space="preserve"><value>프로필:</value></data>
@@ -45,10 +45,11 @@
   <data name="CoreInstallSummaryWithSkipped" xml:space="preserve"><value>설치된 모드: {0}개, 건너뜀: {1}개</value></data>
   <data name="GUILanguageJapanese" xml:space="preserve"><value>일본어</value></data>
   <data name="GUILanguageSpanish" xml:space="preserve"><value>스페인어</value></data>
+  <data name="GUILanguageUkrainian" xml:space="preserve"><value>우크라이나어</value></data>
   <data name="GUISetupMistriaLocation" xml:space="preserve"><value>Fields of Mistria 위치:</value></data>
   <data name="GUISetupModsLocation" xml:space="preserve"><value>모드 폴더:</value></data>
   <data name="GUICanCreateModsFolder" xml:space="preserve"><value>모드 폴더를 찾을 수 없지만 자동으로 만들 수 있습니다.</value></data>
-  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>이 Fields of Mistria 버전은 MOMI에서 지원되지 않습니다.</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>이 Fields of Mistria 버전은 AIM에서 지원되지 않습니다.</value></data>
   <data name="GUIConfirmSaveProfileTitle" xml:space="preserve"><value>프로필 저장</value></data>
   <data name="GUIConfirmSaveProfileMessage" xml:space="preserve"><value>전환하기 전에 “{0}” 프로필의 변경 사항을 저장하시겠습니까?</value></data>
   <data name="GUIConfirmDeleteProfileTitle" xml:space="preserve"><value>프로필 삭제</value></data>
@@ -92,4 +93,128 @@
   <data name="GUIOpenGameExecutable" xml:space="preserve"><value>FieldsOfMistria.exe 열기</value></data>
   <data name="GUIOpenModsFolder" xml:space="preserve"><value>모드 폴더 열기</value></data>
   <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>설치할 모든 모드의 확인란을 선택하세요:</value></data>
+  <data name="CLIRunningBuild" xml:space="preserve"><value>빌드 실행 중 {0}</value></data>
+  <data name="CLICompleted" xml:space="preserve"><value>완료되었습니다. 종료하려면 아무 키나 누르세요.</value></data>
+  <data name="CLIUninstallComplete" xml:space="preserve"><value>모든 모드를 제거했습니다. 종료하려면 아무 키나 누르세요.</value></data>
+  <data name="CLIWarning32Bit" xml:space="preserve"><value>32비트 AIM을 사용 중입니다. 일부 모드가 작동하지 않을 수 있습니다.</value></data>
+  <data name="CLICompileCheckUsage" xml:space="preserve"><value>사용법: AIM compile-check &lt;mods-folder&gt;</value></data>
+  <data name="CLILintUsage" xml:space="preserve"><value>사용법: AIM lint &lt;mods-folder&gt;</value></data>
+  <data name="CoreLookingForMistriaAt" xml:space="preserve"><value>Fields of Mistria 검색 중: {0}</value></data>
+  <data name="CoreMistriaNotFoundFallback" xml:space="preserve"><value>Fields of Mistria를 찾을 수 없습니다. 기본 위치를 사용합니다.</value></data>
+  <data name="CoreCouldNotFindModManifest" xml:space="preserve"><value>모드 매니페스트를 찾을 수 없습니다.</value></data>
+  <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve"><value>매니페스트 파일 이름이 올바르지 않습니다.</value></data>
+  <data name="CoreManifestHasNoAuthor" xml:space="preserve"><value>매니페스트에 제작자가 없습니다.</value></data>
+  <data name="CoreManifestHasNoName" xml:space="preserve"><value>매니페스트에 이름이 없습니다.</value></data>
+  <data name="CoreManifestHasNoVersion" xml:space="preserve"><value>매니페스트에 버전이 없습니다.</value></data>
+  <data name="CoreModRequiresNewerInstaller" xml:space="preserve"><value>이 모드에는 더 최신 버전의 AIM이 필요합니다.</value></data>
+  <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve"><value>Fields of Mistria 위치가 존재하지 않습니다.</value></data>
+  <data name="CoreModDirectoryDoesNotExist" xml:space="preserve"><value>모드 폴더가 존재하지 않습니다.</value></data>
+  <data name="CoreGeneratingInformationForMod" xml:space="preserve"><value>모드 정보 생성 중: {0}</value></data>
+  <data name="CoreMistriaNotFound" xml:space="preserve"><value>Fields of Mistria를 찾을 수 없습니다.</value></data>
+  <data name="CoreCouldNotGuessModsAt" xml:space="preserve"><value>모드 폴더 위치를 추측할 수 없습니다: {0}</value></data>
+  <data name="CoreGuessedMistriaAt" xml:space="preserve"><value>Fields of Mistria 감지됨: {0}</value></data>
+  <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve"><value>AIM 버전이 너무 낮아 모드를 건너뜁니다.</value></data>
+  <data name="CoreSkippingModBecauseErrors" xml:space="preserve"><value>오류가 있어 모드를 건너뜁니다.</value></data>
+  <data name="CoreModHasWarnings" xml:space="preserve"><value>{0}에 다음 경고가 있지만 설치를 계속합니다:</value></data>
+  <data name="CoreInstalledInReporter" xml:space="preserve"><value>{0}을(를) {1}에 설치했습니다</value></data>
+  <data name="CoreModsInstalledInTime" xml:space="preserve"><value>모드를 {0}에 설치했습니다</value></data>
+  <data name="CoreItemDoesNotHaveValue" xml:space="preserve"><value>{0}에 값이 없습니다</value></data>
+  <data name="CoreSpriteFileDoesNotExist" xml:space="preserve"><value>{0}이(가) {1}의 스프라이트를 가리키지만 파일이 없습니다</value></data>
+  <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve"><value>{0}이(가) {1}의 스프라이트 폴더를 가리키지만 폴더가 없습니다</value></data>
+  <data name="CoreSpriteFolderIsEmpty" xml:space="preserve"><value>{0}이(가) {1}의 스프라이트 폴더를 가리키지만 폴더가 비어 있습니다</value></data>
+  <data name="CoreCouldNotParseFile" xml:space="preserve"><value>파일을 구문 분석할 수 없습니다. 메시지: {0}</value></data>
+  <data name="CoreNoDataInFile" xml:space="preserve"><value>파일에 데이터가 없습니다.</value></data>
+  <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve"><value>의상 파일에 의상이 없습니다.</value></data>
+  <data name="CoreSpriteFileHasNoSprites" xml:space="preserve"><value>스프라이트 파일에 스프라이트가 없습니다.</value></data>
+  <data name="CoreStoreFileHasNoData" xml:space="preserve"><value>상점 파일에 카테고리나 아이템이 없습니다.</value></data>
+  <data name="CoreTilesetsFileEmpty" xml:space="preserve"><value>타일셋 파일에 타일셋이 없습니다.</value></data>
+  <data name="CoreReadingSprites" xml:space="preserve"><value>텍스처/스프라이트 읽는 중</value></data>
+  <data name="CoreImportingSprites" xml:space="preserve"><value>텍스처/스프라이트 가져오는 중</value></data>
+  <data name="CoreWritingSprites" xml:space="preserve"><value>텍스처/스프라이트 쓰는 중</value></data>
+  <data name="CoreErrorOutfitNoName" xml:space="preserve"><value>의상에 이름이 없습니다.</value></data>
+  <data name="CoreErrorOutfitNoDescription" xml:space="preserve"><value>의상에 설명이 없습니다.</value></data>
+  <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve"><value>의상 {0}에 ui_slot이 정의되지 않았습니다.</value></data>
+  <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve"><value>의상 {0}에 ui_sub_category가 정의되지 않았습니다.</value></data>
+  <data name="CoreErrorOutfitNoAnimation" xml:space="preserve"><value>의상 {0}에 애니메이션 파일이 없습니다.</value></data>
+  <data name="CoreErrorStoreCategoryNoName" xml:space="preserve"><value>카테고리에 아이콘 이름이 없습니다.</value></data>
+  <data name="CoreErrorShadowHasNoLocation" xml:space="preserve"><value>그림자 {0}에 위치가 없습니다.</value></data>
+  <data name="CoreWarningShadowFileNoShadows" xml:space="preserve"><value>그림자 파일에 그림자가 없습니다.</value></data>
+  <data name="CoreErrorShadowHasNoSprite" xml:space="preserve"><value>그림자 {0}에 regular_sprite_name이 없습니다.</value></data>
+  <data name="CoreErrorModRequiresWindows" xml:space="preserve"><value>이 모드는 Windows에서만 작동하므로 설치하지 않습니다.</value></data>
+  <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve"><value>의상 {0}의 ui_slot이 잘못되었습니다. 다음 중 하나여야 합니다: {1}.</value></data>
+  <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve"><value>의상 {0}의 ui_sub_category가 잘못되었습니다. 다음 중 하나여야 합니다: {1}.</value></data>
+  <data name="CoreErrorReadingVersionForMod" xml:space="preserve"><value>모드 버전을 읽는 중 오류가 발생했습니다: {0}</value></data>
+  <data name="CorePreinstallWillInstallAurie" xml:space="preserve"><value>AIM이 먼저 Aurie를 설치합니다.</value></data>
+  <data name="CorePreinstallWillRemoveAurie" xml:space="preserve"><value>AIM이 먼저 기존 Aurie를 제거합니다.</value></data>
+  <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve"><value>상점 아이템에 상점이 없습니다.</value></data>
+  <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve"><value>상점 아이템에 카테고리가 없습니다.</value></data>
+  <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve"><value>상점 아이템의 계절이 잘못되었습니다.</value></data>
+  <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve"><value>상점 아이템에 아이템이 없습니다.</value></data>
+  <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve"><value>상점 카테고리에 상점이 없습니다.</value></data>
+  <data name="CoreErrorNewObjectNoName" xml:space="preserve"><value>새 오브젝트에 이름이 없습니다.</value></data>
+  <data name="CoreErrorNewObjectNoCategory" xml:space="preserve"><value>새 오브젝트에 카테고리가 없습니다.</value></data>
+  <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve"><value>새 오브젝트의 카테고리가 잘못되었습니다.</value></data>
+  <data name="CoreErrorNewObjectNoData" xml:space="preserve"><value>새 오브젝트에 데이터가 없습니다.</value></data>
+  <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve"><value>새 오브젝트 파일에 오브젝트가 없습니다.</value></data>
+  <data name="CoreWarningItemFileHasNoItems" xml:space="preserve"><value>새 아이템 파일에 아이템이 없습니다.</value></data>
+  <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve"><value>새 오브젝트가 다른 모드의 오브젝트를 덮어쓰지 않습니다.</value></data>
+  <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve"><value>새 아이템이 다른 모드의 아이템을 덮어쓰지 않습니다.</value></data>
+  <data name="GUIGreetingText" xml:space="preserve"><value>AIM에 오신 것을 환영합니다</value></data>
+  <data name="GUIModByAuthorWithVersion" xml:space="preserve"><value>{0} — 제작자 {1} — 버전 {2}</value></data>
+  <data name="GUICouldNotFindMistria" xml:space="preserve"><value>Fields of Mistria 설치를 찾을 수 없습니다.</value></data>
+  <data name="GUICouldNotFindMods" xml:space="preserve"><value>모드 폴더를 찾을 수 없습니다. 폴더를 선택하거나 자동으로 만드세요.</value></data>
+  <data name="GUINoModsToInstall" xml:space="preserve"><value>설치할 모드가 선택되지 않았습니다.</value></data>
+  <data name="GUIModsRequireNewerVersion" xml:space="preserve"><value>다음 모드에는 최신 AIM 버전이 필요합니다: {0}</value></data>
+  <data name="GUIUpdateNagTitle" xml:space="preserve"><value>AIM 업데이트 사용 가능</value></data>
+  <data name="GUIUpdateNagMessage" xml:space="preserve"><value>새 AIM 버전을 사용할 수 있습니다. GitHub에서 다운로드할 수 있습니다.</value></data>
+  <data name="GUIPreinstallInformationTitle" xml:space="preserve"><value>설치 정보</value></data>
+  <data name="GUIUninstallInformationTitle" xml:space="preserve"><value>모드 제거 정보</value></data>
+  <data name="GUIWarning32Bit" xml:space="preserve"><value>32비트 AIM을 사용 중입니다. 일부 모드가 작동하지 않을 수 있습니다.</value></data>
+  <data name="GUIWarning32BitTitle" xml:space="preserve"><value>32비트 경고</value></data>
+  <data name="GUIPickLogFile" xml:space="preserve"><value>로그 파일 선택</value></data>
+  <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve"><value>동물 상점 아이템에 코스메틱이 없습니다.</value></data>
+  <data name="GUIGreetingText_April" xml:space="preserve"><value>AIM에 오신 것을 환영합니다!</value></data>
+  <data name="GUIInstallButtonText_April" xml:space="preserve"><value>모드 설치!</value></data>
+  <data name="GUIInstallInProgress_April" xml:space="preserve"><value>모드 설치 중...</value></data>
+  <data name="GUINoModsToInstall_April" xml:space="preserve"><value>모드를 찾을 수 없습니다!</value></data>
+  <data name="GUIModsWillBeInstalled_April" xml:space="preserve"><value>{0}개의 모드를 설치합니다!</value></data>
+  <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve"><value>의상의 price_override가 음수입니다.</value></data>
+  <data name="CoreRunningInstaller" xml:space="preserve"><value>설치 프로그램 실행 중</value></data>
+  <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve"><value>스프라이트 {0}에 위치가 없습니다.</value></data>
+  <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve"><value>매니페스트에 필요한 AIM 최소 버전이 없습니다.</value></data>
+  <data name="CoreModRequiresIncorrectVersion" xml:space="preserve"><value>모드가 호환되지 않는 AIM 버전을 요구합니다.</value></data>
+  <data name="CoreStoreRebuildFailed" xml:space="preserve"><value>게임 아카이브를 다시 빌드하지 못했습니다.</value></data>
+  <data name="CoreStoreFlushFailed" xml:space="preserve"><value>게임 아카이브 변경 사항을 쓰지 못했습니다.</value></data>
+  <data name="CoreStoreRestoreFailed" xml:space="preserve"><value>게임 아카이브를 복원하지 못했습니다.</value></data>
+  <data name="CoreStoreBackupMissing" xml:space="preserve"><value>게임 아카이브 백업을 찾을 수 없습니다.</value></data>
+  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve"><value>게임 아카이브를 읽을 수 없고 백업도 없습니다.</value></data>
+  <data name="CoreStoreNoArchives" xml:space="preserve"><value>게임 아카이브를 찾을 수 없습니다.</value></data>
+  <data name="CoreStoreNothingToUninstall" xml:space="preserve"><value>제거할 항목이 없습니다.</value></data>
+  <data name="CoreGameGmlChanged" xml:space="preserve"><value>게임 GML 파일이 변경되었습니다.</value></data>
+  <data name="CoreModRequiresMissingHooks" xml:space="preserve"><value>모드에 필요한 후크가 없습니다: {0}</value></data>
+  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve"><value>매니페스트의 후크 목록이 잘못되었습니다.</value></data>
+  <data name="CoreSkippedModReason" xml:space="preserve"><value>모드를 건너뜀: {0}</value></data>
+  <data name="CoreVerifyNoBackup" xml:space="preserve"><value>깨끗한 백업 없이는 아카이브를 확인할 수 없습니다.</value></data>
+  <data name="GUIUninstallingText" xml:space="preserve"><value>모드 제거 중...</value></data>
+  <data name="CoreCosmeticsFileHasNoCosmetics" xml:space="preserve"><value>코스메틱 파일에 코스메틱이 없습니다.</value></data>
+  <data name="CoreErrorCosmeticNoUiSlot" xml:space="preserve"><value>코스메틱 {0}에 ui_slot이 없습니다.</value></data>
+  <data name="CoreErrorCosmeticNoName" xml:space="preserve"><value>코스메틱에 이름이 없습니다.</value></data>
+  <data name="CoreErrorCosmeticUiSlotWrong" xml:space="preserve"><value>코스메틱 {0}의 ui_slot이 잘못되었습니다. 다음 중 하나여야 합니다: {1}.</value></data>
+  <data name="CoreErrorCosmeticNoSubCategory" xml:space="preserve"><value>코스메틱 {0}에 ui_sub_category가 없습니다.</value></data>
+  <data name="CoreCosmeticUiSubCategoryWrong" xml:space="preserve"><value>코스메틱 {0}의 ui_sub_category가 잘못되었습니다. 다음 중 하나여야 합니다: {1}.</value></data>
+  <data name="CoreErrorCosmeticNoCosmeticSprites" xml:space="preserve"><value>코스메틱 {0}에 cosmetic_sprites가 없습니다.</value></data>
+  <data name="CoreErrorCosmeticPriceOverrideNegative" xml:space="preserve"><value>코스메틱의 price_override가 음수입니다.</value></data>
+  <data name="CoreErrorCosmeticNoLut" xml:space="preserve"><value>코스메틱 {0}에 LUT가 없습니다.</value></data>
+  <data name="CoreErrorCosmeticNoUiSprites" xml:space="preserve"><value>코스메틱 {0}에 ui_sprites가 없습니다.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesAllDefined" xml:space="preserve"><value>코스메틱 {0}의 ui_sprites가 모두 정의되었습니다.</value></data>
+  <data name="CoreErrorCosmeticSpriteNoOutline" xml:space="preserve"><value>코스메틱 스프라이트에 외곽선이 없습니다.</value></data>
+  <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>코스메틱 UI 스프라이트에 body가 없습니다.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>코스메틱 UI 스프라이트에 병합 스프라이트가 없습니다.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>코스메틱 UI 스프라이트에 병합 외곽선이 없습니다.</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>코스메틱 {0}의 cosmetic_sprites가 잘못되었습니다. 다음 중 하나여야 합니다: {1}.</value></data>
+  <data name="GUIUpdateAvailable" xml:space="preserve"><value>업데이트 사용 가능</value></data>
+  <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>게임 아카이브를 찾을 수 없습니다.</value></data>
+  <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>아카이브 상태를 사용할 수 없습니다.</value></data>
+  <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>아카이브 버전을 사용할 수 없습니다.</value></data>
+  <data name="GUIArchiveDifferent" xml:space="preserve"><value>게임 아카이브가 AIM이 마지막으로 관리한 버전과 다릅니다.</value></data>
 </root>

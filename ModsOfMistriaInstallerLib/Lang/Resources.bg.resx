@@ -4,7 +4,7 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="GUIApplicationTitle" xml:space="preserve"><value>Инсталатор на модове за Мистрия</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>AIM — Алтернативен инсталатор за Мистрия</value></data>
   <data name="GUIReloadModlist" xml:space="preserve"><value>Обнови списъка с модове</value></data>
   <data name="GUISaveLogFile" xml:space="preserve"><value>Запази лог файла</value></data>
   <data name="GUIEnableAllMods" xml:space="preserve"><value>Включи всички модове</value></data>
@@ -24,12 +24,12 @@
   <data name="GUILanguageFrench" xml:space="preserve"><value>Френски</value></data>
   <data name="GUILanguageDutch" xml:space="preserve"><value>Нидерландски</value></data>
   <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>Португалски (Бразилия)</value></data>
-  <data name="GUIUpdateAvailable" xml:space="preserve"><value>Налична е нова версия на MOMI: {0}.</value></data>
+  <data name="GUIUpdateAvailable" xml:space="preserve"><value>Налична е нова версия на AIM: {0}.</value></data>
   <data name="GUIGreetingText" xml:space="preserve"><value>Добре дошли в инсталатора на модове за Мистрия!</value></data>
   <data name="GUIInstallButtonText" xml:space="preserve"><value>Инсталирай</value></data>
   <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>Маркирай всички модове, които искаш да инсталираш:</value></data>
   <data name="GUIModByAuthorWithVersion" xml:space="preserve"><value>{0} от {1} - версия {2}</value></data>
-  <data name="GUICouldNotFindMistria" xml:space="preserve"><value>Мястото на Fields of Mistria не е намерено. Опитай да поставиш MOMI в папката на играта.</value></data>
+  <data name="GUICouldNotFindMistria" xml:space="preserve"><value>Мястото на Fields of Mistria не е намерено. Опитай да поставиш AIM в папката на играта.</value></data>
   <data name="GUICouldNotFindMods" xml:space="preserve"><value>Папка с модове не е намерена. Създай папка „mods“ в папката на Fields of Mistria.</value></data>
   <data name="GUINoModsToInstall" xml:space="preserve"><value>Няма намерени модове за инсталиране</value></data>
   <data name="GUIModsRequireNewerVersion" xml:space="preserve"><value>Някои модове изискват по-нова версия на инсталатора. Обнови инсталатора.</value></data>
@@ -78,8 +78,8 @@
   <data name="GUIOpenModsFolder" xml:space="preserve"><value>Отвори папката с модове</value></data>
   <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>Архивът на играта не е намерен.</value></data>
   <data name="GUIArchiveNoInstallation" xml:space="preserve"><value>Не са открити инсталирани модове. Избери модове и натисни „Инсталирай“, за да ги инсталираш.</value></data>
-  <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Открита е инсталация на MOMI, но записаното ѝ състояние не е налично.</value></data>
-  <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Открита е инсталация на MOMI, но версиите на инсталираните модове не са налични.</value></data>
+  <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Открита е инсталация на AIM, но записаното ѝ състояние не е налично.</value></data>
+  <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Открита е инсталация на AIM, но версиите на инсталираните модове не са налични.</value></data>
   <data name="GUIArchiveMatch" xml:space="preserve"><value>Открити са инсталирани модове: {0}.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>Инсталираният набор или версиите на модовете се различават от този профил. Препоръчително: първо деинсталирай, после инсталирай.</value></data>
   <data name="GUILocationGameDetected" xml:space="preserve"><value>Инсталацията на Fields of Mistria е открита.</value></data>
@@ -104,6 +104,114 @@
   <data name="GUILanguageKorean" xml:space="preserve"><value>Корейски</value></data>
   <data name="GUILanguageJapanese" xml:space="preserve"><value>Японски</value></data>
   <data name="GUILanguageSpanish" xml:space="preserve"><value>Испански</value></data>
+  <data name="GUILanguageUkrainian" xml:space="preserve"><value>Украински</value></data>
+  <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve"><value>Файлът на манифеста трябва да се казва manifest.json.</value></data>
+  <data name="CoreManifestHasNoAuthor" xml:space="preserve"><value>Манифестът трябва да съдържа автор.</value></data>
+  <data name="CoreManifestHasNoName" xml:space="preserve"><value>Манифестът трябва да съдържа име.</value></data>
+  <data name="CoreManifestHasNoVersion" xml:space="preserve"><value>Манифестът трябва да съдържа версия.</value></data>
+  <data name="CoreModRequiresNewerInstaller" xml:space="preserve"><value>Този мод изисква по-нова версия на инсталатора.</value></data>
+  <data name="CoreInstalledInReporter" xml:space="preserve"><value>{0} е инсталиран в {1}</value></data>
+  <data name="CoreStoreFileHasNoData" xml:space="preserve"><value>Файлът на магазина не съдържа категории или предмети.</value></data>
+  <data name="GUIWarning32BitTitle" xml:space="preserve"><value>Открита е 32-битова версия</value></data>
+  <data name="GUIWarning32Bit" xml:space="preserve"><value>Използваш 64-битова операционна система, но по погрешка си изтеглил 32-битовата версия на AIM. Изтегли версията без „-x86“.</value></data>
+  <data name="GUIGreetingText_April" xml:space="preserve"><value>Знаеше ли, че точният удар с мотика е чудесен начин да инсталираш изтеглените модове?</value></data>
+  <data name="GUIInstallButtonText_April" xml:space="preserve"><value>Удари точно</value></data>
+  <data name="GUIInstallInProgress_April" xml:space="preserve"><value>Нанасяне на точен удар…</value></data>
+  <data name="GUINoModsToInstall_April" xml:space="preserve"><value>Няма модове за удар</value></data>
+  <data name="GUIModsWillBeInstalled_April" xml:space="preserve"><value>Отметни всички модове, които искаш да удариш:</value></data>
+  <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve"><value>Поради обновяване на енджина този мод не може да бъде инсталиран в текущата си версия.</value></data>
+  <data name="CoreModRequiresIncorrectVersion" xml:space="preserve"><value>Модът изисква несъвместима минимална версия на AIM.</value></data>
+  <data name="CoreStoreRebuildFailed" xml:space="preserve"><value>Неуспешно възстановяване на {0}. Стартирана ли е Fields of Mistria? Затвори играта и опитай отново; предишната инсталация не е променена.</value></data>
+  <data name="CoreStoreFlushFailed" xml:space="preserve"><value>Записването на {0} не завърши. Провери дали дискът не е пълен или файлът не се използва от друга програма, след което стартирай инсталатора отново.</value></data>
+  <data name="CoreStoreRestoreFailed" xml:space="preserve"><value>Неуспешно възстановяване на {0}. Стартирана ли е Fields of Mistria? Затвори играта и опитай отново.</value></data>
+  <data name="CoreStoreBackupMissing" xml:space="preserve"><value>{0} съдържа предишна инсталация, но резервното копие {1} липсва. Провери файловете на играта през Steam и опитай отново.</value></data>
+  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve"><value>{0} не е четим архив, а резервното копие {1} липсва. Провери файловете на играта през Steam и опитай отново.</value></data>
+  <data name="CoreStoreNoArchives" xml:space="preserve"><value>Не бяха открити {0} или {1}. Стартирай играта веднъж или провери файловете ѝ през Steam.</value></data>
+  <data name="CoreStoreNothingToUninstall" xml:space="preserve"><value>Не е открито хранилище за assets, затова няма какво да бъде възстановено.</value></data>
+  <data name="CoreGameGmlChanged" xml:space="preserve"><value>GML кодът на играта е променен. Инсталацията е невъзможна.</value></data>
+  <data name="CoreModRequiresMissingHooks" xml:space="preserve"><value>Модът изисква hook-ове, които тази версия на AIM не предоставя: {0}. Обнови AIM или използвай по-стара версия на мода.</value></data>
+  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve"><value>requires_hooks в манифеста трябва да е масив от имена на hook-ове.</value></data>
+  <data name="CoreSkippedModReason" xml:space="preserve"><value>Пропуснат {0}: {1}</value></data>
+  <data name="CoreVerifyNoBackup" xml:space="preserve"><value>В {0} не е открито чисто резервно копие. Стартирай инсталатора веднъж, за да го създадеш, или провери директно build ZIP архив.</value></data>
+  <data name="CLIRunningBuild" xml:space="preserve"><value>Изпълнява се компилация {0}</value></data>
+  <data name="CLICompleted" xml:space="preserve"><value>Завършено. Натисни произволен клавиш за изход.</value></data>
+  <data name="CLIUninstallComplete" xml:space="preserve"><value>Всички модове са деинсталирани. Натисни произволен клавиш за изход.</value></data>
+  <data name="CLIWarning32Bit" xml:space="preserve"><value>Използваш 64-битова операционна система, но по погрешка си изтеглил 32-битовата версия на AIM. Изтегли версията без „-x86“.</value></data>
+  <data name="CLICompileCheckUsage" xml:space="preserve"><value>--compile-check трябва да бъде „on“, „off“ или „require“.</value></data>
+  <data name="CLILintUsage" xml:space="preserve"><value>--lint изисква папка с мод: --lint &lt;папка с мод&gt; [pristine zip]</value></data>
+  <data name="CoreItemDoesNotHaveValue" xml:space="preserve"><value>{0} няма зададена стойност</value></data>
+  <data name="CoreSpriteFileDoesNotExist" xml:space="preserve"><value>{0} сочи към спрайт в {1}, но този файл не съществува</value></data>
+  <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve"><value>{0} сочи към папка със спрайтове в {1}, но тази папка не съществува</value></data>
+  <data name="CoreSpriteFolderIsEmpty" xml:space="preserve"><value>{0} сочи към папка със спрайтове в {1}, но папката е празна</value></data>
+  <data name="CoreSpriteFileHasNoSprites" xml:space="preserve"><value>Файлът със спрайтове не съдържа спрайтове.</value></data>
+  <data name="CoreTilesetsFileEmpty" xml:space="preserve"><value>Файлът с плочките не съдържа набори от плочки.</value></data>
+  <data name="CoreReadingSprites" xml:space="preserve"><value>Четене на текстури/спрайтове</value></data>
+  <data name="CoreImportingSprites" xml:space="preserve"><value>Импортиране на текстури/спрайтове</value></data>
+  <data name="CoreWritingSprites" xml:space="preserve"><value>Записване на текстури/спрайтове</value></data>
+  <data name="CoreErrorStoreCategoryNoName" xml:space="preserve"><value>Категорията няма име на иконата.</value></data>
+  <data name="CoreWarningShadowFileNoShadows" xml:space="preserve"><value>Файлът със сенки не съдържа сенки.</value></data>
+  <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve"><value>Предметът не е зададен към магазин.</value></data>
+  <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve"><value>Предметът за магазин {0} няма категория.</value></data>
+  <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve"><value>Предметът не може да бъде добавен в магазин {0} и категория {1}, защото има невалиден сезон {2}.</value></data>
+  <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve"><value>Предметът за магазин {0}, категория {1} не посочва предмет.</value></data>
+  <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve"><value>Категорията няма зададен магазин.</value></data>
+  <data name="CoreErrorNewObjectNoName" xml:space="preserve"><value>Новият обект няма име.</value></data>
+  <data name="CoreErrorNewObjectNoCategory" xml:space="preserve"><value>Обектът {0} няма категория.</value></data>
+  <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve"><value>Обектът {0} има невалидна категория {1}.</value></data>
+  <data name="CoreErrorNewObjectNoData" xml:space="preserve"><value>Обектът {0} няма данни.</value></data>
+  <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve"><value>Файлът с нови обекти не съдържа обекти.</value></data>
+  <data name="CoreWarningItemFileHasNoItems" xml:space="preserve"><value>Файлът с нови предмети не съдържа предмети.</value></data>
+  <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve"><value>Обектът {0} не посочва дали презаписва друг мод.</value></data>
+  <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve"><value>Предметът {0} не посочва дали презаписва друг мод.</value></data>
+  <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve"><value>Животното {0} за магазин {1} няма зададена козметика.</value></data>
+  <data name="CoreLookingForMistriaAt" xml:space="preserve"><value>Търсене на Мистрия в {0}</value></data>
+  <data name="CoreMistriaNotFoundFallback" xml:space="preserve"><value>Fields of Mistria не е открита; използва се текущата папка</value></data>
+  <data name="CoreCouldNotFindModManifest" xml:space="preserve"><value>Файлът на манифеста не беше открит.</value></data>
+  <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve"><value>Местоположението на Fields of Mistria не съществува.</value></data>
+  <data name="CoreModDirectoryDoesNotExist" xml:space="preserve"><value>Местоположението на мода не съществува.</value></data>
+  <data name="CoreGeneratingInformationForMod" xml:space="preserve"><value>Генериране на информация за {0}</value></data>
+  <data name="CoreMistriaNotFound" xml:space="preserve"><value>Местоположението на Fields of Mistria не беше открито.</value></data>
+  <data name="CoreCouldNotGuessModsAt" xml:space="preserve"><value>В {0} не беше открита папка с модове.</value></data>
+  <data name="CoreGuessedMistriaAt" xml:space="preserve"><value>Предположено местоположение: {0}</value></data>
+  <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve"><value>Пропускане на {0}, защото изисква по-нова версия на инсталатора.</value></data>
+  <data name="CoreSkippingModBecauseErrors" xml:space="preserve"><value>Пропускане на {0} поради следните грешки:</value></data>
+  <data name="CoreModHasWarnings" xml:space="preserve"><value>{0} има следните предупреждения, но ще бъде инсталиран:</value></data>
+  <data name="CoreModsInstalledInTime" xml:space="preserve"><value>Модовете са инсталирани за {0}</value></data>
+  <data name="CoreCouldNotParseFile" xml:space="preserve"><value>Файлът не може да бъде прочетен: {0}</value></data>
+  <data name="CoreNoDataInFile" xml:space="preserve"><value>Във файла не са открити данни.</value></data>
+  <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve"><value>Файлът с тоалети не съдържа тоалети.</value></data>
+  <data name="CoreErrorOutfitNoName" xml:space="preserve"><value>Тоалетът няма име.</value></data>
+  <data name="CoreErrorOutfitNoDescription" xml:space="preserve"><value>Тоалетът няма описание.</value></data>
+  <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve"><value>Тоалетът {0} не е дефинирал ui_slot.</value></data>
+  <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve"><value>Тоалетът {0} не е дефинирал ui_sub_category.</value></data>
+  <data name="CoreErrorOutfitNoAnimation" xml:space="preserve"><value>Тоалетът {0} няма анимационни файлове.</value></data>
+  <data name="CoreErrorShadowHasNoLocation" xml:space="preserve"><value>Сянката {0} няма зададено местоположение.</value></data>
+  <data name="CoreErrorShadowHasNoSprite" xml:space="preserve"><value>Сянката {0} няма regular_sprite_name.</value></data>
+  <data name="CoreErrorModRequiresWindows" xml:space="preserve"><value>Този мод работи само под Windows и няма да бъде инсталиран.</value></data>
+  <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve"><value>Тоалетът {0} има невалиден ui_slot. Допустими са: {1}.</value></data>
+  <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve"><value>Тоалетът {0} има невалидна ui_sub_category. Допустими са: {1}.</value></data>
+  <data name="CorePreinstallWillInstallAurie" xml:space="preserve"><value>По време на инсталацията AIM ще се опита да добави запис в системния регистър. Ще трябва да дадеш администраторски достъп на Registry Editor и да потвърдиш промяната.</value></data>
+  <data name="CorePreinstallWillRemoveAurie" xml:space="preserve"><value>По време на деинсталацията AIM ще се опита да премахне запис от системния регистър. Ще трябва да дадеш администраторски достъп на Registry Console Tool.</value></data>
+  <data name="CoreErrorReadingVersionForMod" xml:space="preserve"><value>Възникна грешка при прочитането на версията на мода: {0}</value></data>
+  <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve"><value>Заместващата цена на тоалета {0} трябва да е положително число.</value></data>
+  <data name="CoreRunningInstaller" xml:space="preserve"><value>Изпълнява се {0}</value></data>
+  <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve"><value>Спрайтът {0} няма зададено местоположение.</value></data>
+  <data name="CoreCosmeticsFileHasNoCosmetics" xml:space="preserve"><value>Файлът с козметика не съдържа козметика.</value></data>
+  <data name="CoreErrorCosmeticNoUiSlot" xml:space="preserve"><value>Козметиката {0} не е дефинирала ui_slot.</value></data>
+  <data name="CoreErrorCosmeticNoName" xml:space="preserve"><value>Козметиката няма име.</value></data>
+  <data name="CoreErrorCosmeticUiSlotWrong" xml:space="preserve"><value>Козметиката {0} има невалиден ui_slot. Допустими са: {1}.</value></data>
+  <data name="CoreErrorCosmeticNoSubCategory" xml:space="preserve"><value>Козметиката {0} не е дефинирала ui_sub_category.</value></data>
+  <data name="CoreCosmeticUiSubCategoryWrong" xml:space="preserve"><value>Козметиката {0} има невалидна ui_sub_category. Допустими са: {1}.</value></data>
+  <data name="CoreErrorCosmeticNoCosmeticSprites" xml:space="preserve"><value>Козметиката {0} няма файлове за cosmetic_sprites.</value></data>
+  <data name="CoreErrorCosmeticPriceOverrideNegative" xml:space="preserve"><value>Заместващата цена на козметиката {0} трябва да е положително число.</value></data>
+  <data name="CoreErrorCosmeticNoLut" xml:space="preserve"><value>Козметиката {0} няма LUT. Трябва да зададеш lut или lut_sprite.</value></data>
+  <data name="CoreErrorCosmeticNoUiSprites" xml:space="preserve"><value>Козметиката {0} няма ui_sprites.ui или ui_sprites.asset. Трябва да зададеш едното от двете.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesAllDefined" xml:space="preserve"><value>Козметиката {0} има ui_sprites.ui и ui_sprites.asset. Може да бъде зададено само едното.</value></data>
+  <data name="CoreErrorCosmeticSpriteNoOutline" xml:space="preserve"><value>Козметиката {0} няма ui_sprites.outline.</value></data>
+  <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>Козметиката {0} няма ui_sprites.body.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>Козметиката {0} няма ui_sprites.merged.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>Козметиката {0} няма ui_sprites.merged_outline.</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>Козметиката {0} има невалидна стойност {1} за cosmetic_sprites. Допустими са: {2}.</value></data>
   <data name="GUILocationModsDetected" xml:space="preserve"><value>Папката с модове е открита.</value></data>
   <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>Подготовка на GML слоя</value></data>
   <data name="CoreInstallCompleted" xml:space="preserve"><value>Инсталирането завърши</value></data>

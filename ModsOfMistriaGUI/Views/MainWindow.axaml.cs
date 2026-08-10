@@ -40,7 +40,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            await Launcher.LaunchUriAsync(new Uri(AppInfo.GitHubUrl));
+            await Launcher.LaunchUriAsync(new Uri(AppInfo.ReleasesUrl));
         }
         catch
         {
@@ -66,7 +66,8 @@ public partial class MainWindow : Window
             LanguageGermanMenuItem, LanguageFrenchMenuItem, LanguageDutchMenuItem,
             LanguagePortugueseMenuItem, LanguageRussianMenuItem, LanguageIndonesianMenuItem,
             LanguageSimplifiedChineseMenuItem, LanguageTraditionalChineseMenuItem,
-            LanguageKoreanMenuItem, LanguageJapaneseMenuItem, LanguageSpanishMenuItem
+            LanguageKoreanMenuItem, LanguageJapaneseMenuItem, LanguageSpanishMenuItem,
+            LanguageUkrainianMenuItem
         };
 
         foreach (var item in items)

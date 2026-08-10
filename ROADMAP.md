@@ -1,5 +1,13 @@
 # Roadmap
 
+## Project identity
+
+- Next release branding: **AIM — Alternative Installer for Mistria**, starting at `0.1.0`.
+- Do not retroactively rename the published `0.15.7` release.
+- Do not add an `AI` suffix to AIM version labels.
+- Ukrainian localization support is complete for the first AIM release.
+- Keep user-facing AIM branding distinct while retaining the MOMI fork attribution, technical namespaces, MMAPI compatibility, and migration compatibility.
+
 ## 0.15.3 AI fork release
 * [x] Keep the four focused MMAPI additions with explicit event/lifecycle contracts.
 * [x] Add focused MMAPI hooks for fishing selection, museum donation attempts, pet rewards and crop harvest lifecycle.

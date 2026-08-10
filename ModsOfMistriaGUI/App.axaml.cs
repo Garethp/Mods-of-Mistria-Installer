@@ -68,7 +68,7 @@ public class App : Application
         {
             var currentVersion = Version.Parse(AppInfo.Version);
             using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("User-Agent", "MOMI");
+            client.DefaultRequestHeaders.Add("User-Agent", "AIM");
             using var response = await client.GetAsync(AppInfo.ReleaseApiUrl, cancellationToken);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync(cancellationToken);

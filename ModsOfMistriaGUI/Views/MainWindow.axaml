@@ -54,6 +54,7 @@
                     <MenuItem x:Name="LanguageKoreanMenuItem" Header="{Binding Texts.GUILanguageKorean}" Tag="ko" Click="LanguageMenuClick" />
                     <MenuItem x:Name="LanguageJapaneseMenuItem" Header="{Binding Texts.GUILanguageJapanese}" Tag="ja" Click="LanguageMenuClick" />
                     <MenuItem x:Name="LanguageSpanishMenuItem" Header="{Binding Texts.GUILanguageSpanish}" Tag="es" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageUkrainianMenuItem" Header="{Binding Texts.GUILanguageUkrainian}" Tag="uk" Click="LanguageMenuClick" />
                 </MenuItem>
             </Menu>
             <Border IsVisible="{Binding UpdateAvailable}" Background="#2D6B4A" CornerRadius="4" Padding="12 8">

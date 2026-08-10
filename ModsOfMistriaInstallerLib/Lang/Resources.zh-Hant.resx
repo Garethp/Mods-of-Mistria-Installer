@@ -15,7 +15,7 @@
   <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>巴西葡萄牙語</value></data>
   <data name="GUILanguageRussian" xml:space="preserve"><value>俄語</value></data>
   <data name="GUILanguageIndonesian" xml:space="preserve"><value>印度尼西亞語</value></data>
-  <data name="GUIApplicationTitle" xml:space="preserve"><value>Fields of Mistria 模組安裝器</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>AIM — Fields of Mistria 替代安裝器</value></data>
   <data name="GUILanguageMenu" xml:space="preserve"><value>語言</value></data>
   <data name="GUIPlayButtonText" xml:space="preserve"><value>開始遊戲</value></data>
   <data name="GUIProfileLabel" xml:space="preserve"><value>設定檔：</value></data>
@@ -45,10 +45,11 @@
   <data name="GUILanguageKorean" xml:space="preserve"><value>韓語</value></data>
   <data name="GUILanguageJapanese" xml:space="preserve"><value>日語</value></data>
   <data name="GUILanguageSpanish" xml:space="preserve"><value>西班牙語</value></data>
+  <data name="GUILanguageUkrainian" xml:space="preserve"><value>烏克蘭語</value></data>
   <data name="GUISetupMistriaLocation" xml:space="preserve"><value>Fields of Mistria 位置：</value></data>
   <data name="GUISetupModsLocation" xml:space="preserve"><value>模組資料夾：</value></data>
   <data name="GUICanCreateModsFolder" xml:space="preserve"><value>未偵測到模組資料夾，但可以自動建立。</value></data>
-  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>此 Fields of Mistria 版本不受 MOMI 支援。</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>此 Fields of Mistria 版本不受 AIM 支援。</value></data>
   <data name="GUIConfirmSaveProfileTitle" xml:space="preserve"><value>儲存設定檔</value></data>
   <data name="GUIConfirmSaveProfileMessage" xml:space="preserve"><value>切換前要儲存設定檔「{0}」的變更嗎？</value></data>
   <data name="GUIConfirmDeleteProfileTitle" xml:space="preserve"><value>刪除設定檔</value></data>
@@ -92,4 +93,128 @@
   <data name="GUIOpenGameExecutable" xml:space="preserve"><value>開啟 FieldsOfMistria.exe</value></data>
   <data name="GUIOpenModsFolder" xml:space="preserve"><value>開啟模組資料夾</value></data>
   <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>勾選所有想要安裝的模組：</value></data>
+  <data name="CLIRunningBuild" xml:space="preserve"><value>正在執行建置 {0}</value></data>
+  <data name="CLICompleted" xml:space="preserve"><value>完成。按任意鍵退出。</value></data>
+  <data name="CLIUninstallComplete" xml:space="preserve"><value>所有模組已解除安裝。按任意鍵退出。</value></data>
+  <data name="CLIWarning32Bit" xml:space="preserve"><value>你正在使用 32 位元 AIM。部分模組可能無法執行。</value></data>
+  <data name="CLICompileCheckUsage" xml:space="preserve"><value>用法：AIM compile-check &lt;mods-folder&gt;</value></data>
+  <data name="CLILintUsage" xml:space="preserve"><value>用法：AIM lint &lt;mods-folder&gt;</value></data>
+  <data name="CoreLookingForMistriaAt" xml:space="preserve"><value>正在尋找 Fields of Mistria：{0}</value></data>
+  <data name="CoreMistriaNotFoundFallback" xml:space="preserve"><value>找不到 Fields of Mistria。將使用預設位置。</value></data>
+  <data name="CoreCouldNotFindModManifest" xml:space="preserve"><value>找不到模組資訊檔。</value></data>
+  <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve"><value>資訊檔名稱不正確。</value></data>
+  <data name="CoreManifestHasNoAuthor" xml:space="preserve"><value>資訊檔中沒有作者。</value></data>
+  <data name="CoreManifestHasNoName" xml:space="preserve"><value>資訊檔中沒有名稱。</value></data>
+  <data name="CoreManifestHasNoVersion" xml:space="preserve"><value>資訊檔中沒有版本。</value></data>
+  <data name="CoreModRequiresNewerInstaller" xml:space="preserve"><value>此模組需要較新的 AIM 版本。</value></data>
+  <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve"><value>Fields of Mistria 的位置不存在。</value></data>
+  <data name="CoreModDirectoryDoesNotExist" xml:space="preserve"><value>模組資料夾不存在。</value></data>
+  <data name="CoreGeneratingInformationForMod" xml:space="preserve"><value>正在產生模組資訊：{0}</value></data>
+  <data name="CoreMistriaNotFound" xml:space="preserve"><value>找不到 Fields of Mistria。</value></data>
+  <data name="CoreCouldNotGuessModsAt" xml:space="preserve"><value>無法推測模組資料夾：{0}</value></data>
+  <data name="CoreGuessedMistriaAt" xml:space="preserve"><value>已偵測到 Fields of Mistria：{0}</value></data>
+  <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve"><value>已略過模組：AIM 版本太舊。</value></data>
+  <data name="CoreSkippingModBecauseErrors" xml:space="preserve"><value>因發生錯誤而略過模組。</value></data>
+  <data name="CoreModHasWarnings" xml:space="preserve"><value>{0} 有以下警告，但仍會繼續安裝：</value></data>
+  <data name="CoreInstalledInReporter" xml:space="preserve"><value>{0} 已安裝至 {1}</value></data>
+  <data name="CoreModsInstalledInTime" xml:space="preserve"><value>模組已在 {0} 內安裝</value></data>
+  <data name="CoreItemDoesNotHaveValue" xml:space="preserve"><value>{0} 沒有值</value></data>
+  <data name="CoreSpriteFileDoesNotExist" xml:space="preserve"><value>{0} 指向 {1} 中的精靈，但檔案不存在</value></data>
+  <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve"><value>{0} 指向 {1} 中的精靈資料夾，但資料夾不存在</value></data>
+  <data name="CoreSpriteFolderIsEmpty" xml:space="preserve"><value>{0} 指向 {1} 中的精靈資料夾，但資料夾是空的</value></data>
+  <data name="CoreCouldNotParseFile" xml:space="preserve"><value>無法解析檔案。訊息：{0}</value></data>
+  <data name="CoreNoDataInFile" xml:space="preserve"><value>檔案中沒有資料。</value></data>
+  <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve"><value>服裝檔案中沒有服裝。</value></data>
+  <data name="CoreSpriteFileHasNoSprites" xml:space="preserve"><value>精靈檔案中沒有精靈。</value></data>
+  <data name="CoreStoreFileHasNoData" xml:space="preserve"><value>商店檔案中沒有分類或物品。</value></data>
+  <data name="CoreTilesetsFileEmpty" xml:space="preserve"><value>圖塊集檔案中沒有圖塊集。</value></data>
+  <data name="CoreReadingSprites" xml:space="preserve"><value>正在讀取紋理/精靈</value></data>
+  <data name="CoreImportingSprites" xml:space="preserve"><value>正在匯入紋理/精靈</value></data>
+  <data name="CoreWritingSprites" xml:space="preserve"><value>正在寫入紋理/精靈</value></data>
+  <data name="CoreErrorOutfitNoName" xml:space="preserve"><value>服裝沒有名稱。</value></data>
+  <data name="CoreErrorOutfitNoDescription" xml:space="preserve"><value>服裝沒有描述。</value></data>
+  <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve"><value>服裝 {0} 未定義 ui_slot。</value></data>
+  <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve"><value>服裝 {0} 未定義 ui_sub_category。</value></data>
+  <data name="CoreErrorOutfitNoAnimation" xml:space="preserve"><value>服裝 {0} 沒有動畫檔案。</value></data>
+  <data name="CoreErrorStoreCategoryNoName" xml:space="preserve"><value>分類沒有圖示名稱。</value></data>
+  <data name="CoreErrorShadowHasNoLocation" xml:space="preserve"><value>陰影 {0} 沒有位置。</value></data>
+  <data name="CoreWarningShadowFileNoShadows" xml:space="preserve"><value>陰影檔案中沒有陰影。</value></data>
+  <data name="CoreErrorShadowHasNoSprite" xml:space="preserve"><value>陰影 {0} 沒有 regular_sprite_name。</value></data>
+  <data name="CoreErrorModRequiresWindows" xml:space="preserve"><value>此模組只能在 Windows 上執行，因此不會安裝。</value></data>
+  <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve"><value>服裝 {0} 的 ui_slot 不正確。必須是以下其中之一：{1}。</value></data>
+  <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve"><value>服裝 {0} 的 ui_sub_category 不正確。必須是以下其中之一：{1}。</value></data>
+  <data name="CoreErrorReadingVersionForMod" xml:space="preserve"><value>讀取模組版本時發生錯誤：{0}</value></data>
+  <data name="CorePreinstallWillInstallAurie" xml:space="preserve"><value>AIM 將先安裝 Aurie。</value></data>
+  <data name="CorePreinstallWillRemoveAurie" xml:space="preserve"><value>AIM 將先移除現有的 Aurie。</value></data>
+  <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve"><value>商店物品沒有商店。</value></data>
+  <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve"><value>商店物品沒有分類。</value></data>
+  <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve"><value>商店物品的季節無效。</value></data>
+  <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve"><value>商店物品沒有物品。</value></data>
+  <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve"><value>商店分類沒有商店。</value></data>
+  <data name="CoreErrorNewObjectNoName" xml:space="preserve"><value>新物件沒有名稱。</value></data>
+  <data name="CoreErrorNewObjectNoCategory" xml:space="preserve"><value>新物件沒有分類。</value></data>
+  <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve"><value>新物件的分類無效。</value></data>
+  <data name="CoreErrorNewObjectNoData" xml:space="preserve"><value>新物件沒有資料。</value></data>
+  <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve"><value>新物件檔案中沒有物件。</value></data>
+  <data name="CoreWarningItemFileHasNoItems" xml:space="preserve"><value>新物品檔案中沒有物品。</value></data>
+  <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve"><value>新物件不會覆寫其他模組的物件。</value></data>
+  <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve"><value>新物品不會覆寫其他模組的物品。</value></data>
+  <data name="GUIGreetingText" xml:space="preserve"><value>歡迎使用 AIM</value></data>
+  <data name="GUIModByAuthorWithVersion" xml:space="preserve"><value>{0} — 作者：{1} — 版本 {2}</value></data>
+  <data name="GUICouldNotFindMistria" xml:space="preserve"><value>找不到 Fields of Mistria 安裝。</value></data>
+  <data name="GUICouldNotFindMods" xml:space="preserve"><value>找不到模組資料夾。請選擇資料夾，或自動建立。</value></data>
+  <data name="GUINoModsToInstall" xml:space="preserve"><value>未選擇要安裝的模組。</value></data>
+  <data name="GUIModsRequireNewerVersion" xml:space="preserve"><value>以下模組需要較新的 AIM 版本：{0}</value></data>
+  <data name="GUIUpdateNagTitle" xml:space="preserve"><value>AIM 有可用更新</value></data>
+  <data name="GUIUpdateNagMessage" xml:space="preserve"><value>AIM 有新版本可用。你可以從 GitHub 下載。</value></data>
+  <data name="GUIPreinstallInformationTitle" xml:space="preserve"><value>安裝資訊</value></data>
+  <data name="GUIUninstallInformationTitle" xml:space="preserve"><value>解除安裝模組資訊</value></data>
+  <data name="GUIWarning32Bit" xml:space="preserve"><value>你正在使用 32 位元 AIM。部分模組可能無法執行。</value></data>
+  <data name="GUIWarning32BitTitle" xml:space="preserve"><value>32 位元警告</value></data>
+  <data name="GUIPickLogFile" xml:space="preserve"><value>選擇記錄檔</value></data>
+  <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve"><value>動物商店物品沒有外觀。</value></data>
+  <data name="GUIGreetingText_April" xml:space="preserve"><value>歡迎使用 AIM！</value></data>
+  <data name="GUIInstallButtonText_April" xml:space="preserve"><value>安裝模組！</value></data>
+  <data name="GUIInstallInProgress_April" xml:space="preserve"><value>正在安裝模組...</value></data>
+  <data name="GUINoModsToInstall_April" xml:space="preserve"><value>找不到模組！</value></data>
+  <data name="GUIModsWillBeInstalled_April" xml:space="preserve"><value>將安裝 {0} 個模組！</value></data>
+  <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve"><value>服裝的 price_override 為負數。</value></data>
+  <data name="CoreRunningInstaller" xml:space="preserve"><value>正在執行安裝程式</value></data>
+  <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve"><value>精靈 {0} 沒有位置。</value></data>
+  <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve"><value>資訊檔未定義 AIM 最低版本。</value></data>
+  <data name="CoreModRequiresIncorrectVersion" xml:space="preserve"><value>模組需要不相容的 AIM 版本。</value></data>
+  <data name="CoreStoreRebuildFailed" xml:space="preserve"><value>重新建立遊戲封存失敗。</value></data>
+  <data name="CoreStoreFlushFailed" xml:space="preserve"><value>寫入遊戲封存變更失敗。</value></data>
+  <data name="CoreStoreRestoreFailed" xml:space="preserve"><value>還原遊戲封存失敗。</value></data>
+  <data name="CoreStoreBackupMissing" xml:space="preserve"><value>找不到遊戲封存備份。</value></data>
+  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve"><value>無法讀取遊戲封存，且沒有備份。</value></data>
+  <data name="CoreStoreNoArchives" xml:space="preserve"><value>找不到遊戲封存。</value></data>
+  <data name="CoreStoreNothingToUninstall" xml:space="preserve"><value>沒有可解除安裝的內容。</value></data>
+  <data name="CoreGameGmlChanged" xml:space="preserve"><value>遊戲的 GML 檔案已變更。</value></data>
+  <data name="CoreModRequiresMissingHooks" xml:space="preserve"><value>模組需要缺少的 Hook：{0}</value></data>
+  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve"><value>資訊檔中的 Hook 清單無效。</value></data>
+  <data name="CoreSkippedModReason" xml:space="preserve"><value>已略過模組：{0}</value></data>
+  <data name="CoreVerifyNoBackup" xml:space="preserve"><value>沒有乾淨備份時無法驗證封存。</value></data>
+  <data name="GUIUninstallingText" xml:space="preserve"><value>正在解除安裝模組...</value></data>
+  <data name="CoreCosmeticsFileHasNoCosmetics" xml:space="preserve"><value>外觀檔案中沒有外觀。</value></data>
+  <data name="CoreErrorCosmeticNoUiSlot" xml:space="preserve"><value>外觀 {0} 沒有 ui_slot。</value></data>
+  <data name="CoreErrorCosmeticNoName" xml:space="preserve"><value>外觀沒有名稱。</value></data>
+  <data name="CoreErrorCosmeticUiSlotWrong" xml:space="preserve"><value>外觀 {0} 的 ui_slot 無效。必須是以下其中之一：{1}。</value></data>
+  <data name="CoreErrorCosmeticNoSubCategory" xml:space="preserve"><value>外觀 {0} 沒有 ui_sub_category。</value></data>
+  <data name="CoreCosmeticUiSubCategoryWrong" xml:space="preserve"><value>外觀 {0} 的 ui_sub_category 無效。必須是以下其中之一：{1}。</value></data>
+  <data name="CoreErrorCosmeticNoCosmeticSprites" xml:space="preserve"><value>外觀 {0} 沒有 cosmetic_sprites。</value></data>
+  <data name="CoreErrorCosmeticPriceOverrideNegative" xml:space="preserve"><value>外觀的 price_override 為負數。</value></data>
+  <data name="CoreErrorCosmeticNoLut" xml:space="preserve"><value>外觀 {0} 沒有 LUT。</value></data>
+  <data name="CoreErrorCosmeticNoUiSprites" xml:space="preserve"><value>外觀 {0} 沒有 ui_sprites。</value></data>
+  <data name="CoreErrorCosmeticUiSpritesAllDefined" xml:space="preserve"><value>外觀 {0} 的所有 ui_sprites 都已定義。</value></data>
+  <data name="CoreErrorCosmeticSpriteNoOutline" xml:space="preserve"><value>外觀精靈沒有輪廓。</value></data>
+  <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>外觀 UI 精靈沒有 body。</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>外觀 UI 精靈沒有合併精靈。</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>外觀 UI 精靈沒有合併輪廓。</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>外觀 {0} 的 cosmetic_sprites 無效。必須是以下其中之一：{1}。</value></data>
+  <data name="GUIUpdateAvailable" xml:space="preserve"><value>有可用更新</value></data>
+  <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>找不到遊戲封存。</value></data>
+  <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>封存狀態無法使用。</value></data>
+  <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>封存版本無法使用。</value></data>
+  <data name="GUIArchiveDifferent" xml:space="preserve"><value>遊戲封存與 AIM 上次管理的版本不同。</value></data>
 </root>

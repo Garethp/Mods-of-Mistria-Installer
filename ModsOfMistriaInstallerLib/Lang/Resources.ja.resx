@@ -17,7 +17,7 @@
   <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>繁体字中国語</value></data>
   <data name="GUILanguageRussian" xml:space="preserve"><value>ロシア語</value></data>
   <data name="GUILanguageIndonesian" xml:space="preserve"><value>インドネシア語</value></data>
-  <data name="GUIApplicationTitle" xml:space="preserve"><value>Fields of Mistria MODインストーラー</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>AIM — Fields of Mistria 代替インストーラー</value></data>
   <data name="GUILanguageMenu" xml:space="preserve"><value>言語</value></data>
   <data name="GUIPlayButtonText" xml:space="preserve"><value>ゲームを開始</value></data>
   <data name="GUIProfileLabel" xml:space="preserve"><value>プロファイル：</value></data>
@@ -45,6 +45,7 @@
   <data name="CoreInstallSummary" xml:space="preserve"><value>インストール済みMOD：{0}件</value></data>
   <data name="CoreInstallSummaryWithSkipped" xml:space="preserve"><value>インストール済みMOD：{0}件、スキップ：{1}件</value></data>
   <data name="GUILanguageSpanish" xml:space="preserve"><value>スペイン語</value></data>
+  <data name="GUILanguageUkrainian" xml:space="preserve"><value>ウクライナ語</value></data>
   <data name="GUISetupMistriaLocation" xml:space="preserve"><value>Fields of Mistriaの場所：</value></data>
   <data name="GUISetupModsLocation" xml:space="preserve"><value>MODフォルダー：</value></data>
   <data name="GUICanCreateModsFolder" xml:space="preserve"><value>MODフォルダーが見つかりませんが、自動で作成できます。</value></data>
@@ -85,11 +86,135 @@
 {0}</value></data>
   <data name="GUIErrorReason" xml:space="preserve"><value>理由： </value></data>
   <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>エラーの詳細を保存しました：</value></data>
-  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>このFields of MistriaのバージョンはMOMIに対応していません。</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>このFields of MistriaのバージョンはAIMに対応していません。</value></data>
   <data name="GUIInstallFatalError" xml:space="preserve"><value>インストールに失敗しました。アーカイブは変更されていません：</value></data>
   <data name="GUIUninstallFatalError" xml:space="preserve"><value>アンインストールに失敗しました。アーカイブは変更されていません：</value></data>
   <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve"><value>Fields of Mistriaの場所： </value></data>
   <data name="GUIMoveUp" xml:space="preserve"><value>ロード順を上へ移動</value></data>
   <data name="GUIMoveDown" xml:space="preserve"><value>ロード順を下へ移動</value></data>
   <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>インストールするすべてのModにチェックを入れてください：</value></data>
+  <data name="CorePreinstallWillInstallAurie" xml:space="preserve"><value>AIMは最初にAurieをインストールします。</value></data>
+  <data name="CorePreinstallWillRemoveAurie" xml:space="preserve"><value>AIMは既存のAurieを最初に削除します。</value></data>
+  <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve"><value>ショップアイテムにショップが指定されていません。</value></data>
+  <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve"><value>ショップアイテムにカテゴリが指定されていません。</value></data>
+  <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve"><value>ショップアイテムの季節が無効です。</value></data>
+  <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve"><value>ショップアイテムにアイテムが指定されていません。</value></data>
+  <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve"><value>ショップカテゴリにショップが指定されていません。</value></data>
+  <data name="CoreErrorNewObjectNoName" xml:space="preserve"><value>新しいオブジェクトに名前がありません。</value></data>
+  <data name="CoreErrorNewObjectNoCategory" xml:space="preserve"><value>新しいオブジェクトにカテゴリがありません。</value></data>
+  <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve"><value>新しいオブジェクトのカテゴリが無効です。</value></data>
+  <data name="CoreErrorNewObjectNoData" xml:space="preserve"><value>新しいオブジェクトにデータがありません。</value></data>
+  <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve"><value>新しいオブジェクトファイルにオブジェクトがありません。</value></data>
+  <data name="CoreWarningItemFileHasNoItems" xml:space="preserve"><value>新しいアイテムファイルにアイテムがありません。</value></data>
+  <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve"><value>新しいオブジェクトが他のModのオブジェクトを上書きしません。</value></data>
+  <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve"><value>新しいアイテムが他のModのアイテムを上書きしません。</value></data>
+  <data name="GUIGreetingText" xml:space="preserve"><value>AIMへようこそ</value></data>
+  <data name="GUIModByAuthorWithVersion" xml:space="preserve"><value>{0} — {1} 作成 — バージョン {2}</value></data>
+  <data name="GUICouldNotFindMistria" xml:space="preserve"><value>Fields of Mistriaのインストールが見つかりません。</value></data>
+  <data name="GUICouldNotFindMods" xml:space="preserve"><value>Modフォルダが見つかりません。フォルダを選択するか自動作成してください。</value></data>
+  <data name="GUINoModsToInstall" xml:space="preserve"><value>インストールするModが選択されていません。</value></data>
+  <data name="GUIModsRequireNewerVersion" xml:space="preserve"><value>次のModには、より新しいAIMが必要です：{0}</value></data>
+  <data name="GUIUpdateNagTitle" xml:space="preserve"><value>AIMの更新があります</value></data>
+  <data name="GUIUpdateNagMessage" xml:space="preserve"><value>新しいAIMのバージョンが利用できます。GitHubからダウンロードできます。</value></data>
+  <data name="GUIPreinstallInformationTitle" xml:space="preserve"><value>インストール情報</value></data>
+  <data name="GUIUninstallInformationTitle" xml:space="preserve"><value>Mod削除情報</value></data>
+  <data name="GUIWarning32Bit" xml:space="preserve"><value>32ビット版のAIMを使用しています。一部のModが動作しない場合があります。</value></data>
+  <data name="GUIWarning32BitTitle" xml:space="preserve"><value>32ビット警告</value></data>
+  <data name="GUIPickLogFile" xml:space="preserve"><value>ログファイルを選択</value></data>
+  <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve"><value>動物ショップアイテムにコスメティックがありません。</value></data>
+  <data name="GUIGreetingText_April" xml:space="preserve"><value>AIMへようこそ！</value></data>
+  <data name="GUIInstallButtonText_April" xml:space="preserve"><value>Modをインストール！</value></data>
+  <data name="GUIInstallInProgress_April" xml:space="preserve"><value>Modをインストール中...</value></data>
+  <data name="GUINoModsToInstall_April" xml:space="preserve"><value>Modが見つかりません！</value></data>
+  <data name="GUIModsWillBeInstalled_April" xml:space="preserve"><value>{0}個のModをインストールします！</value></data>
+  <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve"><value>服のprice_overrideが負の値です。</value></data>
+  <data name="CoreRunningInstaller" xml:space="preserve"><value>インストーラーを実行中</value></data>
+  <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve"><value>スプライト{0}に場所がありません。</value></data>
+  <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve"><value>Manifestに必要なAIMの最低バージョンがありません。</value></data>
+  <data name="CoreModRequiresIncorrectVersion" xml:space="preserve"><value>Modが互換性のないAIMのバージョンを必要としています。</value></data>
+  <data name="CoreStoreRebuildFailed" xml:space="preserve"><value>ゲームアーカイブの再構築に失敗しました。</value></data>
+  <data name="CoreStoreFlushFailed" xml:space="preserve"><value>ゲームアーカイブの変更を書き込めませんでした。</value></data>
+  <data name="CoreStoreRestoreFailed" xml:space="preserve"><value>ゲームアーカイブを復元できませんでした。</value></data>
+  <data name="CoreStoreBackupMissing" xml:space="preserve"><value>ゲームアーカイブのバックアップが見つかりません。</value></data>
+  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve"><value>ゲームアーカイブを読み取れず、バックアップもありません。</value></data>
+  <data name="CoreStoreNoArchives" xml:space="preserve"><value>ゲームアーカイブが見つかりません。</value></data>
+  <data name="CoreStoreNothingToUninstall" xml:space="preserve"><value>削除するものがありません。</value></data>
+  <data name="CoreGameGmlChanged" xml:space="preserve"><value>ゲームのGMLファイルが変更されています。</value></data>
+  <data name="CoreModRequiresMissingHooks" xml:space="preserve"><value>Modに必要なHookがありません：{0}</value></data>
+  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve"><value>ManifestのHook一覧が無効です。</value></data>
+  <data name="CoreSkippedModReason" xml:space="preserve"><value>Modをスキップしました：{0}</value></data>
+  <data name="CoreVerifyNoBackup" xml:space="preserve"><value>クリーンなバックアップなしではアーカイブを検証できません。</value></data>
+  <data name="GUIUninstallingText" xml:space="preserve"><value>Modを削除中...</value></data>
+  <data name="CoreCosmeticsFileHasNoCosmetics" xml:space="preserve"><value>コスメティックファイルにコスメティックがありません。</value></data>
+  <data name="CoreErrorCosmeticNoUiSlot" xml:space="preserve"><value>コスメティック{0}にui_slotがありません。</value></data>
+  <data name="CoreErrorCosmeticNoName" xml:space="preserve"><value>コスメティックに名前がありません。</value></data>
+  <data name="CoreErrorCosmeticUiSlotWrong" xml:space="preserve"><value>コスメティック{0}のui_slotが不正です。次のいずれかである必要があります：{1}。</value></data>
+  <data name="CoreErrorCosmeticNoSubCategory" xml:space="preserve"><value>コスメティック{0}にui_sub_categoryがありません。</value></data>
+  <data name="CoreCosmeticUiSubCategoryWrong" xml:space="preserve"><value>コスメティック{0}のui_sub_categoryが不正です。次のいずれかである必要があります：{1}。</value></data>
+  <data name="CoreErrorCosmeticNoCosmeticSprites" xml:space="preserve"><value>コスメティック{0}にcosmetic_spritesがありません。</value></data>
+  <data name="CoreErrorCosmeticPriceOverrideNegative" xml:space="preserve"><value>コスメティックのprice_overrideが負の値です。</value></data>
+  <data name="CoreErrorCosmeticNoLut" xml:space="preserve"><value>コスメティック{0}にLUTがありません。</value></data>
+  <data name="CoreErrorCosmeticNoUiSprites" xml:space="preserve"><value>コスメティック{0}にui_spritesがありません。</value></data>
+  <data name="CoreErrorCosmeticUiSpritesAllDefined" xml:space="preserve"><value>コスメティック{0}のui_spritesはすべて定義済みです。</value></data>
+  <data name="CoreErrorCosmeticSpriteNoOutline" xml:space="preserve"><value>コスメティックのスプライトにアウトラインがありません。</value></data>
+  <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>コスメティックのUIスプライトにbodyがありません。</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>コスメティックのUIスプライトに結合スプライトがありません。</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>コスメティックのUIスプライトに結合アウトラインがありません。</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>コスメティック{0}のcosmetic_spritesが不正です。次のいずれかである必要があります：{1}。</value></data>
+  <data name="GUIUpdateAvailable" xml:space="preserve"><value>更新があります</value></data>
+  <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>ゲームアーカイブが見つかりません。</value></data>
+  <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>アーカイブの状態を取得できません。</value></data>
+  <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>アーカイブのバージョンを取得できません。</value></data>
+  <data name="GUIArchiveDifferent" xml:space="preserve"><value>ゲームアーカイブが、AIMが最後に管理したものと異なります。</value></data>
+  <data name="CLIRunningBuild" xml:space="preserve"><value>ビルドを実行中 {0}</value></data>
+  <data name="CLICompleted" xml:space="preserve"><value>完了しました。終了するには任意のキーを押してください。</value></data>
+  <data name="CLIUninstallComplete" xml:space="preserve"><value>すべてのModを削除しました。終了するには任意のキーを押してください。</value></data>
+  <data name="CLIWarning32Bit" xml:space="preserve"><value>32ビット版のAIMを使用しています。一部のModが動作しない場合があります。</value></data>
+  <data name="CLICompileCheckUsage" xml:space="preserve"><value>使用方法：AIM compile-check &lt;mods-folder&gt;</value></data>
+  <data name="CLILintUsage" xml:space="preserve"><value>使用方法：AIM lint &lt;mods-folder&gt;</value></data>
+  <data name="CoreLookingForMistriaAt" xml:space="preserve"><value>Fields of Mistriaを検索中：{0}</value></data>
+  <data name="CoreMistriaNotFoundFallback" xml:space="preserve"><value>Fields of Mistriaが見つかりません。既定の場所を使用します。</value></data>
+  <data name="CoreCouldNotFindModManifest" xml:space="preserve"><value>Modのmanifestが見つかりません。</value></data>
+  <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve"><value>Manifestファイルの名前が正しくありません。</value></data>
+  <data name="CoreManifestHasNoAuthor" xml:space="preserve"><value>Manifestに作者がありません。</value></data>
+  <data name="CoreManifestHasNoName" xml:space="preserve"><value>Manifestに名前がありません。</value></data>
+  <data name="CoreManifestHasNoVersion" xml:space="preserve"><value>Manifestにバージョンがありません。</value></data>
+  <data name="CoreModRequiresNewerInstaller" xml:space="preserve"><value>このModには、より新しいAIMが必要です。</value></data>
+  <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve"><value>Fields of Mistriaの場所が存在しません。</value></data>
+  <data name="CoreModDirectoryDoesNotExist" xml:space="preserve"><value>Modフォルダが存在しません。</value></data>
+  <data name="CoreGeneratingInformationForMod" xml:space="preserve"><value>Modの情報を生成中：{0}</value></data>
+  <data name="CoreMistriaNotFound" xml:space="preserve"><value>Fields of Mistriaが見つかりません。</value></data>
+  <data name="CoreCouldNotGuessModsAt" xml:space="preserve"><value>Modフォルダを推測できませんでした：{0}</value></data>
+  <data name="CoreGuessedMistriaAt" xml:space="preserve"><value>Fields of Mistriaを検出しました：{0}</value></data>
+  <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve"><value>AIMが古いためModをスキップします。</value></data>
+  <data name="CoreSkippingModBecauseErrors" xml:space="preserve"><value>エラーがあるためModをスキップします。</value></data>
+  <data name="CoreModHasWarnings" xml:space="preserve"><value>{0}には次の警告がありますが、インストールを続行します：</value></data>
+  <data name="CoreInstalledInReporter" xml:space="preserve"><value>{0}を{1}にインストールしました</value></data>
+  <data name="CoreModsInstalledInTime" xml:space="preserve"><value>Modを{0}でインストールしました</value></data>
+  <data name="CoreItemDoesNotHaveValue" xml:space="preserve"><value>{0}に値がありません</value></data>
+  <data name="CoreSpriteFileDoesNotExist" xml:space="preserve"><value>{0}は{1}のスプライトを参照していますが、ファイルがありません</value></data>
+  <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve"><value>{0}は{1}のスプライトフォルダを参照していますが、フォルダがありません</value></data>
+  <data name="CoreSpriteFolderIsEmpty" xml:space="preserve"><value>{0}は{1}のスプライトフォルダを参照していますが、フォルダが空です</value></data>
+  <data name="CoreCouldNotParseFile" xml:space="preserve"><value>ファイルを解析できませんでした。メッセージ：{0}</value></data>
+  <data name="CoreNoDataInFile" xml:space="preserve"><value>ファイル内にデータがありません。</value></data>
+  <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve"><value>服ファイルに服がありません。</value></data>
+  <data name="CoreSpriteFileHasNoSprites" xml:space="preserve"><value>スプライトファイルにスプライトがありません。</value></data>
+  <data name="CoreStoreFileHasNoData" xml:space="preserve"><value>ショップファイルにカテゴリまたはアイテムがありません。</value></data>
+  <data name="CoreTilesetsFileEmpty" xml:space="preserve"><value>タイルセットファイルにタイルセットがありません。</value></data>
+  <data name="CoreReadingSprites" xml:space="preserve"><value>テクスチャ/スプライトを読み込み中</value></data>
+  <data name="CoreImportingSprites" xml:space="preserve"><value>テクスチャ/スプライトをインポート中</value></data>
+  <data name="CoreWritingSprites" xml:space="preserve"><value>テクスチャ/スプライトを書き込み中</value></data>
+  <data name="CoreErrorOutfitNoName" xml:space="preserve"><value>服に名前がありません。</value></data>
+  <data name="CoreErrorOutfitNoDescription" xml:space="preserve"><value>服に説明がありません。</value></data>
+  <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve"><value>服{0}にui_slotがありません。</value></data>
+  <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve"><value>服{0}にui_sub_categoryがありません。</value></data>
+  <data name="CoreErrorOutfitNoAnimation" xml:space="preserve"><value>服{0}にアニメーションファイルがありません。</value></data>
+  <data name="CoreErrorStoreCategoryNoName" xml:space="preserve"><value>カテゴリにアイコン名がありません。</value></data>
+  <data name="CoreErrorShadowHasNoLocation" xml:space="preserve"><value>影{0}に場所がありません。</value></data>
+  <data name="CoreWarningShadowFileNoShadows" xml:space="preserve"><value>影ファイルに影がありません。</value></data>
+  <data name="CoreErrorShadowHasNoSprite" xml:space="preserve"><value>影{0}にregular_sprite_nameがありません。</value></data>
+  <data name="CoreErrorModRequiresWindows" xml:space="preserve"><value>このModはWindowsでのみ動作するため、インストールされません。</value></data>
+  <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve"><value>服{0}のui_slotが不正です。次のいずれかである必要があります：{1}。</value></data>
+  <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve"><value>服{0}のui_sub_categoryが不正です。次のいずれかである必要があります：{1}。</value></data>
+  <data name="CoreErrorReadingVersionForMod" xml:space="preserve"><value>Modのバージョン読み込み中にエラーが発生しました：{0}</value></data>
 </root>

@@ -31,7 +31,7 @@ public sealed class LocalizationService : ObservableObject
     public void SetLanguage(string? languageCode)
     {
         var normalized = string.IsNullOrWhiteSpace(languageCode) ? "system" : languageCode.Trim().ToLowerInvariant();
-        if (normalized is not ("system" or "en" or "bg" or "de" or "fr" or "nl" or "pt-br" or "ru" or "id" or "zh-hans" or "zh-hant" or "ko" or "ja" or "es"))
+        if (normalized is not ("system" or "en" or "bg" or "de" or "fr" or "nl" or "pt-br" or "ru" or "id" or "zh-hans" or "zh-hant" or "ko" or "ja" or "es" or "uk"))
             normalized = "system";
 
         var culture = normalized switch
@@ -49,6 +49,7 @@ public sealed class LocalizationService : ObservableObject
             "ko" => CultureInfo.GetCultureInfo("ko"),
             "ja" => CultureInfo.GetCultureInfo("ja"),
             "es" => CultureInfo.GetCultureInfo("es"),
+            "uk" => CultureInfo.GetCultureInfo("uk"),
             _ => SystemCulture
         };
 

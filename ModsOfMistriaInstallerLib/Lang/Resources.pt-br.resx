@@ -130,7 +130,7 @@
     <value>Todos os mods foram desinstalados. Pressione qualquer tecla para sair.</value>
   </data>
   <data name="CLIWarning32Bit" xml:space="preserve">
-    <value>Você está executando um sistema operacional em 64-bit, mas acidentalmente baixou a versão de 32-bit do MOMI que não inclui &quot;-x86&quot;.</value>
+    <value>Você está executando um sistema operacional em 64-bit, mas acidentalmente baixou a versão de 32-bit do AIM que não inclui &quot;-x86&quot;.</value>
   </data>
   <data name="CoreLookingForMistriaAt" xml:space="preserve">
     <value>Procurando por Mistria em {0}</value>
@@ -268,10 +268,10 @@
     <value>A roupa {0} tem a ui_sub_category incorreta. Deve ser uma dessas: {1}.</value>
   </data>
   <data name="CorePreinstallWillInstallAurie" xml:space="preserve">
-    <value>Durante a instalação, o MOMI vai tentar adicionar uma entrada ao registro do seu computador. Para isso, será solicitado que você dê acesso de administrador ao &quot;Editor de Registro&quot; para continuar.</value>
+    <value>Durante a instalação, o AIM vai tentar adicionar uma entrada ao registro do seu computador. Para isso, será solicitado que você dê acesso de administrador ao &quot;Editor de Registro&quot; para continuar.</value>
   </data>
   <data name="CorePreinstallWillRemoveAurie" xml:space="preserve">
-    <value>Durante a instalação, o MOMI vai tentar remover uma entrada do registro do computador. Como parte deste processo, será solicitado que você dê acesso de administrador a &quot;Ferramenta do Console de Registro&quot;.</value>
+    <value>Durante a instalação, o AIM vai tentar remover uma entrada do registro do computador. Como parte deste processo, será solicitado que você dê acesso de administrador a &quot;Ferramenta do Console de Registro&quot;.</value>
   </data>
   <data name="CoreErrorReadingVersionForMod" xml:space="preserve">
     <value>Um erro ocorreu ao ler a versão do mod: (0)</value>
@@ -316,7 +316,7 @@
     <value>Item {0} não especifica se sobrescreve outro mod.</value>
   </data>
   <data name="GUIApplicationTitle" xml:space="preserve">
-    <value>Instalador de Mods de Mistria</value>
+    <value>AIM — Instalador alternativo para Fields of Mistria</value>
   </data>
   <data name="GUIGreetingText" xml:space="preserve">
     <value>Bem-vindo ao Instalador de Mods de Mistria!</value>
@@ -370,7 +370,7 @@
     <value>Desinstalar informação</value>
   </data>
   <data name="GUIWarning32Bit" xml:space="preserve">
-    <value>Você está rodando um sistema operacional de 64-bit, mas acidentalmente baixou a versão de32-bit do MOMI. Por favor baixe a versão do MOMI que não inclui &quot;-x86&quot;.</value>
+    <value>Você está rodando um sistema operacional de 64-bit, mas acidentalmente baixou a versão de32-bit do AIM. Por favor baixe a versão do AIM que não inclui &quot;-x86&quot;.</value>
   </data>
   <data name="GUIWarning32BitTitle" xml:space="preserve">
     <value>Versão de 32-bits detectada.</value>
@@ -430,7 +430,7 @@
     <value>Devido a uma atualização da engine, este mod não pode mais ser instalado em sua versão atual.</value>
   </data>
   <data name="CoreModRequiresIncorrectVersion" xml:space="preserve">
-    <value>Esse mod requer uma versão mínima incorreta do MOMI.</value>
+    <value>Esse mod requer uma versão mínima incorreta do AIM.</value>
   </data>
   <data name="GUIUninstallCompleteText" xml:space="preserve">
     <value>Desinstalação Completa</value>
@@ -451,7 +451,7 @@
   <data name="GUILanguageFrench" xml:space="preserve"><value>Francês</value></data>
   <data name="GUILanguageDutch" xml:space="preserve"><value>Holandês</value></data>
   <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>Português (Brasil)</value></data>
-  <data name="GUIUpdateAvailable" xml:space="preserve"><value>MOMI {0} está disponível.</value></data>
+  <data name="GUIUpdateAvailable" xml:space="preserve"><value>AIM {0} está disponível.</value></data>
   <data name="GUINewProfile" xml:space="preserve"><value>Novo perfil</value></data>
   <data name="GUIDeleteCurrentProfile" xml:space="preserve"><value>Excluir perfil atual</value></data>
   <data name="GUIMoveUp" xml:space="preserve"><value>Mover para cima na ordem de carregamento</value></data>
@@ -507,5 +507,42 @@ Abrir as páginas de download no navegador?</value></data>
   <data name="GUILanguageKorean" xml:space="preserve"><value>Coreano</value></data>
   <data name="GUILanguageJapanese" xml:space="preserve"><value>Japonês</value></data>
   <data name="GUILanguageSpanish" xml:space="preserve"><value>Espanhol</value></data>
-  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Esta versão de Fields of Mistria não é compatível com o MOMI.</value></data>
+  <data name="GUILanguageUkrainian" xml:space="preserve"><value>Ucraniano</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Esta versão de Fields of Mistria não é compatível com o AIM.</value></data>
+  <data name="CLICompileCheckUsage" xml:space="preserve"><value>--compile-check deve ser "on", "off" ou "require".</value></data>
+  <data name="CLILintUsage" xml:space="preserve"><value>--lint requer uma pasta de mod: --lint &lt;pasta do mod&gt; [pristine zip]</value></data>
+  <data name="CoreStoreRebuildFailed" xml:space="preserve"><value>Não foi possível reconstruir {0}. Fields of Mistria está em execução? Feche o jogo e tente novamente; a instalação anterior não foi alterada.</value></data>
+  <data name="CoreStoreFlushFailed" xml:space="preserve"><value>Não foi possível concluir a gravação de {0}. Verifique se o disco está cheio ou se outro programa está usando o arquivo e execute o instalador novamente.</value></data>
+  <data name="CoreStoreRestoreFailed" xml:space="preserve"><value>Não foi possível restaurar {0}. Fields of Mistria está em execução? Feche o jogo e tente novamente.</value></data>
+  <data name="CoreStoreBackupMissing" xml:space="preserve"><value>{0} contém uma instalação anterior, mas o backup {1} está ausente. Verifique os arquivos do jogo pelo Steam e tente novamente.</value></data>
+  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve"><value>{0} não é um arquivo legível e o backup {1} está ausente. Verifique os arquivos do jogo pelo Steam e tente novamente.</value></data>
+  <data name="CoreStoreNoArchives" xml:space="preserve"><value>Não foi possível encontrar {0} ou {1}. Execute o jogo uma vez ou verifique os arquivos do jogo pelo Steam.</value></data>
+  <data name="CoreStoreNothingToUninstall" xml:space="preserve"><value>Nenhum armazenamento de assets foi encontrado; não há nada para restaurar.</value></data>
+  <data name="CoreInstallSummary" xml:space="preserve"><value>{0} mod(s) instalado(s)</value></data>
+  <data name="CoreInstallSummaryWithSkipped" xml:space="preserve"><value>{0} mod(s) instalado(s), {1} ignorado(s)</value></data>
+  <data name="CoreGameGmlChanged" xml:space="preserve"><value>O GML do jogo foi alterado. Não foi possível instalar.</value></data>
+  <data name="CoreModRequiresMissingHooks" xml:space="preserve"><value>O mod requer hooks que esta versão do AIM não fornece: {0}. Atualize o AIM ou use uma versão mais antiga do mod.</value></data>
+  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve"><value>requires_hooks no manifesto deve ser uma matriz de nomes de hooks.</value></data>
+  <data name="CoreSkippedModReason" xml:space="preserve"><value>{0} ignorado: {1}</value></data>
+  <data name="CoreVerifyNoBackup" xml:space="preserve"><value>Nenhum backup original foi encontrado em {0}. Execute o instalador uma vez para criá-lo ou verifique diretamente um ZIP de build.</value></data>
+  <data name="CoreCosmeticsFileHasNoCosmetics" xml:space="preserve"><value>O arquivo de cosméticos não contém cosméticos.</value></data>
+  <data name="CoreErrorCosmeticNoUiSlot" xml:space="preserve"><value>O cosmético {0} não definiu ui_slot.</value></data>
+  <data name="CoreErrorCosmeticNoName" xml:space="preserve"><value>O cosmético não tem nome.</value></data>
+  <data name="CoreErrorCosmeticUiSlotWrong" xml:space="preserve"><value>O cosmético {0} tem um ui_slot incorreto. Os valores permitidos são: {1}.</value></data>
+  <data name="CoreErrorCosmeticNoSubCategory" xml:space="preserve"><value>O cosmético {0} não definiu ui_sub_category.</value></data>
+  <data name="CoreCosmeticUiSubCategoryWrong" xml:space="preserve"><value>O cosmético {0} tem uma ui_sub_category incorreta. Os valores permitidos são: {1}.</value></data>
+  <data name="CoreErrorCosmeticNoCosmeticSprites" xml:space="preserve"><value>O cosmético {0} não tem arquivos cosmetic_sprites.</value></data>
+  <data name="CoreErrorCosmeticPriceOverrideNegative" xml:space="preserve"><value>A substituição de preço do cosmético {0} deve ser um número positivo.</value></data>
+  <data name="CoreErrorCosmeticNoLut" xml:space="preserve"><value>O cosmético {0} não tem LUT. Defina lut ou lut_sprite.</value></data>
+  <data name="CoreErrorCosmeticNoUiSprites" xml:space="preserve"><value>O cosmético {0} não tem ui_sprites.ui nem ui_sprites.asset. Defina um dos dois.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesAllDefined" xml:space="preserve"><value>O cosmético {0} tem ui_sprites.ui e ui_sprites.asset. Apenas um dos dois pode ser definido.</value></data>
+  <data name="CoreErrorCosmeticSpriteNoOutline" xml:space="preserve"><value>O cosmético {0} não tem ui_sprites.outline.</value></data>
+  <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>O cosmético {0} não tem ui_sprites.body.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>O cosmético {0} não tem ui_sprites.merged.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>O cosmético {0} não tem ui_sprites.merged_outline.</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>O cosmético {0} tem o valor incorreto {1} para cosmetic_sprites. Os valores permitidos são: {2}.</value></data>
+  <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>Nenhum arquivo do jogo foi detectado.</value></data>
+  <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Instalação do AIM detectada, mas o estado registrado não está disponível.</value></data>
+  <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Instalação do AIM detectada, mas as versões dos mods instalados não estão disponíveis.</value></data>
+  <data name="GUIArchiveDifferent" xml:space="preserve"><value>O conjunto ou a versão dos mods instalados é diferente deste perfil. Recomendado: desinstale e depois instale. A instalação também pode ser reconstruída a partir do backup original.</value></data>
 </root>

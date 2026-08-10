@@ -5,6 +5,7 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
   <data name="GUILanguageSpanish" xml:space="preserve"><value>Español</value></data>
+  <data name="GUILanguageUkrainian" xml:space="preserve"><value>Ucraniano</value></data>
   <data name="GUILanguageSystem" xml:space="preserve"><value>Predeterminado del sistema</value></data>
   <data name="GUILanguageEnglish" xml:space="preserve"><value>Inglés</value></data>
   <data name="GUILanguageBulgarian" xml:space="preserve"><value>Búlgaro</value></data>
@@ -18,7 +19,7 @@
   <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>Chino tradicional</value></data>
   <data name="GUILanguageRussian" xml:space="preserve"><value>Ruso</value></data>
   <data name="GUILanguageIndonesian" xml:space="preserve"><value>Indonesio</value></data>
-  <data name="GUIApplicationTitle" xml:space="preserve"><value>Instalador de mods de Fields of Mistria</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>AIM — Instalador alternativo para Fields of Mistria</value></data>
   <data name="GUILanguageMenu" xml:space="preserve"><value>Idioma</value></data>
   <data name="GUIPlayButtonText" xml:space="preserve"><value>Jugar</value></data>
   <data name="GUIProfileLabel" xml:space="preserve"><value>Perfil:</value></data>
@@ -85,11 +86,135 @@
 {0}</value></data>
   <data name="GUIErrorReason" xml:space="preserve"><value>Motivo: </value></data>
   <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>Detalles del error guardados en:</value></data>
-  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Esta versión de Fields of Mistria no es compatible con MOMI.</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Esta versión de Fields of Mistria no es compatible con AIM.</value></data>
   <data name="GUIInstallFatalError" xml:space="preserve"><value>Error de instalación; no se modificó el archivo:</value></data>
   <data name="GUIUninstallFatalError" xml:space="preserve"><value>Error de desinstalación; no se modificó el archivo:</value></data>
   <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve"><value>Fields of Mistria detectado en: </value></data>
   <data name="GUIMoveUp" xml:space="preserve"><value>Subir en el orden de carga</value></data>
   <data name="GUIMoveDown" xml:space="preserve"><value>Bajar en el orden de carga</value></data>
   <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>Marca las casillas de todos los mods que quieras instalar:</value></data>
+  <data name="CLIRunningBuild" xml:space="preserve"><value>Ejecutando compilación {0}</value></data>
+  <data name="CLICompleted" xml:space="preserve"><value>Completado. Pulsa cualquier tecla para salir.</value></data>
+  <data name="CLIUninstallComplete" xml:space="preserve"><value>Todos los mods se han desinstalado. Pulsa cualquier tecla para salir.</value></data>
+  <data name="CLIWarning32Bit" xml:space="preserve"><value>Estás usando un sistema operativo de 64 bits, pero has descargado por error la versión de 32 bits de AIM. Descarga la versión que no incluye «-x86».</value></data>
+  <data name="CLICompileCheckUsage" xml:space="preserve"><value>--compile-check debe ser «on», «off» o «require».</value></data>
+  <data name="CLILintUsage" xml:space="preserve"><value>--lint requiere una carpeta de mod: --lint &lt;carpeta del mod&gt; [pristine zip]</value></data>
+  <data name="CoreLookingForMistriaAt" xml:space="preserve"><value>Buscando Mistria en {0}</value></data>
+  <data name="CoreMistriaNotFoundFallback" xml:space="preserve"><value>No se ha encontrado Fields of Mistria; se usará la carpeta actual</value></data>
+  <data name="CoreCouldNotFindModManifest" xml:space="preserve"><value>No se ha encontrado el archivo de manifiesto.</value></data>
+  <data name="CoreManifestFileNamedIncorrectly" xml:space="preserve"><value>El archivo de manifiesto debe llamarse manifest.json.</value></data>
+  <data name="CoreManifestHasNoAuthor" xml:space="preserve"><value>El manifiesto debe incluir un autor.</value></data>
+  <data name="CoreManifestHasNoName" xml:space="preserve"><value>El manifiesto debe incluir un nombre.</value></data>
+  <data name="CoreManifestHasNoVersion" xml:space="preserve"><value>El manifiesto debe incluir una versión.</value></data>
+  <data name="CoreModRequiresNewerInstaller" xml:space="preserve"><value>Este mod requiere una versión más reciente del instalador.</value></data>
+  <data name="CoreMistriaLocationDoesNotExist" xml:space="preserve"><value>La ubicación de Fields of Mistria no existe.</value></data>
+  <data name="CoreModDirectoryDoesNotExist" xml:space="preserve"><value>La ubicación del mod no existe.</value></data>
+  <data name="CoreGeneratingInformationForMod" xml:space="preserve"><value>Generando información para {0}</value></data>
+  <data name="CoreMistriaNotFound" xml:space="preserve"><value>No se ha encontrado la ubicación de Fields of Mistria.</value></data>
+  <data name="CoreCouldNotGuessModsAt" xml:space="preserve"><value>No se ha encontrado una carpeta de mods en {0}.</value></data>
+  <data name="CoreGuessedMistriaAt" xml:space="preserve"><value>Ubicación estimada: {0}</value></data>
+  <data name="CoreSkippingModBecauseInstallerOld" xml:space="preserve"><value>Se omitirá {0} porque requiere una versión más reciente del instalador.</value></data>
+  <data name="CoreSkippingModBecauseErrors" xml:space="preserve"><value>Se omitirá {0} por los siguientes errores:</value></data>
+  <data name="CoreModHasWarnings" xml:space="preserve"><value>{0} tiene las siguientes advertencias, pero se instalará:</value></data>
+  <data name="CoreInstalledInReporter" xml:space="preserve"><value>{0} instalado en {1}</value></data>
+  <data name="CoreModsInstalledInTime" xml:space="preserve"><value>Mods instalados en {0}</value></data>
+  <data name="CoreItemDoesNotHaveValue" xml:space="preserve"><value>{0} no tiene un valor</value></data>
+  <data name="CoreSpriteFileDoesNotExist" xml:space="preserve"><value>{0} apunta a un sprite en {1}, pero ese archivo no existe</value></data>
+  <data name="CoreSpriteFolderDoesNotExist" xml:space="preserve"><value>{0} apunta a una carpeta de sprites en {1}, pero esa carpeta no existe</value></data>
+  <data name="CoreSpriteFolderIsEmpty" xml:space="preserve"><value>{0} apunta a una carpeta de sprites en {1}, pero está vacía</value></data>
+  <data name="CoreCouldNotParseFile" xml:space="preserve"><value>No se ha podido analizar el archivo. Mensaje: {0}</value></data>
+  <data name="CoreNoDataInFile" xml:space="preserve"><value>No se han encontrado datos en el archivo.</value></data>
+  <data name="CoreOutfitFileHasNoOutfits" xml:space="preserve"><value>El archivo de atuendos no contiene atuendos.</value></data>
+  <data name="CoreSpriteFileHasNoSprites" xml:space="preserve"><value>El archivo de sprites no contiene sprites.</value></data>
+  <data name="CoreStoreFileHasNoData" xml:space="preserve"><value>El archivo de la tienda no contiene categorías ni objetos.</value></data>
+  <data name="CoreTilesetsFileEmpty" xml:space="preserve"><value>El archivo de conjuntos de casillas no contiene conjuntos.</value></data>
+  <data name="CoreReadingSprites" xml:space="preserve"><value>Lectura de texturas/sprites</value></data>
+  <data name="CoreImportingSprites" xml:space="preserve"><value>Importación de texturas/sprites</value></data>
+  <data name="CoreWritingSprites" xml:space="preserve"><value>Escritura de texturas/sprites</value></data>
+  <data name="CoreErrorOutfitNoName" xml:space="preserve"><value>El atuendo no tiene nombre.</value></data>
+  <data name="CoreErrorOutfitNoDescription" xml:space="preserve"><value>El atuendo no tiene descripción.</value></data>
+  <data name="CoreErrorOutfitNoUiSlot" xml:space="preserve"><value>El atuendo {0} no ha definido ui_slot.</value></data>
+  <data name="CoreErrorOutfitNoSubCategory" xml:space="preserve"><value>El atuendo {0} no ha definido ui_sub_category.</value></data>
+  <data name="CoreErrorOutfitNoAnimation" xml:space="preserve"><value>El atuendo {0} no tiene archivos de animación.</value></data>
+  <data name="CoreErrorStoreCategoryNoName" xml:space="preserve"><value>La categoría no tiene nombre de icono.</value></data>
+  <data name="CoreErrorShadowHasNoLocation" xml:space="preserve"><value>La sombra {0} no tiene una ubicación definida.</value></data>
+  <data name="CoreWarningShadowFileNoShadows" xml:space="preserve"><value>El archivo de sombras no contiene sombras.</value></data>
+  <data name="CoreErrorShadowHasNoSprite" xml:space="preserve"><value>La sombra {0} no tiene regular_sprite_name.</value></data>
+  <data name="CoreErrorModRequiresWindows" xml:space="preserve"><value>Este mod solo funciona en Windows y no se instalará.</value></data>
+  <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve"><value>El atuendo {0} tiene un ui_slot incorrecto. Debe ser uno de: {1}.</value></data>
+  <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve"><value>El atuendo {0} tiene una ui_sub_category incorrecta. Debe ser una de: {1}.</value></data>
+  <data name="CoreErrorReadingVersionForMod" xml:space="preserve"><value>Se produjo un error al leer la versión del mod: {0}</value></data>
+  <data name="CoreErrorStoreItemHasNoStore" xml:space="preserve"><value>El objeto no se ha asignado a una tienda.</value></data>
+  <data name="CoreErrorStoreItemHasNoCategory" xml:space="preserve"><value>El objeto de la tienda {0} no tiene categoría.</value></data>
+  <data name="CoreErrorStoreItemHasInvalidSeason" xml:space="preserve"><value>No se puede añadir el objeto a la tienda {0} y categoría {1} porque tiene una estación no válida {2}.</value></data>
+  <data name="CoreErrorStoreItemHasNoItem" xml:space="preserve"><value>El objeto de la tienda {0}, categoría {1}, no especifica un objeto.</value></data>
+  <data name="CoreErrorStoreCategoryHasNoStore" xml:space="preserve"><value>La categoría no tiene tienda.</value></data>
+  <data name="CoreErrorNewObjectNoName" xml:space="preserve"><value>El objeto nuevo no tiene nombre.</value></data>
+  <data name="CoreErrorNewObjectNoCategory" xml:space="preserve"><value>El objeto {0} no tiene categoría.</value></data>
+  <data name="CoreErrorNewObjectInvalidCategory" xml:space="preserve"><value>El objeto {0} tiene una categoría no válida {1}.</value></data>
+  <data name="CoreErrorNewObjectNoData" xml:space="preserve"><value>El objeto {0} no tiene datos.</value></data>
+  <data name="CoreWarningObjectFileHasNoObjects" xml:space="preserve"><value>El archivo de objetos nuevos no contiene objetos.</value></data>
+  <data name="CoreWarningItemFileHasNoItems" xml:space="preserve"><value>El archivo de objetos nuevos no contiene objetos.</value></data>
+  <data name="CoreErrorNewObjectHasNoOverwritesOtherMod" xml:space="preserve"><value>El objeto {0} no indica si sobrescribe otro mod.</value></data>
+  <data name="CoreErrorNewItemHasNoOverwritesOtherMod" xml:space="preserve"><value>El objeto {0} no indica si sobrescribe otro mod.</value></data>
+  <data name="CoreErrorStoreItemAnimalHasNoCosmetic" xml:space="preserve"><value>El animal {0} de la tienda {1} no tiene cosmético definido.</value></data>
+  <data name="GUIGreetingText" xml:space="preserve"><value>¡Te damos la bienvenida al instalador de mods de Fields of Mistria!</value></data>
+  <data name="GUIModByAuthorWithVersion" xml:space="preserve"><value>{0} de {1} - Versión {2}</value></data>
+  <data name="GUICouldNotFindMistria" xml:space="preserve"><value>No se ha podido encontrar la ubicación de Fields of Mistria. Intenta colocar AIM en la misma carpeta que Fields of Mistria.</value></data>
+  <data name="GUICouldNotFindMods" xml:space="preserve"><value>No se ha podido encontrar una carpeta de mods. Intenta crear una carpeta llamada «mods» en la carpeta de Fields of Mistria.</value></data>
+  <data name="GUINoModsToInstall" xml:space="preserve"><value>No se han encontrado mods para instalar</value></data>
+  <data name="GUIModsRequireNewerVersion" xml:space="preserve"><value>Algunos mods requieren una versión más reciente del instalador. Actualiza AIM.</value></data>
+  <data name="GUIUpdateNagTitle" xml:space="preserve"><value>Hay una nueva versión disponible</value></data>
+  <data name="GUIUpdateNagMessage" xml:space="preserve"><value>Hay una nueva versión de AIM disponible. Actualiza la aplicación.</value></data>
+  <data name="GUIPreinstallInformationTitle" xml:space="preserve"><value>Información de instalación</value></data>
+  <data name="GUIUninstallInformationTitle" xml:space="preserve"><value>Información de desinstalación</value></data>
+  <data name="GUIWarning32BitTitle" xml:space="preserve"><value>Versión de 32 bits detectada</value></data>
+  <data name="GUIWarning32Bit" xml:space="preserve"><value>Estás usando un sistema operativo de 64 bits, pero has descargado por error la versión de 32 bits de AIM. Descarga la versión que no incluye «-x86».</value></data>
+  <data name="GUIPickLogFile" xml:space="preserve"><value>Elige una ubicación para el archivo de registro</value></data>
+  <data name="CoreErrorOutfitPriceOverrideNegative" xml:space="preserve"><value>El precio alternativo del atuendo {0} debe ser un número positivo.</value></data>
+  <data name="CoreRunningInstaller" xml:space="preserve"><value>Ejecutando {0}</value></data>
+  <data name="CoreErrorSpriteHasNoLocation" xml:space="preserve"><value>El sprite {0} no tiene una ubicación definida.</value></data>
+  <data name="CoreManifestHasNoMinimunInstallerVersion" xml:space="preserve"><value>Debido a una actualización del motor, este mod no se puede instalar en su versión actual.</value></data>
+  <data name="CoreModRequiresIncorrectVersion" xml:space="preserve"><value>El mod requiere una versión mínima incorrecta de AIM.</value></data>
+  <data name="CoreStoreRebuildFailed" xml:space="preserve"><value>No se ha podido reconstruir {0}. ¿Fields of Mistria está ejecutándose? Cierra el juego e inténtalo de nuevo; la instalación anterior no se ha modificado.</value></data>
+  <data name="CoreStoreFlushFailed" xml:space="preserve"><value>No se ha podido terminar de escribir {0}. Comprueba si el disco está lleno o si otro programa está usando el archivo y vuelve a ejecutar el instalador.</value></data>
+  <data name="CoreStoreRestoreFailed" xml:space="preserve"><value>No se ha podido restaurar {0}. ¿Fields of Mistria está ejecutándose? Cierra el juego e inténtalo de nuevo.</value></data>
+  <data name="CoreStoreBackupMissing" xml:space="preserve"><value>{0} contiene una instalación anterior, pero falta la copia de seguridad {1}. Verifica los archivos del juego mediante Steam e inténtalo de nuevo.</value></data>
+  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve"><value>{0} no es un archivo legible y falta la copia de seguridad {1}. Verifica los archivos del juego mediante Steam e inténtalo de nuevo.</value></data>
+  <data name="CoreStoreNoArchives" xml:space="preserve"><value>No se ha podido encontrar {0} ni {1}. Ejecuta el juego una vez o verifica los archivos mediante Steam.</value></data>
+  <data name="CoreStoreNothingToUninstall" xml:space="preserve"><value>No se ha encontrado ningún almacén de assets, así que no hay nada que restaurar.</value></data>
+  <data name="CoreGameGmlChanged" xml:space="preserve"><value>El GML del juego ha cambiado. No se puede instalar.</value></data>
+  <data name="CoreModRequiresMissingHooks" xml:space="preserve"><value>El mod requiere hooks que esta versión de AIM no proporciona: {0}. Actualiza AIM o usa una versión anterior del mod.</value></data>
+  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve"><value>requires_hooks en el manifiesto debe ser una matriz de nombres de hooks.</value></data>
+  <data name="CoreSkippedModReason" xml:space="preserve"><value>Se ha omitido {0}: {1}</value></data>
+  <data name="CoreVerifyNoBackup" xml:space="preserve"><value>No se ha encontrado una copia de seguridad original en {0}. Ejecuta el instalador una vez para crearla o comprueba directamente un ZIP de compilación.</value></data>
+  <data name="GUIUninstallingText" xml:space="preserve"><value>Desinstalando</value></data>
+  <data name="GUIUpdateAvailable" xml:space="preserve"><value>AIM {0} está disponible.</value></data>
+  <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>No se ha detectado el archivo del juego.</value></data>
+  <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Se ha detectado una instalación de AIM, pero su estado guardado no está disponible.</value></data>
+  <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Se ha detectado una instalación de AIM, pero las versiones de los mods instalados no están disponibles.</value></data>
+  <data name="GUIArchiveDifferent" xml:space="preserve"><value>El conjunto o la versión de mods instalados difiere de este perfil. Recomendado: desinstala y después instala. También puedes reconstruir la instalación desde la copia de seguridad original.</value></data>
+  <data name="CorePreinstallWillInstallAurie" xml:space="preserve"><value>Durante la instalación, AIM intentará añadir una entrada al registro del sistema. Se te pedirá acceso de administrador al Editor del Registro para continuar con el cambio.</value></data>
+  <data name="CorePreinstallWillRemoveAurie" xml:space="preserve"><value>Durante la desinstalación, AIM intentará eliminar una entrada del registro del sistema. Se te pedirá acceso de administrador a la herramienta de consola del Registro.</value></data>
+  <data name="GUIGreetingText_April" xml:space="preserve"><value>¿Sabías que un golpe preciso con el pico es una forma estupenda de instalar los mods que has descargado?</value></data>
+  <data name="GUIInstallButtonText_April" xml:space="preserve"><value>Golpear con precisión</value></data>
+  <data name="GUIInstallInProgress_April" xml:space="preserve"><value>Golpeando con precisión…</value></data>
+  <data name="GUINoModsToInstall_April" xml:space="preserve"><value>No se han encontrado mods que golpear</value></data>
+  <data name="GUIModsWillBeInstalled_April" xml:space="preserve"><value>Marca los mods que quieras golpear:</value></data>
+  <data name="CoreCosmeticsFileHasNoCosmetics" xml:space="preserve"><value>El archivo de cosméticos no contiene cosméticos.</value></data>
+  <data name="CoreErrorCosmeticNoUiSlot" xml:space="preserve"><value>El cosmético {0} no ha definido ui_slot.</value></data>
+  <data name="CoreErrorCosmeticNoName" xml:space="preserve"><value>El cosmético no tiene nombre.</value></data>
+  <data name="CoreErrorCosmeticUiSlotWrong" xml:space="preserve"><value>El cosmético {0} tiene un ui_slot incorrecto. Debe ser uno de: {1}.</value></data>
+  <data name="CoreErrorCosmeticNoSubCategory" xml:space="preserve"><value>El cosmético {0} no ha definido ui_sub_category.</value></data>
+  <data name="CoreCosmeticUiSubCategoryWrong" xml:space="preserve"><value>El cosmético {0} tiene una ui_sub_category incorrecta. Debe ser una de: {1}.</value></data>
+  <data name="CoreErrorCosmeticNoCosmeticSprites" xml:space="preserve"><value>El cosmético {0} no tiene archivos cosmetic_sprites.</value></data>
+  <data name="CoreErrorCosmeticPriceOverrideNegative" xml:space="preserve"><value>El precio alternativo del cosmético {0} debe ser un número positivo.</value></data>
+  <data name="CoreErrorCosmeticNoLut" xml:space="preserve"><value>El cosmético {0} no tiene LUT. Debes definir lut o lut_sprite.</value></data>
+  <data name="CoreErrorCosmeticNoUiSprites" xml:space="preserve"><value>El cosmético {0} no tiene ui_sprites.ui ni ui_sprites.asset. Debes definir uno de los dos.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesAllDefined" xml:space="preserve"><value>El cosmético {0} tiene ui_sprites.ui y ui_sprites.asset. Solo puedes definir uno de los dos.</value></data>
+  <data name="CoreErrorCosmeticSpriteNoOutline" xml:space="preserve"><value>El cosmético {0} no tiene ui_sprites.outline.</value></data>
+  <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>El cosmético {0} no tiene ui_sprites.body.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>El cosmético {0} no tiene ui_sprites.merged.</value></data>
+  <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>El cosmético {0} no tiene ui_sprites.merged_outline.</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>El cosmético {0} tiene el valor incorrecto {1} para cosmetic_sprites. Debe ser uno de: {2}.</value></data>
 </root>
