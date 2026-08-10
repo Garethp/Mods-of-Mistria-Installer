@@ -29,7 +29,7 @@ public class AssetsStore(string fomLocation)
     public string BackupPath { get; } = Path.Combine(fomLocation, "assets.bak.zip");
     public string TemporaryPath { get; } = Path.Combine(fomLocation, "assets.momi.tmp.zip");
     public string StatePath { get; } = Path.Combine(fomLocation, "assets.momi.state.toml");
-    private string GameExecutablePath { get; } = Path.Combine(fomLocation, "FieldsOfMistria.exe");
+    private string? GameExecutablePath => GameExecutableLocator.Find(fomLocation);
 
     private enum LiveState { Absent, Unmarked, Marked, Unreadable }
 
@@ -373,7 +373,7 @@ public class AssetsStore(string fomLocation)
                                ?? GetType().Assembly.GetName().Version?.ToString() ?? "unknown",
             ["installed_at_utc"] = DateTimeOffset.UtcNow.ToString("O"),
         };
-        if (File.Exists(GameExecutablePath))
+        if (GameExecutablePath is not null)
             root["game_executable_sha256"] = Sha256File(GameExecutablePath);
         var mods = new TomlTableArray();
         foreach (var mod in installedMods.OrderBy(m => m.Id, StringComparer.Ordinal))
@@ -503,7 +503,7 @@ public class AssetsStore(string fomLocation)
 
     private bool IsGameUpdate(StoreState state)
     {
-        if (!File.Exists(GameExecutablePath)) return false;
+        if (GameExecutablePath is null) return false;
 
         if (!string.IsNullOrWhiteSpace(state.GameExecutableSha256))
             return Sha256File(GameExecutablePath) != state.GameExecutableSha256;

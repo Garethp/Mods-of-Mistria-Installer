@@ -1,8 +1,8 @@
-# Mods of Mistria Installer — MOMI 0.15.6 AI
+# Mods of Mistria Installer — MOMI 0.15.7 AI
 
 This is an independent fork of [Mods of Mistria Installer](https://github.com/Garethp/Mods-of-Mistria-Installer), maintained for **Fields of Mistria 1.0.x**.
 
-The `AI` label identifies this build. The numeric application version is `0.15.6`.
+The `AI` label identifies this build. The numeric application version is `0.15.7`.
 
 ## Fork-specific improvements
 

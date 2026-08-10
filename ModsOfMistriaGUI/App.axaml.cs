@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using Garethp.ModsOfMistriaGUI.Models;
+using Garethp.ModsOfMistriaGUI.Services;
 using Garethp.ModsOfMistriaGUI.ViewModels;
 using Garethp.ModsOfMistriaGUI.Views;
 using MsBox.Avalonia;
@@ -14,8 +16,14 @@ public class App : Application
 {
     public static TopLevel? TopLevel { get; private set; }
 
-    private readonly MainWindowViewModel _mainViewModel = new();
+    private readonly MainWindowViewModel _mainViewModel;
     private CancellationTokenSource? _updateCheckCancellation;
+
+    public App()
+    {
+        LocalizationService.Instance.SetLanguage(Settings.LoadSavedUiLanguage());
+        _mainViewModel = new MainWindowViewModel();
+    }
 
     public override void Initialize()
     {

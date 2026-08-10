@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
+  <data name="GUILanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="GUILanguageSystem" xml:space="preserve"><value>システムの既定</value></data>
+  <data name="GUILanguageEnglish" xml:space="preserve"><value>英語</value></data>
+  <data name="GUILanguageBulgarian" xml:space="preserve"><value>ブルガリア語</value></data>
+  <data name="GUILanguageGerman" xml:space="preserve"><value>ドイツ語</value></data>
+  <data name="GUILanguageFrench" xml:space="preserve"><value>フランス語</value></data>
+  <data name="GUILanguageDutch" xml:space="preserve"><value>オランダ語</value></data>
+  <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>ポルトガル語（ブラジル）</value></data>
+  <data name="GUILanguageKorean" xml:space="preserve"><value>韓国語</value></data>
+  <data name="GUILanguageSimplifiedChinese" xml:space="preserve"><value>簡体字中国語</value></data>
+  <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>繁体字中国語</value></data>
+  <data name="GUILanguageRussian" xml:space="preserve"><value>ロシア語</value></data>
+  <data name="GUILanguageIndonesian" xml:space="preserve"><value>インドネシア語</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>Fields of Mistria MODインストーラー</value></data>
+  <data name="GUILanguageMenu" xml:space="preserve"><value>言語</value></data>
+  <data name="GUIPlayButtonText" xml:space="preserve"><value>ゲームを開始</value></data>
+  <data name="GUIProfileLabel" xml:space="preserve"><value>プロファイル：</value></data>
+  <data name="GUIInstallButtonText" xml:space="preserve"><value>インストール</value></data>
+  <data name="GUIInstallInProgress" xml:space="preserve"><value>MODをインストール中...</value></data>
+  <data name="GUIUninstallCompleteText" xml:space="preserve"><value>アンインストール完了</value></data>
+  <data name="GUIArchiveNoInstallation" xml:space="preserve"><value>インストール済みのMODは見つかりません。MODを選択して「インストール」を押してください。</value></data>
+  <data name="GUIArchiveMatch" xml:space="preserve"><value>インストール済みのMOD：{0}件。</value></data>
+  <data name="GUILocationGameDetected" xml:space="preserve"><value>Fields of Mistriaのインストールが検出されました。</value></data>
+  <data name="GUILocationNoModsFolder" xml:space="preserve"><value>MODフォルダーが見つかりません。フォルダーを選択するか、自動作成してください。</value></data>
+  <data name="GUILocationModsDetected" xml:space="preserve"><value>MODフォルダーが検出されました。</value></data>
+  <data name="GUISavingAtlases" xml:space="preserve"><value>アトラスを保存中</value></data>
+  <data name="GUIWritingGameArchive" xml:space="preserve"><value>ゲームアーカイブを書き込み中</value></data>
+  <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>GMLレイヤーを準備中</value></data>
+  <data name="GUIPhasePreparing" xml:space="preserve"><value>準備中</value></data>
+  <data name="GUIPhaseInstallingImages" xml:space="preserve"><value>画像をインストール中</value></data>
+  <data name="GUIPhaseInstallingToml" xml:space="preserve"><value>TOMLをインストール中</value></data>
+  <data name="GUIPhaseInstallingFonts" xml:space="preserve"><value>フォントをインストール中</value></data>
+  <data name="GUIPhaseInstallingJson" xml:space="preserve"><value>JSONをインストール中</value></data>
+  <data name="GUIPhaseInstallingXml" xml:space="preserve"><value>XMLをインストール中</value></data>
+  <data name="GUIPhaseInstallingMist" xml:space="preserve"><value>MISTをインストール中</value></data>
+  <data name="GUIPhaseInstallingOutfits" xml:space="preserve"><value>衣装をインストール中</value></data>
+  <data name="GUIPhaseInstallingFurniture" xml:space="preserve"><value>家具をインストール中</value></data>
+  <data name="CoreInstallCompleted" xml:space="preserve"><value>インストール完了</value></data>
+  <data name="CoreInstallSummary" xml:space="preserve"><value>インストール済みMOD：{0}件</value></data>
+  <data name="CoreInstallSummaryWithSkipped" xml:space="preserve"><value>インストール済みMOD：{0}件、スキップ：{1}件</value></data>
+  <data name="GUILanguageSpanish" xml:space="preserve"><value>スペイン語</value></data>
+  <data name="GUISetupMistriaLocation" xml:space="preserve"><value>Fields of Mistriaの場所：</value></data>
+  <data name="GUISetupModsLocation" xml:space="preserve"><value>MODフォルダー：</value></data>
+  <data name="GUICanCreateModsFolder" xml:space="preserve"><value>MODフォルダーが見つかりませんが、自動で作成できます。</value></data>
+  <data name="GUIConfirmSaveProfileTitle" xml:space="preserve"><value>プロファイルを保存</value></data>
+  <data name="GUIConfirmSaveProfileMessage" xml:space="preserve"><value>切り替える前にプロファイル「{0}」の変更を保存しますか？</value></data>
+  <data name="GUIConfirmDeleteProfileTitle" xml:space="preserve"><value>プロファイルを削除</value></data>
+  <data name="GUIConfirmDeleteProfileMessage" xml:space="preserve"><value>プロファイル「{0}」を削除しますか？元に戻せません。</value></data>
+  <data name="GUIProfileName" xml:space="preserve"><value>プロファイル {0}</value></data>
+  <data name="GUINewProfile" xml:space="preserve"><value>新しいプロファイル</value></data>
+  <data name="GUIDeleteCurrentProfile" xml:space="preserve"><value>現在のプロファイルを削除</value></data>
+  <data name="GUIEnableAllMods" xml:space="preserve"><value>すべてのMODを有効化</value></data>
+  <data name="GUIDisableAllMods" xml:space="preserve"><value>すべてのMODを無効化</value></data>
+  <data name="GUIReloadModlist" xml:space="preserve"><value>MOD一覧を再読み込み</value></data>
+  <data name="GUISaveLogFile" xml:space="preserve"><value>ログファイルを保存</value></data>
+  <data name="GUIUninstallButtonText" xml:space="preserve"><value>すべてアンインストール</value></data>
+  <data name="GUIUpdateMod" xml:space="preserve"><value>更新</value></data>
+  <data name="GUILaunchGameDirectly" xml:space="preserve"><value>ゲームを直接起動</value></data>
+  <data name="GUIGitHubButtonText" xml:space="preserve"><value>GitHubを開く</value></data>
+  <data name="GUIOpenGameExecutable" xml:space="preserve"><value>FieldsOfMistria.exeを開く</value></data>
+  <data name="GUIOpenModsFolder" xml:space="preserve"><value>MODフォルダーを開く</value></data>
+  <data name="GUIInstallFailedForMod" xml:space="preserve"><value>このMODのインストールに失敗しました</value></data>
+  <data name="GUIModInstalled" xml:space="preserve"><value>インストール済み。</value></data>
+  <data name="GUIModSkipped" xml:space="preserve"><value>このMODはインストール時にスキップされました</value></data>
+  <data name="GUIModHasWarnings" xml:space="preserve"><value>このMODには警告があります</value></data>
+  <data name="GUIModHasErrors" xml:space="preserve"><value>このMODにはエラーがあります</value></data>
+  <data name="GUIMissingRequirementsTitle" xml:space="preserve"><value>不足している依存MOD</value></data>
+  <data name="GUIMissingRequirementsMessage" xml:space="preserve"><value>必要な次のMODが見つかりません：
+
+{0}
+
+ダウンロードページをブラウザーで開きますか？</value></data>
+  <data name="GUIMissingRequirementsManual" xml:space="preserve"><value>必要な次のMODが見つからないため、手動でインストールしてください：
+
+{0}</value></data>
+  <data name="GUIOpenExternalLinksTitle" xml:space="preserve"><value>外部リンクを開く</value></data>
+  <data name="GUIOpenExternalLinksMessage" xml:space="preserve"><value>次のURLをブラウザーで開きます：
+
+{0}</value></data>
+  <data name="GUIErrorReason" xml:space="preserve"><value>理由： </value></data>
+  <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>エラーの詳細を保存しました：</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>このFields of MistriaのバージョンはMOMIに対応していません。</value></data>
+  <data name="GUIInstallFatalError" xml:space="preserve"><value>インストールに失敗しました。アーカイブは変更されていません：</value></data>
+  <data name="GUIUninstallFatalError" xml:space="preserve"><value>アンインストールに失敗しました。アーカイブは変更されていません：</value></data>
+  <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve"><value>Fields of Mistriaの場所： </value></data>
+  <data name="GUIMoveUp" xml:space="preserve"><value>ロード順を上へ移動</value></data>
+  <data name="GUIMoveDown" xml:space="preserve"><value>ロード順を下へ移動</value></data>
+  <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>インストールするすべてのModにチェックを入れてください：</value></data>
+</root>

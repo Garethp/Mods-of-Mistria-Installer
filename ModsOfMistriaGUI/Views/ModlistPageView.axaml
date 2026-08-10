@@ -22,10 +22,14 @@
                             </Image.Source>
                         </Image>
                     </MenuItem.Header>
-                    <MenuItem Header="{x:Static lang:Resources.GUIReloadModlist}" Command="{Binding ReloadModlistCommand}" IsEnabled="{Binding !IsInstalling}" />
-                    <MenuItem Header="{x:Static lang:Resources.GUISaveLogFile}" Command="{Binding SaveLogFileCommand}" />
-                    <MenuItem Header="{x:Static lang:Resources.GUIEnableAllMods}" Command="{Binding EnableAllModsCommand}" IsEnabled="{Binding !IsInstalling}" />
-                    <MenuItem Header="{x:Static lang:Resources.GUIDisableAllMods}" Command="{Binding DisableAllModsCommand}" IsEnabled="{Binding !IsInstalling}" />
+                    <MenuItem Header="{Binding Texts.GUIReloadModlist}" Command="{Binding ReloadModlistCommand}" IsEnabled="{Binding !IsInstalling}" />
+                    <MenuItem Header="{Binding Texts.GUISaveLogFile}" Command="{Binding SaveLogFileCommand}" />
+                    <MenuItem Header="{Binding Texts.GUIEnableAllMods}" Command="{Binding EnableAllModsCommand}" IsEnabled="{Binding !IsInstalling}" />
+                    <MenuItem Header="{Binding Texts.GUIDisableAllMods}" Command="{Binding DisableAllModsCommand}" IsEnabled="{Binding !IsInstalling}" />
+                    <Separator />
+                    <MenuItem Header="{Binding Texts.GUILaunchGameDirectly}"
+                              ToggleType="CheckBox"
+                              IsChecked="{Binding LaunchGameDirectly, Mode=TwoWay}" />
                 </MenuItem>
             </Menu>
 
@@ -33,22 +37,20 @@
                 <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
                 <Button Margin="0 0 10 0"
                         Command="{Binding LaunchGameCommand}"
-                        Content="Play" />
+                        Content="{Binding Texts.GUIPlayButtonText}" />
                 <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}"
                         Content="{Binding InstallButtonText}" />
                 <Button Command="{Binding UnInstallModsCommand}"
-                        Content="{x:Static lang:Resources.GUIUninstallButtonText}" />
+                        Content="{Binding Texts.GUIUninstallButtonText}" />
             </WrapPanel>
         </DockPanel>
 
         <DockPanel LastChildFill="True">
             <StackPanel DockPanel.Dock="Top">
                 <!-- Greeting / location info -->
-                <TextBlock Text="{Binding GreetingText}" />
-                <TextBlock></TextBlock>
                 <WrapPanel>
                     <TextBlock Margin="0 0 5 0"
-                               Text="{x:Static lang:Resources.GUIFieldsOfMistriaDetectedLocation}" />
+                               Text="{Binding Texts.GUIFieldsOfMistriaDetectedLocation}" />
                     <TextBlock Text="{Binding MistriaLocation}" />
                 </WrapPanel>
                 <TextBlock Text="{Binding ModsWillBeInstalledText}" />
@@ -59,14 +61,14 @@
 
                 <!-- Profile selector -->
                 <WrapPanel Margin="0 8 0 0" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center" Margin="0 0 6 0" Text="Profile:" />
+                    <TextBlock VerticalAlignment="Center" Margin="0 0 6 0" Text="{Binding Texts.GUIProfileLabel}" />
                     <ComboBox ItemsSource="{Binding Profiles}"
                               SelectedItem="{Binding CurrentProfile, Mode=OneWay}"
                               MinWidth="140"
                               SelectionChanged="OnProfileSelectionChanged" />
-                    <Button Margin="6 0 0 0" ToolTip.Tip="New profile"
+                    <Button Margin="6 0 0 0" ToolTip.Tip="{Binding Texts.GUINewProfile}"
                             Command="{Binding CreateProfileCommand}">+</Button>
-                    <Button Margin="4 0 0 0" ToolTip.Tip="Delete current profile"
+                    <Button Margin="4 0 0 0" ToolTip.Tip="{Binding Texts.GUIDeleteCurrentProfile}"
                             Command="{Binding DeleteCurrentProfileCommand}">-</Button>
                 </WrapPanel>
             </StackPanel>
@@ -86,12 +88,12 @@
                                                 FontSize="10"
                                                 Command="{Binding $parent[ItemsRepeater].DataContext.MoveModUpCommand}"
                                                 CommandParameter="{Binding}"
-                                                ToolTip.Tip="Move up in load order">▲</Button>
+                                                ToolTip.Tip="{Binding Texts.GUIMoveUp}">▲</Button>
                                         <Button Padding="2 0"
                                                 FontSize="10"
                                                 Command="{Binding $parent[ItemsRepeater].DataContext.MoveModDownCommand}"
                                                 CommandParameter="{Binding}"
-                                                ToolTip.Tip="Move down in load order">▼</Button>
+                                                ToolTip.Tip="{Binding Texts.GUIMoveDown}">▼</Button>
                                     </StackPanel>
                                     <!-- Position number -->
                                     <TextBlock Width="24" VerticalAlignment="Center"
@@ -110,7 +112,8 @@
                                             Foreground="White"
                                             CornerRadius="4"
                                             VerticalAlignment="Center"
-                                            ToolTip.Tip="{Binding UpdateTooltip}">↑ Update</Button>
+                                            Content="{Binding Texts.GUIUpdateMod}"
+                                            ToolTip.Tip="{Binding UpdateTooltip}" />
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>

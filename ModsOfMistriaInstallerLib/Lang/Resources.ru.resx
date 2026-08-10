@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
+  <data name="GUILanguageRussian" xml:space="preserve"><value>Русский</value></data>
+  <data name="GUILanguageSystem" xml:space="preserve"><value>Системный</value></data>
+  <data name="GUILanguageEnglish" xml:space="preserve"><value>Английский</value></data>
+  <data name="GUILanguageBulgarian" xml:space="preserve"><value>Болгарский</value></data>
+  <data name="GUILanguageGerman" xml:space="preserve"><value>Немецкий</value></data>
+  <data name="GUILanguageFrench" xml:space="preserve"><value>Французский</value></data>
+  <data name="GUILanguageDutch" xml:space="preserve"><value>Нидерландский</value></data>
+  <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>Португальский (Бразилия)</value></data>
+  <data name="GUILanguageIndonesian" xml:space="preserve"><value>Индонезийский</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>Установщик модов для Мистрии</value></data>
+  <data name="GUILanguageMenu" xml:space="preserve"><value>Язык</value></data>
+  <data name="GUIPlayButtonText" xml:space="preserve"><value>Играть</value></data>
+  <data name="GUIProfileLabel" xml:space="preserve"><value>Профиль:</value></data>
+  <data name="GUIInstallInProgress" xml:space="preserve"><value>Установка модов...</value></data>
+  <data name="GUIInstallButtonText" xml:space="preserve"><value>Установить</value></data>
+  <data name="GUIUninstallCompleteText" xml:space="preserve"><value>Удаление завершено</value></data>
+  <data name="GUIArchiveNoInstallation" xml:space="preserve"><value>Установленные моды не обнаружены. Выберите моды и нажмите «Установить».</value></data>
+  <data name="GUIArchiveMatch" xml:space="preserve"><value>Обнаружены установленные моды: {0}.</value></data>
+  <data name="GUILocationGameDetected" xml:space="preserve"><value>Установка Fields of Mistria обнаружена.</value></data>
+  <data name="GUILocationNoModsFolder" xml:space="preserve"><value>Папка модов не обнаружена. Выберите её или создайте автоматически.</value></data>
+  <data name="GUILocationModsDetected" xml:space="preserve"><value>Папка модов обнаружена.</value></data>
+  <data name="GUISavingAtlases" xml:space="preserve"><value>Сохранение атласов</value></data>
+  <data name="GUIWritingGameArchive" xml:space="preserve"><value>Запись архива игры</value></data>
+  <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>Подготовка слоя GML</value></data>
+  <data name="GUIPhasePreparing" xml:space="preserve"><value>Подготовка</value></data>
+  <data name="GUIPhaseInstallingImages" xml:space="preserve"><value>Установка изображений</value></data>
+  <data name="GUIPhaseInstallingToml" xml:space="preserve"><value>Установка TOML</value></data>
+  <data name="GUIPhaseInstallingFonts" xml:space="preserve"><value>Установка шрифтов</value></data>
+  <data name="GUIPhaseInstallingJson" xml:space="preserve"><value>Установка JSON</value></data>
+  <data name="GUIPhaseInstallingXml" xml:space="preserve"><value>Установка XML</value></data>
+  <data name="GUIPhaseInstallingMist" xml:space="preserve"><value>Установка MIST</value></data>
+  <data name="GUIPhaseInstallingOutfits" xml:space="preserve"><value>Установка одежды</value></data>
+  <data name="GUIPhaseInstallingFurniture" xml:space="preserve"><value>Установка мебели</value></data>
+  <data name="CoreInstallCompleted" xml:space="preserve"><value>Установка завершена</value></data>
+  <data name="CoreInstallSummary" xml:space="preserve"><value>Установлено модов: {0}</value></data>
+  <data name="CoreInstallSummaryWithSkipped" xml:space="preserve"><value>Установлено модов: {0}; пропущено: {1}</value></data>
+  <data name="GUILanguageSimplifiedChinese" xml:space="preserve"><value>Упрощённый китайский</value></data>
+  <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>Традиционный китайский</value></data>
+  <data name="GUILanguageKorean" xml:space="preserve"><value>Корейский</value></data>
+  <data name="GUILanguageJapanese" xml:space="preserve"><value>Японский</value></data>
+  <data name="GUILanguageSpanish" xml:space="preserve"><value>Испанский</value></data>
+  <data name="GUISetupMistriaLocation" xml:space="preserve"><value>Расположение Fields of Mistria:</value></data>
+  <data name="GUISetupModsLocation" xml:space="preserve"><value>Папка модов:</value></data>
+  <data name="GUICanCreateModsFolder" xml:space="preserve"><value>Папка модов не найдена, но её можно создать автоматически.</value></data>
+  <data name="GUIConfirmSaveProfileTitle" xml:space="preserve"><value>Сохранить профиль</value></data>
+  <data name="GUIConfirmSaveProfileMessage" xml:space="preserve"><value>Сохранить изменения профиля «{0}» перед переключением?</value></data>
+  <data name="GUIConfirmDeleteProfileTitle" xml:space="preserve"><value>Удалить профиль</value></data>
+  <data name="GUIConfirmDeleteProfileMessage" xml:space="preserve"><value>Удалить профиль «{0}»? Это действие нельзя отменить.</value></data>
+  <data name="GUIProfileName" xml:space="preserve"><value>Профиль {0}</value></data>
+  <data name="GUINewProfile" xml:space="preserve"><value>Новый профиль</value></data>
+  <data name="GUIDeleteCurrentProfile" xml:space="preserve"><value>Удалить текущий профиль</value></data>
+  <data name="GUIEnableAllMods" xml:space="preserve"><value>Включить все моды</value></data>
+  <data name="GUIDisableAllMods" xml:space="preserve"><value>Отключить все моды</value></data>
+  <data name="GUIReloadModlist" xml:space="preserve"><value>Обновить список модов</value></data>
+  <data name="GUISaveLogFile" xml:space="preserve"><value>Сохранить файл журнала</value></data>
+  <data name="GUIUninstallButtonText" xml:space="preserve"><value>Удалить все</value></data>
+  <data name="GUIUpdateMod" xml:space="preserve"><value>Обновить</value></data>
+  <data name="GUILaunchGameDirectly" xml:space="preserve"><value>Запускать игру напрямую</value></data>
+  <data name="GUIGitHubButtonText" xml:space="preserve"><value>Открыть GitHub</value></data>
+  <data name="GUIOpenGameExecutable" xml:space="preserve"><value>Открыть FieldsOfMistria.exe</value></data>
+  <data name="GUIOpenModsFolder" xml:space="preserve"><value>Открыть папку модов</value></data>
+  <data name="GUIInstallFailedForMod" xml:space="preserve"><value>Не удалось установить этот мод</value></data>
+  <data name="GUIModInstalled" xml:space="preserve"><value>Установлен успешно.</value></data>
+  <data name="GUIModSkipped" xml:space="preserve"><value>Этот мод пропущен при установке</value></data>
+  <data name="GUIModHasWarnings" xml:space="preserve"><value>У этого мода есть предупреждения</value></data>
+  <data name="GUIModHasErrors" xml:space="preserve"><value>У этого мода есть ошибки</value></data>
+  <data name="GUIMissingRequirementsTitle" xml:space="preserve"><value>Отсутствующие зависимости</value></data>
+  <data name="GUIMissingRequirementsMessage" xml:space="preserve"><value>Не найдены следующие необходимые моды:
+
+{0}
+
+Открыть страницы загрузки в браузере?</value></data>
+  <data name="GUIMissingRequirementsManual" xml:space="preserve"><value>Следующие необходимые моды не найдены и должны быть установлены вручную:
+
+{0}</value></data>
+  <data name="GUIOpenExternalLinksTitle" xml:space="preserve"><value>Открыть внешние ссылки</value></data>
+  <data name="GUIOpenExternalLinksMessage" xml:space="preserve"><value>Следующие URL будут открыты в браузере:
+
+{0}</value></data>
+  <data name="GUIErrorReason" xml:space="preserve"><value>Причина: </value></data>
+  <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>Подробности ошибки сохранены в:</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Эта версия Fields of Mistria не поддерживается MOMI.</value></data>
+  <data name="GUIInstallFatalError" xml:space="preserve"><value>Установка не удалась; архив не изменён:</value></data>
+  <data name="GUIUninstallFatalError" xml:space="preserve"><value>Удаление не удалось; архив не изменён:</value></data>
+  <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve"><value>Fields of Mistria обнаружена в: </value></data>
+  <data name="GUIMoveUp" xml:space="preserve"><value>Переместить выше в порядке загрузки</value></data>
+  <data name="GUIMoveDown" xml:space="preserve"><value>Переместить ниже в порядке загрузки</value></data>
+  <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>Установите флажки для всех модов, которые хотите установить:</value></data>
+</root>

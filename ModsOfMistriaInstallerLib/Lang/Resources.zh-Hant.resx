@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
+  <data name="GUILanguageSimplifiedChinese" xml:space="preserve"><value>簡體中文</value></data>
+  <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>繁體中文</value></data>
+  <data name="GUILanguageSystem" xml:space="preserve"><value>系統預設</value></data>
+  <data name="GUILanguageEnglish" xml:space="preserve"><value>英語</value></data>
+  <data name="GUILanguageBulgarian" xml:space="preserve"><value>保加利亞語</value></data>
+  <data name="GUILanguageGerman" xml:space="preserve"><value>德語</value></data>
+  <data name="GUILanguageFrench" xml:space="preserve"><value>法語</value></data>
+  <data name="GUILanguageDutch" xml:space="preserve"><value>荷蘭語</value></data>
+  <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>巴西葡萄牙語</value></data>
+  <data name="GUILanguageRussian" xml:space="preserve"><value>俄語</value></data>
+  <data name="GUILanguageIndonesian" xml:space="preserve"><value>印度尼西亞語</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>Fields of Mistria 模組安裝器</value></data>
+  <data name="GUILanguageMenu" xml:space="preserve"><value>語言</value></data>
+  <data name="GUIPlayButtonText" xml:space="preserve"><value>開始遊戲</value></data>
+  <data name="GUIProfileLabel" xml:space="preserve"><value>設定檔：</value></data>
+  <data name="GUIInstallButtonText" xml:space="preserve"><value>安裝</value></data>
+  <data name="GUIInstallInProgress" xml:space="preserve"><value>正在安裝模組……</value></data>
+  <data name="GUIUninstallCompleteText" xml:space="preserve"><value>解除安裝完成</value></data>
+  <data name="GUIArchiveNoInstallation" xml:space="preserve"><value>未偵測到已安裝的模組。選擇模組並按下「安裝」。</value></data>
+  <data name="GUIArchiveMatch" xml:space="preserve"><value>偵測到已安裝的模組：{0}。</value></data>
+  <data name="GUILocationGameDetected" xml:space="preserve"><value>已偵測到 Fields of Mistria 安裝。</value></data>
+  <data name="GUILocationNoModsFolder" xml:space="preserve"><value>未偵測到模組資料夾。請選擇資料夾，或自動建立。</value></data>
+  <data name="GUILocationModsDetected" xml:space="preserve"><value>已偵測到模組資料夾。</value></data>
+  <data name="GUISavingAtlases" xml:space="preserve"><value>正在儲存圖集</value></data>
+  <data name="GUIWritingGameArchive" xml:space="preserve"><value>正在寫入遊戲封存檔</value></data>
+  <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>正在準備 GML 層</value></data>
+  <data name="GUIPhasePreparing" xml:space="preserve"><value>準備中</value></data>
+  <data name="GUIPhaseInstallingImages" xml:space="preserve"><value>正在安裝圖片</value></data>
+  <data name="GUIPhaseInstallingToml" xml:space="preserve"><value>正在安裝 TOML</value></data>
+  <data name="GUIPhaseInstallingFonts" xml:space="preserve"><value>正在安裝字型</value></data>
+  <data name="GUIPhaseInstallingJson" xml:space="preserve"><value>正在安裝 JSON</value></data>
+  <data name="GUIPhaseInstallingXml" xml:space="preserve"><value>正在安裝 XML</value></data>
+  <data name="GUIPhaseInstallingMist" xml:space="preserve"><value>正在安裝 MIST</value></data>
+  <data name="GUIPhaseInstallingOutfits" xml:space="preserve"><value>正在安裝服裝</value></data>
+  <data name="GUIPhaseInstallingFurniture" xml:space="preserve"><value>正在安裝家具</value></data>
+  <data name="CoreInstallCompleted" xml:space="preserve"><value>安裝完成</value></data>
+  <data name="CoreInstallSummary" xml:space="preserve"><value>已安裝模組：{0}</value></data>
+  <data name="CoreInstallSummaryWithSkipped" xml:space="preserve"><value>已安裝模組：{0}；略過：{1}</value></data>
+  <data name="GUILanguageKorean" xml:space="preserve"><value>韓語</value></data>
+  <data name="GUILanguageJapanese" xml:space="preserve"><value>日語</value></data>
+  <data name="GUILanguageSpanish" xml:space="preserve"><value>西班牙語</value></data>
+  <data name="GUISetupMistriaLocation" xml:space="preserve"><value>Fields of Mistria 位置：</value></data>
+  <data name="GUISetupModsLocation" xml:space="preserve"><value>模組資料夾：</value></data>
+  <data name="GUICanCreateModsFolder" xml:space="preserve"><value>未偵測到模組資料夾，但可以自動建立。</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>此 Fields of Mistria 版本不受 MOMI 支援。</value></data>
+  <data name="GUIConfirmSaveProfileTitle" xml:space="preserve"><value>儲存設定檔</value></data>
+  <data name="GUIConfirmSaveProfileMessage" xml:space="preserve"><value>切換前要儲存設定檔「{0}」的變更嗎？</value></data>
+  <data name="GUIConfirmDeleteProfileTitle" xml:space="preserve"><value>刪除設定檔</value></data>
+  <data name="GUIConfirmDeleteProfileMessage" xml:space="preserve"><value>要刪除設定檔「{0}」嗎？此操作無法復原。</value></data>
+  <data name="GUIProfileName" xml:space="preserve"><value>設定檔 {0}</value></data>
+  <data name="GUINewProfile" xml:space="preserve"><value>新增設定檔</value></data>
+  <data name="GUIDeleteCurrentProfile" xml:space="preserve"><value>刪除目前設定檔</value></data>
+  <data name="GUIEnableAllMods" xml:space="preserve"><value>啟用所有模組</value></data>
+  <data name="GUIDisableAllMods" xml:space="preserve"><value>停用所有模組</value></data>
+  <data name="GUIReloadModlist" xml:space="preserve"><value>重新載入模組清單</value></data>
+  <data name="GUISaveLogFile" xml:space="preserve"><value>儲存記錄檔</value></data>
+  <data name="GUIUninstallButtonText" xml:space="preserve"><value>解除安裝全部</value></data>
+  <data name="GUIUpdateMod" xml:space="preserve"><value>更新</value></data>
+  <data name="GUILaunchGameDirectly" xml:space="preserve"><value>直接啟動遊戲</value></data>
+  <data name="GUIGitHubButtonText" xml:space="preserve"><value>開啟 GitHub</value></data>
+  <data name="GUIInstallFailedForMod" xml:space="preserve"><value>此模組安裝失敗</value></data>
+  <data name="GUIModInstalled" xml:space="preserve"><value>安裝成功。</value></data>
+  <data name="GUIModSkipped" xml:space="preserve"><value>安裝時略過此模組</value></data>
+  <data name="GUIModHasWarnings" xml:space="preserve"><value>此模組有警告</value></data>
+  <data name="GUIModHasErrors" xml:space="preserve"><value>此模組有錯誤</value></data>
+  <data name="GUIErrorReason" xml:space="preserve"><value>原因： </value></data>
+  <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>錯誤詳細資料已儲存至：</value></data>
+  <data name="GUIInstallFatalError" xml:space="preserve"><value>安裝失敗；封存檔未變更：</value></data>
+  <data name="GUIUninstallFatalError" xml:space="preserve"><value>解除安裝失敗；封存檔未變更：</value></data>
+  <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve"><value>Fields of Mistria 位置： </value></data>
+  <data name="GUIMoveUp" xml:space="preserve"><value>在載入順序中上移</value></data>
+  <data name="GUIMoveDown" xml:space="preserve"><value>在載入順序中下移</value></data>
+  <data name="GUIMissingRequirementsTitle" xml:space="preserve"><value>缺少相依模組</value></data>
+  <data name="GUIMissingRequirementsMessage" xml:space="preserve"><value>找不到以下必要模組：
+
+{0}
+
+要在瀏覽器中開啟下載頁面嗎？</value></data>
+  <data name="GUIMissingRequirementsManual" xml:space="preserve"><value>找不到以下必要模組，需要手動安裝：
+
+{0}</value></data>
+  <data name="GUIOpenExternalLinksTitle" xml:space="preserve"><value>開啟外部連結</value></data>
+  <data name="GUIOpenExternalLinksMessage" xml:space="preserve"><value>將在瀏覽器中開啟以下網址：
+
+{0}</value></data>
+  <data name="GUIOpenGameExecutable" xml:space="preserve"><value>開啟 FieldsOfMistria.exe</value></data>
+  <data name="GUIOpenModsFolder" xml:space="preserve"><value>開啟模組資料夾</value></data>
+  <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>勾選所有想要安裝的模組：</value></data>
+</root>

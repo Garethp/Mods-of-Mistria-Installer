@@ -97,7 +97,7 @@ public class ModInstaller
         var gmlMods = mods.Select(GmlModCollector.Collect).OfType<GmlModCode>().ToList();
         if (gmlMods.Count > 0)
         {
-            phase("", "Preparing GML layer");
+            phase("", LocalizedPhase("GUIPreparingGmlLayer"));
             try
             {
                 plan = StageGmlLayer(store, gmlMods, gmlOptions, gateMode);
@@ -182,10 +182,10 @@ public class ModInstaller
             reportStatus($"Finished {mod.GetName()}", modTimer.Elapsed.ToString());
         }
 
-        phase("", "Saving atlases");
+        phase("", LocalizedPhase("GUISavingAtlases"));
         atlasUtils.Flush();
 
-        phase("", "Writing game archive");
+        phase("", LocalizedPhase("GUIWritingGameArchive"));
             store.Commit(installMods.Select(mod => new InstalledModState(mod.GetId(), mod.GetVersion())));
 
         // After the archive commits, so the Mods tab never describes an
@@ -262,7 +262,7 @@ public class ModInstaller
         var modName = mod.GetName();
 
         // 0. Expand momi/ compact definitions into virtual overlay files
-        reportPhase(modName, "Preparing");
+        reportPhase(modName, LocalizedPhase("GUIPhasePreparing"));
         var generated = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         generatedInformation.Merge(new OutfitGenerator().Generate(mod));
         
@@ -284,7 +284,7 @@ public class ModInstaller
         generatedInformation.Merge(new TOMLCollector().Collect(effectiveMod));
         
         // 1. Pack images into atlases first so IDs are ready for TOML
-        reportPhase(modName, "Installing Images");
+        reportPhase(modName, LocalizedPhase("GUIPhaseInstallingImages"));
         new ImageInstaller(fileNameUIDMapping, atlasUtils, _fileModifier)
             .Install(effectiveMod, generatedInformation, reportStatus);
 
@@ -292,40 +292,43 @@ public class ModInstaller
             .Install(effectiveMod, generatedInformation, reportStatus);
 
         // 2. Install TOML files (uses IDs populated above)
-        reportPhase(modName, "Installing TOML");
+        reportPhase(modName, LocalizedPhase("GUIPhaseInstallingToml"));
         new TOMLInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, generatedInformation, reportStatus);
 
         // TOMLInstaller installs the font metadata, while this step installs
         // the binary .ttf required by the game's asset loader.
-        reportPhase(modName, "Installing Fonts");
+        reportPhase(modName, LocalizedPhase("GUIPhaseInstallingFonts"));
         new FontInstaller(_fileModifier)
             .Install(effectiveMod, reportStatus);
 
         // 3. Install JSON files
-        reportPhase(modName, "Installing JSON");
+        reportPhase(modName, LocalizedPhase("GUIPhaseInstallingJson"));
         new JSONInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, generatedInformation, reportStatus);
 
         // 4. Install XML files
-        reportPhase(modName, "Installing XML");
+        reportPhase(modName, LocalizedPhase("GUIPhaseInstallingXml"));
         new XMLInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, generatedInformation, reportStatus);
 
         // 5. Install MIST files (overwrite)
-        reportPhase(modName, "Installing Mist");
+        reportPhase(modName, LocalizedPhase("GUIPhaseInstallingMist"));
         new MISTInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, generatedInformation, reportStatus);
 
         // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
-        reportPhase(modName, "Installing Outfits");
+        reportPhase(modName, LocalizedPhase("GUIPhaseInstallingOutfits"));
         new OutfitInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, generatedInformation, reportStatus);
         
-        reportPhase(modName, "Installing Furniture");
+        reportPhase(modName, LocalizedPhase("GUIPhaseInstallingFurniture"));
         new FurnitureInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, generatedInformation, reportStatus);
         
         atlasUtils.SemiFlush();
     }
+
+    private static string LocalizedPhase(string key) =>
+        Resources.ResourceManager.GetString(key, Resources.Culture) ?? key;
 }

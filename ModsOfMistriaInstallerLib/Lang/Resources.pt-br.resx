@@ -438,4 +438,74 @@
   <data name="GUIUninstallingText" xml:space="preserve">
     <value>Desinstalando</value>
   </data>
+  <data name="GUIPlayButtonText" xml:space="preserve"><value>Jogar</value></data>
+  <data name="GUIProfileLabel" xml:space="preserve"><value>Perfil:</value></data>
+  <data name="GUILaunchGameDirectly" xml:space="preserve"><value>Iniciar o jogo diretamente</value></data>
+  <data name="GUIGitHubButtonText" xml:space="preserve"><value>Abrir GitHub</value></data>
+  <data name="GUIInstallFailedForMod" xml:space="preserve"><value>Falha ao instalar este mod</value></data>
+  <data name="GUILanguageMenu" xml:space="preserve"><value>Idioma</value></data>
+  <data name="GUILanguageSystem" xml:space="preserve"><value>Padrão do sistema</value></data>
+  <data name="GUILanguageEnglish" xml:space="preserve"><value>Inglês</value></data>
+  <data name="GUILanguageBulgarian" xml:space="preserve"><value>Búlgaro</value></data>
+  <data name="GUILanguageGerman" xml:space="preserve"><value>Alemão</value></data>
+  <data name="GUILanguageFrench" xml:space="preserve"><value>Francês</value></data>
+  <data name="GUILanguageDutch" xml:space="preserve"><value>Holandês</value></data>
+  <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>Português (Brasil)</value></data>
+  <data name="GUIUpdateAvailable" xml:space="preserve"><value>MOMI {0} está disponível.</value></data>
+  <data name="GUINewProfile" xml:space="preserve"><value>Novo perfil</value></data>
+  <data name="GUIDeleteCurrentProfile" xml:space="preserve"><value>Excluir perfil atual</value></data>
+  <data name="GUIMoveUp" xml:space="preserve"><value>Mover para cima na ordem de carregamento</value></data>
+  <data name="GUIMoveDown" xml:space="preserve"><value>Mover para baixo na ordem de carregamento</value></data>
+  <data name="GUIUpdateMod" xml:space="preserve"><value>Atualizar</value></data>
+  <data name="GUIModInstalled" xml:space="preserve"><value>Instalado com sucesso.</value></data>
+  <data name="GUIModSkipped" xml:space="preserve"><value>Este mod foi ignorado durante a instalação</value></data>
+  <data name="GUIInstallFatalError" xml:space="preserve"><value>Falha na instalação; nenhuma alteração foi feita no arquivo:</value></data>
+  <data name="GUIUninstallFatalError" xml:space="preserve"><value>Falha na desinstalação; nenhuma alteração foi feita no arquivo:</value></data>
+  <data name="GUIConfirmSaveProfileTitle" xml:space="preserve"><value>Salvar perfil</value></data>
+  <data name="GUIConfirmSaveProfileMessage" xml:space="preserve"><value>Salvar as alterações do perfil "{0}" antes de trocar?</value></data>
+  <data name="GUIConfirmDeleteProfileTitle" xml:space="preserve"><value>Excluir perfil</value></data>
+  <data name="GUIConfirmDeleteProfileMessage" xml:space="preserve"><value>Excluir o perfil "{0}"? Esta ação não pode ser desfeita.</value></data>
+  <data name="GUIProfileName" xml:space="preserve"><value>Perfil {0}</value></data>
+  <data name="GUIMissingRequirementsTitle" xml:space="preserve"><value>Dependências ausentes</value></data>
+  <data name="GUIMissingRequirementsMessage" xml:space="preserve"><value>Os seguintes mods necessários não foram encontrados:
+
+{0}
+
+Abrir as páginas de download no navegador?</value></data>
+  <data name="GUIOpenExternalLinksTitle" xml:space="preserve"><value>Abrir links externos</value></data>
+  <data name="GUIOpenExternalLinksMessage" xml:space="preserve"><value>As seguintes URLs serão abertas no navegador:
+
+{0}</value></data>
+  <data name="GUIMissingRequirementsManual" xml:space="preserve"><value>Os seguintes mods necessários não foram encontrados e precisam ser instalados manualmente:
+
+{0}</value></data>
+  <data name="GUIErrorReason" xml:space="preserve"><value>Motivo: </value></data>
+  <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>Detalhes do erro salvos em:</value></data>
+  <data name="GUIOpenGameExecutable" xml:space="preserve"><value>Abrir FieldsOfMistria.exe</value></data>
+  <data name="GUIOpenModsFolder" xml:space="preserve"><value>Abrir pasta de mods</value></data>
+  <data name="GUILocationModsDetected" xml:space="preserve"><value>Pasta de mods detectada.</value></data>
+  <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>Preparando a camada GML</value></data>
+  <data name="GUIArchiveNoInstallation" xml:space="preserve"><value>Nenhum mod instalado foi detectado. Selecione os mods e clique em “Instalar”.</value></data>
+  <data name="GUIArchiveMatch" xml:space="preserve"><value>Mods instalados detectados: {0}.</value></data>
+  <data name="GUILocationGameDetected" xml:space="preserve"><value>Instalação de Fields of Mistria detectada.</value></data>
+  <data name="GUILocationNoModsFolder" xml:space="preserve"><value>Nenhuma pasta de mods foi detectada. Selecione uma ou crie-a automaticamente.</value></data>
+  <data name="GUISavingAtlases" xml:space="preserve"><value>Salvando atlas</value></data>
+  <data name="GUIWritingGameArchive" xml:space="preserve"><value>Gravando o arquivo do jogo</value></data>
+  <data name="GUIPhasePreparing" xml:space="preserve"><value>Preparando</value></data>
+  <data name="GUIPhaseInstallingImages" xml:space="preserve"><value>Instalando imagens</value></data>
+  <data name="GUIPhaseInstallingToml" xml:space="preserve"><value>Instalando TOML</value></data>
+  <data name="GUIPhaseInstallingFonts" xml:space="preserve"><value>Instalando fontes</value></data>
+  <data name="GUIPhaseInstallingJson" xml:space="preserve"><value>Instalando JSON</value></data>
+  <data name="GUIPhaseInstallingXml" xml:space="preserve"><value>Instalando XML</value></data>
+  <data name="GUIPhaseInstallingMist" xml:space="preserve"><value>Instalando MIST</value></data>
+  <data name="GUIPhaseInstallingOutfits" xml:space="preserve"><value>Instalando roupas</value></data>
+  <data name="GUIPhaseInstallingFurniture" xml:space="preserve"><value>Instalando móveis</value></data>
+  <data name="GUILanguageRussian" xml:space="preserve"><value>Russo</value></data>
+  <data name="GUILanguageIndonesian" xml:space="preserve"><value>Indonésio</value></data>
+  <data name="GUILanguageSimplifiedChinese" xml:space="preserve"><value>Chinês simplificado</value></data>
+  <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>Chinês tradicional</value></data>
+  <data name="GUILanguageKorean" xml:space="preserve"><value>Coreano</value></data>
+  <data name="GUILanguageJapanese" xml:space="preserve"><value>Japonês</value></data>
+  <data name="GUILanguageSpanish" xml:space="preserve"><value>Espanhol</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Esta versão de Fields of Mistria não é compatível com o MOMI.</value></data>
 </root>

@@ -546,4 +546,73 @@
   <data name="GUIErrorWrongMistriaVersion" xml:space="preserve">
     <value>It looks like the Fields of Mistria Folder that has been selected is correct, but there was no assets.zip file in there. This version of the installer does not work with old versions of Fields of Mistria. Check if your installation is correct and make sure you have the latest version of Fields of Mistria.</value>
   </data>
+  <data name="GUIPlayButtonText" xml:space="preserve"><value>Play</value></data>
+  <data name="GUIProfileLabel" xml:space="preserve"><value>Profile:</value></data>
+  <data name="GUILaunchGameDirectly" xml:space="preserve"><value>Launch game directly</value></data>
+  <data name="GUIGitHubButtonText" xml:space="preserve"><value>Open GitHub</value></data>
+  <data name="GUIInstallFailedForMod" xml:space="preserve"><value>Installation failed for this mod</value></data>
+  <data name="GUILanguageMenu" xml:space="preserve"><value>Language</value></data>
+  <data name="GUILanguageSystem" xml:space="preserve"><value>System default</value></data>
+  <data name="GUILanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="GUILanguageBulgarian" xml:space="preserve"><value>Bulgarian</value></data>
+  <data name="GUILanguageGerman" xml:space="preserve"><value>Deutsch</value></data>
+  <data name="GUILanguageFrench" xml:space="preserve"><value>Français</value></data>
+  <data name="GUILanguageDutch" xml:space="preserve"><value>Nederlands</value></data>
+  <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>Português (Brasil)</value></data>
+  <data name="GUIUpdateAvailable" xml:space="preserve"><value>MOMI {0} is available.</value></data>
+  <data name="GUINewProfile" xml:space="preserve"><value>New profile</value></data>
+  <data name="GUIDeleteCurrentProfile" xml:space="preserve"><value>Delete current profile</value></data>
+  <data name="GUIMoveUp" xml:space="preserve"><value>Move up in load order</value></data>
+  <data name="GUIMoveDown" xml:space="preserve"><value>Move down in load order</value></data>
+  <data name="GUIUpdateMod" xml:space="preserve"><value>Update</value></data>
+  <data name="GUIConfirmSaveProfileTitle" xml:space="preserve"><value>Save Profile</value></data>
+  <data name="GUIConfirmSaveProfileMessage" xml:space="preserve"><value>Save changes to profile "{0}" before switching?</value></data>
+  <data name="GUIConfirmDeleteProfileTitle" xml:space="preserve"><value>Delete Profile</value></data>
+  <data name="GUIConfirmDeleteProfileMessage" xml:space="preserve"><value>Delete profile "{0}"? This cannot be undone.</value></data>
+  <data name="GUIProfileName" xml:space="preserve"><value>Profile {0}</value></data>
+  <data name="GUIMissingRequirementsTitle" xml:space="preserve"><value>Missing Requirements</value></data>
+  <data name="GUIMissingRequirementsMessage" xml:space="preserve"><value>The following required mods could not be found:
+
+{0}
+
+Open download page(s) in browser?</value></data>
+  <data name="GUIOpenExternalLinksTitle" xml:space="preserve"><value>Open External Links</value></data>
+  <data name="GUIOpenExternalLinksMessage" xml:space="preserve"><value>You are about to open the following URL(s) in your browser:
+
+{0}</value></data>
+  <data name="GUIMissingRequirementsManual" xml:space="preserve"><value>The following required mods could not be found and must be installed manually:
+
+{0}</value></data>
+  <data name="GUIErrorReason" xml:space="preserve"><value>Reason: </value></data>
+  <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>Error details saved to:</value></data>
+  <data name="GUIOpenGameExecutable" xml:space="preserve"><value>Open FieldsOfMistria.exe</value></data>
+  <data name="GUIOpenModsFolder" xml:space="preserve"><value>Open Mods Folder</value></data>
+  <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>No game archive detected.</value></data>
+  <data name="GUIArchiveNoInstallation" xml:space="preserve"><value>No installed mods were detected. Select mods and press Install to install them.</value></data>
+  <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>MOMI installation detected, but its recorded state is unavailable.</value></data>
+  <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>MOMI installation detected, but installed mod versions are unavailable.</value></data>
+  <data name="GUIArchiveMatch" xml:space="preserve"><value>Installed mods detected: {0}.</value></data>
+  <data name="GUIArchiveDifferent" xml:space="preserve"><value>The installed mod set or version differs from this profile. Recommended: Uninstall, then Install. Install can also rebuild from the pristine backup.</value></data>
+  <data name="GUILocationGameDetected" xml:space="preserve"><value>Fields of Mistria installation detected.</value></data>
+  <data name="GUILocationNoModsFolder" xml:space="preserve"><value>No mods folder was detected. Select one or create it automatically.</value></data>
+  <data name="GUISavingAtlases" xml:space="preserve"><value>Saving atlases</value></data>
+  <data name="GUIWritingGameArchive" xml:space="preserve"><value>Writing game archive</value></data>
+  <data name="GUIPhasePreparing" xml:space="preserve"><value>Preparing</value></data>
+  <data name="GUIPhaseInstallingImages" xml:space="preserve"><value>Installing Images</value></data>
+  <data name="GUIPhaseInstallingToml" xml:space="preserve"><value>Installing TOML</value></data>
+  <data name="GUIPhaseInstallingFonts" xml:space="preserve"><value>Installing Fonts</value></data>
+  <data name="GUIPhaseInstallingJson" xml:space="preserve"><value>Installing JSON</value></data>
+  <data name="GUIPhaseInstallingXml" xml:space="preserve"><value>Installing XML</value></data>
+  <data name="GUIPhaseInstallingMist" xml:space="preserve"><value>Installing Mist</value></data>
+  <data name="GUIPhaseInstallingOutfits" xml:space="preserve"><value>Installing Outfits</value></data>
+  <data name="GUIPhaseInstallingFurniture" xml:space="preserve"><value>Installing Furniture</value></data>
+  <data name="GUILanguageRussian" xml:space="preserve"><value>Russian</value></data>
+  <data name="GUILanguageIndonesian" xml:space="preserve"><value>Indonesian</value></data>
+  <data name="GUILanguageSimplifiedChinese" xml:space="preserve"><value>Simplified Chinese</value></data>
+  <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>Traditional Chinese</value></data>
+  <data name="GUILanguageKorean" xml:space="preserve"><value>Korean</value></data>
+  <data name="GUILanguageJapanese" xml:space="preserve"><value>Japanese</value></data>
+  <data name="GUILanguageSpanish" xml:space="preserve"><value>Spanish</value></data>
+  <data name="GUILocationModsDetected" xml:space="preserve"><value>Mods folder detected.</value></data>
+  <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>Preparing GML layer</value></data>
 </root>

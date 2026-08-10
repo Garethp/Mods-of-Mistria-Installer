@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaGUI.Services;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 
 namespace Garethp.ModsOfMistriaGUI.Models;
@@ -18,6 +19,8 @@ public enum ModInstallState
 
 public partial class ModModel : ObservableObject
 {
+    public LocalizationService Localization => LocalizationService.Instance;
+    public LocalizedTexts Texts => LocalizedTexts.Instance;
     public readonly IMod Mod;
     
     private bool _enabledBacking;
@@ -33,6 +36,7 @@ public partial class ModModel : ObservableObject
     {
         Mod = mod;
         _enabledBacking = mod.IsInstalled();
+        Localization.LanguageChanged += (_, _) => OnPropertyChanged(nameof(UpdateTooltip));
     }
 
     public ModModel()
@@ -115,8 +119,8 @@ public partial class ModModel : ObservableObject
 
     public string UpdateTooltip =>
         LatestVersion is null
-            ? "Update available"
-            : $"Update available: v{LatestVersion} — click to open download page";
+            ? Texts.GUIUpdateMod
+            : $"{Texts.GUIUpdateMod}: v{LatestVersion}";
 
     [RelayCommand]
     private void OpenUpdateUrl()

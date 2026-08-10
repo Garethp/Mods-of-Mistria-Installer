@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
+  <data name="GUILanguageSpanish" xml:space="preserve"><value>Español</value></data>
+  <data name="GUILanguageSystem" xml:space="preserve"><value>Predeterminado del sistema</value></data>
+  <data name="GUILanguageEnglish" xml:space="preserve"><value>Inglés</value></data>
+  <data name="GUILanguageBulgarian" xml:space="preserve"><value>Búlgaro</value></data>
+  <data name="GUILanguageGerman" xml:space="preserve"><value>Alemán</value></data>
+  <data name="GUILanguageFrench" xml:space="preserve"><value>Francés</value></data>
+  <data name="GUILanguageDutch" xml:space="preserve"><value>Neerlandés</value></data>
+  <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>Portugués (Brasil)</value></data>
+  <data name="GUILanguageJapanese" xml:space="preserve"><value>Japonés</value></data>
+  <data name="GUILanguageKorean" xml:space="preserve"><value>Coreano</value></data>
+  <data name="GUILanguageSimplifiedChinese" xml:space="preserve"><value>Chino simplificado</value></data>
+  <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>Chino tradicional</value></data>
+  <data name="GUILanguageRussian" xml:space="preserve"><value>Ruso</value></data>
+  <data name="GUILanguageIndonesian" xml:space="preserve"><value>Indonesio</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>Instalador de mods de Fields of Mistria</value></data>
+  <data name="GUILanguageMenu" xml:space="preserve"><value>Idioma</value></data>
+  <data name="GUIPlayButtonText" xml:space="preserve"><value>Jugar</value></data>
+  <data name="GUIProfileLabel" xml:space="preserve"><value>Perfil:</value></data>
+  <data name="GUIInstallButtonText" xml:space="preserve"><value>Instalar</value></data>
+  <data name="GUIInstallInProgress" xml:space="preserve"><value>Instalando mods...</value></data>
+  <data name="GUIUninstallCompleteText" xml:space="preserve"><value>Desinstalación completada</value></data>
+  <data name="GUIArchiveNoInstallation" xml:space="preserve"><value>No se detectaron mods instalados. Selecciona mods y pulsa «Instalar».</value></data>
+  <data name="GUIArchiveMatch" xml:space="preserve"><value>Mods instalados detectados: {0}.</value></data>
+  <data name="GUILocationGameDetected" xml:space="preserve"><value>Se ha detectado la instalación de Fields of Mistria.</value></data>
+  <data name="GUILocationNoModsFolder" xml:space="preserve"><value>No se detectó ninguna carpeta de mods. Selecciona una o créala automáticamente.</value></data>
+  <data name="GUILocationModsDetected" xml:space="preserve"><value>Carpeta de mods detectada.</value></data>
+  <data name="GUISavingAtlases" xml:space="preserve"><value>Guardando atlas</value></data>
+  <data name="GUIWritingGameArchive" xml:space="preserve"><value>Escribiendo el archivo del juego</value></data>
+  <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>Preparando la capa GML</value></data>
+  <data name="GUIPhasePreparing" xml:space="preserve"><value>Preparando</value></data>
+  <data name="GUIPhaseInstallingImages" xml:space="preserve"><value>Instalando imágenes</value></data>
+  <data name="GUIPhaseInstallingToml" xml:space="preserve"><value>Instalando TOML</value></data>
+  <data name="GUIPhaseInstallingFonts" xml:space="preserve"><value>Instalando fuentes</value></data>
+  <data name="GUIPhaseInstallingJson" xml:space="preserve"><value>Instalando JSON</value></data>
+  <data name="GUIPhaseInstallingXml" xml:space="preserve"><value>Instalando XML</value></data>
+  <data name="GUIPhaseInstallingMist" xml:space="preserve"><value>Instalando MIST</value></data>
+  <data name="GUIPhaseInstallingOutfits" xml:space="preserve"><value>Instalando atuendos</value></data>
+  <data name="GUIPhaseInstallingFurniture" xml:space="preserve"><value>Instalando muebles</value></data>
+  <data name="CoreInstallCompleted" xml:space="preserve"><value>Instalación completada</value></data>
+  <data name="CoreInstallSummary" xml:space="preserve"><value>Mods instalados: {0}</value></data>
+  <data name="CoreInstallSummaryWithSkipped" xml:space="preserve"><value>Mods instalados: {0}; omitidos: {1}</value></data>
+  <data name="GUISetupMistriaLocation" xml:space="preserve"><value>Ubicación de Fields of Mistria:</value></data>
+  <data name="GUISetupModsLocation" xml:space="preserve"><value>Carpeta de mods:</value></data>
+  <data name="GUICanCreateModsFolder" xml:space="preserve"><value>No se detectó ninguna carpeta de mods, pero se puede crear automáticamente.</value></data>
+  <data name="GUIConfirmSaveProfileTitle" xml:space="preserve"><value>Guardar perfil</value></data>
+  <data name="GUIConfirmSaveProfileMessage" xml:space="preserve"><value>¿Guardar los cambios del perfil «{0}» antes de cambiar?</value></data>
+  <data name="GUIConfirmDeleteProfileTitle" xml:space="preserve"><value>Eliminar perfil</value></data>
+  <data name="GUIConfirmDeleteProfileMessage" xml:space="preserve"><value>¿Eliminar el perfil «{0}»? Esta acción no se puede deshacer.</value></data>
+  <data name="GUIProfileName" xml:space="preserve"><value>Perfil {0}</value></data>
+  <data name="GUINewProfile" xml:space="preserve"><value>Nuevo perfil</value></data>
+  <data name="GUIDeleteCurrentProfile" xml:space="preserve"><value>Eliminar perfil actual</value></data>
+  <data name="GUIEnableAllMods" xml:space="preserve"><value>Activar todos los mods</value></data>
+  <data name="GUIDisableAllMods" xml:space="preserve"><value>Desactivar todos los mods</value></data>
+  <data name="GUIReloadModlist" xml:space="preserve"><value>Recargar lista de mods</value></data>
+  <data name="GUISaveLogFile" xml:space="preserve"><value>Guardar archivo de registro</value></data>
+  <data name="GUIUninstallButtonText" xml:space="preserve"><value>Desinstalar todos</value></data>
+  <data name="GUIUpdateMod" xml:space="preserve"><value>Actualizar</value></data>
+  <data name="GUILaunchGameDirectly" xml:space="preserve"><value>Iniciar el juego directamente</value></data>
+  <data name="GUIGitHubButtonText" xml:space="preserve"><value>Abrir GitHub</value></data>
+  <data name="GUIOpenGameExecutable" xml:space="preserve"><value>Abrir FieldsOfMistria.exe</value></data>
+  <data name="GUIOpenModsFolder" xml:space="preserve"><value>Abrir carpeta de mods</value></data>
+  <data name="GUIInstallFailedForMod" xml:space="preserve"><value>Error al instalar este mod</value></data>
+  <data name="GUIModInstalled" xml:space="preserve"><value>Instalado correctamente.</value></data>
+  <data name="GUIModSkipped" xml:space="preserve"><value>Este mod se omitió durante la instalación</value></data>
+  <data name="GUIModHasWarnings" xml:space="preserve"><value>Este mod tiene advertencias</value></data>
+  <data name="GUIModHasErrors" xml:space="preserve"><value>Este mod tiene errores</value></data>
+  <data name="GUIMissingRequirementsTitle" xml:space="preserve"><value>Dependencias faltantes</value></data>
+  <data name="GUIMissingRequirementsMessage" xml:space="preserve"><value>No se encontraron los siguientes mods necesarios:
+
+{0}
+
+¿Abrir las páginas de descarga en el navegador?</value></data>
+  <data name="GUIMissingRequirementsManual" xml:space="preserve"><value>Los siguientes mods necesarios no se encontraron y deben instalarse manualmente:
+
+{0}</value></data>
+  <data name="GUIOpenExternalLinksTitle" xml:space="preserve"><value>Abrir enlaces externos</value></data>
+  <data name="GUIOpenExternalLinksMessage" xml:space="preserve"><value>Las siguientes URL se abrirán en el navegador:
+
+{0}</value></data>
+  <data name="GUIErrorReason" xml:space="preserve"><value>Motivo: </value></data>
+  <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>Detalles del error guardados en:</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Esta versión de Fields of Mistria no es compatible con MOMI.</value></data>
+  <data name="GUIInstallFatalError" xml:space="preserve"><value>Error de instalación; no se modificó el archivo:</value></data>
+  <data name="GUIUninstallFatalError" xml:space="preserve"><value>Error de desinstalación; no se modificó el archivo:</value></data>
+  <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve"><value>Fields of Mistria detectado en: </value></data>
+  <data name="GUIMoveUp" xml:space="preserve"><value>Subir en el orden de carga</value></data>
+  <data name="GUIMoveDown" xml:space="preserve"><value>Bajar en el orden de carga</value></data>
+  <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>Marca las casillas de todos los mods que quieras instalar:</value></data>
+</root>

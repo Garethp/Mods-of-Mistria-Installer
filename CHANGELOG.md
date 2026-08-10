@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.15.7 AI
+
+- Added runtime UI language switching without restarting MOMI.
+- Persisted the selected UI language between launches.
+- Added GUI resources for Bulgarian, German, French, Dutch, Brazilian Portuguese, Russian, Indonesian, Simplified Chinese, Traditional Chinese, Korean, Japanese, and Spanish.
+- Added localized language names in their respective languages.
+- Localized setup diagnostics, profile dialogs, missing-dependency dialogs, external-link prompts, file-picker titles, error details, update labels, and installation progress phases.
+- Corrected archive-status wording so it reports detected installed mods instead of implying that a MOMI installation is being created.
+- Kept archive status and installed-mod counts synchronized with the selected profile.
+- Reduced language-switch refresh work by consolidating UI notifications and avoiding unnecessary `assets.zip` rescans.
+- Added resource validation coverage for duplicate keys and malformed `.resx` files.
+- Added a language-menu checkmark showing the currently selected UI language.
+- Updated the application and CLI version metadata to 0.15.7.
+
 ## 0.15.6
 
 - Fixed the Install button state after creating, switching, or deleting profiles.

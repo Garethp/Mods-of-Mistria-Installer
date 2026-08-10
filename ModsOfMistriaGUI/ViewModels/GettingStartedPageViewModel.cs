@@ -7,24 +7,33 @@ using Garethp.ModsOfMistriaInstallerLib;
 
 namespace Garethp.ModsOfMistriaGUI.ViewModels;
 
-public partial class GettingStartedPageViewModel(Settings settings) : PageViewBase
+public partial class GettingStartedPageViewModel : PageViewBase
 {
-    [ObservableProperty] private Settings _settings = settings;
+    [ObservableProperty] private Settings _settings = null!;
 
     public string GameLocationStatus => LocationDiagnostics.DescribeGame(Settings.MistriaLocation);
     public string ModsLocationStatus => LocationDiagnostics.DescribeMods(Settings.MistriaLocation, Settings.ModsLocation);
 
-    public GettingStartedPageViewModel() : this(new Settings())
+    public GettingStartedPageViewModel(Settings settings)
     {
-    }
+        Settings = settings;
+        settings.PropertyChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(GameLocationStatus));
+            OnPropertyChanged(nameof(ModsLocationStatus));
+            OnPropertyChanged(nameof(CanCreateModsFolder));
+            OnPropertyChanged(nameof(WrongMistriaVersion));
+        };
 
-    partial void OnSettingsChanged(Settings value)
-    {
-        value.PropertyChanged += (_, _) =>
+        Texts.PropertyChanged += (_, _) =>
         {
             OnPropertyChanged(nameof(GameLocationStatus));
             OnPropertyChanged(nameof(ModsLocationStatus));
         };
+    }
+
+    public GettingStartedPageViewModel() : this(new Settings())
+    {
     }
 
     public bool CanCreateModsFolder =>  Settings.ValidMistriaLocation() && !Settings.ValidModsLocation();
@@ -38,7 +47,7 @@ public partial class GettingStartedPageViewModel(Settings settings) : PageViewBa
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Open FieldsOfMistria.exe",
+            Title = Texts.GUIOpenGameExecutable,
             FileTypeFilter =
             [
                 new FilePickerFileType("FieldsOfMistria.exe")
@@ -74,7 +83,7 @@ public partial class GettingStartedPageViewModel(Settings settings) : PageViewBa
 
         var files = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "Open Mods Folder",
+            Title = Texts.GUIOpenModsFolder,
             AllowMultiple = false
         });
 

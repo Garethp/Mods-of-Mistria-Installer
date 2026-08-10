@@ -435,4 +435,74 @@
   <data name="GUIUninstallingText" xml:space="preserve">
     <value>Deïnstalleren</value>
   </data>
+  <data name="GUIPlayButtonText" xml:space="preserve"><value>Spelen</value></data>
+  <data name="GUIProfileLabel" xml:space="preserve"><value>Profiel:</value></data>
+  <data name="GUILaunchGameDirectly" xml:space="preserve"><value>Spel direct starten</value></data>
+  <data name="GUIGitHubButtonText" xml:space="preserve"><value>GitHub openen</value></data>
+  <data name="GUIInstallFailedForMod" xml:space="preserve"><value>Installatie van deze mod mislukt</value></data>
+  <data name="GUILanguageMenu" xml:space="preserve"><value>Taal</value></data>
+  <data name="GUILanguageSystem" xml:space="preserve"><value>Systeemstandaard</value></data>
+  <data name="GUILanguageEnglish" xml:space="preserve"><value>Engels</value></data>
+  <data name="GUILanguageBulgarian" xml:space="preserve"><value>Bulgaars</value></data>
+  <data name="GUILanguageGerman" xml:space="preserve"><value>Duits</value></data>
+  <data name="GUILanguageFrench" xml:space="preserve"><value>Frans</value></data>
+  <data name="GUILanguageDutch" xml:space="preserve"><value>Nederlands</value></data>
+  <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>Portugees (Brazilië)</value></data>
+  <data name="GUIUpdateAvailable" xml:space="preserve"><value>MOMI {0} is beschikbaar.</value></data>
+  <data name="GUINewProfile" xml:space="preserve"><value>Nieuw profiel</value></data>
+  <data name="GUIDeleteCurrentProfile" xml:space="preserve"><value>Huidig profiel verwijderen</value></data>
+  <data name="GUIMoveUp" xml:space="preserve"><value>Omhoog in laadvolgorde</value></data>
+  <data name="GUIMoveDown" xml:space="preserve"><value>Omlaag in laadvolgorde</value></data>
+  <data name="GUIUpdateMod" xml:space="preserve"><value>Bijwerken</value></data>
+  <data name="GUIModInstalled" xml:space="preserve"><value>Installatie geslaagd.</value></data>
+  <data name="GUIModSkipped" xml:space="preserve"><value>Deze mod is overgeslagen tijdens de installatie</value></data>
+  <data name="GUIInstallFatalError" xml:space="preserve"><value>Installatie mislukt; er zijn geen wijzigingen aan het archief opgeslagen:</value></data>
+  <data name="GUIUninstallFatalError" xml:space="preserve"><value>Verwijderen mislukt; er zijn geen wijzigingen aan het archief opgeslagen:</value></data>
+  <data name="GUIConfirmSaveProfileTitle" xml:space="preserve"><value>Profiel opslaan</value></data>
+  <data name="GUIConfirmSaveProfileMessage" xml:space="preserve"><value>Wijzigingen aan profiel „{0}“ opslaan voordat je wisselt?</value></data>
+  <data name="GUIConfirmDeleteProfileTitle" xml:space="preserve"><value>Profiel verwijderen</value></data>
+  <data name="GUIConfirmDeleteProfileMessage" xml:space="preserve"><value>Profiel „{0}“ verwijderen? Dit kan niet ongedaan worden gemaakt.</value></data>
+  <data name="GUIProfileName" xml:space="preserve"><value>Profiel {0}</value></data>
+  <data name="GUIMissingRequirementsTitle" xml:space="preserve"><value>Ontbrekende vereisten</value></data>
+  <data name="GUIMissingRequirementsMessage" xml:space="preserve"><value>De volgende vereiste mods zijn niet gevonden:
+
+{0}
+
+Downloadpagina's openen in de browser?</value></data>
+  <data name="GUIOpenExternalLinksTitle" xml:space="preserve"><value>Externe links openen</value></data>
+  <data name="GUIOpenExternalLinksMessage" xml:space="preserve"><value>De volgende URL's worden in je browser geopend:
+
+{0}</value></data>
+  <data name="GUIMissingRequirementsManual" xml:space="preserve"><value>De volgende vereiste mods zijn niet gevonden en moeten handmatig worden geïnstalleerd:
+
+{0}</value></data>
+  <data name="GUIErrorReason" xml:space="preserve"><value>Reden: </value></data>
+  <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>Foutdetails opgeslagen in:</value></data>
+  <data name="GUIOpenGameExecutable" xml:space="preserve"><value>FieldsOfMistria.exe openen</value></data>
+  <data name="GUIOpenModsFolder" xml:space="preserve"><value>Mods-map openen</value></data>
+  <data name="GUILocationModsDetected" xml:space="preserve"><value>Mods-map gedetecteerd.</value></data>
+  <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>GML-laag voorbereiden</value></data>
+  <data name="GUIArchiveNoInstallation" xml:space="preserve"><value>Geen geïnstalleerde mods gevonden. Selecteer mods en klik op „Installeren“.</value></data>
+  <data name="GUIArchiveMatch" xml:space="preserve"><value>Geïnstalleerde mods gevonden: {0}.</value></data>
+  <data name="GUILocationGameDetected" xml:space="preserve"><value>Fields of Mistria-installatie gedetecteerd.</value></data>
+  <data name="GUILocationNoModsFolder" xml:space="preserve"><value>Geen mods-map gedetecteerd. Selecteer er een of maak deze automatisch aan.</value></data>
+  <data name="GUISavingAtlases" xml:space="preserve"><value>Atlassen opslaan</value></data>
+  <data name="GUIWritingGameArchive" xml:space="preserve"><value>Gamearchief schrijven</value></data>
+  <data name="GUIPhasePreparing" xml:space="preserve"><value>Voorbereiden</value></data>
+  <data name="GUIPhaseInstallingImages" xml:space="preserve"><value>Afbeeldingen installeren</value></data>
+  <data name="GUIPhaseInstallingToml" xml:space="preserve"><value>TOML installeren</value></data>
+  <data name="GUIPhaseInstallingFonts" xml:space="preserve"><value>Lettertypen installeren</value></data>
+  <data name="GUIPhaseInstallingJson" xml:space="preserve"><value>JSON installeren</value></data>
+  <data name="GUIPhaseInstallingXml" xml:space="preserve"><value>XML installeren</value></data>
+  <data name="GUIPhaseInstallingMist" xml:space="preserve"><value>MIST installeren</value></data>
+  <data name="GUIPhaseInstallingOutfits" xml:space="preserve"><value>Kleding installeren</value></data>
+  <data name="GUIPhaseInstallingFurniture" xml:space="preserve"><value>Meubels installeren</value></data>
+  <data name="GUILanguageRussian" xml:space="preserve"><value>Russisch</value></data>
+  <data name="GUILanguageIndonesian" xml:space="preserve"><value>Indonesisch</value></data>
+  <data name="GUILanguageSimplifiedChinese" xml:space="preserve"><value>Vereenvoudigd Chinees</value></data>
+  <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>Traditioneel Chinees</value></data>
+  <data name="GUILanguageKorean" xml:space="preserve"><value>Koreaans</value></data>
+  <data name="GUILanguageJapanese" xml:space="preserve"><value>Japans</value></data>
+  <data name="GUILanguageSpanish" xml:space="preserve"><value>Spaans</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Deze versie van Fields of Mistria wordt niet ondersteund door MOMI.</value></data>
 </root>

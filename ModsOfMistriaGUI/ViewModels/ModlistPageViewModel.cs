@@ -1,10 +1,12 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Garethp.ModsOfMistriaGUI.Models;
+using Garethp.ModsOfMistriaGUI.Services;
 using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
@@ -28,11 +30,59 @@ public partial class ModlistPageViewModel : PageViewBase
     // Prevents re-entrant cascades when auto-enabling/disabling dependents
     private bool _cascading;
 
+    private string? _archiveStatusKey;
+    private int _archiveStatusModCount;
+
     public ModlistPageViewModel(Settings settings)
     {
         _settings = settings;
-        _settings.PropertyChanged += (_, _) => { Task.Run(UpdateModlist); };
+        SetLanguageCommand = new RelayCommand<string?>(SetLanguage);
+        Localization.LanguageChanged += OnLocalizationChanged;
+        _settings.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(Settings.LaunchGameDirectly))
+                OnPropertyChanged(nameof(LaunchGameDirectly));
+            Task.Run(UpdateModlist);
+        };
         Task.Run(UpdateModlist);
+    }
+
+    public IRelayCommand<string?> SetLanguageCommand { get; }
+
+    private void SetLanguage(string? languageCode)
+    {
+        _settings.UiLanguage = string.IsNullOrWhiteSpace(languageCode) ? "system" : languageCode;
+        Localization.SetLanguage(_settings.UiLanguage);
+        RefreshLocalizedText();
+    }
+
+    private void OnLocalizationChanged(object? sender, EventArgs e)
+    {
+        RefreshLocalizedText();
+    }
+
+    private void RefreshLocalizedText()
+    {
+        GreetingText = isAprilFools ? Resources.GUIGreetingText_April : Resources.GUIGreetingText;
+        InstallButtonText = isAprilFools ? Resources.GUIInstallButtonText_April : Resources.GUIInstallButtonText;
+        InstallInProgressText = isAprilFools ? Resources.GUIInstallInProgress_April : Resources.GUIInstallInProgress;
+        NoModsToInstallText = isAprilFools ? Resources.GUINoModsToInstall_April : Resources.GUINoModsToInstall;
+        ModsWillBeInstalledText = isAprilFools ? Resources.GUIModsWillBeInstalled_April : Resources.GUIModsWillBeInstalled;
+        RefreshCachedArchiveStatusText();
+    }
+
+    private void RefreshCachedArchiveStatusText()
+    {
+        if (_archiveStatusKey is null) return;
+        ArchiveStatus = _archiveStatusKey == "GUIArchiveMatch"
+            ? string.Format(Localized(_archiveStatusKey), _archiveStatusModCount)
+            : Localized(_archiveStatusKey);
+    }
+
+    public bool LaunchGameDirectly
+    {
+        get => _settings.LaunchGameDirectly;
+        set => _settings.LaunchGameDirectly = value;
     }
 
     // ── Profile management ────────────────────────────────────────────────────────
@@ -52,8 +102,8 @@ public partial class ModlistPageViewModel : PageViewBase
         if (_isDirty && _profileManager is not null)
         {
             var box = MessageBoxManager.GetMessageBoxStandard(
-                "Save Profile",
-                $"Save changes to profile \"{CurrentProfile}\" before switching?",
+                Texts.GUIConfirmSaveProfileTitle,
+                string.Format(Texts.GUIConfirmSaveProfileMessage, CurrentProfile),
                 ButtonEnum.YesNoCancel);
             var result = await box.ShowAsync();
 
@@ -70,7 +120,7 @@ public partial class ModlistPageViewModel : PageViewBase
     [RelayCommand]
     private async Task CreateProfile()
     {
-        var name = $"Profile {Profiles.Count + 1}";
+        var name = string.Format(Texts.GUIProfileName, Profiles.Count + 1);
         _profileManager?.CreateProfile(name);
         _profileManager?.SwitchProfile(name);
         CurrentProfile = name;
@@ -84,8 +134,8 @@ public partial class ModlistPageViewModel : PageViewBase
         if (CurrentProfile == "Default") return;
 
         var box = MessageBoxManager.GetMessageBoxStandard(
-            "Delete Profile",
-            $"Delete profile \"{CurrentProfile}\"? This cannot be undone.",
+            Texts.GUIConfirmDeleteProfileTitle,
+            string.Format(Texts.GUIConfirmDeleteProfileMessage, CurrentProfile),
             ButtonEnum.YesNo);
         var result = await box.ShowAsync();
         if (result != ButtonResult.Yes) return;
@@ -324,16 +374,16 @@ public partial class ModlistPageViewModel : PageViewBase
                             if (urls.Count > 0)
                             {
                                 var ask = await MessageBoxManager.GetMessageBoxStandard(
-                                    "Missing Requirements",
-                                    $"The following required mods could not be found:\n\n{lines}\n\nOpen download page(s) in browser?",
+                                    Texts.GUIMissingRequirementsTitle,
+                                    string.Format(Texts.GUIMissingRequirementsMessage, lines),
                                     ButtonEnum.YesNo).ShowAsync();
 
                                 if (ask == ButtonResult.Yes)
                                 {
                                     var urlList = string.Join("\n", urls.Select(u => $"• {u}"));
                                     var confirm = await MessageBoxManager.GetMessageBoxStandard(
-                                        "Open External Links",
-                                        $"You are about to open the following URL(s) in your browser:\n\n{urlList}",
+                                        Texts.GUIOpenExternalLinksTitle,
+                                        string.Format(Texts.GUIOpenExternalLinksMessage, urlList),
                                         ButtonEnum.YesNo).ShowAsync();
 
                                     if (confirm == ButtonResult.Yes)
@@ -349,8 +399,8 @@ public partial class ModlistPageViewModel : PageViewBase
                             else
                             {
                                 await MessageBoxManager.GetMessageBoxStandard(
-                                    "Missing Requirements",
-                                    $"The following required mods could not be found and must be installed manually:\n\n{lines}",
+                                    Texts.GUIMissingRequirementsTitle,
+                                    string.Format(Texts.GUIMissingRequirementsManual, lines),
                                     ButtonEnum.Ok).ShowAsync();
                             }
                         }
@@ -621,7 +671,7 @@ public partial class ModlistPageViewModel : PageViewBase
                         string.Equals(m.Mod.GetId(), failedModId, StringComparison.OrdinalIgnoreCase));
                     failedMod?.SetInstallOutcome(
                         ModInstallState.Failed,
-                        e.Message + "\r\nReason: " + GetRootCauseMessage(e));
+                        e.Message + "\r\n" + Texts.GUIErrorReason + GetRootCauseMessage(e));
                 }
 
                 IsInstalling  = false;
@@ -637,11 +687,11 @@ public partial class ModlistPageViewModel : PageViewBase
         var rootCause = GetRootCauseMessage(exception);
         var message = heading + "\n" + exception.Message;
         if (!string.Equals(rootCause, exception.Message, StringComparison.Ordinal))
-            message += "\n\nReason: " + rootCause;
+            message += "\n\n" + Localized("GUIErrorReason") + rootCause;
 
         if (!string.IsNullOrEmpty(errorLogPath))
         {
-            message += $"\n\nError details saved to:\n{errorLogPath}";
+            message += $"\n\n{Localized("GUIErrorDetailsSaved")}\n{errorLogPath}";
         }
 
         return message;
@@ -691,6 +741,26 @@ public partial class ModlistPageViewModel : PageViewBase
     [RelayCommand(CanExecute = nameof(CanLaunchGame))]
     private void LaunchGame()
     {
+        var executable = GameExecutableLocator.Find(MistriaLocation);
+
+        if (_settings.LaunchGameDirectly && executable is not null)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = executable,
+                    WorkingDirectory = MistriaLocation,
+                    UseShellExecute = true
+                });
+                return;
+            }
+            catch
+            {
+                // Fall back to Steam if the direct executable cannot be started.
+            }
+        }
+
         try
         {
             Process.Start(new ProcessStartInfo
@@ -706,8 +776,7 @@ public partial class ModlistPageViewModel : PageViewBase
             // unavailable on the current desktop environment.
         }
 
-        var executable = Path.Combine(MistriaLocation, "FieldsOfMistria.exe");
-        if (!File.Exists(executable)) return;
+        if (executable is null) return;
 
         try
         {
@@ -766,7 +835,9 @@ public partial class ModlistPageViewModel : PageViewBase
         if (string.IsNullOrWhiteSpace(MistriaLocation))
         {
             InstallationNeedsRebuild = false;
-            ArchiveStatus = "No game archive detected.";
+            _archiveStatusKey = "GUIArchiveNoGameArchive";
+            _archiveStatusModCount = 0;
+            RefreshCachedArchiveStatusText();
             return;
         }
 
@@ -774,7 +845,9 @@ public partial class ModlistPageViewModel : PageViewBase
         if (!store.HasMomiInstallation())
         {
             InstallationNeedsRebuild = true;
-            ArchiveStatus = "No MOMI installation detected. Install will create one.";
+            _archiveStatusKey = "GUIArchiveNoInstallation";
+            _archiveStatusModCount = 0;
+            RefreshCachedArchiveStatusText();
             return;
         }
 
@@ -783,14 +856,18 @@ public partial class ModlistPageViewModel : PageViewBase
         catch
         {
             InstallationNeedsRebuild = true;
-            ArchiveStatus = "MOMI installation detected, but its recorded state is unavailable.";
+            _archiveStatusKey = "GUIArchiveStateUnavailable";
+            _archiveStatusModCount = 0;
+            RefreshCachedArchiveStatusText();
             return;
         }
 
         if (recorded is null)
         {
             InstallationNeedsRebuild = true;
-            ArchiveStatus = "MOMI installation detected, but installed mod versions are unavailable.";
+            _archiveStatusKey = "GUIArchiveVersionsUnavailable";
+            _archiveStatusModCount = 0;
+            RefreshCachedArchiveStatusText();
             return;
         }
 
@@ -806,11 +883,14 @@ public partial class ModlistPageViewModel : PageViewBase
                       desired.All(pair => actual.TryGetValue(pair.Key, out var version) &&
                                           string.Equals(version, pair.Value, StringComparison.OrdinalIgnoreCase));
 
-        ArchiveStatus = matches
-            ? $"MOMI installation: {actual.Count} mod(s) installed."
-            : "The installed mod set or version differs from this profile. Recommended: Uninstall, then Install. Install can also rebuild from the pristine backup.";
+        _archiveStatusKey = matches ? "GUIArchiveMatch" : "GUIArchiveDifferent";
+        _archiveStatusModCount = actual.Count;
+        RefreshCachedArchiveStatusText();
         InstallationNeedsRebuild = !matches;
     }
+
+    private static string Localized(string key) =>
+        Resources.ResourceManager.GetString(key, Resources.Culture) ?? key;
 
     private bool CanInstall() =>
         !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Any(mod => mod.Enabled) &&

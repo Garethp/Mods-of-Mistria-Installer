@@ -4,19 +4,19 @@ namespace Garethp.ModsOfMistriaInstallerLib;
 
 /// <summary>
 /// Watches for a flag file written by the in-game Mods UI requesting a restart.
-/// When found, deletes the flag and relaunches FieldsOfMistria.exe.
+/// When found, deletes the flag and relaunches the game executable.
 /// </summary>
 public sealed class GameRestartMonitor : IDisposable
 {
     private const string FlagFileName = "momi_restart";
 
-    private readonly string _mistriaExePath;
+    private readonly string _mistriaDirectory;
     private readonly string _watchRoot;
     private FileSystemWatcher? _watcher;
 
     public GameRestartMonitor(string mistriaLocation)
     {
-        _mistriaExePath = Path.Combine(mistriaLocation, "FieldsOfMistria.exe");
+        _mistriaDirectory = mistriaLocation;
         _watchRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "FieldsOfMistria");
@@ -53,8 +53,13 @@ public sealed class GameRestartMonitor : IDisposable
 
         try { File.Delete(e.FullPath); } catch { /* already gone */ }
 
-        if (File.Exists(_mistriaExePath))
-            Process.Start(new ProcessStartInfo(_mistriaExePath) { UseShellExecute = true });
+        var executable = GameExecutableLocator.Find(_mistriaDirectory);
+        if (executable is not null)
+            Process.Start(new ProcessStartInfo(executable)
+            {
+                WorkingDirectory = _mistriaDirectory,
+                UseShellExecute = true
+            });
     }
 
     public void Dispose() => Stop();

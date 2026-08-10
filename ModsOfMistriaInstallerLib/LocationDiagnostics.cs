@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
 
@@ -42,7 +43,8 @@ public static class LocationDiagnostics
             }
         }
 
-        return "Fields of Mistria installation detected.";
+        return Resources.ResourceManager.GetString("GUILocationGameDetected", Resources.Culture)
+            ?? "Fields of Mistria installation detected.";
     }
 
     public static string DescribeMods(string? gameLocation, string? modsLocation)
@@ -51,11 +53,13 @@ public static class LocationDiagnostics
             return "Select a valid Fields of Mistria installation before choosing a mods folder.";
 
         if (string.IsNullOrWhiteSpace(modsLocation))
-            return "No mods folder was detected. Select one or create it automatically.";
+            return Resources.ResourceManager.GetString("GUILocationNoModsFolder", Resources.Culture)
+                ?? "No mods folder was detected. Select one or create it automatically.";
 
         if (!Directory.Exists(modsLocation))
             return $"The selected mods folder does not exist: {modsLocation}";
 
-        return "Mods folder detected.";
+        return Resources.ResourceManager.GetString("GUILocationModsDetected", Resources.Culture)
+            ?? "Mods folder detected.";
     }
 }

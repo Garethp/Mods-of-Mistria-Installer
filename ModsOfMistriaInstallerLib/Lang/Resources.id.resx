@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5a561934e089</value></resheader>
+  <data name="GUILanguageRussian" xml:space="preserve"><value>Rusia</value></data>
+  <data name="GUILanguageSystem" xml:space="preserve"><value>Default sistem</value></data>
+  <data name="GUILanguageEnglish" xml:space="preserve"><value>Inggris</value></data>
+  <data name="GUILanguageBulgarian" xml:space="preserve"><value>Bulgaria</value></data>
+  <data name="GUILanguageGerman" xml:space="preserve"><value>Jerman</value></data>
+  <data name="GUILanguageFrench" xml:space="preserve"><value>Prancis</value></data>
+  <data name="GUILanguageDutch" xml:space="preserve"><value>Belanda</value></data>
+  <data name="GUILanguagePortugueseBrazil" xml:space="preserve"><value>Portugis (Brasil)</value></data>
+  <data name="GUILanguageIndonesian" xml:space="preserve"><value>Indonesia</value></data>
+  <data name="GUIApplicationTitle" xml:space="preserve"><value>Penginstal Mod Fields of Mistria</value></data>
+  <data name="GUILanguageMenu" xml:space="preserve"><value>Bahasa</value></data>
+  <data name="GUIPlayButtonText" xml:space="preserve"><value>Mainkan</value></data>
+  <data name="GUIProfileLabel" xml:space="preserve"><value>Profil:</value></data>
+  <data name="GUIInstallInProgress" xml:space="preserve"><value>Memasang mod...</value></data>
+  <data name="GUIInstallButtonText" xml:space="preserve"><value>Pasang</value></data>
+  <data name="GUIUninstallCompleteText" xml:space="preserve"><value>Pencopotan selesai</value></data>
+  <data name="GUIArchiveNoInstallation" xml:space="preserve"><value>Tidak ada mod yang terpasang. Pilih mod lalu tekan “Pasang”.</value></data>
+  <data name="GUIArchiveMatch" xml:space="preserve"><value>Mod terpasang terdeteksi: {0}.</value></data>
+  <data name="GUILocationGameDetected" xml:space="preserve"><value>Instalasi Fields of Mistria terdeteksi.</value></data>
+  <data name="GUILocationNoModsFolder" xml:space="preserve"><value>Folder mod tidak terdeteksi. Pilih folder atau buat secara otomatis.</value></data>
+  <data name="GUILocationModsDetected" xml:space="preserve"><value>Folder mod terdeteksi.</value></data>
+  <data name="GUISavingAtlases" xml:space="preserve"><value>Menyimpan atlas</value></data>
+  <data name="GUIWritingGameArchive" xml:space="preserve"><value>Menulis arsip game</value></data>
+  <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>Menyiapkan lapisan GML</value></data>
+  <data name="GUIPhasePreparing" xml:space="preserve"><value>Menyiapkan</value></data>
+  <data name="GUIPhaseInstallingImages" xml:space="preserve"><value>Memasang gambar</value></data>
+  <data name="GUIPhaseInstallingToml" xml:space="preserve"><value>Memasang TOML</value></data>
+  <data name="GUIPhaseInstallingFonts" xml:space="preserve"><value>Memasang font</value></data>
+  <data name="GUIPhaseInstallingJson" xml:space="preserve"><value>Memasang JSON</value></data>
+  <data name="GUIPhaseInstallingXml" xml:space="preserve"><value>Memasang XML</value></data>
+  <data name="GUIPhaseInstallingMist" xml:space="preserve"><value>Memasang MIST</value></data>
+  <data name="GUIPhaseInstallingOutfits" xml:space="preserve"><value>Memasang pakaian</value></data>
+  <data name="GUIPhaseInstallingFurniture" xml:space="preserve"><value>Memasang furnitur</value></data>
+  <data name="CoreInstallCompleted" xml:space="preserve"><value>Pemasangan selesai</value></data>
+  <data name="CoreInstallSummary" xml:space="preserve"><value>Mod terpasang: {0}</value></data>
+  <data name="CoreInstallSummaryWithSkipped" xml:space="preserve"><value>Mod terpasang: {0}; dilewati: {1}</value></data>
+  <data name="GUILanguageSimplifiedChinese" xml:space="preserve"><value>Bahasa Tionghoa Sederhana</value></data>
+  <data name="GUILanguageTraditionalChinese" xml:space="preserve"><value>Bahasa Tionghoa Tradisional</value></data>
+  <data name="GUILanguageKorean" xml:space="preserve"><value>Korea</value></data>
+  <data name="GUILanguageJapanese" xml:space="preserve"><value>Jepang</value></data>
+  <data name="GUILanguageSpanish" xml:space="preserve"><value>Spanyol</value></data>
+  <data name="GUISetupMistriaLocation" xml:space="preserve"><value>Lokasi Fields of Mistria:</value></data>
+  <data name="GUISetupModsLocation" xml:space="preserve"><value>Folder mod:</value></data>
+  <data name="GUICanCreateModsFolder" xml:space="preserve"><value>Folder mod tidak ditemukan, tetapi dapat dibuat secara otomatis.</value></data>
+  <data name="GUIConfirmSaveProfileTitle" xml:space="preserve"><value>Simpan Profil</value></data>
+  <data name="GUIConfirmSaveProfileMessage" xml:space="preserve"><value>Simpan perubahan pada profil “{0}” sebelum beralih?</value></data>
+  <data name="GUIConfirmDeleteProfileTitle" xml:space="preserve"><value>Hapus Profil</value></data>
+  <data name="GUIConfirmDeleteProfileMessage" xml:space="preserve"><value>Hapus profil “{0}”? Tindakan ini tidak dapat dibatalkan.</value></data>
+  <data name="GUIProfileName" xml:space="preserve"><value>Profil {0}</value></data>
+  <data name="GUINewProfile" xml:space="preserve"><value>Profil Baru</value></data>
+  <data name="GUIDeleteCurrentProfile" xml:space="preserve"><value>Hapus Profil Saat Ini</value></data>
+  <data name="GUIEnableAllMods" xml:space="preserve"><value>Aktifkan Semua Mod</value></data>
+  <data name="GUIDisableAllMods" xml:space="preserve"><value>Nonaktifkan Semua Mod</value></data>
+  <data name="GUIReloadModlist" xml:space="preserve"><value>Muat Ulang Daftar Mod</value></data>
+  <data name="GUISaveLogFile" xml:space="preserve"><value>Simpan File Log</value></data>
+  <data name="GUIUninstallButtonText" xml:space="preserve"><value>Copot Semua</value></data>
+  <data name="GUIUpdateMod" xml:space="preserve"><value>Perbarui</value></data>
+  <data name="GUILaunchGameDirectly" xml:space="preserve"><value>Luncurkan Game Secara Langsung</value></data>
+  <data name="GUIGitHubButtonText" xml:space="preserve"><value>Buka GitHub</value></data>
+  <data name="GUIOpenGameExecutable" xml:space="preserve"><value>Buka FieldsOfMistria.exe</value></data>
+  <data name="GUIOpenModsFolder" xml:space="preserve"><value>Buka Folder Mod</value></data>
+  <data name="GUIInstallFailedForMod" xml:space="preserve"><value>Mod ini gagal dipasang</value></data>
+  <data name="GUIModInstalled" xml:space="preserve"><value>Berhasil dipasang.</value></data>
+  <data name="GUIModSkipped" xml:space="preserve"><value>Mod ini dilewati saat pemasangan</value></data>
+  <data name="GUIModHasWarnings" xml:space="preserve"><value>Mod ini memiliki peringatan</value></data>
+  <data name="GUIModHasErrors" xml:space="preserve"><value>Mod ini memiliki kesalahan</value></data>
+  <data name="GUIMissingRequirementsTitle" xml:space="preserve"><value>Persyaratan Tidak Ada</value></data>
+  <data name="GUIMissingRequirementsMessage" xml:space="preserve"><value>Mod yang diperlukan berikut tidak ditemukan:
+
+{0}
+
+Buka halaman unduhan di browser?</value></data>
+  <data name="GUIMissingRequirementsManual" xml:space="preserve"><value>Mod yang diperlukan berikut tidak ditemukan dan harus dipasang secara manual:
+
+{0}</value></data>
+  <data name="GUIOpenExternalLinksTitle" xml:space="preserve"><value>Buka Tautan Eksternal</value></data>
+  <data name="GUIOpenExternalLinksMessage" xml:space="preserve"><value>URL berikut akan dibuka di browser:
+
+{0}</value></data>
+  <data name="GUIErrorReason" xml:space="preserve"><value>Alasan: </value></data>
+  <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>Detail kesalahan disimpan di:</value></data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Versi Fields of Mistria ini tidak didukung oleh MOMI.</value></data>
+  <data name="GUIInstallFatalError" xml:space="preserve"><value>Pemasangan gagal; arsip tidak diubah:</value></data>
+  <data name="GUIUninstallFatalError" xml:space="preserve"><value>Pencopotan gagal; arsip tidak diubah:</value></data>
+  <data name="GUIFieldsOfMistriaDetectedLocation" xml:space="preserve"><value>Fields of Mistria terdeteksi di: </value></data>
+  <data name="GUIMoveUp" xml:space="preserve"><value>Naik dalam urutan pemuatan</value></data>
+  <data name="GUIMoveDown" xml:space="preserve"><value>Turun dalam urutan pemuatan</value></data>
+  <data name="GUIModsWillBeInstalled" xml:space="preserve"><value>Centang semua mod yang ingin kamu instal:</value></data>
+</root>
