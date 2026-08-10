@@ -9,7 +9,7 @@ public class CosmeticFile
 {
     public static Dictionary<string, List<string>> ValidSlots = new()
     {
-        { "back", ["capes", "backpacks"] },
+        { "back", ["capes", "backpacks", "back_gear_misc"] },
         { "facial_hair", ["facial_hair"] },
         { "top", ["dress", "robe", "top_misc", "suit", "long_sleeve", "sleeveless", "short_sleeve", "jacket"] },
         { "eyes", ["eyes" ] },
