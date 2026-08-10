@@ -118,6 +118,7 @@ public class FolderMod : IMod
 
     public Validation Validate()
     {
+        _validation.Clear();
         if (string.IsNullOrEmpty(_author))
         {
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(_location, "manifest.json"),
@@ -138,10 +139,7 @@ public class FolderMod : IMod
 
         try
         {
-            var currentExe = Assembly.GetEntryAssembly();
-            var currentVersionString =
-                currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
-            var currentVersion = new Version(currentVersionString);
+            var currentVersion = InstallerVersion.ModCompatibilityVersion;
             var requiredVersion = new Version(_minimumInstallerVersion);
             var newEngineVersion = new Version("0.12");
             

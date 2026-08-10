@@ -211,7 +211,7 @@
   <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>У UI-спрайта косметики нет body.</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>У UI-спрайта косметики нет объединённого спрайта.</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>У UI-спрайта косметики нет объединённого контура.</value></data>
-  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>У косметики {0} неверный cosmetic_sprites. Допустимые значения: {1}.</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>У косметики {0} неверное значение {1} для cosmetic_sprites. Допустимые значения: {2}.</value></data>
   <data name="GUIUpdateAvailable" xml:space="preserve"><value>Доступно обновление</value></data>
   <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>Игровой архив не найден.</value></data>
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Состояние архива недоступно.</value></data>

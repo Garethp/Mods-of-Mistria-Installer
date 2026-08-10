@@ -10,7 +10,7 @@
     <Design.DataContext>
         <models:ModModel />
     </Design.DataContext>
-    <WrapPanel>
+    <Grid HorizontalAlignment="Stretch">
         <WrapPanel IsVisible="{Binding ShowPlainRow}">
             <CheckBox IsEnabled="{Binding !InError}"
                       IsChecked="{Binding Enabled}">
@@ -19,6 +19,7 @@
         </WrapPanel>
 
         <Expander IsVisible="{Binding ShowStatusRow}"
+                  HorizontalAlignment="Stretch"
                   Classes.failed="{Binding WasFailed}"
                   Classes.warning="{Binding InWarning}">
             <Expander.Styles>
@@ -111,15 +112,15 @@
             </Expander.Header>
 
             <StackPanel>
-                <SelectableTextBlock TextWrapping="WrapWithOverflow" IsVisible="{Binding HasInstallOutcome}"
+                <SelectableTextBlock TextWrapping="Wrap" IsVisible="{Binding HasInstallOutcome}"
                                      Text="{Binding InstallDetail}"
                                      Foreground="{DynamicResource ModStatusForegroundBrush}" />
-                <SelectableTextBlock TextWrapping="WrapWithOverflow" IsVisible="{Binding ShowErrorIcon}"
+                <SelectableTextBlock TextWrapping="Wrap" IsVisible="{Binding ShowErrorIcon}"
                                      Text="{Binding Errors}"
                                      Foreground="{DynamicResource ModStatusForegroundBrush}" />
                 <SelectableTextBlock IsVisible="{Binding InWarning}" Text="{Binding Warnings}"
                                      Foreground="{DynamicResource ModStatusForegroundBrush}" />
             </StackPanel>
         </Expander>
-    </WrapPanel>
+    </Grid>
 </UserControl>

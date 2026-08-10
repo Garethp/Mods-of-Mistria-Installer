@@ -211,7 +211,7 @@
   <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>코스메틱 UI 스프라이트에 body가 없습니다.</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>코스메틱 UI 스프라이트에 병합 스프라이트가 없습니다.</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>코스메틱 UI 스프라이트에 병합 외곽선이 없습니다.</value></data>
-  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>코스메틱 {0}의 cosmetic_sprites가 잘못되었습니다. 다음 중 하나여야 합니다: {1}.</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>코스메틱 {0}의 cosmetic_sprites 값 {1}이(가) 잘못되었습니다. 다음 중 하나여야 합니다: {2}.</value></data>
   <data name="GUIUpdateAvailable" xml:space="preserve"><value>업데이트 사용 가능</value></data>
   <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>게임 아카이브를 찾을 수 없습니다.</value></data>
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>아카이브 상태를 사용할 수 없습니다.</value></data>

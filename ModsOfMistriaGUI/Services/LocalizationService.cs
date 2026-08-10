@@ -34,6 +34,11 @@ public sealed class LocalizationService : ObservableObject
         if (normalized is not ("system" or "en" or "bg" or "de" or "fr" or "nl" or "pt-br" or "ru" or "id" or "zh-hans" or "zh-hant" or "ko" or "ja" or "es" or "uk"))
             normalized = "system";
 
+        // Selecting the already active language must not rebuild the page or
+        // revalidate mods. This matters for archive-backed mod collections.
+        if (string.Equals(_languageCode, normalized, StringComparison.OrdinalIgnoreCase))
+            return;
+
         var culture = normalized switch
         {
             "en" => CultureInfo.GetCultureInfo("en"),

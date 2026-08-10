@@ -211,7 +211,7 @@
   <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>外观 UI 精灵没有 body。</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>外观 UI 精灵没有合并精灵。</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>外观 UI 精灵没有合并轮廓。</value></data>
-  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>外观 {0} 的 cosmetic_sprites 无效。必须是以下之一：{1}。</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>外观 {0} 的 cosmetic_sprites 值 {1} 无效。必须是以下之一：{2}。</value></data>
   <data name="GUIUpdateAvailable" xml:space="preserve"><value>有可用更新</value></data>
   <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>找不到游戏存档。</value></data>
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>存档状态不可用。</value></data>

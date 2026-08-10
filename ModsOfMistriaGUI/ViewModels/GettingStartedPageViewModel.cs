@@ -10,6 +10,7 @@ namespace Garethp.ModsOfMistriaGUI.ViewModels;
 public partial class GettingStartedPageViewModel : PageViewBase
 {
     [ObservableProperty] private Settings _settings = null!;
+    [ObservableProperty] private bool _isBusy;
 
     public string GameLocationStatus => LocationDiagnostics.DescribeGame(Settings.MistriaLocation);
     public string ModsLocationStatus => LocationDiagnostics.DescribeMods(Settings.MistriaLocation, Settings.ModsLocation);
@@ -45,34 +46,42 @@ public partial class GettingStartedPageViewModel : PageViewBase
         var topLevel = App.TopLevel;
         if (topLevel is null) return;
 
-        var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        IsBusy = true;
+        try
         {
-            Title = Texts.GUIOpenGameExecutable,
-            FileTypeFilter =
-            [
-                new FilePickerFileType("FieldsOfMistria.exe")
-                {
-                    Patterns = ["FieldsOfMistria.exe"]
-                }
-            ],
-            AllowMultiple = false
-        });
-
-        if (files.Count == 1)
-        {
-            var path = files[0].TryGetLocalPath();
-            if (path is null) return;
-            
-            Settings.MistriaLocation = Path.GetDirectoryName(Path.GetFullPath(path)) ?? "";
-
-            if (Settings.ValidMistriaLocation() && !Settings.ValidModsLocation())
+            var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Settings.ModsLocation = MistriaLocator.GetModsLocation(Settings.MistriaLocation) ?? "";
+                Title = Texts.GUIOpenGameExecutable,
+                FileTypeFilter =
+                [
+                    new FilePickerFileType("FieldsOfMistria.exe")
+                    {
+                        Patterns = ["FieldsOfMistria.exe"]
+                    }
+                ],
+                AllowMultiple = false
+            });
+
+            if (files.Count == 1)
+            {
+                var path = files[0].TryGetLocalPath();
+                if (path is null) return;
+            
+                Settings.MistriaLocation = Path.GetDirectoryName(Path.GetFullPath(path)) ?? "";
+
+                if (Settings.ValidMistriaLocation() && !Settings.ValidModsLocation())
+                {
+                    Settings.ModsLocation = MistriaLocator.GetModsLocation(Settings.MistriaLocation) ?? "";
+                }
             }
+
+            OnPropertyChanged(nameof(CanCreateModsFolder));
+            OnPropertyChanged(nameof(WrongMistriaVersion));
         }
-        
-        OnPropertyChanged(nameof(CanCreateModsFolder));
-        OnPropertyChanged(nameof(WrongMistriaVersion));
+        finally
+        {
+            IsBusy = false;
+        }
     }
     
     [RelayCommand]
@@ -81,18 +90,26 @@ public partial class GettingStartedPageViewModel : PageViewBase
         var topLevel = App.TopLevel;
         if (topLevel is null) return;
 
-        var files = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        IsBusy = true;
+        try
         {
-            Title = Texts.GUIOpenModsFolder,
-            AllowMultiple = false
-        });
+            var files = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            {
+                Title = Texts.GUIOpenModsFolder,
+                AllowMultiple = false
+            });
 
-        if (files.Count == 1)
-        {
-            var path = files[0].TryGetLocalPath();
-            if (path is null) return;
+            if (files.Count == 1)
+            {
+                var path = files[0].TryGetLocalPath();
+                if (path is null) return;
             
-            Settings.ModsLocation = Path.GetFullPath(path);
+                Settings.ModsLocation = Path.GetFullPath(path);
+            }
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 
@@ -101,19 +118,27 @@ public partial class GettingStartedPageViewModel : PageViewBase
     {
         if (Settings.ValidModsLocation()) return;
 
-        string path;
-        
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        IsBusy = true;
+        try
         {
-            path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "mistria-mods");
+            string path;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "mistria-mods");
+            }
+            else
+            {
+                if (!Settings.ValidMistriaLocation()) return;
+                path = Path.Combine(Settings.MistriaLocation, "mods");
+            }
+
+            Directory.CreateDirectory(path);
+            Settings.ModsLocation = path;
         }
-        else
+        finally
         {
-            if (!Settings.ValidMistriaLocation()) return;
-            path = Path.Combine(Settings.MistriaLocation, "mods");
+            IsBusy = false;
         }
-        
-        Directory.CreateDirectory(path);
-        Settings.ModsLocation = path;
     }
 }

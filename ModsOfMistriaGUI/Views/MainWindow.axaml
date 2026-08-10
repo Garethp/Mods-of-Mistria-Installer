@@ -39,7 +39,8 @@
 
         <StackPanel Grid.Row="2" Spacing="6" Margin="32 12 32 16">
             <Menu HorizontalAlignment="Right">
-                <MenuItem Header="{Binding Texts.GUILanguageMenu}">
+                <MenuItem Header="{Binding Texts.GUILanguageMenu}"
+                          IsEnabled="{Binding !IsBusy}">
                     <MenuItem x:Name="LanguageSystemMenuItem" Header="{Binding Texts.GUILanguageSystem}" Tag="system" Click="LanguageMenuClick" />
                     <MenuItem x:Name="LanguageEnglishMenuItem" Header="{Binding Texts.GUILanguageEnglish}" Tag="en" Click="LanguageMenuClick" />
                     <MenuItem x:Name="LanguageBulgarianMenuItem" Header="{Binding Texts.GUILanguageBulgarian}" Tag="bg" Click="LanguageMenuClick" />

@@ -37,4 +37,23 @@ public class Tests
         Assert.That(mainViewModel.UpdateMessage, Is.EqualTo("Налична е нова версия на AIM: 0.15.8."));
         LocalizationService.Instance.SetLanguage("en");
     }
+
+    [Test]
+    public void Should_Not_Broadcast_When_Selecting_The_Active_Language()
+    {
+        LocalizationService.Instance.SetLanguage("en");
+        var notifications = 0;
+        EventHandler handler = (_, _) => notifications++;
+        LocalizationService.Instance.LanguageChanged += handler;
+
+        try
+        {
+            LocalizationService.Instance.SetLanguage("en");
+            Assert.That(notifications, Is.Zero);
+        }
+        finally
+        {
+            LocalizationService.Instance.LanguageChanged -= handler;
+        }
+    }
 }

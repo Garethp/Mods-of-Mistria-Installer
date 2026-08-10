@@ -211,7 +211,7 @@ Buka halaman unduhan di browser?</value></data>
   <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>UI sprite kosmetik tidak memiliki body.</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>UI sprite kosmetik tidak memiliki sprite gabungan.</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>UI sprite kosmetik tidak memiliki outline gabungan.</value></data>
-  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>Kosmetik {0} memiliki cosmetic_sprites yang salah. Harus salah satu dari: {1}.</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>Kosmetik {0} memiliki nilai {1} yang salah untuk cosmetic_sprites. Harus salah satu dari: {2}.</value></data>
   <data name="GUIUpdateAvailable" xml:space="preserve"><value>Pembaruan tersedia</value></data>
   <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>Arsip game tidak ditemukan.</value></data>
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Status arsip tidak tersedia.</value></data>

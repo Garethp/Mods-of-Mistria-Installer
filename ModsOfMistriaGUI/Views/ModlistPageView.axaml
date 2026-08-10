@@ -80,10 +80,18 @@
                     <ItemsRepeater ItemsSource="{Binding Mods}" x:Name="ModRepeater">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="0 2 0 2">
+                                <Grid ColumnDefinitions="22,24,*,Auto"
+                                      Classes.alt="{Binding IsAlternateRow}"
+                                      Margin="0 2 0 2">
+                                    <Grid.Styles>
+                                        <Style Selector="Grid.alt">
+                                            <Setter Property="Background" Value="{DynamicResource ModAlternateRowBrush}" />
+                                        </Style>
+                                    </Grid.Styles>
                                     <!-- Load-order controls -->
                                     <StackPanel Orientation="Vertical" Width="22" Margin="0 0 4 0"
-                                                VerticalAlignment="Center">
+                                                VerticalAlignment="Center"
+                                                Grid.Column="0">
                                         <Button Padding="2 0"
                                                 FontSize="10"
                                                 Command="{Binding $parent[ItemsRepeater].DataContext.MoveModUpCommand}"
@@ -96,15 +104,18 @@
                                                 ToolTip.Tip="{Binding Texts.GUIMoveDown}">▼</Button>
                                     </StackPanel>
                                     <!-- Position number -->
-                                    <TextBlock Width="24" VerticalAlignment="Center"
+                                    <TextBlock Width="24" Grid.Column="1" VerticalAlignment="Center"
                                                Text="{Binding Position}"
                                                HorizontalAlignment="Right"
                                                Margin="0 0 6 0"
                                                Foreground="Gray" />
                                     <!-- Mod checkbox + warnings -->
-                                    <controls:ModlistCheckbox DataContext="{Binding}" />
+                                    <controls:ModlistCheckbox Grid.Column="2"
+                                                              HorizontalAlignment="Stretch"
+                                                              DataContext="{Binding}" />
                                     <!-- Update available badge -->
-                                    <Button IsVisible="{Binding UpdateAvailable}"
+                                    <Button Grid.Column="3"
+                                            IsVisible="{Binding UpdateAvailable}"
                                             Command="{Binding OpenUpdateUrlCommand}"
                                             Margin="6 0 0 0"
                                             Padding="5 1"
@@ -114,7 +125,7 @@
                                             VerticalAlignment="Center"
                                             Content="{Binding Texts.GUIUpdateMod}"
                                             ToolTip.Tip="{Binding UpdateTooltip}" />
-                                </StackPanel>
+                                </Grid>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>
                     </ItemsRepeater>

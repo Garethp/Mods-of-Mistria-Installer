@@ -143,6 +143,7 @@ public class RarMod() : IMod
 
     public Validation Validate()
     {
+        _validation.Clear();
         if (string.IsNullOrEmpty(GetAuthor()))
         {
             _validation.Errors.Add(new ValidationMessage(this, Path.Combine(GetLocation(), "manifest.json"),
@@ -163,10 +164,7 @@ public class RarMod() : IMod
         
         try
         {
-            var currentExe = Assembly.GetEntryAssembly();
-            var currentVersionString =
-                currentExe!.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "0.1.0";
-            var currentVersion = new Version(currentVersionString);
+            var currentVersion = InstallerVersion.ModCompatibilityVersion;
             var requiredVersion = new Version(GetMinimumInstallerVersion());
             var newEngineVersion = new Version("0.12");
             

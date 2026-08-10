@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Platform;
 using Garethp.ModsOfMistriaGUI.Services;
 using Garethp.ModsOfMistriaGUI.ViewModels;
@@ -71,8 +72,16 @@ public partial class MainWindow : Window
         };
 
         foreach (var item in items)
-            item.Icon = string.Equals(item.Tag as string, selected, StringComparison.OrdinalIgnoreCase)
-                ? "✓"
+        {
+            var isSelected = string.Equals(item.Tag as string, selected, StringComparison.OrdinalIgnoreCase);
+            item.Icon = isSelected
+                ? new TextBlock
+                {
+                    Text = "✓",
+                    FontWeight = FontWeight.Bold,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+                }
                 : null;
+        }
     }
 }

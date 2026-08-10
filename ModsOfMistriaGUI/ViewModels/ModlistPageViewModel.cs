@@ -22,6 +22,7 @@ public partial class ModlistPageViewModel : PageViewBase
     private bool _updating;
     private readonly Settings _settings;
     private ProfileManager? _profileManager;
+    private int _localizationRefreshVersion;
 
     // True when in-GUI state differs from what is saved in the current profile
     private bool _isDirty;
@@ -53,7 +54,6 @@ public partial class ModlistPageViewModel : PageViewBase
     {
         _settings.UiLanguage = string.IsNullOrWhiteSpace(languageCode) ? "system" : languageCode;
         Localization.SetLanguage(_settings.UiLanguage);
-        RefreshLocalizedText();
     }
 
     private void OnLocalizationChanged(object? sender, EventArgs e)
@@ -63,12 +63,45 @@ public partial class ModlistPageViewModel : PageViewBase
 
     private void RefreshLocalizedText()
     {
+        var stopwatch = Stopwatch.StartNew();
+        var refreshVersion = Interlocked.Increment(ref _localizationRefreshVersion);
+        var modsNeedingValidation = Mods.Where(model => model.NeedsLocalizedValidation).ToList();
+
         GreetingText = isAprilFools ? Resources.GUIGreetingText_April : Resources.GUIGreetingText;
         InstallButtonText = isAprilFools ? Resources.GUIInstallButtonText_April : Resources.GUIInstallButtonText;
         InstallInProgressText = isAprilFools ? Resources.GUIInstallInProgress_April : Resources.GUIInstallInProgress;
         NoModsToInstallText = isAprilFools ? Resources.GUINoModsToInstall_April : Resources.GUINoModsToInstall;
         ModsWillBeInstalledText = isAprilFools ? Resources.GUIModsWillBeInstalled_April : Resources.GUIModsWillBeInstalled;
         RefreshCachedArchiveStatusText();
+        var modelRefreshStopwatch = Stopwatch.StartNew();
+        foreach (var model in Mods)
+            model.RefreshLocalizedText();
+        PerformanceDiagnostics.Log($"Language refresh: mod row notifications={modelRefreshStopwatch.ElapsedMilliseconds} ms, mods={Mods.Count}");
+
+        var uiRefreshMilliseconds = stopwatch.ElapsedMilliseconds;
+        if (modsNeedingValidation.Count == 0)
+        {
+            PerformanceDiagnostics.Log($"Language refresh: UI={uiRefreshMilliseconds} ms, validation=0 ms, mods={Mods.Count}");
+            return;
+        }
+
+        _ = Task.Run(() =>
+        {
+            var validationStopwatch = Stopwatch.StartNew();
+            foreach (var model in modsNeedingValidation)
+                model.RevalidateForLocalization();
+
+            var validationMilliseconds = validationStopwatch.ElapsedMilliseconds;
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (refreshVersion != Volatile.Read(ref _localizationRefreshVersion)) return;
+
+                foreach (var model in modsNeedingValidation)
+                    model.RefreshValidation();
+
+                PerformanceDiagnostics.Log($"Language refresh: UI={uiRefreshMilliseconds} ms, validation={validationMilliseconds} ms, mods={Mods.Count}, revalidated={modsNeedingValidation.Count}");
+            });
+        });
     }
 
     private void RefreshCachedArchiveStatusText()
@@ -278,6 +311,7 @@ public partial class ModlistPageViewModel : PageViewBase
 
     private void UpdateModlist(bool force)
     {
+        var totalStopwatch = Stopwatch.StartNew();
         // UpdateModlist is requested from background tasks because manifest
         // discovery can involve many archives. ObservableCollection mutations
         // must nevertheless happen on Avalonia's UI thread; otherwise
@@ -303,8 +337,13 @@ public partial class ModlistPageViewModel : PageViewBase
             try { _profileManager = new ProfileManager(ModsLocation); }
             catch { _profileManager = null; }
 
+            var discoveryStopwatch = Stopwatch.StartNew();
             var rawMods = MistriaLocator.GetMods(MistriaLocation, ModsLocation);
+            var discoveryMilliseconds = discoveryStopwatch.ElapsedMilliseconds;
+
+            var validationStopwatch = Stopwatch.StartNew();
             ModInstaller.ValidateMods(rawMods);
+            var validationMilliseconds = validationStopwatch.ElapsedMilliseconds;
             
             // Apply dependency resolution (auto-enable deps)
             if (_profileManager is not null)
@@ -422,6 +461,7 @@ public partial class ModlistPageViewModel : PageViewBase
             }
 
             RefreshProfileList();
+            PerformanceDiagnostics.Log($"Modlist load: total={totalStopwatch.ElapsedMilliseconds} ms, discovery={discoveryMilliseconds} ms, validation={validationMilliseconds} ms, mods={Mods.Count}");
         }
 
         _isDirty = false;
@@ -452,6 +492,7 @@ public partial class ModlistPageViewModel : PageViewBase
     // ModModel on the UI thread so the update badge appears as responses arrive.
     private static async Task CheckModUpdatesAsync(List<ModModel> models)
     {
+        var stopwatch = Stopwatch.StartNew();
         var tasks = models.Select(async model =>
         {
             try
@@ -468,6 +509,7 @@ public partial class ModlistPageViewModel : PageViewBase
             catch { /* network failures are silent */ }
         });
         await Task.WhenAll(tasks);
+        PerformanceDiagnostics.Log($"Mod update checks: {stopwatch.ElapsedMilliseconds} ms, mods={models.Count}");
     }
 
     // ── Observable properties ─────────────────────────────────────────────────────
@@ -544,7 +586,7 @@ public partial class ModlistPageViewModel : PageViewBase
         var files = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
             Title             = Resources.GUIPickLogFile,
-            SuggestedFileName = $"momi-log-{DateTime.Now:yyyyMMdd-HHmmss}.txt",
+            SuggestedFileName = $"aim-log-{DateTime.Now:yyyyMMdd-HHmmss}.txt",
             DefaultExtension  = "txt",
             FileTypeChoices   = [FilePickerFileTypes.TextPlain]
         });
@@ -716,7 +758,7 @@ public partial class ModlistPageViewModel : PageViewBase
             var directory = Path.Combine(root, "MOMI", "logs");
             Directory.CreateDirectory(directory);
 
-            var path = Path.Combine(directory, $"momi-error-{DateTime.Now:yyyyMMdd-HHmmssfff}.txt");
+            var path = Path.Combine(directory, $"aim-error-{DateTime.Now:yyyyMMdd-HHmmssfff}.txt");
             var contents = $"MOMI diagnostic error log\r\n" +
                            $"Timestamp (UTC): {DateTime.UtcNow:O}\r\n" +
                            $"Application: {AppInfo.DisplayVersion}\r\n" +

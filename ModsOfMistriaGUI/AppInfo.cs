@@ -6,7 +6,7 @@ public static class AppInfo
 {
     public const string GitHubUrl = "https://github.com/AcTePuKc/Mods-of-Mistria-Installer";
     public const string ReleasesUrl = "https://github.com/AcTePuKc/Mods-of-Mistria-Installer/releases";
-    public const string ReleaseApiUrl = "https://api.github.com/repos/AcTePuKc/Mods-of-Mistria-Installer/releases/latest";
+    public const string ReleaseApiUrl = "https://api.github.com/repos/AcTePuKc/Mods-of-Mistria-Installer/releases?per_page=20";
     public const string SupportedGame = "Fields of Mistria 1.0.x";
     public const string GameLaunchUri = "steam://rungameid/2142790";
     public static string Version

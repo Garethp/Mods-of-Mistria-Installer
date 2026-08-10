@@ -160,7 +160,7 @@
   <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve"><value>コスメティックのUIスプライトにbodyがありません。</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>コスメティックのUIスプライトに結合スプライトがありません。</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>コスメティックのUIスプライトに結合アウトラインがありません。</value></data>
-  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>コスメティック{0}のcosmetic_spritesが不正です。次のいずれかである必要があります：{1}。</value></data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>コスメティック{0}のcosmetic_spritesの値{1}が不正です。次のいずれかである必要があります：{2}。</value></data>
   <data name="GUIUpdateAvailable" xml:space="preserve"><value>更新があります</value></data>
   <data name="GUIArchiveNoGameArchive" xml:space="preserve"><value>ゲームアーカイブが見つかりません。</value></data>
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>アーカイブの状態を取得できません。</value></data>

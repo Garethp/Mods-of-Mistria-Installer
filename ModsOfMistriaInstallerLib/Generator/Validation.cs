@@ -11,6 +11,12 @@ public enum ValidationStatus
 
 public class Validation
 {
+    public void Clear()
+    {
+        Errors.Clear();
+        Warnings.Clear();
+    }
+
     public ValidationStatus Status
     {
         get

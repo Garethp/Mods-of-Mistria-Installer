@@ -1,4 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Diagnostics;
+using Garethp.ModsOfMistriaInstallerLib;
 
 namespace Garethp.ModsOfMistriaGUI.Services;
 
@@ -17,7 +19,9 @@ public sealed class LocalizedTexts : ObservableObject
         {
             // One broadcast is enough. Sending one notification per label
             // makes Avalonia measure and arrange the whole window repeatedly.
+            var stopwatch = Stopwatch.StartNew();
             OnPropertyChanged((string?)null);
+            PerformanceDiagnostics.Log($"Language refresh: global localized bindings={stopwatch.ElapsedMilliseconds} ms");
         };
     }
 

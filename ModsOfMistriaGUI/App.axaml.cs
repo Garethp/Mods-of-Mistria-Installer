@@ -3,10 +3,12 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using System.Diagnostics;
 using Garethp.ModsOfMistriaGUI.Models;
 using Garethp.ModsOfMistriaGUI.Services;
 using Garethp.ModsOfMistriaGUI.ViewModels;
 using Garethp.ModsOfMistriaGUI.Views;
+using Garethp.ModsOfMistriaInstallerLib;
 using MsBox.Avalonia;
 using Newtonsoft.Json.Linq;
 
@@ -21,17 +23,22 @@ public class App : Application
 
     public App()
     {
+        var stopwatch = Stopwatch.StartNew();
         LocalizationService.Instance.SetLanguage(Settings.LoadSavedUiLanguage());
         _mainViewModel = new MainWindowViewModel();
+        PerformanceDiagnostics.Log($"Startup: App + MainWindowViewModel construction={stopwatch.ElapsedMilliseconds} ms");
     }
 
     public override void Initialize()
     {
+        var stopwatch = Stopwatch.StartNew();
         AvaloniaXamlLoader.Load(this);
+        PerformanceDiagnostics.Log($"Startup: Avalonia resources={stopwatch.ElapsedMilliseconds} ms");
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
+        var stopwatch = Stopwatch.StartNew();
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var mainWindow = new MainWindow { DataContext = _mainViewModel };
@@ -59,6 +66,8 @@ public class App : Application
             _ = CheckForUpdatesAsync(_updateCheckCancellation.Token);
         }
 
+        PerformanceDiagnostics.Log($"Startup: framework initialization={stopwatch.ElapsedMilliseconds} ms");
+
         base.OnFrameworkInitializationCompleted();
     }
 
@@ -72,7 +81,15 @@ public class App : Application
             using var response = await client.GetAsync(AppInfo.ReleaseApiUrl, cancellationToken);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            var tagName = JObject.Parse(json)["tag_name"]?.ToString();
+            var releases = JArray.Parse(json);
+            var aimRelease = releases.FirstOrDefault(release =>
+            {
+                var name = release["name"]?.ToString() ?? "";
+                var tag = release["tag_name"]?.ToString() ?? "";
+                return name.StartsWith("AIM ", StringComparison.OrdinalIgnoreCase)
+                       || tag.StartsWith("aim-", StringComparison.OrdinalIgnoreCase);
+            });
+            var tagName = aimRelease?["tag_name"]?.ToString();
             if (tagName is null) return;
 
             var latestVersion = Version.Parse(tagName.TrimStart('v'));

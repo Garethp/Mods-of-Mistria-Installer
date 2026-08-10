@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Garethp.ModsOfMistriaInstallerLib;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaGUI.Services;
@@ -27,6 +28,11 @@ public partial class ModModel : ObservableObject
 
     [ObservableProperty] private int _position;
 
+    public bool IsAlternateRow => Position % 2 == 0;
+
+    partial void OnPositionChanged(int value)
+        => OnPropertyChanged(nameof(IsAlternateRow));
+
     // Set by UpdateChecker after startup — true when a newer release is available
     [ObservableProperty] private bool _updateAvailable;
     [ObservableProperty] private string? _latestVersion;
@@ -36,7 +42,6 @@ public partial class ModModel : ObservableObject
     {
         Mod = mod;
         _enabledBacking = mod.IsInstalled();
-        Localization.LanguageChanged += (_, _) => OnPropertyChanged(nameof(UpdateTooltip));
     }
 
     public ModModel()
@@ -66,6 +71,7 @@ public partial class ModModel : ObservableObject
     // ── Install outcome ───────────────────────────────────────────────────────
 
     private ModInstallState _installState = ModInstallState.None;
+    private bool _installDetailIsSuccessMessage;
 
     // What the expander says about the outcome: "Installed successfully." or
     // the skip reasons
@@ -90,6 +96,7 @@ public partial class ModModel : ObservableObject
     {
         _installState = state;
         InstallDetail = detail;
+        _installDetailIsSuccessMessage = state == ModInstallState.Installed;
         OnPropertyChanged(nameof(WasInstalled));
         OnPropertyChanged(nameof(WasSkipped));
         OnPropertyChanged(nameof(WasFailed));
@@ -113,6 +120,29 @@ public partial class ModModel : ObservableObject
         OnPropertyChanged(nameof(ShowErrorIcon));
         OnPropertyChanged(nameof(ShowPlainRow));
         OnPropertyChanged(nameof(ShowStatusRow));
+    }
+
+    public bool NeedsLocalizedValidation => InError || InWarning;
+
+    public void RefreshLocalizedText()
+    {
+        if (_installDetailIsSuccessMessage)
+        {
+            InstallDetail = Resources.GUIModInstalled;
+            OnPropertyChanged(nameof(InstallDetail));
+        }
+        // Validation state does not change merely because the display
+        // language changed. Avoid notifying every status binding here; with
+        // a large mod list those redundant notifications force Avalonia to
+        // measure and arrange every row repeatedly.
+        OnPropertyChanged(nameof(Full));
+        OnPropertyChanged(nameof(UpdateTooltip));
+    }
+
+    public void RevalidateForLocalization()
+    {
+        Mod.Validate();
+        ModInstaller.ValidateMods(new List<IMod> { Mod });
     }
 
     public string Full => string.Format(Resources.GUIModByAuthorWithVersion, Mod.GetName(), Mod.GetAuthor(), Mod.GetVersion());
