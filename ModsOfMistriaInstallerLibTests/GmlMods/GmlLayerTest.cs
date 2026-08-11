@@ -348,7 +348,7 @@ public class GmlLayerTest
         var plan = Stage();
 
         var sources = PayloadResolver.MmapiSources();
-        Assert.That(sources, Has.Count.EqualTo(8));
+        Assert.That(sources, Has.Count.EqualTo(9));
 
         var delivered = plan.Added
             .Where(e => e.Key.StartsWith(SeamStager.MmapiTreePrefix, StringComparison.Ordinal))

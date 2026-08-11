@@ -39,7 +39,7 @@ version = 2
 [counts]
 hooks = 102
 seams = 110
-engine_fixes = 4
+engine_fixes = 10
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -2732,6 +2732,77 @@ replace = '''
     }'''
 marker  = "mmapi_camera_run_culls_processed"
 provides = ["camera.culls_processed"]
+
+# Custom NPC ids: five engine fixes in Std.gml plus one in QuestDatabase.gml
+# let a mod register a namespaced id (mmapi_register_custom_npc_id,
+# mmapi_npc.gml) at the six call sites that resolve a name through
+# string_to_npc_id, without touching NpcId or NPCS[]/NPC_PROTOTYPES[]. Not a
+# [[call_rewrite]]: those natives have ~30 other call sites (BuggerInitialize.gml,
+# Dates.gml, NpcDatabase.gml, Inbox.gml, LoadGame.gml, Std.gml's own
+# __mark_actor_as_met/__request_music_play) that index NPCS[]/NPC_PROTOTYPES[]
+# directly - a tree-wide rewrite would crash those on a custom-id sentinel.
+# Each entry short-circuits before the native chain, so npc_id_to_gm_obj_id's
+# impossible() crash never sees a non-real id. [[engine_fix]], not [[seam]]:
+# no hook needed, mmapi is the registry's only owner.
+[[engine_fix]]
+name    = "npc_custom_actor_resolution"
+file    = "gml/scripts/GameplaySystems/Mist/Std.gml"
+anchor  = '''
+            } else if try_string_to_npc_id(_name) != undefined {
+                return npc_id_to_gm_obj_id(string_to_npc_id(_name));
+            } else {'''
+replace = '''
+            } else if try_string_to_npc_id(_name) != undefined {
+                return npc_id_to_gm_obj_id(string_to_npc_id(_name));
+            } else if (__mmapi_custom_npc_object_for(_name) != undefined) { // mmapi_npc_custom_actor_resolution
+                return __mmapi_custom_npc_object_for(_name);
+            } else {'''
+marker  = "mmapi_npc_custom_actor_resolution"
+
+[[engine_fix]]
+name    = "npc_custom_await_animation"
+file    = "gml/scripts/GameplaySystems/Mist/Std.gml"
+anchor  = '''
+            npc = npc_id_to_gm_obj_id(string_to_npc_id(npc));'''
+replace = '''
+            npc = __mmapi_custom_npc_object_for(npc) ?? npc_id_to_gm_obj_id(string_to_npc_id(npc)); // mmapi_npc_custom_await_animation'''
+marker  = "mmapi_npc_custom_await_animation"
+
+[[engine_fix]]
+name    = "npc_custom_shadow_enabled"
+file    = "gml/scripts/GameplaySystems/Mist/Std.gml"
+anchor  = '''
+            shadow_caster_set_alpha(npc_id_to_gm_obj_id(string_to_npc_id(npc)).shadow_caster, boo);'''
+replace = '''
+            shadow_caster_set_alpha((__mmapi_custom_npc_object_for(npc) ?? npc_id_to_gm_obj_id(string_to_npc_id(npc))).shadow_caster, boo); // mmapi_npc_custom_shadow_enabled'''
+marker  = "mmapi_npc_custom_shadow_enabled"
+
+[[engine_fix]]
+name    = "npc_custom_entry_transition"
+file    = "gml/scripts/GameplaySystems/Mist/Std.gml"
+anchor  = '''
+            var obj = npc_id_to_gm_obj_id(string_to_npc_id(name));'''
+replace = '''
+            var obj = __mmapi_custom_npc_object_for(name) ?? npc_id_to_gm_obj_id(string_to_npc_id(name)); // mmapi_npc_custom_entry_transition'''
+marker  = "mmapi_npc_custom_entry_transition"
+
+[[engine_fix]]
+name    = "npc_custom_door_use"
+file    = "gml/scripts/GameplaySystems/Mist/Std.gml"
+anchor  = '''
+                var obj = npc_id_to_gm_obj_id(string_to_npc_id(actor));'''
+replace = '''
+                var obj = __mmapi_custom_npc_object_for(actor) ?? npc_id_to_gm_obj_id(string_to_npc_id(actor)); // mmapi_npc_custom_door_use'''
+marker  = "mmapi_npc_custom_door_use"
+
+[[engine_fix]]
+name    = "npc_custom_quest_query"
+file    = "gml/scripts/GameplaySystems/Quests/QuestDatabase.gml"
+anchor  = '''
+                var npc_name = string_to_npc_id(f_query.npc);'''
+replace = '''
+                var npc_name = try_string_to_npc_id(f_query.npc) ?? __mmapi_custom_npc_object_for(f_query.npc) ?? string_to_npc_id(f_query.npc); // mmapi_npc_custom_quest_query'''
+marker  = "mmapi_npc_custom_quest_query"
 
 # local_get is a native builtin (fabricator extension): the pristine tree has no
 # GML body for it, so no template, target, text, or wrap form can reach inside

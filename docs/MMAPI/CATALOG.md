@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **102 hooks**, fed by **110 seams**, **4 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **102 hooks**, fed by **110 seams**, **10 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -281,6 +281,12 @@ Hook-less edits the catalog also carries:
 | [statue_hp_death_sweep](seams/statue_hp_death_sweep.md) | engine fix | Adds the Living Griffin Statue's missing depleted-hp death check, closing a potential soft-lock and matching every other monster's sweep. |
 | [tarball_chop_burn_flag](seams/tarball_chop_burn_flag.md) | engine fix | Passes the tarball's real fire flag to its grid chop, so non-fire chops stop being burn-throttled by stump/fruit-tree iframes. |
 | [max_crafts_zero_component](seams/max_crafts_zero_component.md) | engine fix | Skips zero-cost components in the craft-ceiling loop, mirroring the zero guard the duration branch already has. |
+| [npc_custom_actor_resolution](seams/npc_custom_actor_resolution.md) | engine fix | Resolves a registered custom NPC id as a Mist cutscene actor. |
+| [npc_custom_await_animation](seams/npc_custom_await_animation.md) | engine fix | Resolves a registered custom NPC id in the Mist `__await_npc_animation` command. |
+| [npc_custom_shadow_enabled](seams/npc_custom_shadow_enabled.md) | engine fix | Resolves a registered custom NPC id in the Mist `set_shadow_enabled` command. |
+| [npc_custom_entry_transition](seams/npc_custom_entry_transition.md) | engine fix | Resolves a registered custom NPC id in the Mist `look_for_entry_transition` command. |
+| [npc_custom_door_use](seams/npc_custom_door_use.md) | engine fix | Resolves a registered custom NPC id in the Mist `__use_door` command. |
+| [npc_custom_quest_query](seams/npc_custom_quest_query.md) | engine fix | Resolves a registered custom NPC id in a quest's `QuestQueryType.Npc` query. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Growing The Catalog
