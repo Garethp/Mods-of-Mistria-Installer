@@ -49,9 +49,20 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public void ShowUpdateAvailable(string version)
     {
+        if (string.Equals(_settings.DismissedUpdateVersion, version, StringComparison.OrdinalIgnoreCase))
+            return;
+
         _availableVersion = version;
         UpdateMessage = string.Format(Localization["GUIUpdateAvailable"], _availableVersion);
         UpdateAvailable = true;
+    }
+
+    [RelayCommand]
+    private void DismissUpdate()
+    {
+        if (_availableVersion is not null)
+            _settings.DismissedUpdateVersion = _availableVersion;
+        UpdateAvailable = false;
     }
 
     public void SaveCurrentState()

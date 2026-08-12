@@ -11,9 +11,10 @@
              d:DataContext="{x:Static models:DesignData.ModlistPageViewModel}">
     <DockPanel LastChildFill="True">
 
-        <!-- Bottom toolbar: settings menu + install buttons -->
-        <DockPanel DockPanel.Dock="Bottom" Height="50" Margin="0 10 0 0">
-            <Menu>
+        <!-- Bottom toolbar: settings, language and actions share one compact row. -->
+        <Grid DockPanel.Dock="Bottom" Height="44" Margin="0 8 0 0"
+              ColumnDefinitions="Auto,Auto,*,Auto">
+            <Menu Grid.Column="0">
                 <MenuItem>
                     <MenuItem.Header>
                         <Image Height="16" Margin="5 0 0 0">
@@ -33,17 +34,44 @@
                 </MenuItem>
             </Menu>
 
-            <WrapPanel DockPanel.Dock="Right" Height="50" Margin="0 10 0 0" HorizontalAlignment="Right">
-                <TextBlock VerticalAlignment="Center" Text="{Binding InstallStatus}" Padding="0 0 20 0" />
-                <Button Margin="0 0 10 0"
+            <Menu Grid.Column="1" Margin="6 0 0 0">
+                <MenuItem Header="{Binding Texts.GUILanguageMenu}"
+                          IsEnabled="{Binding !IsInstalling}">
+                    <MenuItem x:Name="LanguageSystemMenuItem" Header="{Binding Texts.GUILanguageSystem}" Tag="system" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageEnglishMenuItem" Header="{Binding Texts.GUILanguageEnglish}" Tag="en" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageBulgarianMenuItem" Header="{Binding Texts.GUILanguageBulgarian}" Tag="bg" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguagePolishMenuItem" Header="{Binding Texts.GUILanguagePolish}" Tag="pl" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageGermanMenuItem" Header="{Binding Texts.GUILanguageGerman}" Tag="de" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageFrenchMenuItem" Header="{Binding Texts.GUILanguageFrench}" Tag="fr" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageDutchMenuItem" Header="{Binding Texts.GUILanguageDutch}" Tag="nl" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguagePortugueseMenuItem" Header="{Binding Texts.GUILanguagePortugueseBrazil}" Tag="pt-br" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageRussianMenuItem" Header="{Binding Texts.GUILanguageRussian}" Tag="ru" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageIndonesianMenuItem" Header="{Binding Texts.GUILanguageIndonesian}" Tag="id" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageSimplifiedChineseMenuItem" Header="{Binding Texts.GUILanguageSimplifiedChinese}" Tag="zh-hans" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageTraditionalChineseMenuItem" Header="{Binding Texts.GUILanguageTraditionalChinese}" Tag="zh-hant" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageKoreanMenuItem" Header="{Binding Texts.GUILanguageKorean}" Tag="ko" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageJapaneseMenuItem" Header="{Binding Texts.GUILanguageJapanese}" Tag="ja" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageSpanishMenuItem" Header="{Binding Texts.GUILanguageSpanish}" Tag="es" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguageUkrainianMenuItem" Header="{Binding Texts.GUILanguageUkrainian}" Tag="uk" Click="LanguageMenuClick" />
+                </MenuItem>
+            </Menu>
+
+            <TextBlock Grid.Column="2"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Text="{Binding InstallStatus}"
+                       TextTrimming="CharacterEllipsis"
+                       Margin="12 0" />
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="10">
+                <Button
                         Command="{Binding LaunchGameCommand}"
                         Content="{Binding Texts.GUIPlayButtonText}" />
-                <Button Margin="0 0 10 0" Command="{Binding InstallModsCommand}"
+                <Button Command="{Binding InstallModsCommand}"
                         Content="{Binding InstallButtonText}" />
                 <Button Command="{Binding UnInstallModsCommand}"
                         Content="{Binding Texts.GUIUninstallButtonText}" />
-            </WrapPanel>
-        </DockPanel>
+            </StackPanel>
+        </Grid>
 
         <DockPanel LastChildFill="True">
             <StackPanel DockPanel.Dock="Top">
@@ -81,28 +109,37 @@
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="22,24,*,Auto"
+                                      Classes="mod-row"
                                       Classes.alt="{Binding IsAlternateRow}"
+                                      Background="Transparent"
+                                      DragDrop.AllowDrop="True"
+                                      DragDrop.DragOver="OnModRowDragOver"
+                                      DragDrop.DragLeave="OnModRowDragLeave"
+                                      DragDrop.Drop="OnModRowDrop"
                                       Margin="0 2 0 2">
                                     <Grid.Styles>
                                         <Style Selector="Grid.alt">
                                             <Setter Property="Background" Value="{DynamicResource ModAlternateRowBrush}" />
                                         </Style>
+                                        <Style Selector="Grid.dragging">
+                                            <Setter Property="Opacity" Value="0.45" />
+                                        </Style>
                                     </Grid.Styles>
-                                    <!-- Load-order controls -->
-                                    <StackPanel Orientation="Vertical" Width="22" Margin="0 0 4 0"
-                                                VerticalAlignment="Center"
-                                                Grid.Column="0">
-                                        <Button Padding="2 0"
-                                                FontSize="10"
-                                                Command="{Binding $parent[ItemsRepeater].DataContext.MoveModUpCommand}"
-                                                CommandParameter="{Binding}"
-                                                ToolTip.Tip="{Binding Texts.GUIMoveUp}">▲</Button>
-                                        <Button Padding="2 0"
-                                                FontSize="10"
-                                                Command="{Binding $parent[ItemsRepeater].DataContext.MoveModDownCommand}"
-                                                CommandParameter="{Binding}"
-                                                ToolTip.Tip="{Binding Texts.GUIMoveDown}">▼</Button>
-                                    </StackPanel>
+                                    <!-- Drag the grip to change load order. Keeping this separate from
+                                         the checkbox prevents a reorder gesture from toggling a mod. -->
+                                    <Border Grid.Column="0"
+                                            Width="22"
+                                            Margin="0 0 4 0"
+                                            VerticalAlignment="Stretch"
+                                            Cursor="SizeAll"
+                                            IsEnabled="{Binding $parent[ItemsRepeater].DataContext.CanReorderMods}"
+                                            PointerPressed="OnModDragGripPointerPressed">
+                                        <TextBlock Text="⠿"
+                                                   FontSize="16"
+                                                   Foreground="Gray"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center" />
+                                    </Border>
                                     <!-- Position number -->
                                     <TextBlock Width="24" Grid.Column="1" VerticalAlignment="Center"
                                                Text="{Binding Position}"
@@ -112,6 +149,7 @@
                                     <!-- Mod checkbox + warnings -->
                                     <controls:ModlistCheckbox Grid.Column="2"
                                                               HorizontalAlignment="Stretch"
+                                                              IsEnabled="{Binding $parent[ItemsRepeater].DataContext.CanChangeModSelection}"
                                                               DataContext="{Binding}" />
                                     <!-- Update available badge -->
                                     <Button Grid.Column="3"
@@ -125,6 +163,33 @@
                                             VerticalAlignment="Center"
                                             Content="{Binding Texts.GUIUpdateMod}"
                                             ToolTip.Tip="{Binding UpdateTooltip}" />
+                                    <!-- The active line makes the exact insertion point obvious while dragging. -->
+                                    <Border x:Name="DropBeforeIndicator"
+                                            Grid.ColumnSpan="4"
+                                            Height="3"
+                                            VerticalAlignment="Top"
+                                            Background="#58D1B2"
+                                            IsHitTestVisible="False"
+                                            IsVisible="False" />
+                                    <Border x:Name="DropAfterIndicator"
+                                            Grid.ColumnSpan="4"
+                                            Height="3"
+                                            VerticalAlignment="Bottom"
+                                            Background="#58D1B2"
+                                            IsHitTestVisible="False"
+                                            IsVisible="False" />
+                                    <!-- Briefly confirms the row that accepted the drop. -->
+                                    <Border x:Name="DropCompleteFlash"
+                                            Grid.ColumnSpan="4"
+                                            Background="#8058D1B2"
+                                            Opacity="0"
+                                            IsHitTestVisible="False">
+                                        <Border.Transitions>
+                                            <Transitions>
+                                                <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+                                            </Transitions>
+                                        </Border.Transitions>
+                                    </Border>
                                 </Grid>
                             </DataTemplate>
                         </ItemsRepeater.ItemTemplate>

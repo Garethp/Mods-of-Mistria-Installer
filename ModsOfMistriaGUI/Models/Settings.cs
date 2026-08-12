@@ -23,6 +23,10 @@ public partial class Settings : ObservableObject
 
     [ObservableProperty] private string _uiLanguage = "system";
 
+    // A dismissed update is remembered only for that exact version. A later
+    // release remains visible instead of being hidden permanently.
+    [ObservableProperty] private string? _dismissedUpdateVersion;
+
     private static string PreferencesPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "MOMI",
@@ -34,13 +38,17 @@ public partial class Settings : ObservableObject
     partial void OnUiLanguageChanged(string value)
         => SavePreferences();
 
+    partial void OnDismissedUpdateVersionChanged(string? value)
+        => SavePreferences();
+
     private void SavePreferences()
     {
         try
         {
             var directory = Path.GetDirectoryName(PreferencesPath);
             if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
-            File.WriteAllText(PreferencesPath, JsonSerializer.Serialize(new LaunchPreferences(LaunchGameDirectly, UiLanguage)));
+            File.WriteAllText(PreferencesPath, JsonSerializer.Serialize(
+                new LaunchPreferences(LaunchGameDirectly, UiLanguage, DismissedUpdateVersion)));
         }
         catch
         {
@@ -58,6 +66,7 @@ public partial class Settings : ObservableObject
             {
                 LaunchGameDirectly = preferences.LaunchGameDirectly;
                 UiLanguage = string.IsNullOrWhiteSpace(preferences.UiLanguage) ? "system" : preferences.UiLanguage;
+                DismissedUpdateVersion = preferences.DismissedUpdateVersion;
             }
         }
         catch
@@ -77,7 +86,10 @@ public partial class Settings : ObservableObject
         catch { return "system"; }
     }
 
-    private sealed record LaunchPreferences(bool LaunchGameDirectly, string UiLanguage = "system");
+    private sealed record LaunchPreferences(
+        bool LaunchGameDirectly,
+        string UiLanguage = "system",
+        string? DismissedUpdateVersion = null);
 
     public bool ValidMistriaLocation() => !string.IsNullOrEmpty(MistriaLocation) &&
                                           Directory.Exists(MistriaLocation) &&

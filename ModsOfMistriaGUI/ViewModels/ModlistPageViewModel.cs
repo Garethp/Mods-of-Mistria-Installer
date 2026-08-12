@@ -244,22 +244,19 @@ public partial class ModlistPageViewModel : PageViewBase
 
     // ── Load order ────────────────────────────────────────────────────────────────
 
-    [RelayCommand]
-    private void MoveModUp(ModModel mod)
+    public void MoveMod(ModModel draggedMod, ModModel targetMod, bool insertBeforeTarget)
     {
-        var index = Mods.IndexOf(mod);
-        if (index <= 0) return;
-        Mods.Move(index, index - 1);
-        RefreshPositions();
-        _isDirty = true;
-    }
+        var sourceIndex = Mods.IndexOf(draggedMod);
+        var targetIndex = Mods.IndexOf(targetMod);
+        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex == targetIndex) return;
 
-    [RelayCommand]
-    private void MoveModDown(ModModel mod)
-    {
-        var index = Mods.IndexOf(mod);
-        if (index < 0 || index >= Mods.Count - 1) return;
-        Mods.Move(index, index + 1);
+        // ObservableCollection.Move expects the final index after the source item has
+        // been removed, so a downward move needs to account for that removal.
+        var destinationIndex = insertBeforeTarget ? targetIndex : targetIndex + 1;
+        if (sourceIndex < destinationIndex) destinationIndex--;
+        if (sourceIndex == destinationIndex) return;
+
+        Mods.Move(sourceIndex, destinationIndex);
         RefreshPositions();
         _isDirty = true;
     }
@@ -548,7 +545,16 @@ public partial class ModlistPageViewModel : PageViewBase
     [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))]
     [NotifyCanExecuteChangedFor(nameof(UnInstallModsCommand))]
     [NotifyCanExecuteChangedFor(nameof(LaunchGameCommand))]
+    [NotifyPropertyChangedFor(nameof(CanReorderMods))]
+    [NotifyPropertyChangedFor(nameof(CanChangeModSelection))]
     [ObservableProperty] private bool _isInstalling;
+
+    // Load order is part of the same profile state as the checkboxes. Do not let a
+    // drag operation alter it while an archive operation is using that state.
+    public bool CanReorderMods => !IsInstalling;
+
+    // Keep checkbox changes out of an in-progress archive operation as well.
+    public bool CanChangeModSelection => !IsInstalling;
 
     [NotifyCanExecuteChangedFor(nameof(InstallModsCommand))]
     [ObservableProperty] private bool _installationNeedsRebuild;

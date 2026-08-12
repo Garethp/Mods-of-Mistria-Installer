@@ -6,6 +6,13 @@
 - Added a complete Polish resource set for the GUI, CLI, archive recovery,
   validation diagnostics, profiles, mod dependencies, and cosmetic-mod errors.
 - Added the Polish language name to every existing interface-language menu.
+- Replaced repetitive load-order arrows with drag-and-drop reordering, including
+  an insertion line and a short confirmation flash on the moved mod.
+- Prevented mod selection and load-order changes while installation or
+  uninstallation is in progress.
+- Consolidated Settings, language selection, status, and actions into one compact
+  toolbar to show more mods at once.
+- Made the update notice dismissible per version; a later update appears again.
 
 ## 0.1.0 — AIM
 

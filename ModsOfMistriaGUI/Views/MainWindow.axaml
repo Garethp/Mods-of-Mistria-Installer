@@ -37,34 +37,27 @@
             <TransitioningContentControl Content="{Binding CurrentPage}" />
         </Panel>
 
-        <StackPanel Grid.Row="2" Spacing="6" Margin="32 12 32 16">
-            <Menu HorizontalAlignment="Right">
-                <MenuItem Header="{Binding Texts.GUILanguageMenu}"
-                          IsEnabled="{Binding !IsBusy}">
-                    <MenuItem x:Name="LanguageSystemMenuItem" Header="{Binding Texts.GUILanguageSystem}" Tag="system" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageEnglishMenuItem" Header="{Binding Texts.GUILanguageEnglish}" Tag="en" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageBulgarianMenuItem" Header="{Binding Texts.GUILanguageBulgarian}" Tag="bg" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguagePolishMenuItem" Header="{Binding Texts.GUILanguagePolish}" Tag="pl" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageGermanMenuItem" Header="{Binding Texts.GUILanguageGerman}" Tag="de" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageFrenchMenuItem" Header="{Binding Texts.GUILanguageFrench}" Tag="fr" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageDutchMenuItem" Header="{Binding Texts.GUILanguageDutch}" Tag="nl" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguagePortugueseMenuItem" Header="{Binding Texts.GUILanguagePortugueseBrazil}" Tag="pt-br" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageRussianMenuItem" Header="{Binding Texts.GUILanguageRussian}" Tag="ru" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageIndonesianMenuItem" Header="{Binding Texts.GUILanguageIndonesian}" Tag="id" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageSimplifiedChineseMenuItem" Header="{Binding Texts.GUILanguageSimplifiedChinese}" Tag="zh-hans" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageTraditionalChineseMenuItem" Header="{Binding Texts.GUILanguageTraditionalChinese}" Tag="zh-hant" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageKoreanMenuItem" Header="{Binding Texts.GUILanguageKorean}" Tag="ko" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageJapaneseMenuItem" Header="{Binding Texts.GUILanguageJapanese}" Tag="ja" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageSpanishMenuItem" Header="{Binding Texts.GUILanguageSpanish}" Tag="es" Click="LanguageMenuClick" />
-                    <MenuItem x:Name="LanguageUkrainianMenuItem" Header="{Binding Texts.GUILanguageUkrainian}" Tag="uk" Click="LanguageMenuClick" />
-                </MenuItem>
-            </Menu>
-            <Border IsVisible="{Binding UpdateAvailable}" Background="#2D6B4A" CornerRadius="4" Padding="12 8">
-                <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Text="{Binding UpdateMessage}" VerticalAlignment="Center" />
+        <!-- An update is important, but it should not permanently take a row from the mod list. -->
+        <Border Grid.Row="2"
+                IsVisible="{Binding UpdateAvailable}"
+                Background="#2D6B4A"
+                CornerRadius="4"
+                Padding="10 6"
+                Margin="32 6 32 10"
+                HorizontalAlignment="Right"
+                MaxWidth="560">
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                    <TextBlock Text="{Binding UpdateMessage}"
+                               TextWrapping="Wrap"
+                               VerticalAlignment="Center" />
                     <Button Grid.Column="1" Content="{Binding Texts.GUIGitHubButtonText}" Click="OpenGitHubClick" Margin="12 0 0 0" />
+                    <Button Grid.Column="2"
+                            Content="×"
+                            Command="{Binding DismissUpdateCommand}"
+                            FontSize="18"
+                            Padding="6 0"
+                            Margin="6 0 0 0" />
                 </Grid>
-            </Border>
-        </StackPanel>
+        </Border>
     </Grid>
 </Window>

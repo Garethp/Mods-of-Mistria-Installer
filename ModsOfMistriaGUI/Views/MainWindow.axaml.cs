@@ -1,10 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Platform;
-using Garethp.ModsOfMistriaGUI.Services;
-using Garethp.ModsOfMistriaGUI.ViewModels;
 
 namespace Garethp.ModsOfMistriaGUI.Views;
 
@@ -14,7 +11,6 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         Opened += (_, _) => FitToWorkingArea();
-        Opened += (_, _) => UpdateLanguageCheckmark();
     }
 
     private void FitToWorkingArea()
@@ -49,40 +45,4 @@ public partial class MainWindow : Window
         }
     }
 
-    private void LanguageMenuClick(object? sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem { Tag: string languageCode } && DataContext is MainWindowViewModel viewModel)
-        {
-            viewModel.ChangeLanguage(languageCode);
-            UpdateLanguageCheckmark();
-        }
-    }
-
-    private void UpdateLanguageCheckmark()
-    {
-        var selected = LocalizationService.Instance.LanguageCode;
-        var items = new[]
-        {
-            LanguageSystemMenuItem, LanguageEnglishMenuItem, LanguageBulgarianMenuItem,
-            LanguagePolishMenuItem,
-            LanguageGermanMenuItem, LanguageFrenchMenuItem, LanguageDutchMenuItem,
-            LanguagePortugueseMenuItem, LanguageRussianMenuItem, LanguageIndonesianMenuItem,
-            LanguageSimplifiedChineseMenuItem, LanguageTraditionalChineseMenuItem,
-            LanguageKoreanMenuItem, LanguageJapaneseMenuItem, LanguageSpanishMenuItem,
-            LanguageUkrainianMenuItem
-        };
-
-        foreach (var item in items)
-        {
-            var isSelected = string.Equals(item.Tag as string, selected, StringComparison.OrdinalIgnoreCase);
-            item.Icon = isSelected
-                ? new TextBlock
-                {
-                    Text = "✓",
-                    FontWeight = FontWeight.Bold,
-                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
-                }
-                : null;
-        }
-    }
 }
