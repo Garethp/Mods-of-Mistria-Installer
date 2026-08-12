@@ -221,7 +221,13 @@ The proposed shape above (pure C# + P/Invoke, no forked native helper - see the 
 
 Verified against the live game, not just in isolation: the C# pipeline decoded the real `Fall.bank`, re-encoded all 29 subsounds, rebuilt the bank, and the game loaded and played it correctly - confirmed audibly (`It sounds like the normal fall music`).
 
-Still ahead: a real mod-facing format (manifest + `AudioInstaller` wired into `ModInstaller.RunInstallers`, per the implementation plan's Phase 2) - today this is a developer tool you run by hand, not something a mod ships.
+## Phase 2 built and proven: `momi/audio/` mods
+
+The mod-facing format is real too: `momi/audio/*.toml` + `AudioInstaller`, wired into `ModInstaller.RunInstallers`. A mod author ships a plain WAV and a manifest entry; MOMI's installer does the decode/replace/re-encode/splice at install time - see [docs/AUDIO_REPLACEMENT.md](../AUDIO_REPLACEMENT.md) for the manifest schema and [`AudioInstaller.cs`](../../ModsOfMistriaInstallerLib/Installer/AudioInstaller.cs) for the implementation.
+
+Verified through the real install path, not just unit tests: built the actual CLI (`ModsOfMistriaCommandLine`) with `AudioInstaller` wired in, ran it against the live game with a real test mod (`momi/audio/*.toml` + WAV) sitting in the real `mods/` folder alongside the other installed mods, confirmed the swap landed in the resulting `assets.zip`, and confirmed a clean boot. Caught and fixed one real gap along the way: FSBank silently drops embedded subsound names when built from in-memory buffers rather than files (`FsBankNative` already worked around this - see its class comment), and a first pass at hooking it up to the CLI surfaced that the CLI's pre-install validation pass is currently disabled (`Standalone.cs:39`, pre-existing, not introduced here), so a broken `wav` path fails silently rather than printing an error - worth fixing separately, not blocking here since the install still simply skips the broken entry.
+
+Native FMOD DLLs (`fmod64.dll`/`fsbank64.dll`/`libfsbvorbis64.dll`) now bundle into both shipping projects via the same content-item pattern `momi-gml-check` uses - see [`tools/fmod/PACKAGING.md`](../../tools/fmod/PACKAGING.md). Redistribution terms for those proprietary binaries are still unresolved, flagged there - not a blocker for building/testing, but is one before a real public release.
 
 ## Open questions for later
 

@@ -97,4 +97,16 @@
               CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
     </ItemGroup>
 
+    <!-- Native FMOD Core + FSBank binaries for in-place audio bank replacement
+         (ModsOfMistriaInstallerLib/Audio). Proprietary Firelight/FMOD binaries,
+         not built by our CI and not committed to the repo - staged to
+         tools/fmod/dist/<rid>/ before publish. See tools/fmod/PACKAGING.md,
+         including the redistribution-terms caveat. Conditioned on existence so
+         a dev build without them still compiles; AudioInstaller then fails at
+         that mod's install step instead of failing the whole build. -->
+    <ItemGroup Condition="Exists('..\tools\fmod\dist\$(RuntimeIdentifier)')">
+        <None Include="..\tools\fmod\dist\$(RuntimeIdentifier)\*.dll"
+              CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
+    </ItemGroup>
+
 </Project>

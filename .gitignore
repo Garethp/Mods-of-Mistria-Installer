@@ -10,3 +10,5 @@ ModsOfMistriaInstaller.sln.DotSettings.user
 .vs/
 /tools/checker/target/
 /tools/checker/dist/
+# Proprietary FMOD binaries - never committed, see tools/fmod/PACKAGING.md
+/tools/fmod/dist/

@@ -273,7 +273,13 @@ public class ModInstaller
         new MISTInstaller(fileNameUIDMapping, _fileModifier)
             .Install(effectiveMod, generatedInformation, reportStatus);
 
-        // 6. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
+        // 6. Install Audio replacements. No ID-manager/atlas dependency, so
+        // ordering relative to the other steps here is flexible.
+        reportPhase(modName, "Installing Audio");
+        new AudioInstaller(fileNameUIDMapping, _fileModifier)
+            .Install(mod, generatedInformation, reportStatus);
+
+        // 7. Generate data-layer content from momi/ definitions (fiddle, outlines, asset_parts)
         reportPhase(modName, "Installing Outfits");
         new OutfitInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, generatedInformation, reportStatus);

@@ -121,7 +121,61 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
                 return ResourceManager.GetString("CoreCosmeticsFileHasNoCosmetics", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Audio replacement {0} has no bank specified..
+        /// </summary>
+        public static string CoreErrorAudioNoBank {
+            get {
+                return ResourceManager.GetString("CoreErrorAudioNoBank", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Audio replacement {0} has no wav specified..
+        /// </summary>
+        public static string CoreErrorAudioNoWav {
+            get {
+                return ResourceManager.GetString("CoreErrorAudioNoWav", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Audio replacement {0}&apos;s wav file {1} does not exist..
+        /// </summary>
+        public static string CoreErrorAudioWavMissing {
+            get {
+                return ResourceManager.GetString("CoreErrorAudioWavMissing", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Audio replacement {0} references bank {1}, which does not exist..
+        /// </summary>
+        public static string CoreErrorAudioBankNotFound {
+            get {
+                return ResourceManager.GetString("CoreErrorAudioBankNotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Audio replacement {0} - no track by that name was found in {1}.bank..
+        /// </summary>
+        public static string CoreErrorAudioTrackNotFound {
+            get {
+                return ResourceManager.GetString("CoreErrorAudioTrackNotFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Audio replacement {0}&apos;s wav file could not be read: {1}.
+        /// </summary>
+        public static string CoreErrorAudioWavUnreadable {
+            get {
+                return ResourceManager.GetString("CoreErrorAudioWavUnreadable", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Cosmetic {0} has incorrect ui_sub_category. Must be one of: {1}..
         /// </summary>
