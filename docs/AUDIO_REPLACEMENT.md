@@ -33,7 +33,10 @@ ones.
 
 ## Finding a track's name and bank
 
-There's no in-game or in-installer search yet. Use the standalone
+[**Audio Tracks by Bank**](AUDIO_TRACKS.md) lists every track name in every
+bank as of this doc's writing - check there first. It's a snapshot, though,
+and can drift as the game updates: if a track isn't there or looks wrong,
+regenerate it yourself with the standalone
 [`tools/audio-replace`](../tools/audio-replace) CLI's `list` command against
 a copy of your `assets.zip`:
 
