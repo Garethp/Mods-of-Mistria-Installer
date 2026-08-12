@@ -215,6 +215,14 @@ Every step above was manual (GUI tool + hand-written Python zip surgery). To tur
 
 **Proposed shape for a real feature**: fork/strip Fmod-Bank-Tools' core extract/rebuild logic (drop the Qt GUI, keep the container parsing) into a small headless CLI helper, bundled the same way `momi-gml-check.exe` already is - a native binary the C# installer shells out to, invisible to mod authors. A mod would ship a plain WAV plus a small manifest declaring which bank and which original track name it replaces; MOMI's installer would, at install time: locate the target bank in the pristine backup, extract the full subsound group the target belongs to, overlay the mod's replacement WAV by matching filename (keeping every other WAV in that group untouched), rebuild via the bundled helper, and splice the result into the built `assets.zip` - the same shape as every other asset kind MOMI already handles, with the FMOD/bank-format complexity fully hidden.
 
+## Phase 1 built and proven: `tools/audio-replace`
+
+The proposed shape above (pure C# + P/Invoke, no forked native helper - see the implementation plan this branch carried) is now real code, not just a proposal: [`ModsOfMistriaInstallerLib/Audio/`](../../ModsOfMistriaInstallerLib/Audio) reads/writes the `.bank` container, decodes existing subsounds via the real FMOD Core API, and re-encodes via the real FSBank API. A small CLI wraps it end to end - see [tools/audio-replace/README.md](../../tools/audio-replace/README.md) for how to use it.
+
+Verified against the live game, not just in isolation: the C# pipeline decoded the real `Fall.bank`, re-encoded all 29 subsounds, rebuilt the bank, and the game loaded and played it correctly - confirmed audibly (`It sounds like the normal fall music`).
+
+Still ahead: a real mod-facing format (manifest + `AudioInstaller` wired into `ModInstaller.RunInstallers`, per the implementation plan's Phase 2) - today this is a developer tool you run by hand, not something a mod ships.
+
 ## Open questions for later
 
 - **Can a mod extend the game's own existing strings-bank ecosystem** (append/reference into `Master.strings.bank`'s namespace) rather than shipping an independent second one? This is the crux of whether "add new tracks" is fixable at all without engine cooperation - genuinely needs someone who knows the FMOD/engine integration, not more local trial and error.

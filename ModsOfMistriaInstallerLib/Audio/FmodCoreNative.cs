@@ -222,6 +222,60 @@ public static class FmodCoreNative
         return stream.ToArray();
     }
 
+    // Reads a plain PCM WAV file back into a DecodedSubsound - the inverse
+    // of ToWav, for substituting a mod author's own WAV into a group
+    // instead of an FSB5-decoded one. Only the standard 16-byte PCM fmt
+    // chunk (mono/stereo, 8/16/24/32-bit) is understood; anything else
+    // (compressed formats, extensible fmt chunks) throws rather than guess.
+    public static DecodedSubsound FromWav(string name, byte[] wavBytes)
+    {
+        using var stream = new MemoryStream(wavBytes, writable: false);
+        using var reader = new BinaryReader(stream);
+
+        if (ReadTag(reader) != "RIFF") throw new InvalidDataException("wav: missing RIFF magic");
+        reader.ReadInt32();
+        if (ReadTag(reader) != "WAVE") throw new InvalidDataException("wav: missing WAVE tag");
+
+        short channels = 0, bits = 0;
+        var sampleRate = 0;
+        byte[]? pcm = null;
+
+        while (stream.Position < stream.Length)
+        {
+            var tag = ReadTag(reader);
+            var size = reader.ReadInt32();
+
+            if (tag == "fmt ")
+            {
+                var audioFormat = reader.ReadInt16();
+                if (audioFormat != 1) throw new InvalidDataException($"wav: unsupported audio format {audioFormat} (only PCM is supported)");
+                channels = reader.ReadInt16();
+                sampleRate = reader.ReadInt32();
+                reader.ReadInt32(); // byte rate - derived, not needed
+                reader.ReadInt16(); // block align - derived, not needed
+                bits = reader.ReadInt16();
+                stream.Position += size - 16; // skip any trailing extension bytes
+            }
+            else if (tag == "data")
+            {
+                pcm = reader.ReadBytes(size);
+            }
+            else
+            {
+                stream.Position += size;
+            }
+
+            if (size % 2 != 0) stream.Position += 1; // chunks are word-aligned
+        }
+
+        if (channels == 0 || bits == 0) throw new InvalidDataException("wav: no fmt chunk found");
+        if (pcm is null) throw new InvalidDataException("wav: no data chunk found");
+
+        return new DecodedSubsound(name, sampleRate, channels, bits, pcm);
+    }
+
+    private static string ReadTag(BinaryReader reader) => System.Text.Encoding.ASCII.GetString(reader.ReadBytes(4));
+
     private static void Check(int fmodResult, string call)
     {
         if (fmodResult != FmodOk)
