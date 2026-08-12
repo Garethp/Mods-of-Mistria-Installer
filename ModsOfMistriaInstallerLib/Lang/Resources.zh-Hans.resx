@@ -217,4 +217,5 @@
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>存档状态不可用。</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>存档版本不可用。</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>游戏存档与 AIM 上次管理的版本不同。</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>波兰语</value></data>
 </root>

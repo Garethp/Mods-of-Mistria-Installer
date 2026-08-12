@@ -217,4 +217,5 @@
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>아카이브 상태를 사용할 수 없습니다.</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>아카이브 버전을 사용할 수 없습니다.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>게임 아카이브가 AIM이 마지막으로 관리한 버전과 다릅니다.</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>폴란드어</value></data>
 </root>

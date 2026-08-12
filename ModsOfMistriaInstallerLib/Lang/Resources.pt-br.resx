@@ -545,4 +545,5 @@ Abrir as páginas de download no navegador?</value></data>
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Instalação do AIM detectada, mas o estado registrado não está disponível.</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Instalação do AIM detectada, mas as versões dos mods instalados não estão disponíveis.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>O conjunto ou a versão dos mods instalados é diferente deste perfil. Recomendado: desinstale e depois instale. A instalação também pode ser reconstruída a partir do backup original.</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>Polonês</value></data>
 </root>

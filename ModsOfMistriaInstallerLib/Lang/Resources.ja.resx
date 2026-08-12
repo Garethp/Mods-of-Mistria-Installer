@@ -217,4 +217,5 @@
   <data name="CoreErrorOutfitUiSlotWrong" xml:space="preserve"><value>服{0}のui_slotが不正です。次のいずれかである必要があります：{1}。</value></data>
   <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve"><value>服{0}のui_sub_categoryが不正です。次のいずれかである必要があります：{1}。</value></data>
   <data name="CoreErrorReadingVersionForMod" xml:space="preserve"><value>Modのバージョン読み込み中にエラーが発生しました：{0}</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>ポーランド語</value></data>
 </root>

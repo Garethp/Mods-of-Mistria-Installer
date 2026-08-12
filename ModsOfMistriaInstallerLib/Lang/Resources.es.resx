@@ -217,4 +217,5 @@
   <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve"><value>El cosmético {0} no tiene ui_sprites.merged.</value></data>
   <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>El cosmético {0} no tiene ui_sprites.merged_outline.</value></data>
   <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>El cosmético {0} tiene el valor incorrecto {1} para cosmetic_sprites. Debe ser uno de: {2}.</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>Polaco</value></data>
 </root>

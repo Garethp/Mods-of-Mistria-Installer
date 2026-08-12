@@ -616,4 +616,5 @@ Open download page(s) in browser?</value></data>
   <data name="GUILanguageUkrainian" xml:space="preserve"><value>Ukrainian</value></data>
   <data name="GUILocationModsDetected" xml:space="preserve"><value>Mods folder detected.</value></data>
   <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>Preparing GML layer</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>Polski</value></data>
 </root>

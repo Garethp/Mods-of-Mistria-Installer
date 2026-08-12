@@ -217,4 +217,5 @@
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>封存狀態無法使用。</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>封存版本無法使用。</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>遊戲封存與 AIM 上次管理的版本不同。</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>波蘭語</value></data>
 </root>

@@ -217,4 +217,5 @@ Buka halaman unduhan di browser?</value></data>
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Status arsip tidak tersedia.</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Versi arsip tidak tersedia.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>Arsip game berbeda dari versi yang terakhir dikelola AIM.</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>Polandia</value></data>
 </root>

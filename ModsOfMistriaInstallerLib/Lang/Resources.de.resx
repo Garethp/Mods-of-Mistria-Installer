@@ -545,4 +545,5 @@ Download-Seite(n) im Browser öffnen?</value></data>
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>AIM-Installation erkannt, aber der gespeicherte Status ist nicht verfügbar.</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>AIM-Installation erkannt, aber die Versionen der installierten Mods sind nicht verfügbar.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>Das installierte Mod-Set oder seine Version unterscheidet sich von diesem Profil. Empfohlen: Deinstallieren und anschließend installieren. Die Installation kann auch aus der unveränderten Sicherung neu erstellt werden.</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>Polnisch</value></data>
 </root>

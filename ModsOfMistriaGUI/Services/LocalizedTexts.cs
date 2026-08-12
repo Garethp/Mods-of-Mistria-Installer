@@ -43,6 +43,7 @@ public sealed class LocalizedTexts : ObservableObject
     public string GUILanguageSystem => T("GUILanguageSystem");
     public string GUILanguageEnglish => T("GUILanguageEnglish");
     public string GUILanguageBulgarian => T("GUILanguageBulgarian");
+    public string GUILanguagePolish => T("GUILanguagePolish");
     public string GUILanguageGerman => T("GUILanguageGerman");
     public string GUILanguageFrench => T("GUILanguageFrench");
     public string GUILanguageDutch => T("GUILanguageDutch");

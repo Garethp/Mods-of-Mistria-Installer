@@ -217,4 +217,5 @@
   <data name="CoreInstallCompleted" xml:space="preserve"><value>Инсталирането завърши</value></data>
   <data name="CoreInstallSummary" xml:space="preserve"><value>Инсталирани модове: {0}</value></data>
   <data name="CoreInstallSummaryWithSkipped" xml:space="preserve"><value>Инсталирани модове: {0}; пропуснати: {1}</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>Полски</value></data>
 </root>

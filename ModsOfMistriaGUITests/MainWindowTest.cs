@@ -39,6 +39,21 @@ public class Tests
     }
 
     [Test]
+    public void Should_Use_The_Complete_Polish_Resource_Set()
+    {
+        LocalizationService.Instance.SetLanguage("pl");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(LocalizationService.Instance["GUIInstallButtonText"], Is.EqualTo("Instaluj"));
+            Assert.That(LocalizationService.Instance["CoreCosmeticUiSubCategoryWrong"],
+                Does.StartWith("Kosmetyk {0} ma nieprawidłowe ui_sub_category."));
+        });
+
+        LocalizationService.Instance.SetLanguage("en");
+    }
+
+    [Test]
     public void Should_Not_Broadcast_When_Selecting_The_Active_Language()
     {
         LocalizationService.Instance.SetLanguage("en");

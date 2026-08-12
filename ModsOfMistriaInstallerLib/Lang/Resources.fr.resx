@@ -545,4 +545,5 @@ Ouvrir les pages de téléchargement dans le navigateur ?</value></data>
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Installation AIM détectée, mais son état enregistré est indisponible.</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Installation AIM détectée, mais les versions des mods installés sont indisponibles.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>Le jeu de mods installé ou sa version diffère de ce profil. Recommandation : désinstallez, puis installez. L'installation peut aussi être reconstruite depuis la sauvegarde vierge.</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>Polonais</value></data>
 </root>

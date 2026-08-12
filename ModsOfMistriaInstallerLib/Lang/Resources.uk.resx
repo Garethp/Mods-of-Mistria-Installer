@@ -209,4 +209,5 @@
   <data name="GUIMissingRequirementsMessage" xml:space="preserve"><value>Не вдалося знайти такі потрібні моди:&#xA;&#xA;{0}&#xA;&#xA;Відкрити сторінки завантаження у браузері?</value></data>
   <data name="GUIOpenExternalLinksMessage" xml:space="preserve"><value>Ви збираєтеся відкрити у браузері такі URL-адреси:&#xA;&#xA;{0}</value></data>
   <data name="GUIMissingRequirementsManual" xml:space="preserve"><value>Не вдалося знайти такі потрібні моди; їх потрібно встановити вручну:&#xA;&#xA;{0}</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>Польська</value></data>
 </root>

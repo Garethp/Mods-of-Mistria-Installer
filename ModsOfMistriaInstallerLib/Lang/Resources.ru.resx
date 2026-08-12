@@ -217,4 +217,5 @@
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>Состояние архива недоступно.</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Версии архива недоступны.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>Игровой архив отличается от последней версии, которой управлял AIM.</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>Польский</value></data>
 </root>

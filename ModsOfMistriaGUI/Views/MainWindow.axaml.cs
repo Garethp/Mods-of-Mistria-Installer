@@ -64,6 +64,7 @@ public partial class MainWindow : Window
         var items = new[]
         {
             LanguageSystemMenuItem, LanguageEnglishMenuItem, LanguageBulgarianMenuItem,
+            LanguagePolishMenuItem,
             LanguageGermanMenuItem, LanguageFrenchMenuItem, LanguageDutchMenuItem,
             LanguagePortugueseMenuItem, LanguageRussianMenuItem, LanguageIndonesianMenuItem,
             LanguageSimplifiedChineseMenuItem, LanguageTraditionalChineseMenuItem,

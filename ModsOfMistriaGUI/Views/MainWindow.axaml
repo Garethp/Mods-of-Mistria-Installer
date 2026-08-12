@@ -44,6 +44,7 @@
                     <MenuItem x:Name="LanguageSystemMenuItem" Header="{Binding Texts.GUILanguageSystem}" Tag="system" Click="LanguageMenuClick" />
                     <MenuItem x:Name="LanguageEnglishMenuItem" Header="{Binding Texts.GUILanguageEnglish}" Tag="en" Click="LanguageMenuClick" />
                     <MenuItem x:Name="LanguageBulgarianMenuItem" Header="{Binding Texts.GUILanguageBulgarian}" Tag="bg" Click="LanguageMenuClick" />
+                    <MenuItem x:Name="LanguagePolishMenuItem" Header="{Binding Texts.GUILanguagePolish}" Tag="pl" Click="LanguageMenuClick" />
                     <MenuItem x:Name="LanguageGermanMenuItem" Header="{Binding Texts.GUILanguageGerman}" Tag="de" Click="LanguageMenuClick" />
                     <MenuItem x:Name="LanguageFrenchMenuItem" Header="{Binding Texts.GUILanguageFrench}" Tag="fr" Click="LanguageMenuClick" />
                     <MenuItem x:Name="LanguageDutchMenuItem" Header="{Binding Texts.GUILanguageDutch}" Tag="nl" Click="LanguageMenuClick" />

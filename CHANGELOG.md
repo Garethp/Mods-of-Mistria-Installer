@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 — AIM
+
+- Added Polish as a selectable AIM interface language.
+- Added a complete Polish resource set for the GUI, CLI, archive recovery,
+  validation diagnostics, profiles, mod dependencies, and cosmetic-mod errors.
+- Added the Polish language name to every existing interface-language menu.
+
 ## 0.1.0 — AIM
 
 - Renamed the user-facing application to **AIM — Alternative Installer for Mistria**.

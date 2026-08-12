@@ -542,4 +542,5 @@ Downloadpagina's openen in de browser?</value></data>
   <data name="GUIArchiveStateUnavailable" xml:space="preserve"><value>AIM-installatie gedetecteerd, maar de opgeslagen status is niet beschikbaar.</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>AIM-installatie gedetecteerd, maar de versies van geïnstalleerde mods zijn niet beschikbaar.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>De geïnstalleerde modset of versie verschilt van dit profiel. Aanbevolen: eerst verwijderen en daarna installeren. Installatie kan ook opnieuw worden opgebouwd vanuit de ongewijzigde back-up.</value></data>
+  <data name="GUILanguagePolish" xml:space="preserve"><value>Poolse taal</value></data>
 </root>
