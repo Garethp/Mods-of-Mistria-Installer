@@ -29,7 +29,35 @@ wav = "audio/dance_of_the_leaves.wav"
   export to WAV from any audio editor if you're starting from something else.
 
 One TOML file can declare multiple tracks, in the same bank or different
-ones.
+ones - just add another `[...]` entry:
+
+```toml
+# momi/audio/fall_music.toml
+[snd_Fall_ChangingWinds_HidehitoIkumo]
+bank = "Fall"
+wav = "audio/my_song.wav"
+
+[snd_Fall_DanceOfTheLeaves_HidehitoIkumo]
+bank = "Fall"
+wav = "audio/my_song.wav"
+
+[snd_Fall_CrowsInAClearSky_HidehitoIkumo]
+bank = "Fall"
+wav = "audio/my_song.wav"
+
+["Fall - Changing Winds (Extended)_HidehitoIkumo"]
+bank = "Fall"
+wav = "audio/my_song.wav"
+```
+
+Worth doing for background music specifically: the game doesn't always play
+the same track for a given season - `Music/Playlists/Fall` is an FMOD
+playlist that picks randomly among these four each time, and that pick
+happens inside FMOD itself, invisible to and uncontrollable from GML or this
+feature. Replacing only one means you might not hear your swap for a while;
+replacing every track in the pool guarantees you always do. (The bracketed
+key needs quotes here only because this one track name contains spaces -
+see [Audio Tracks by Bank](AUDIO_TRACKS.md) for exact names.)
 
 ## Finding a track's name and bank
 
