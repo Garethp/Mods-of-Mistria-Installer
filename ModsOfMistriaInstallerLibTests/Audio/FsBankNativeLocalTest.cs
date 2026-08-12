@@ -27,13 +27,11 @@ public class FsBankNativeLocalTest
                 "fmod64.dll, fsbank64.dll and libfsbvorbis64.dll)");
         }
 
-        // libfsbvorbis64 is fsbank64's own Vorbis encoder plugin, loaded by
-        // fsbank64 itself at build time rather than P/Invoked directly here -
-        // it only needs to be resolvable via the OS search path, not given a
-        // resolver of its own. Preloading it from the same folder up front
-        // guarantees that regardless of process PATH/working directory.
-        // Unlike SetDllImportResolver, NativeLibrary.Load is safe to call
-        // every run - it does not need the shared once-only guard.
+        // libfsbvorbis64 is fsbank64's own Vorbis encoder plugin - loaded by
+        // fsbank64 itself, not P/Invoked here, so it just needs to be
+        // resolvable. Preloading it guarantees that regardless of process
+        // PATH/working directory. Unlike SetDllImportResolver, this is safe
+        // to call every run - no shared once-only guard needed.
         NativeLibrary.Load(Path.Combine(dir!, "libfsbvorbis64.dll"));
         FmodNativeTestSupport.EnsureResolver(dir!);
     }

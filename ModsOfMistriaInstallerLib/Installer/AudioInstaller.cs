@@ -9,19 +9,16 @@ namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
 // Processes momi/audio/*.toml: replaces named tracks' audio inside vanilla
 // .bank files with a mod's own WAVs, using the pipeline in
-// ModsOfMistriaInstallerLib/Audio (see docs/investigations/custom-music.md
-// and tools/audio-replace for how that pipeline was built and proven).
+// ModsOfMistriaInstallerLib/Audio (see docs/AUDIO_REPLACEMENT.md).
 //
 // Reads the bank via IFileModifier, not the pristine backup, so an earlier
-// mod's replacement in the same bank this run is preserved and composed
-// with - the same rule every other installer already follows for its own
-// file type.
+// mod's replacement to the same bank this run is preserved and composed
+// with - the same rule every other installer follows for its own file type.
 //
-// FSBank rebuilds a whole FSB5 group at once (every subsound in it, not
-// just the one changed - see FsBankNative's class comment), so entries are
-// grouped by bank and, within a bank, by which group their track actually
-// lives in, and each group is only decoded/re-encoded once no matter how
-// many of its tracks are being replaced.
+// FSBank rebuilds a whole FSB5 group at once, not just the changed subsound
+// (see FsBankNative's class comment), so entries are grouped by bank and,
+// within a bank, by which group their track lives in - each group is
+// decoded/re-encoded once regardless of how many of its tracks change.
 public class AudioInstaller(
     Dictionary<string, string> fileNameUidMapping,
     IFileModifier fileModifier)

@@ -9,17 +9,14 @@ namespace Garethp.ModsOfMistriaInstallerLib.Audio;
 // referenced in FmodCoreNative.cs and FmodBankFile.cs - same provenance
 // note applies.
 //
-// FSBANK_SUBSOUND supports fileData/fileDataLengths (raw in-memory buffers)
-// as an alternative to fileNames (file paths), which looked like a clean way
-// to skip a WAV-to-disk round trip - but fsbank.h documents (and this was
-// confirmed empirically, not just read) that FSBank silently drops each
-// subsound's embedded name when built from memory:
-// FSBANK_WARN_FORCED_DONTWRITENAMES, "cannot write names when source is
-// from memory". Whether the game needs those embedded names at runtime is
-// unconfirmed, and this feature has no reason to be the one to find out -
-// so this writes each WAV to a temp file and uses fileNames instead, the
-// same path rebuild_worker.cpp itself uses and the one already proven
-// in-game this session.
+// Writes each WAV to a temp file and uses FSBANK_SUBSOUND::fileNames rather
+// than its fileData/fileDataLengths (raw in-memory) alternative: fsbank.h
+// documents, and testing confirmed, that FSBank silently drops each
+// subsound's embedded name when built from memory
+// (FSBANK_WARN_FORCED_DONTWRITENAMES). Whether the game needs those names at
+// runtime is unconfirmed, so this uses the file-based path instead - the
+// same one rebuild_worker.cpp itself uses and the one already proven
+// in-game.
 public static class FsBankNative
 {
     private const string Lib = "fsbank64";
@@ -31,9 +28,8 @@ public static class FsBankNative
     private const uint FsbankBuildDefault = 0x00000000;
 
     // Matches Fmod-Bank-Tools' own shipped config.ini defaults (Format=vorbis,
-    // Quality=92, DefaultSettings=true i.e. FSBANK_BUILD_DEFAULT) - the exact
-    // settings already confirmed in-game this session for MinesUpper.bank and
-    // Fall.bank, not an independent guess.
+    // Quality=92, DefaultSettings=true i.e. FSBANK_BUILD_DEFAULT) - settings
+    // already confirmed in-game, not an independent guess.
     private const uint DefaultQuality = 92;
 
     [StructLayout(LayoutKind.Sequential)]

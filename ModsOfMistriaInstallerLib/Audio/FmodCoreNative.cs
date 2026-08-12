@@ -4,16 +4,16 @@ namespace Garethp.ModsOfMistriaInstallerLib.Audio;
 
 // P/Invoke bindings for the slice of FMOD's Core API needed to decode an
 // existing FSB5 group's bytes (as extracted by FmodBankFile.ExtractGroup)
-// back into per-subsound PCM. Read-only and playback-capable only in the
-// API-surface sense - nothing here ever actually plays audio.
+// back into per-subsound PCM. Playback-capable API used read-only - nothing
+// here ever actually plays audio.
 //
-// Struct layouts and function signatures are taken verbatim from the
-// FMOD Core SDK headers (fmod.h/fmod_common.h) bundled alongside fmod64.dll
-// in the GPLv3 Fmod-Bank-Tools project (https://github.com/Wouldubeinta/Fmod-Bank-Tools),
-// the same DLL this feature targets - not guessed from FMOD documentation,
-// which drifts across SDK versions. The call sequence itself is ported
-// (logic, not code) from that project's extract_worker.cpp::processSubSounds.
-// See FmodBankFile.cs for the shared license/provenance note.
+// Struct layouts and function signatures are taken verbatim from the FMOD
+// Core SDK headers (fmod.h/fmod_common.h) bundled alongside fmod64.dll in
+// the GPLv3 Fmod-Bank-Tools project (https://github.com/Wouldubeinta/Fmod-Bank-Tools) -
+// not guessed from FMOD documentation, which drifts across SDK versions.
+// The call sequence is ported (logic, not code) from that project's
+// extract_worker.cpp::processSubSounds. See FmodBankFile.cs for the shared
+// license/provenance note.
 public static class FmodCoreNative
 {
     private const string Lib = "fmod64";
@@ -188,11 +188,9 @@ public static class FmodCoreNative
     }
 
     // Wraps raw PCM in a standard 16-byte-fmt-chunk PCM WAV container, for
-    // saving to disk / manual inspection. Not used by the encode path, which
-    // reads DecodedSubsound's fields directly instead of re-parsing a WAV
-    // header - so this is free to be a plain, standards-conformant writer
-    // rather than replicate the reference tool's WAV header (which pads its
-    // fmt chunk to 18 bytes by over-reading a 2-byte field as 4).
+    // saving to disk or feeding FsBankNative. A plain, standards-conformant
+    // writer - not a port of the reference tool's WAV header, which pads its
+    // fmt chunk to 18 bytes by over-reading a 2-byte field as 4.
     public static byte[] ToWav(DecodedSubsound subsound)
     {
         var blockAlign = (short)(subsound.Channels * (subsound.Bits / 8));

@@ -1,25 +1,22 @@
 namespace Garethp.ModsOfMistriaInstallerLib.Audio;
 
-// Pure container-format logic for FMOD Studio .bank files: a RIFF/"FEV "
-// file whose PROJ/BNKI chunk carries an "SNDH" table of (offset, size)
-// pairs, one per embedded FSB5 sub-bank ("group" below - Fmod-Bank-Tools
-// calls these fsb[0], fsb[1], ... and each can itself bundle several named
-// subsounds, e.g. MinesUpper.bank's one group holds three barks).
+// Container-format logic for FMOD Studio .bank files: a RIFF/"FEV " file
+// whose PROJ/BNKI chunk carries an "SNDH" table of (offset, size) pairs, one
+// per embedded FSB5 sub-bank ("group" below). Each group can itself bundle
+// several named subsounds - e.g. MinesUpper.bank's one group holds three
+// barks.
 //
 // Ported (logic, not code) from the GPLv3 Fmod-Bank-Tools project
 // (https://github.com/Wouldubeinta/Fmod-Bank-Tools) - bank_extract.cpp's
 // header walk and rebuild_worker.cpp's bankRebuild(). MOMI is GPLv3 too, so
-// this is a compatible relicense, not a fresh reimplementation guess: the
-// field names and the "unconditional re-seek after SNDH" quirk below are
-// carried over deliberately, because the original never revisits the bytes
-// it re-seeks past (the read loop's exit condition already tripped), and a
-// "cleaned up" rewrite risks silently changing behavior on files this
-// wasn't tested against.
+// this is a compatible relicense. Quirks flagged below are carried over
+// deliberately rather than "cleaned up", since a rewrite risks silently
+// changing behavior on files this wasn't tested against.
 //
-// The container itself has no fixed-size slots: rebuilding recomputes every
-// group's offset, so a replacement can be larger or smaller than the
-// original freely. That is confirmed by hand against the real game, not
-// just inferred from this parser (see docs/investigations/custom-music.md).
+// No fixed-size slots: rebuilding recomputes every group's offset, so a
+// replacement can be larger or smaller than the original freely - confirmed
+// against the real game, not just inferred (see
+// docs/investigations/custom-music.md).
 public static class FmodBankFile
 {
     private const uint TagSndh = 0x48444E53; // "SNDH"
@@ -29,11 +26,9 @@ public static class FmodBankFile
     public sealed record Group(uint Offset, uint Size);
 
     // The subset of the header walk needed to rebuild, not just list,
-    // groups: where the SNDH table itself lives (to overwrite it), where
-    // each group's "SND " chunk payload starts (to splice new bytes in),
-    // and each group's original chunk padding (preserved verbatim, exactly
-    // as the reference implementation does - its purpose isn't otherwise
-    // documented, so the only safe move is to carry it forward unchanged).
+    // groups: where the SNDH table lives (to overwrite it), where each
+    // group's "SND " chunk payload starts (to splice new bytes in), and
+    // each group's padding (undocumented purpose - preserved verbatim).
     private sealed class Layout
     {
         public required List<Group> Groups;
@@ -95,11 +90,10 @@ public static class FmodBankFile
         for (var i = 0; i < groupCount; i++)
             newSizes[i] = i == groupIndex ? (uint)newGroupBytes.Length : layout.Groups[i].Size;
 
-        // Recompute offsets: group 0 keeps its original offset (the header
-        // prefix before it never changes size), every later group starts
-        // right after the previous one's new bytes plus that group's own
-        // preserved padding, plus 8 for the "SND "+size tag pair - same
-        // recurrence as the reference implementation.
+        // Group 0 keeps its original offset (the header prefix before it
+        // never changes size); each later group starts right after the
+        // previous one's new bytes, plus its own padding, plus 8 for the
+        // "SND "+size tag pair.
         var newOffsets = new uint[groupCount];
         newOffsets[0] = layout.Groups[0].Offset;
         for (var i = 0; i < groupCount - 1; i++)
@@ -226,25 +220,18 @@ public static class FmodBankFile
 
             if (chunkType == TagSndh)
             {
-                // +4 to skip past sndh_unknown: the table location must
-                // point at the first (offset, size) pair, not the chunk
-                // body's start, since that's where the rebuild write later
-                // lands its rewritten pairs.
+                // +4 to skip sndh_unknown: the table location must point at
+                // the first (offset, size) pair, since that's where the
+                // rebuild write lands its rewritten pairs.
                 sndhLocation = stream.Position + 4;
                 groups = ReadSndhTable(reader, chunkSize);
                 sndBuffer = new uint[groups.Count];
                 sndLocation = new long[groups.Count];
-                // No extra seek here: ReadSndhTable's reads already consumed
-                // exactly chunkSize bytes (4 for sndh_unknown + 8 per group),
-                // so the stream is already positioned at this chunk's end,
-                // correctly lined up to read the next chunk's header. This
-                // differs from the simple ReadGroups walk above, which
-                // re-seeks unconditionally after every chunk including SNDH -
-                // harmless there only because that loop returns immediately
-                // once the SNDH table is found, so the extra seek is never
-                // acted on. Here the walk must continue past SNDH to find
-                // STBL/SND, so that extra seek would (and did, before this
-                // fix) skip past them.
+                // No extra seek: ReadSndhTable already consumed exactly
+                // chunkSize bytes, so the stream is correctly positioned for
+                // the next chunk header. Unlike ReadGroups above, this walk
+                // must continue past SNDH to reach STBL/SND, so seeking here
+                // would skip them.
                 continue;
             }
 
@@ -255,11 +242,10 @@ public static class FmodBankFile
                 {
                     stream.Position = current + chunkSize;
                     var probe = reader.ReadUInt32();
-                    // The reference implementation peeks one uint32 past the
-                    // declared chunk end; if it isn't "SND " or "HASH", the
-                    // real boundary is one byte further than declared. Real
-                    // observed alignment quirk in some STBL chunks, not a
-                    // guess - carried over as-is.
+                    // Peek one uint32 past the declared chunk end; if it
+                    // isn't "SND " or "HASH", the real boundary is one byte
+                    // further - an observed alignment quirk in some STBL
+                    // chunks, carried over from the reference implementation.
                     if (probe != TagSnd && probe != 0x48534148 /* "HASH" */)
                         chunkSize += 1;
                 }
