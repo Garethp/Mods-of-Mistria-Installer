@@ -43,7 +43,7 @@ This project is intended for Fields of Mistria 1.0.x. Individual mods may still 
 
 1. Download the latest release from the [releases page](https://github.com/AcTePuKc/Mods-of-Mistria-Installer/releases).
 2. Open AIM and choose a mods folder. AIM automatically checks for `mods`, `Mods`, `MODS`, or `MODs` next to the detected game installation and next to the AIM executable. It also checks the supported per-user Linux/Steam Deck locations. You can select or create another folder manually.
-3. Put each mod directly in the selected folder. A mod folder, ZIP, or RAR archive must contain `manifest.toml` or `manifest.json` at its root.
+3. Put each mod directly in the selected folder. For an extracted mod, place `manifest.toml` or `manifest.json` in the mod folder, or keep a single outer wrapper folder around it. ZIP and RAR archives can be added directly; AIM locates the mod manifest inside the archive.
 4. Select the mods you want and click **Install**. You can add new mods at any time; you do not need to uninstall the other installed mods first.
 5. Start the game with **Play**.
 
