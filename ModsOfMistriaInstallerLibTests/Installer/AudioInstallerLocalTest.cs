@@ -147,6 +147,60 @@ public class AudioInstallerLocalTest
         Assert.That(mod.GetValidation().Errors.Single().Message, Does.Contain("NotARealBank"));
     }
 
+    // Deliberately a plain-silence WAV whose duration differs from every
+    // real track in Fall.bank, so that a changed playback-length field is
+    // proof the patch landed, not a coincidental match. Kept short to keep
+    // FSBank's own encode step fast, in either direction (shorter or longer
+    // than the original) - what matters for this test is that it differs.
+    private static byte[] ShortSilentWav(double seconds) =>
+        FmodCoreNative.ToWav(new FmodCoreNative.DecodedSubsound(
+            "replacement", 48000, 2, 16, new byte[(int)(seconds * 48000) * 2 * 2]));
+
+    // The real regression case this whole GUID-anchored rewrite exists for:
+    // replacing a track that lives in one of Fall.bank's two scatterer
+    // instruments must update that scatterer's own TriggerBox/TransitionRegion
+    // fields so playback doesn't cut off or loop at the *original* track's
+    // duration, and must leave the *other* scatterer (Extended's, which
+    // ChangingWinds isn't a member of) completely untouched.
+    [Test]
+    public void ShouldExtendPlaybackLengthFieldsForAReplacedMusicTrackAndLeaveTheOtherScattererAlone()
+    {
+        using var archive = ZipFile.Open(_workingZipPath!, ZipArchiveMode.Update);
+        var fileModifier = new ZipFileModifier(archive);
+
+        var mod = new MockMod(new Dictionary<string, object>
+        {
+            {
+                "momi/audio/test.toml",
+                """
+                [snd_Fall_ChangingWinds_HidehitoIkumo]
+                bank = "Fall"
+                wav = "replacement.wav"
+                """
+            },
+            { "replacement.wav", ShortSilentWav(3.0) },
+        });
+
+        new AudioInstaller(new Dictionary<string, string>(), fileModifier)
+            .Install(mod, new GeneratedInformation(), (_, _) => { });
+
+        Assert.That(mod.GetValidation().Errors, Is.Empty);
+
+        var bank = ReadBank(fileModifier);
+        const uint expectedSamples48K = (uint)(3.0 * 48000);
+
+        var changingWindsOffsets = FmodEventGraph.FindPlaybackLengthFieldOffsets(
+            bank, 0, ModsOfMistriaInstallerLibTests.Audio.FallBankIndices.ChangingWinds);
+        Assert.That(changingWindsOffsets, Is.Not.Empty);
+        foreach (var offset in changingWindsOffsets)
+            Assert.That(BitConverter.ToUInt32(bank, (int)offset), Is.EqualTo(expectedSamples48K));
+
+        var extendedOffsets = FmodEventGraph.FindPlaybackLengthFieldOffsets(
+            bank, 0, ModsOfMistriaInstallerLibTests.Audio.FallBankIndices.Extended);
+        foreach (var offset in extendedOffsets)
+            Assert.That(BitConverter.ToUInt32(bank, (int)offset), Is.Not.EqualTo(expectedSamples48K));
+    }
+
     private static byte[] ReadBank(ZipFileModifier fileModifier)
     {
         using var stream = fileModifier.GetReadStream("assets/audio/Fall.bank");

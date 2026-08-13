@@ -125,16 +125,23 @@ public class AudioInstaller(
         foreach (var group in locations.GroupBy(kv => kv.Value))
         {
             var decoded = decodedGroups[group.Key]!;
+            var timelinePatches = new List<(int SubsoundIndex, uint NewSamples48K)>();
 
             foreach (var entry in group.Select(kv => kv.Key))
             {
                 var index = decoded.FindIndex(s => s.Name == entry.Id);
                 try
                 {
+                    var original = decoded[index];
                     using var wavStream = mod.ReadFileAsStream(entry.Wav!);
                     using var wavMem = new MemoryStream();
                     wavStream.CopyTo(wavMem);
-                    decoded[index] = FmodCoreNative.FromWav(entry.Id, wavMem.ToArray());
+                    var replacement = FmodCoreNative.FromWav(entry.Id, wavMem.ToArray());
+                    decoded[index] = replacement;
+                    var oldSamples = SamplesAt48K(original);
+                    var newSamples = SamplesAt48K(replacement);
+                    if (oldSamples != newSamples)
+                        timelinePatches.Add((index, newSamples));
                     reportStatus($"Replacing audio track: {entry.Id}", "");
                 }
                 catch (Exception e)
@@ -146,9 +153,38 @@ public class AudioInstaller(
 
             var rebuiltFsb = FsBankNative.EncodeGroup(decoded);
             bank = FmodBankFile.ReplaceGroup(bank, group.Key, rebuiltFsb);
+
+            // Corrects the compiled FMOD event's own timeline length, which
+            // otherwise still reflects the original track and cuts a longer
+            // replacement off early (playlists advance, single-instrument
+            // loops restart) - see docs/investigations/custom-music.md's
+            // "Measured directly, not just inferred" section for how this
+            // was found and confirmed via FMOD's own Studio API. The offsets
+            // to patch are resolved structurally, by GUID, from this exact
+            // subsound's own position in the group - not by searching for
+            // the old duration's value, which turned out to be unsafe (the
+            // same duration can legitimately belong to more than one
+            // unrelated track). A track with nothing to patch (referenced by
+            // zero timeline constructs) just leaves the bank as ReplaceGroup
+            // produced it.
+            foreach (var (subsoundIndex, newSamples) in timelinePatches)
+                bank = FmodBankFile.PatchPlaybackLengthFields(bank, group.Key, subsoundIndex, newSamples);
         }
 
         if (locations.Count > 0)
             fileModifier.Write(dest, bank);
+    }
+
+    // The compiled event data was confirmed (via FMOD's own Studio API, see
+    // docs/investigations/custom-music.md) to reference each track's sample
+    // count at a fixed 48kHz timeline reference rate, regardless of a given
+    // subsound's own actual sample rate - so this always converts to that
+    // rate rather than assuming every subsound is already 48kHz.
+    private static uint SamplesAt48K(FmodCoreNative.DecodedSubsound subsound)
+    {
+        var bytesPerSample = subsound.Channels * (subsound.Bits / 8);
+        var sampleCount = subsound.Pcm.Length / (double)bytesPerSample;
+        var seconds = sampleCount / subsound.SampleRate;
+        return (uint)Math.Round(seconds * 48000.0);
     }
 }

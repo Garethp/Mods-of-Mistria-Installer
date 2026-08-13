@@ -138,6 +138,65 @@ public static class FmodBankFile
         return result;
     }
 
+    // Rewrites the compiled event graph's own playback-length field(s) - a
+    // TriggerBox.Length, and (see FmodEventGraph.ParseTransitionRegionBody
+    // for why this is the field that actually matters at runtime, not just
+    // for EventDescription::GetLength() metadata) a sibling TransitionRegion's
+    // Start/End - for the subsound at (soundBankIndex, subsoundIndex) to
+    // newSamples48K (a sample count at a fixed 48kHz timeline reference rate
+    // - confirmed via FMOD's own Studio API, see
+    // docs/investigations/custom-music.md). This is how a replacement track
+    // playing longer than the original, which would otherwise get cut off or
+    // loop early, can actually play to completion in-game.
+    //
+    // The offsets to patch are resolved structurally by FmodEventGraph (by
+    // GUID, walking timeline -> trigger box -> instrument/playlist/waveform
+    // resource), not by searching for the old duration's byte value - an
+    // earlier version of this method did that, and it turned out to be
+    // unsafe: the same duration can legitimately belong to more than one
+    // unrelated track (see the investigation doc's "shared timeline window"
+    // finding), so a value match could silently touch a sibling track's own
+    // field. Finding zero offsets is not an error - the audio swap this
+    // accompanies still works either way, just without the early-cutoff/loop
+    // fix.
+    public static byte[] PatchPlaybackLengthFields(byte[] bank, int soundBankIndex, int subsoundIndex, uint newSamples48K)
+    {
+        var offsets = FmodEventGraph.FindPlaybackLengthFieldOffsets(bank, soundBankIndex, subsoundIndex);
+        if (offsets.Count == 0) return bank;
+
+        var result = (byte[])bank.Clone();
+        var newBytes = BitConverter.GetBytes(newSamples48K);
+        foreach (var offset in offsets)
+            newBytes.CopyTo(result, offset);
+
+        return result;
+    }
+
+    // Exposed to FmodEventGraph, which needs to bound its own chunk walk to
+    // end where the event graph ends (everything before SNDH).
+    internal static long FindSndhTagPosition(byte[] bank)
+    {
+        using var stream = new MemoryStream(bank, writable: false);
+        using var reader = new BinaryReader(stream);
+        ReadPreamble(reader);
+
+        while (stream.Position < stream.Length)
+        {
+            var tagPosition = stream.Position;
+            var chunkType = reader.ReadUInt32();
+            var chunkSize = reader.ReadUInt32();
+            if (chunkType == 0xFFFFFFFF || chunkSize == 0xFFFFFFFF)
+                throw new InvalidDataException("fmod bank: invalid chunk while scanning for SNDH");
+
+            if (chunkType == TagSndh)
+                return tagPosition;
+
+            stream.Position += chunkSize;
+        }
+
+        throw new InvalidDataException("fmod bank: no SNDH chunk found");
+    }
+
     private static byte[] ExtractOriginalGroup(byte[] bank, Group group)
     {
         var result = new byte[group.Size];
@@ -148,7 +207,9 @@ public static class FmodBankFile
     // RIFF/FEV/LIST/PROJ/BNKI preamble every .bank starts with, common to
     // both the simple and full parses. Leaves the stream positioned right
     // after BNKI's own chunk_size field is skipped, ready to walk chunks.
-    private static void ReadPreamble(BinaryReader reader)
+    // Exposed to FmodEventGraph, which needs the same starting position to
+    // walk the event graph (FMT/BUSS/INST/EVNT.../SNDH) that follows BNKI.
+    internal static void ReadPreamble(BinaryReader reader)
     {
         var stream = reader.BaseStream;
 

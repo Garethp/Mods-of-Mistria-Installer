@@ -1,6 +1,6 @@
 # Investigation: Custom Music Tracks
 
-**Status:** core question answered for "replace"; "add" remains blocked pending outside input. Branch: `custom-music-investigation`. Native MOMI implementation of the "replace" path (pure C# + P/Invoke into FMOD's own libraries, no third-party tool dependency) is now underway on this same branch - see the `ModsOfMistriaInstallerLib/Audio/` code for the current state.
+**Status:** core question answered for "replace"; "add" remains blocked pending outside input. Branch: `custom-music-investigation`. Native MOMI implementation of the "replace" path (pure C# + P/Invoke into FMOD's own libraries, no third-party tool dependency) is built and shipping, including replacements meaningfully longer than the original track (see "The real fix" below) - see the `ModsOfMistriaInstallerLib/Audio/` code for the current state.
 
 ## Question
 
@@ -306,14 +306,52 @@ Went one step further than binary archaeology: the FMOD *Studio* API (a separate
 
 This is hard confirmation, not inference: the compiled event genuinely carries a fixed length independent of the audio content, retrieved through FMOD's own official API rather than pattern-matched out of raw bytes. It does not, however, open an editing path - `getLength()` is a read-only query against an already-compiled, already-loaded bank; the Studio API has no corresponding setter, and actually changing it would need FMOD Studio (the authoring application) and the original `.fspro` project source, which doesn't exist for this feature to reach.
 
-### Practical takeaway
+### Practical takeaway (superseded - see "The real fix" below)
 
 Not narrow to playlists after all - this affects both constructs tested, just differently:
 
 - **Music (playlist) tracks**: a much longer replacement gets cut short and the playlist advances early.
 - **Ambient (single-instrument, looping) tracks**: a much longer replacement gets cut short and loops from the start early.
 
-In both cases, a replacement *close to* the original track's length should be unaffected (and everything shorter clearly works fine, per every other successful test this session). A replacement meaningfully *longer* than the track it replaces will not play to completion. Fixing that for real would mean changing the compiled event's own timeline length, and the only way to do that is FMOD Studio (the authoring application) plus the original `.fspro` project source - not something reachable by patching bank bytes, however well understood, since the value is read at load time from data this feature has no source project to regenerate. Documented as a real, confirmed, structural limitation, not a bug to keep chasing.
+At the time this was written, the conclusion was that fixing this for real would need FMOD Studio (the authoring application) plus the original `.fspro` project source, since `getLength()` has no corresponding setter and the compiled event graph had no known-safe way to locate a "the" length field without an existing spec or open-source parser. **That conclusion turned out to be wrong** - a real, working fix exists and is now shipped. See "The real fix" below for how it was found.
+
+## The real fix: a GUID-anchored parser and `TransitionRegion.Start`/`End`
+
+Picking this back up in a later session, with explicit direction to "find a fix" and then "keep digging" through several dead ends - documented here in full because each wrong turn is exactly the kind of thing worth knowing before anyone else attempts this.
+
+### The missing piece: an actual open-source parser for the event graph
+
+The blind byte-archaeology above stalled for a real reason: there was no spec and no existing parser for the region before `SNDH`. That changed by finding **[Masusder/FModBankParser](https://github.com/Masusder/FModBankParser)** (Apache-2.0, actively maintained, C#) - a project that, unlike Fmod-Bank-Tools (confirmed by reading its source directly: its chunk walk hardcodes exactly one tag, `SNDH`, and structurally can't see anything before it), actually parses the compiled event graph: `TimelineNode` (with `TriggerBox[]`), `MultiInstrumentNode`/`ScattererInstrumentNode` (both carrying a `PlaylistNode` body), `WaveformInstrumentNode`, `WaveformResourceNode` (the direct link from a GUID to a `{soundBankIndex, subsoundIndex}` pair), and more. Apache-2.0 is permissive and GPLv3-compatible, so its chunk tags and field layouts were ported (logic, not code, same relicensing approach already used for Fmod-Bank-Tools) into a new `ModsOfMistriaInstallerLib/Audio/FmodEventGraph.cs`.
+
+This unlocked a fundamentally different, safe strategy: instead of searching the whole event graph for a track's old duration *value* (unsafe, as this doc already found - the same duration can legitimately belong to more than one unrelated track), **resolve the specific field(s) that reference a given subsound by walking the real object graph**: `WaveformResourceNode` → which `WaveformInstrumentNode`(s) point to it → which `MultiInstrumentNode`/`ScattererInstrumentNode`(s) list it as a playlist member → which `TimelineNode`'s `TriggerBox`(es) target that instrument. A fixpoint expansion handles indirection through playlists and (for other games/banks) sub-event references.
+
+### First wrong turn: the field that changes `GetLength()` isn't the field that governs real playback
+
+With the parser working, patching a matched `TriggerBox.Length` field did exactly what was expected of it - `EventDescription::GetLength()` reported the new duration. But actually **playing** the event (via a real FMOD Studio event instance, fast-forwarded through `NOSOUND_NRT` output so a multi-minute test takes a fraction of a second, then tracing `EventInstance::getTimelinePosition()` every update) showed the timeline still looping back at the *original* duration. `GetLength()` and real playback, it turns out, don't read the same field.
+
+Two more candidates were tried and also ruled out the same way (patch, then trace real playback, not just re-query metadata): `SustainPoint.Position` (present in the timeline, but this bank's relevant timelines have none) and `TimelineNamedMarker.Length` (a marker sitting right after the trigger boxes, coincidentally also encoding the old duration - patching it changed nothing either).
+
+### Second wrong turn: which construct is even playing
+
+A silence test (replace `ChangingWinds`'s audio with 130 seconds of silence, render the event's real audio output to a WAV via `WAVWRITER_NRT`, check for actual silence) showed the deterministic cold-start playback path was **not** ChangingWinds at all - it was audible throughout. This looked like a serious problem (had the wrong construct been patched the whole time?) until structural parsing revealed why: `Fall.bank`'s Fall-music tracks aren't one Multi Instrument, they're **two separate Scatterer instruments** with overlapping membership (`{ChangingWinds, CrowsInAClearSky, DanceOfTheLeaves}` and `{CrowsInAClearSky, DanceOfTheLeaves, Extended}`), each with its own trigger box and its own window. The two music tracks that happen to share the exact same *original* baked duration (124.0s) turned out to belong to *different* scatterers entirely - the silence test had simply been listening to the other one. This is also why a value-based search is unsafe in general: two structurally unrelated windows can encode an identical duration by coincidence.
+
+### The actual field: `TransitionRegion.Start`/`End`
+
+A stray link the user shared - [an issue thread on Fmod-Bank-Tools](https://github.com/Wouldubeinta/Fmod-Bank-Tools/issues/9) where someone else had independently found "a timeline is stored... as an unsigned integer... divided by (SampleRate/1000)" - corroborated the general shape of the field without solving which one. A literal search for FMOD's transition-related tags (`TRAN`/`TRNB`/`TRTL`/`TRNS`) turned up four of each, sitting as siblings of the four `TLNB` (Timeline) chunks already found - a construct this investigation had never parsed. `TransitionRegionNode` carries `Start`/`End` fields (a jump region - usually `Start == End`, a single point rather than a real range) and a `DestinationGuid` pointing to where playback jumps when reached; in this bank, that destination is exactly the `TimelineNamedMarker` already found (position 0 - i.e. "loop back to the start").
+
+Patching `TransitionRegion.Start`/`End` alongside the trigger box's `Length` - confirmed via the same real-playback-trace method used to rule out the earlier candidates - **worked**: a `ChangingWinds` replacement patched to 420 seconds now actually loops at 419,989ms in a live event instance, not the original ~124,000ms. Independent web research (an agent tasked with searching for prior art) turned up no existing public documentation of this specific mechanism, but did corroborate it circumstantially: FMOD's own "Authoring Events" docs describe loop regions and transition regions as *"a technical limitation of how transition timelines work under-the-hood"* - i.e. genuinely gating the real-time DSP graph, not cosmetic metadata, unlike `SustainPoint`/named markers.
+
+One implementation bug surfaced during this: a `TransitionRegion` is a sibling of the `TimelineNode` it governs only one level further up than expected (each sits inside its own wrapping `LIST`, both themselves children of the enclosing event) - tracking "the most recently seen timeline" needed to be threaded by `ref` through the whole recursive walk, not re-scoped per recursion level the way the Multi Instrument/Playlist association correctly is.
+
+### Validated at every layer
+
+- **Structural parser**: cross-checked byte-for-byte against manual hex decoding: GUIDs, offsets and values all match exactly.
+- **Isolated harness**: `AudioInstaller` swap of `snd_Fall_ChangingWinds_HidehitoIkumo` with a real 420-second WAV, then Studio API `GetLength()` (420.0s) and a real traced event instance (loops at 419,989ms).
+- **Multi-track, cross-construct**: swapped a music track (in a Scatterer) and an ambience track (a plain loop) simultaneously - both extended to their own new, different, correct durations without interfering with each other.
+- **Automated tests**: `ModsOfMistriaInstallerLibTests/Audio/FmodEventGraphLocalTest.cs`, additions to `FmodBankFileLocalTest.cs` and `AudioInstallerLocalTest.cs` - including a regression guard for the exact "two unrelated tracks share a duration" collision this whole rewrite exists to avoid.
+- **Real install**: an actual CLI run against the live game (`assets.zip`, not a scratch copy) confirmed the same result - both replaced tracks' playback-length fields correctly reflect the real replacement WAV's duration, verified via both direct byte inspection and a Studio API trace of the actually-installed bank.
+
+The fix lives in `ModsOfMistriaInstallerLib/Audio/FmodEventGraph.cs` (the parser/resolver) and `FmodBankFile.PatchPlaybackLengthFields`/`AudioInstaller` (the write path), replacing the earlier `PatchEventTimelineReferences` value-search approach entirely.
 
 ## Open questions for later
 

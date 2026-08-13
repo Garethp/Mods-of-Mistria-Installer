@@ -124,16 +124,16 @@ didn't, that's the first thing to suspect, not a sign nothing happened.
   compression, so even an untouched sibling track in the same group is
   re-encoded (not byte-identical to vanilla) once any track in that group is
   replaced.
-- **A replacement meaningfully longer than the track it replaces will not
-  play to completion.** Confirmed on both constructs tested, and confirmed
-  the root cause via FMOD's own Studio API, not just observed: a playlist
-  track (e.g. a season's background music) gets cut short and the playlist
-  advances early; a looping ambient track gets cut short and loops from the
-  start early. Both because the compiled FMOD event carries a fixed
-  timeline length set when the event was authored - independent of
-  whatever audio a bank actually contains, and outside anything this
-  feature reads or writes, so there's no way to change it short of the
-  original FMOD Studio project source. Replacements close to the original
-  track's length are unaffected; see
-  [docs/investigations/custom-music.md](investigations/custom-music.md)'s "A
-  new limit" section for the full investigation.
+- **Replacements of any length now play to completion.** Earlier builds of
+  this feature cut a meaningfully-longer replacement short (a playlist track
+  advanced early, a looping ambient track looped early) because the compiled
+  FMOD event carries its own fixed timeline-length fields, set when the
+  event was authored, independent of whatever audio a bank actually
+  contains. That's fixed: the installer now locates and rewrites those
+  fields itself, per replaced track, resolved structurally by GUID (not by
+  searching for a byte value, which turned out to be unsafe - the same
+  duration can legitimately belong to more than one unrelated track). See
+  [docs/investigations/custom-music.md](investigations/custom-music.md)'s
+  "The real fix" section for how the actual governing field was found and
+  confirmed via FMOD's own Studio API, including tracing real playback of a
+  live event instance, not just reading metadata.

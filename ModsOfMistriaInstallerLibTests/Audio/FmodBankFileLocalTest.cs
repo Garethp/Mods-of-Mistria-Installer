@@ -63,4 +63,37 @@ public class FmodBankFileLocalTest
 
         Assert.That(rebuilt, Is.EqualTo(bank));
     }
+
+    // Patching one track's playback-length fields must not touch a sibling's
+    // - the exact failure mode a byte-value-search approach had (see
+    // FmodEventGraph's own header comment): two of Fall.bank's tracks
+    // (ChangingWinds, Extended) happen to share the identical original
+    // duration despite belonging to different scatterer windows.
+    [Test]
+    public void ShouldPatchOnlyTheTargetedTracksFields()
+    {
+        var bank = ReadFallBank();
+
+        var patched = FmodBankFile.PatchPlaybackLengthFields(bank, 0, FallBankIndices.DayBed, newSamples48K: 999_000);
+
+        var dayBedOffsets = FmodEventGraph.FindPlaybackLengthFieldOffsets(patched, 0, FallBankIndices.DayBed);
+        Assert.That(dayBedOffsets, Has.Count.EqualTo(4));
+        foreach (var offset in dayBedOffsets)
+            Assert.That(BitConverter.ToUInt32(patched, (int)offset), Is.EqualTo(999_000));
+
+        var nightBedOffsets = FmodEventGraph.FindPlaybackLengthFieldOffsets(patched, 0, FallBankIndices.NightBed);
+        foreach (var offset in nightBedOffsets)
+            Assert.That(BitConverter.ToUInt32(patched, (int)offset), Is.Not.EqualTo(999_000));
+    }
+
+    // A subsound with nothing referencing it on any timeline is a no-op, not
+    // an error - the same guarantee AudioInstaller relies on for tracks that
+    // simply aren't wrapped in a timeline construct.
+    [Test]
+    public void ShouldReturnTheSameBankWhenNothingReferencesTheSubsound()
+    {
+        var bank = ReadFallBank();
+        var patched = FmodBankFile.PatchPlaybackLengthFields(bank, 0, subsoundIndex: 9999, newSamples48K: 999_000);
+        Assert.That(patched, Is.EqualTo(bank));
+    }
 }
