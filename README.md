@@ -12,7 +12,7 @@ The current AIM application version is `0.1.1`.
 
 ![AIM preview](aim-preview.gif)
 
-This is only a visual preview of AIM. It is not part of the application build or release package.
+<sub>Visual preview of AIM: language switching, mod installation and removal, load-order management, mod selection, and installation status messages.</sub>
 
 ## Fork-specific improvements
 
@@ -42,7 +42,7 @@ This project is intended for Fields of Mistria 1.0.x. Individual mods may still 
 ## Installation
 
 1. Download the latest release from the [AcTePuKc fork releases page](https://github.com/AcTePuKc/Mods-of-Mistria-Installer/releases).
-2. Create or select a mods folder. AIM automatically checks the game directory and the directory containing the AIM executable; `mods`, `Mods`, `MODS`, and `MODs` are accepted. On Linux/Steam Deck it also checks the supported per-user `mistria-mods` locations. A manually selected folder may be elsewhere.
+2. Create or select a mods folder. AIM first checks the detected game directory for `mods`, `Mods`, `MODS`, or `MODs`, then checks the same folder names next to the AIM executable wherever you placed or downloaded it. It also checks the per-user `mistria-mods` and `Mistria-Mods` locations used by Linux/Steam Deck setups. If no automatic location is found, you can select or create a folder anywhere manually.
 3. Put each mod directly in the selected mods folder. A mod folder, ZIP archive, or RAR archive must contain `manifest.toml` or `manifest.json` at its mod root; nested duplicate folders prevent detection.
    **Important:** Keep only one copy of a given mod in the active folder. When an updated version is added while the older copy remains, AIM does not yet guarantee that it will select the newer copy; the old version may remain the one that is discovered or installed. Close AIM before moving, replacing, or deleting the old copy, because an open mod archive may be locked by the application. Do not leave the same mod there both as an extracted folder and as a ZIP/RAR archive, because AIM may discover both copies.
 4. Start AIM, select the mods to install, and click **Install**.
