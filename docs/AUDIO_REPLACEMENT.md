@@ -124,3 +124,12 @@ didn't, that's the first thing to suspect, not a sign nothing happened.
   compression, so even an untouched sibling track in the same group is
   re-encoded (not byte-identical to vanilla) once any track in that group is
   replaced.
+- **A much longer replacement for a rotating playlist track (e.g. a season's
+  background music) may get cut off partway through and skip to the next
+  track**, well before your file's actual end - confirmed, not yet fully
+  understood; see
+  [docs/investigations/custom-music.md](investigations/custom-music.md)'s "A
+  new limit" section. Likely specific to tracks that are part of an FMOD
+  Multi Instrument/playlist construct, not a universal ceiling - not yet
+  confirmed whether non-playlist tracks (most SFX and ambience) are affected
+  too.

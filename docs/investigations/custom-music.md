@@ -250,6 +250,39 @@ Every test up to this point - CLI runs, the proper-test round above - used a Deb
 
 Both fixes verified against real isolated single-file publishes again after the fix, not just unit tests: with the FMOD DLLs bundled, the swap works and all 6 mods install (exit code 0); with them absent, the audio mod's own replacement is skipped but the other 5 mods still install correctly and `assets.zip` comes out with all their content intact, not reverted. The live game was backed up before every one of these publish tests and restored to byte-identical afterward.
 
+## A new limit: long replacements get cut off partway through
+
+Testing a much longer replacement track (7:00, swapped into `snd_Fall_ChangingWinds_HidehitoIkumo` which is normally 2:00) surfaced a new failure mode: the game plays it, but audibly stops and advances to the next playlist track partway through, well before the replacement's real end.
+
+**Three attempts, three FSBank build-flag configurations, one consistent result:**
+
+| Attempt | Build flags | Where it cut off (as heard) |
+|---|---|---|
+| 1 | default (matches Fmod-Bank-Tools' own defaults) | ~2:50 (rough estimate) |
+| 2 | `FSBANK_BUILD_NOGUID` added | 2:43 |
+| 3 | `FSBANK_BUILD_NOGUID` \| `FSBANK_BUILD_DISABLESYNCPOINTS` | 2:46 |
+
+Two real hypotheses were tested, not just guessed at:
+
+- **Stale runtime header cache.** fsbank.h documents that a non-null FSB GUID enables runtime header caching; since this feature rebuilds the same subsound slot with different content on every install, that caching is actively wrong for this use case regardless of this bug. `FSBANK_BUILD_NOGUID` disables it. Kept (harmless, arguably more correct) but alone did not fix the cutoff.
+- **FSBank's own automatic sync points.** By default FSBank analyzes audio during encoding and embeds its own sync points; if FMOD's playlist logic advances on reaching an embedded sync point rather than true end-of-file, that would explain an early cutoff. `FSBANK_BUILD_DISABLESYNCPOINTS` disables that analysis. Kept alongside `NOGUID`, but combined, still did not fix it.
+
+The result across all three attempts clustered around the same ~2:43-2:50 mark despite meaningfully different encode configurations - evidence *against* anything in our own encoding, and toward something outside the audio data entirely.
+
+### What's actually in the bank file, beyond the SNDH/SND audio blob
+
+Walked the *full* top-level chunk list of both `Fall.bank` and `Master.bank` (not just searching for `SNDH` the way `FmodBankFile` does) - both share the identical structure: a long run of `LIST` chunks first, *then* `SNDH`/`STDT`/`STBL`/`HASH`/`DEL `/`MUTE`/`REFI`/`PLAT`/`SND ` (the small build-metadata chunks; `STBL` is empty - 0 bytes - in both banks, ruling out an earlier guess that it might carry per-track metadata).
+
+Scanning those `LIST` chunks for readable ASCII turned up real FMOD Studio construct names: `EVTS`/`EVNT` (Events), `TMLN`/`TRAN` (Timeline/Transitions), and - most relevantly - **`PLST`/`PLSTH`** (Playlist) and **`MUIT`/`MUIS`/`MUIB`** (almost certainly "Multi Instrument," FMOD Studio's actual construct for an instrument that randomly selects among several assigned sounds each trigger - exactly the behavior already confirmed for `Music/Playlists/Fall`).
+
+Also checked the GML side again, specifically for anything duration/trigger-region related: nothing. The two files that matched a `max_length` search were unrelated controller-rumble code. This reconfirms `SceneAudioPlayer.gml` never manages *which* track within a playlist is playing or for how long - that's entirely inside FMOD's compiled event data, invisible to GML.
+
+**Conclusion**: the per-track playback-length control almost certainly lives inside the compiled Multi Instrument/Playlist event data in those `LIST` chunks - a proprietary, versioned FMOD Studio binary format, structurally separate from the simple FSB5-in-a-container format this feature already understands. Unlike the container format, there's no GPLv3 (or any open-source) reference implementation to port logic from here - Fmod-Bank-Tools never needed to touch event data, only raw audio. Reverse-engineering it well enough to safely locate and patch a "max instrument length" field, without corrupting parameter references, transitions, or mixer routing elsewhere in the same compiled event, would be a substantially larger and riskier undertaking than everything built so far - closer in kind to the already-deferred "add a wholly new track" problem than to a bug in this feature.
+
+### Practical takeaway, and the next real test
+
+Whatever mechanism is doing this appears tied specifically to `Music/Playlists/Fall`'s Multi Instrument construct - not proven to be a universal limit on every replaceable track. The next concrete, cheap test (no reverse-engineering needed, just another real install + listen): swap a long replacement into a track that **isn't** part of a rotating playlist - e.g. `snd_fall_day_bed`, a single non-playlist ambient loop - and see whether it plays to completion. If simple single-instrument tracks don't have this ceiling, the practical guidance becomes narrow and useful: keep playlist-based music replacements roughly within the original track's length, but SFX/ambience/one-shot replacements aren't affected.
+
 ## Open questions for later
 
 - **Can a mod extend the game's own existing strings-bank ecosystem** (append/reference into `Master.strings.bank`'s namespace) rather than shipping an independent second one? This is the crux of whether "add new tracks" is fixable at all without engine cooperation - genuinely needs someone who knows the FMOD/engine integration, not more local trial and error.

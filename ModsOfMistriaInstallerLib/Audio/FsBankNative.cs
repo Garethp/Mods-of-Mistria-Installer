@@ -25,11 +25,33 @@ public static class FsBankNative
     private const int FsbankFsbversionFsb5 = 0;
     private const uint FsbankInitNormal = 0x00000000;
     private const int FsbankFormatVorbis = 5;
-    private const uint FsbankBuildDefault = 0x00000000;
+    // FSBANK_BUILD_NOGUID: "Write out a null GUID for the FSB header. The
+    // runtime will not use header caching for these FSB files." Diverges
+    // from Fmod-Bank-Tools' own defaults (which write a real GUID) because a
+    // runtime that trusts a stale cached header for a GUID it's seen before
+    // would be actively wrong for us - we rebuild the same subsound slot
+    // with genuinely different content every install. Kept: harmless even
+    // though it alone did not fix the early-cutoff bug below (tested - the
+    // cutoff point moved rather than disappearing, which argues against a
+    // *fixed* stale value and toward FsbankBuildDisableSyncPoints instead).
+    private const uint FsbankBuildNoGuid = 0x00000100;
+
+    // FSBANK_BUILD_DISABLESYNCPOINTS: "Disable the storing of syncpoints in
+    // the output." Without it, FSBank analyzes the audio during encoding and
+    // embeds its own sync points - current suspected root cause of a longer
+    // replacement track audibly cutting off partway through and advancing to
+    // the next playlist track (see docs/investigations/custom-music.md): if
+    // FMOD's playlist logic advances on reaching an embedded sync point
+    // rather than true end-of-file, a point placed by content analysis would
+    // explain a cutoff that lands in roughly the same place across encodes
+    // without being byte-identical each time - consistent with what was
+    // observed testing FsbankBuildNoGuid above.
+    private const uint FsbankBuildDisableSyncPoints = 0x00000001;
 
     // Matches Fmod-Bank-Tools' own shipped config.ini defaults (Format=vorbis,
-    // Quality=92, DefaultSettings=true i.e. FSBANK_BUILD_DEFAULT) - settings
-    // already confirmed in-game, not an independent guess.
+    // Quality=92, DefaultSettings=true i.e. FSBANK_BUILD_DEFAULT) plus the
+    // two flags above - settings already confirmed in-game, not an
+    // independent guess.
     private const uint DefaultQuality = 92;
 
     [StructLayout(LayoutKind.Sequential)]
@@ -118,7 +140,7 @@ public static class FsBankNative
                 Check(
                     FSBank_Build(
                         subsoundsHandle.AddrOfPinnedObject(), (uint)fsbankSubsounds.Length, FsbankFormatVorbis,
-                        FsbankBuildDefault, DefaultQuality, IntPtr.Zero, outputFile),
+                        FsbankBuildNoGuid | FsbankBuildDisableSyncPoints, DefaultQuality, IntPtr.Zero, outputFile),
                     "FSBank_Build");
             }
             finally
