@@ -66,6 +66,8 @@ public static class FsBankNative
     // comment above for why that rules out the in-memory fileData path).
     public static byte[] EncodeGroup(IReadOnlyList<FmodCoreNative.DecodedSubsound> subsounds)
     {
+        EnsureVorbisPluginLoaded();
+
         var workDir = Path.Combine(Path.GetTempPath(), "momi-fsbank-" + Guid.NewGuid());
         var wavDir = Path.Combine(workDir, "wav");
         var cacheDir = Path.Combine(workDir, "cache");
@@ -132,6 +134,38 @@ public static class FsBankNative
             foreach (var ptr in unmanaged) Marshal.FreeHGlobal(ptr);
             Directory.Delete(workDir, true);
         }
+    }
+
+    private static bool _vorbisPluginLoaded;
+
+    // fsbank64 loads its Vorbis encoder plugin (libfsbvorbis64) itself via
+    // its own internal LoadLibrary call, which doesn't necessarily search
+    // the same paths .NET's P/Invoke resolution does - confirmed the hard
+    // way: FSBank_Build failed with FSBANK_ERR_ENCODER_FILE_NOTFOUND in a
+    // real single-file publish even though fmod64/fsbank64 themselves
+    // resolved fine, because only test/tool code preloaded this, not this
+    // class. Preloading here (once) puts it in the process's module list
+    // before fsbank64 goes looking for it by name.
+    //
+    // Best-effort: this is the right path in a real bundled build (where the
+    // DLL sits beside the app), but tests/tools preload the same DLL from a
+    // different directory (MOMI_FMOD_NATIVE_DIR) before this ever runs, in
+    // which case this path won't exist and would otherwise throw despite the
+    // library already being loaded - so a failure here is swallowed, not
+    // fatal. If the plugin genuinely isn't available anywhere, FSBank_Build
+    // still fails with a clear FSBANK_RESULT below.
+    private static void EnsureVorbisPluginLoaded()
+    {
+        if (_vorbisPluginLoaded) return;
+        try
+        {
+            NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, "libfsbvorbis64.dll"));
+        }
+        catch
+        {
+            // ignored - see method comment
+        }
+        _vorbisPluginLoaded = true;
     }
 
     private static string SanitizeFileName(string name)

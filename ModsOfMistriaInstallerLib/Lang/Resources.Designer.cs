@@ -177,6 +177,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Audio replacement {0} could not be processed: {1}.
+        /// </summary>
+        public static string CoreErrorAudioProcessingFailed {
+            get {
+                return ResourceManager.GetString("CoreErrorAudioProcessingFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Cosmetic {0} has incorrect ui_sub_category. Must be one of: {1}..
         /// </summary>
         public static string CoreCosmeticUiSubCategoryWrong {

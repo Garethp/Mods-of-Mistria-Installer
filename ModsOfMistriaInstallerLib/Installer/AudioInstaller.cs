@@ -61,7 +61,26 @@ public class AudioInstaller(
         }
 
         foreach (var group in replacements.GroupBy(r => r.Bank!))
-            InstallBank(mod, group.Key, group.ToList(), reportStatus);
+        {
+            var entries = group.ToList();
+            try
+            {
+                InstallBank(mod, group.Key, entries, reportStatus);
+            }
+            catch (Exception e)
+            {
+                // Covers failures no earlier check catches: a malformed
+                // bank, or the native FMOD/FSBank libraries this all runs
+                // on being missing or broken. Isolated per bank, and never
+                // left to propagate - an unhandled exception here would
+                // abort ModInstaller's whole per-mod loop (no per-mod
+                // isolation exists above this), taking every other mod's
+                // install down with it, not just this one's audio.
+                foreach (var entry in entries)
+                    mod.GetValidation()
+                        .AddError(mod, "momi/audio", string.Format(Resources.CoreErrorAudioProcessingFailed, entry.Id, e.Message));
+            }
+        }
     }
 
     private void InstallBank(
