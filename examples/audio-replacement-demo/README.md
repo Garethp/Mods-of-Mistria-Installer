@@ -23,8 +23,8 @@ moment of gameplay - just wait for that chirp during a Fall day.
 
 ## Trying it yourself
 
-1. Find a track and bank you want to replace instead (`tools/audio-replace`'s
-   `list` command works against any bank), or keep this one.
+1. Find a track and bank you want to replace instead - check
+   [docs/AUDIO_TRACKS.md](../../docs/AUDIO_TRACKS.md), or keep this one.
 2. Replace `momi/audio/chime.wav` with your own plain PCM WAV, and update
    `replace.toml`'s `wav` path if you rename it.
 3. Install normally through MOMI.

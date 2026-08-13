@@ -7,10 +7,12 @@ instead of any third-party tool. See
 [docs/investigations/custom-music.md](../../docs/investigations/custom-music.md)
 for how this was discovered and proven.
 
-This is a developer tool, not a mod format yet - there is no manifest a mod
-author drops a WAV next to. You run this once to produce a patched
-`assets.zip`; wiring a real "swap this track" mod format into MOMI's
-installer is future work.
+There's now a real mod format for this - [`momi/audio/*.toml`](../../docs/AUDIO_REPLACEMENT.md),
+installed automatically by `AudioInstaller` like any other MOMI mod content.
+Use that for an actual mod. This tool is what you reach for outside that:
+finding a track's name (step 2 below powers
+[docs/AUDIO_TRACKS.md](../../docs/AUDIO_TRACKS.md)'s catalog), or patching a
+zip directly without going through the mod-install pipeline at all.
 
 ## 1. Get the FMOD native DLLs
 
@@ -27,10 +29,12 @@ $env:MOMI_FMOD_NATIVE_DIR = "C:\path\to\folder\with\the\three\dlls"
 
 ## 2. Find the bank and track name you want to replace
 
-Every `.bank` file lives at `assets/audio/<Name>.bank` inside `assets.zip`.
-If you don't already know which bank has the track you want (e.g. which
-season's ambience file, or which SFX bank), you'll need to check each
-candidate - there's no game-wide search yet.
+Check [docs/AUDIO_TRACKS.md](../../docs/AUDIO_TRACKS.md) first - it's a
+generated snapshot of every track in every bank. If it's missing something
+or looks stale, regenerate it yourself: every `.bank` file lives at
+`assets/audio/<Name>.bank` inside `assets.zip`, and if you don't already
+know which bank has the track you want, you'll need to check each candidate
+- there's no game-wide search yet.
 
 ```powershell
 dotnet run --project tools/audio-replace -- list "<path to assets.zip>" Fall

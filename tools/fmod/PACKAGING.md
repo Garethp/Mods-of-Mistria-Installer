@@ -36,9 +36,16 @@ Present in both `ModsOfMistriaCommandLine.csproj` and `ModsOfMistriaGUI.csproj`.
 `tools/checker/PACKAGING.md`) carries these into the single-file publish the
 same way it carries the checker.
 
-Conditioned on existence so a dev build without them still compiles -
-`AudioInstaller` then fails with a native DLL load error at whichever mod's
-install step actually needs it, not at build time.
+Conditioned on existence so a dev build without them still compiles.
+Missing at runtime is handled gracefully, not a crash: `AudioInstaller`
+catches the native load failure per bank and records it as a validation
+error against that specific mod, so a mod that doesn't touch `momi/audio`
+installs completely normally, and even a mod that does only loses its own
+audio replacement rather than taking the whole install down. This wasn't
+true until it was actually tested against a real published build - see
+[`docs/investigations/custom-music.md`](../../docs/investigations/custom-music.md)'s
+"Verified against a real published build" section for what broke and what
+that fixed.
 
 ## Populating `dist/<rid>/` for a local build
 

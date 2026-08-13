@@ -92,18 +92,32 @@ depending on how many tracks share the group.
 Checked before install: `bank` is present, `wav` is present, and the WAV
 file exists in your mod. Checked during install (these can't be known ahead
 of time without opening the target bank): the bank exists, and a track by
-that name is actually inside it. Problems are recorded per mod - a broken
-entry is skipped rather than failing the whole mod's install.
+that name is actually inside it. A third category is checked only if it
+happens: the native FMOD/FSBank layer itself failing (missing DLLs, a
+corrupt bank, an encoder error) - verified against a real published build,
+not just reasoned about (see
+[docs/investigations/custom-music.md](investigations/custom-music.md)'s
+"Verified against a real published build" section).
+
+All three are recorded as validation errors, never left to crash anything -
+a broken entry is skipped, the rest of that mod (and every other mod)
+installs normally. **The CLI doesn't currently print these after an install
+finishes** (a pre-existing gap, not specific to audio replacement - see
+[docs/investigations/custom-music.md](investigations/custom-music.md)'s
+"Phase 2 built and proven" section) - if a track you expected to change
+didn't, that's the first thing to suspect, not a sign nothing happened.
 
 ## Requirements and limits
 
 - **Windows only** for now - the underlying pipeline
   (`ModsOfMistriaInstallerLib/Audio`) P/Invokes into FMOD's Core and FSBank
   APIs, which this feature only resolves on Windows today.
-- **Replacing native FMOD DLLs**: the installer needs `fmod64.dll`,
-  `fsbank64.dll` and `libfsbvorbis64.dll` available. A packaged MOMI release
-  bundles them (see [`tools/fmod/PACKAGING.md`](../tools/fmod/PACKAGING.md));
-  a dev build needs them staged manually.
+- **Needs native FMOD DLLs**: `fmod64.dll`, `fsbank64.dll` and
+  `libfsbvorbis64.dll`. A packaged MOMI release bundles them (see
+  [`tools/fmod/PACKAGING.md`](../tools/fmod/PACKAGING.md)); a dev build needs
+  them staged manually. If they're missing, this feature's replacements are
+  skipped (recorded as validation errors) - it doesn't break anything else a
+  mod or install is doing.
 - **Replace only, not add.** Every entry must name a track that already
   exists in a vanilla bank.
 - **Re-encoding is lossy.** The rebuilt group goes through Vorbis
