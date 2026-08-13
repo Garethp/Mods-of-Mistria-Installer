@@ -172,6 +172,33 @@ public static class FmodBankFile
         return result;
     }
 
+    // Rewrites a Scatterer's own SpawnTime.Minimum/Maximum (float seconds -
+    // a different format from PatchPlaybackLengthFields' samples-at-48kHz
+    // fields) for every Scatterer the subsound at (soundBankIndex,
+    // subsoundIndex) is a playlist member of. See
+    // FmodEventGraph.FindScattererSpawnTimeOffsets for why this matters: a
+    // Scatterer schedules its next spawn on this independent timer
+    // regardless of whether the current voice has finished, so a
+    // replacement much longer than the original's authored spawn window
+    // gets a second, overlapping voice spawned on top of it partway
+    // through - confirmed by tracing real playback, not just GetLength().
+    // newSpawnTimeSeconds is written to both Minimum and Maximum, collapsing
+    // the original range to a fixed delay rather than trying to preserve
+    // its width, since only the replacement's own real duration is known
+    // here, not a principled new spread.
+    public static byte[] PatchScattererSpawnTime(byte[] bank, int soundBankIndex, int subsoundIndex, float newSpawnTimeSeconds)
+    {
+        var offsets = FmodEventGraph.FindScattererSpawnTimeOffsets(bank, soundBankIndex, subsoundIndex);
+        if (offsets.Count == 0) return bank;
+
+        var result = (byte[])bank.Clone();
+        var newBytes = BitConverter.GetBytes(newSpawnTimeSeconds);
+        foreach (var offset in offsets)
+            newBytes.CopyTo(result, offset);
+
+        return result;
+    }
+
     // Exposed to FmodEventGraph, which needs to bound its own chunk walk to
     // end where the event graph ends (everything before SNDH).
     internal static long FindSndhTagPosition(byte[] bank)

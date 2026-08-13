@@ -87,4 +87,35 @@ public class FmodEventGraphLocalTest
         var offsets = FmodEventGraph.FindPlaybackLengthFieldOffsets(bank, 0, subsoundIndex: 9999);
         Assert.That(offsets, Is.Empty);
     }
+
+    // A Scatterer's SpawnTime.Minimum/Maximum (float seconds, currently
+    // 150.0/180.0 for both of Fall.bank's music scatterers) schedules the
+    // *next* spawn independently of whether the currently-playing voice has
+    // finished - real playback tracing showed a replacement much longer
+    // than that window gets a second voice spawned on top of it. Both
+    // scatterers ChangingWinds/Extended belong to share this exact
+    // pattern: two float offsets, same value at both (the original range
+    // collapsed to a point isn't asserted here - only that both fields are
+    // found and hold the known pristine value).
+    [Test]
+    public void ShouldFindScattererSpawnTimeOffsetsForAMusicTrack()
+    {
+        var bank = ReadFallBank();
+        var offsets = FmodEventGraph.FindScattererSpawnTimeOffsets(bank, 0, FallBankIndices.ChangingWinds);
+
+        Assert.That(offsets, Has.Count.EqualTo(2));
+        foreach (var offset in offsets)
+            Assert.That(BitConverter.ToSingle(bank, (int)offset), Is.EqualTo(150.0f).Or.EqualTo(180.0f));
+    }
+
+    // A plain single-instrument track (not a Scatterer/Multi Instrument
+    // member at all) has no SpawnTime construct to find - empty, not an
+    // error, the same convention as FindPlaybackLengthFieldOffsets.
+    [Test]
+    public void ShouldReturnEmptySpawnTimeOffsetsForANonScattererTrack()
+    {
+        var bank = ReadFallBank();
+        var offsets = FmodEventGraph.FindScattererSpawnTimeOffsets(bank, 0, FallBankIndices.DayBed);
+        Assert.That(offsets, Is.Empty);
+    }
 }

@@ -161,7 +161,11 @@ public class AudioInstallerLocalTest
     // instruments must update that scatterer's own TriggerBox/TransitionRegion
     // fields so playback doesn't cut off or loop at the *original* track's
     // duration, and must leave the *other* scatterer (Extended's, which
-    // ChangingWinds isn't a member of) completely untouched.
+    // ChangingWinds isn't a member of) completely untouched. It must also
+    // push out the scatterer's own SpawnTime - real playback tracing showed
+    // that patching only the outer timeline still let the scatterer spawn a
+    // second, overlapping voice on its own original ~150-180s schedule,
+    // regardless of whether the replacement was still playing.
     [Test]
     public void ShouldExtendPlaybackLengthFieldsForAReplacedMusicTrackAndLeaveTheOtherScattererAlone()
     {
@@ -199,6 +203,18 @@ public class AudioInstallerLocalTest
             bank, 0, ModsOfMistriaInstallerLibTests.Audio.FallBankIndices.Extended);
         foreach (var offset in extendedOffsets)
             Assert.That(BitConverter.ToUInt32(bank, (int)offset), Is.Not.EqualTo(expectedSamples48K));
+
+        // SpawnTime is set to the new duration *plus* a buffer, not the same
+        // instant as the outer window - see AudioInstaller.InstallBank's own
+        // comment on spawnTimeBufferSeconds for why setting them equal
+        // reproduces vanilla's ordering backwards (both boundaries landing
+        // at once, discovered via real in-game testing - 0s overlapped,
+        // 30s and then 5s were both confirmed clean, 5s is what shipped).
+        var spawnTimeOffsets = FmodEventGraph.FindScattererSpawnTimeOffsets(
+            bank, 0, ModsOfMistriaInstallerLibTests.Audio.FallBankIndices.ChangingWinds);
+        Assert.That(spawnTimeOffsets, Has.Count.EqualTo(2));
+        foreach (var offset in spawnTimeOffsets)
+            Assert.That(BitConverter.ToSingle(bank, (int)offset), Is.EqualTo(8.0f));
     }
 
     private static byte[] ReadBank(ZipFileModifier fileModifier)

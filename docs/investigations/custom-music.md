@@ -353,6 +353,33 @@ One implementation bug surfaced during this: a `TransitionRegion` is a sibling o
 
 The fix lives in `ModsOfMistriaInstallerLib/Audio/FmodEventGraph.cs` (the parser/resolver) and `FmodBankFile.PatchPlaybackLengthFields`/`AudioInstaller` (the write path), replacing the earlier `PatchEventTimelineReferences` value-search approach entirely.
 
+## A second bug the same real-game test surfaced: the Scatterer's own independent spawn schedule
+
+"Validated at every layer" above was all true and still is - but the very next real in-game test (a genuinely longer replacement, ~250 seconds, actually left running instead of stopped early) surfaced a second, different bug that no Studio-API-only test had exercised: **around the replacement's own original ~150-180 second mark, a second track started playing on top of the first, audibly overlapping.** Not a cutoff this time - an overlap, while the replacement was still legitimately mid-play.
+
+### Ruled out first: InstrumentNode fields, FSB5's own declared sample count
+
+Two real candidates were checked and ruled out before finding the actual cause:
+
+- **`InstrumentNode`** (the "INST" chunk wrapping each Waveform Instrument - `Volume`, `Pitch`, `LoopCount`, `MaximumPolyphony`, seek/trim offsets) had never been parsed at all up to this point. Parsing it and dumping `ChangingWinds`'s own values showed nothing suspicious - `Volume`/`Pitch` at 0 (dB/semitones, i.e. unity/neutral), `LoopCount` 0 (play once), `MaximumPolyphony` `int.MaxValue` (no explicit cap, sensible default).
+- **FSB5's own declared `SampleCount`** (a bit-packed field inside the raw audio container itself, separate from the compiled event graph entirely - found via [Masusder/FModBankParser](https://github.com/Masusder/FModBankParser)'s own dependency, [SamboyCoding/Fmod5Sharp](https://github.com/SamboyCoding/Fmod5Sharp), MIT-licensed, used here only as a NuGet-referenced diagnostic tool, not ported into MOMI itself) was checked directly against the rebuilt bank: correctly declared the full new duration. Not a stale-header bug either.
+
+### The actual cause: `ScattererInstrumentNode.SpawnTime`, ticking independently of the outer window
+
+Already-parsed-but-unused fields on the Scatterer itself turned out to be the answer: `MaximumSpawnPolyphony` (1, in this bank), `SpawnCount` (33), and `SpawnTime.Minimum`/`Maximum` (a float-seconds range, 150.0-180.0 in this bank). A Scatterer spawns a new voice on this schedule **on its own clock, independent of whether the currently-playing spawned voice has finished** - confirmed by tracing real playback (via `FMOD_System_GetChannelsPlaying`, sampled over real wall-clock time with `NOSOUND` real-time output, not the `NOSOUND_NRT` fast-forwarded mode used everywhere else in this investigation, specifically to rule out the fast-forwarded mode itself hiding the behavior).
+
+Vanilla never exercised this: the outer window (~124s) was always *shorter* than the Scatterer's own spawn interval (~150-180s), so the outer timeline always looped back and reset the whole construct before the spawn timer could ever reach its own threshold mid-track. Extending the outer window to match a much longer replacement, without also extending `SpawnTime`, let the spawn timer's schedule become reachable for the first time - and it fired independently, mid-track.
+
+### Fix, and a second real-game-only lesson about the fix's own edge case
+
+`FmodEventGraph.FindScattererSpawnTimeOffsets` resolves `SpawnTime.Minimum`/`Maximum` offsets the same GUID-anchored way as everything else (through Scatterer/Multi Instrument playlist membership), and `FmodBankFile.PatchScattererSpawnTime`/`AudioInstaller` write the replacement's own real duration there.
+
+The first attempt set `SpawnTime` to *exactly* the same value as the outer window - and real in-game testing (not anything Studio-API-only) caught a second, subtler bug: the old and new voice both played briefly, because the outer timeline's own reset and the Scatterer's independent spawn-and-steal were now racing at the same instant. [FMOD's own Q&A forum](https://qa.fmod.com/t/allow-sound-to-fade-out-when-scatterer-spawn-steals-voice/13832) confirms why there's no natural safety margin here: a Scatterer's polyphony-limit voice steal is a **hard kill, not a graceful fade** ("an event that's still fading out is an event that's still consuming voices" - Firelight staff) - so there's no release tail to mask a race if the timeline's own reset and the spawn timer's steal land in the same mixer tick. No FMOD documentation states a minimum safe margin between the two; this project's own empirical testing is the only source for one. A 30-second buffer tested clean in-game; a 5-second buffer was tested afterward and also came back clean (versus 0, which reliably overlapped) - 5 seconds is what shipped, trading a very short, barely-noticeable silence for a track transition instead of either an overlap or an unnecessarily long gap.
+
+### Validated the same way as the first fix
+
+Real playback tracing (channel-count over real wall-clock time, not fast-forwarded), a real CLI install against the live game, and - critically, since this bug only ever showed up in a real, long-running in-game session and never in any Studio-API-only test this project could construct - repeated real in-game testing across three different buffer values (0/30/5 seconds) before settling on the shipped one.
+
 ## Open questions for later
 
 - **Can a mod extend the game's own existing strings-bank ecosystem** (append/reference into `Master.strings.bank`'s namespace) rather than shipping an independent second one? This is the crux of whether "add new tracks" is fixable at all without engine cooperation - genuinely needs someone who knows the FMOD/engine integration, not more local trial and error.

@@ -96,4 +96,33 @@ public class FmodBankFileLocalTest
         var patched = FmodBankFile.PatchPlaybackLengthFields(bank, 0, subsoundIndex: 9999, newSamples48K: 999_000);
         Assert.That(patched, Is.EqualTo(bank));
     }
+
+    // A Scatterer's SpawnTime must move to the replacement's own new
+    // duration, not just get zeroed or left untouched - real playback
+    // tracing showed leaving it at the original ~150-180s window spawns a
+    // second, overlapping voice on top of a longer replacement (see
+    // FmodEventGraph.FindScattererSpawnTimeOffsets).
+    [Test]
+    public void ShouldPatchScattererSpawnTimeToTheNewDuration()
+    {
+        var bank = ReadFallBank();
+
+        var patched = FmodBankFile.PatchScattererSpawnTime(bank, 0, FallBankIndices.ChangingWinds, newSpawnTimeSeconds: 420.0f);
+
+        var offsets = FmodEventGraph.FindScattererSpawnTimeOffsets(patched, 0, FallBankIndices.ChangingWinds);
+        Assert.That(offsets, Has.Count.EqualTo(2));
+        foreach (var offset in offsets)
+            Assert.That(BitConverter.ToSingle(patched, (int)offset), Is.EqualTo(420.0f));
+    }
+
+    // A plain single-instrument track (no Scatterer involved) has no
+    // SpawnTime field at all - patching it is a safe no-op, the same
+    // guarantee PatchPlaybackLengthFields gives for an unreferenced track.
+    [Test]
+    public void ShouldReturnTheSameBankPatchingSpawnTimeForANonScattererTrack()
+    {
+        var bank = ReadFallBank();
+        var patched = FmodBankFile.PatchScattererSpawnTime(bank, 0, FallBankIndices.DayBed, newSpawnTimeSeconds: 420.0f);
+        Assert.That(patched, Is.EqualTo(bank));
+    }
 }

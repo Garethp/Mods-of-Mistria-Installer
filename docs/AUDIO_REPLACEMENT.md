@@ -137,3 +137,15 @@ didn't, that's the first thing to suspect, not a sign nothing happened.
   "The real fix" section for how the actual governing field was found and
   confirmed via FMOD's own Studio API, including tracing real playback of a
   live event instance, not just reading metadata.
+- **A track that rotates through a playlist (e.g. a season's background
+  music) may have a few seconds of silence after a much-longer replacement
+  finishes, before the next track starts.** That rotation is driven by two
+  independent timers inside the compiled event - an outer window (which the
+  installer extends to the replacement's real length) and, for some tracks,
+  a separate internal respawn schedule that ticks on its own clock. Setting
+  both to resolve at the exact same instant caused a real, audible overlap
+  (confirmed in-game) rather than a clean handoff, so the installer
+  deliberately extends the second one slightly further out - a few seconds
+  of silence is the trade-off for never overlapping. See
+  [docs/investigations/custom-music.md](investigations/custom-music.md)'s "A
+  second bug" section for the full story.

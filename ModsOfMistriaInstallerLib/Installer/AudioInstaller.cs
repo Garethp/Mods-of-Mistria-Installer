@@ -125,7 +125,7 @@ public class AudioInstaller(
         foreach (var group in locations.GroupBy(kv => kv.Value))
         {
             var decoded = decodedGroups[group.Key]!;
-            var timelinePatches = new List<(int SubsoundIndex, uint NewSamples48K)>();
+            var timelinePatches = new List<(int SubsoundIndex, uint NewSamples48K, float NewSeconds)>();
 
             foreach (var entry in group.Select(kv => kv.Key))
             {
@@ -141,7 +141,7 @@ public class AudioInstaller(
                     var oldSamples = SamplesAt48K(original);
                     var newSamples = SamplesAt48K(replacement);
                     if (oldSamples != newSamples)
-                        timelinePatches.Add((index, newSamples));
+                        timelinePatches.Add((index, newSamples, (float)(newSamples / 48000.0)));
                     reportStatus($"Replacing audio track: {entry.Id}", "");
                 }
                 catch (Exception e)
@@ -167,8 +167,38 @@ public class AudioInstaller(
             // unrelated track). A track with nothing to patch (referenced by
             // zero timeline constructs) just leaves the bank as ReplaceGroup
             // produced it.
-            foreach (var (subsoundIndex, newSamples) in timelinePatches)
+            //
+            // A Scatterer-based track (e.g. a season's music playlist) also
+            // needs its own SpawnTime pushed out - a Scatterer schedules its
+            // next spawn on that independent timer regardless of whether the
+            // current voice has finished, so leaving it at the original
+            // (short) window spawns a second, overlapping voice on top of a
+            // longer replacement partway through. Confirmed by tracing real
+            // playback, not just GetLength() - see
+            // FmodEventGraph.FindScattererSpawnTimeOffsets.
+            //
+            // SpawnTime is set to the replacement's own duration *plus* a
+            // buffer, not the same value as the outer window - setting both
+            // to exactly the same instant reproduces vanilla's relationship
+            // backwards. Vanilla always had the outer window (~124s) fire
+            // *before* the scatterer's own spawn timer (~150-180s) could
+            // ever reach it, so in practice the spawn timer never actually
+            // fired mid-track. FMOD's own Q&A forum confirms why the exact-
+            // instant case is unsafe: a Scatterer's polyphony-limit voice
+            // steal is a hard kill, not a graceful fade ("an event that's
+            // still fading out is an event that's still consuming voices" -
+            // Firelight staff), so there's no release tail masking a race if
+            // the timeline's own reset and the spawn timer's steal land in
+            // the same tick. 5 seconds tested clean in real gameplay after
+            // 0 (unsafe - audible overlap) and 30 (safe, but a needlessly
+            // long gap); this isn't a documented FMOD minimum, since none
+            // exists publicly - it's this project's own empirical margin.
+            const float spawnTimeBufferSeconds = 5f;
+            foreach (var (subsoundIndex, newSamples, newSeconds) in timelinePatches)
+            {
                 bank = FmodBankFile.PatchPlaybackLengthFields(bank, group.Key, subsoundIndex, newSamples);
+                bank = FmodBankFile.PatchScattererSpawnTime(bank, group.Key, subsoundIndex, newSeconds + spawnTimeBufferSeconds);
+            }
         }
 
         if (locations.Count > 0)

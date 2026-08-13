@@ -87,6 +87,7 @@ public static class FmodEventGraph
         public readonly Dictionary<Guid128, List<Guid128>> PlaylistEntries = []; // MultiInstrument.BaseGuid -> member instrument guids
         public readonly Dictionary<Guid128, Guid128> WaveformInstrumentToResource = [];
         public readonly Dictionary<Guid128, (int SoundBankIndex, int SubsoundIndex)> WaveformResources = [];
+        public readonly Dictionary<Guid128, (long MinOffset, long MaxOffset)> ScattererSpawnTimeOffsets = [];
     }
 
     // Byte offsets (into bank) of every field that governs playback length
@@ -109,7 +110,65 @@ public static class FmodEventGraph
     public static List<long> FindPlaybackLengthFieldOffsets(byte[] bank, int soundBankIndex, int subsoundIndex)
     {
         var graph = Parse(bank);
+        var targets = ResolveTargets(graph, soundBankIndex, subsoundIndex);
+        if (targets.Count == 0) return [];
 
+        var offsets = new List<long>();
+        foreach (var (timelineGuid, boxes) in graph.TimelineTriggerBoxes)
+        {
+            var matched = boxes.Where(tb => targets.Contains(tb.TargetGuid)).ToList();
+            if (matched.Count == 0) continue;
+
+            offsets.AddRange(matched.Select(tb => tb.LengthFieldOffset));
+            if (graph.TimelineExtraOffsets.TryGetValue(timelineGuid, out var extraOffsets))
+                offsets.AddRange(extraOffsets);
+        }
+
+        return offsets;
+    }
+
+    // Byte offsets of a Scatterer's own SpawnTime.Minimum/Maximum (float
+    // seconds, not the samples-at-48kHz format everything above uses) for
+    // every Scatterer the subsound at (soundBankIndex, subsoundIndex) is a
+    // playlist member of. A Scatterer schedules its next spawn on this
+    // independent timer regardless of whether the currently-playing voice
+    // has actually finished - confirmed by tracing real playback with a
+    // replacement long enough to still be mid-play when the original
+    // ~150-180s window elapsed: a second voice started anyway, overlapping
+    // the first. Left at its original (short) range, a replacement much
+    // longer than that range gets a second, unwanted voice spawned on top of
+    // it partway through - a different failure mode from the
+    // trigger-box/transition-region cutoff FindPlaybackLengthFieldOffsets
+    // addresses, and one that only showed up through real playback tracing,
+    // never through GetLength() or offline analysis. Empty means the
+    // subsound isn't a Scatterer member at all (e.g. it's a plain
+    // single-instrument track, or a Multi Instrument's own member, which
+    // doesn't have this construct).
+    public static List<long> FindScattererSpawnTimeOffsets(byte[] bank, int soundBankIndex, int subsoundIndex)
+    {
+        var graph = Parse(bank);
+        var targets = ResolveTargets(graph, soundBankIndex, subsoundIndex);
+        if (targets.Count == 0) return [];
+
+        var offsets = new List<long>();
+        foreach (var scattererGuid in targets)
+        {
+            if (!graph.ScattererSpawnTimeOffsets.TryGetValue(scattererGuid, out var spawnTime)) continue;
+            offsets.Add(spawnTime.MinOffset);
+            offsets.Add(spawnTime.MaxOffset);
+        }
+
+        return offsets;
+    }
+
+    // Every construct that transitively references the subsound at
+    // (soundBankIndex, subsoundIndex): its own waveform instrument(s), any
+    // Multi Instrument/Scatterer it's a playlist member of, and any
+    // sub-event reference chain leading to those. Shared by both offset
+    // resolvers above so they always agree on what counts as "referencing
+    // this subsound."
+    private static HashSet<Guid128> ResolveTargets(Graph graph, int soundBankIndex, int subsoundIndex)
+    {
         var targetWaveformInstruments = new HashSet<Guid128>(
             graph.WaveformInstrumentToResource
                 .Where(kv => graph.WaveformResources.TryGetValue(kv.Value, out var loc)
@@ -153,18 +212,7 @@ public static class FmodEventGraph
             }
         } while (changed);
 
-        var offsets = new List<long>();
-        foreach (var (timelineGuid, boxes) in graph.TimelineTriggerBoxes)
-        {
-            var matched = boxes.Where(tb => targets.Contains(tb.TargetGuid)).ToList();
-            if (matched.Count == 0) continue;
-
-            offsets.AddRange(matched.Select(tb => tb.LengthFieldOffset));
-            if (graph.TimelineExtraOffsets.TryGetValue(timelineGuid, out var extraOffsets))
-                offsets.AddRange(extraOffsets);
-        }
-
-        return offsets;
+        return targets;
     }
 
     private static Graph Parse(byte[] bank)
@@ -270,9 +318,30 @@ public static class FmodEventGraph
                 // Multi Instruments do - both get pushed here so the
                 // following PLST chunk can attach to whichever is on top.
                 case TagMultiInstrumentBody:
+                {
+                    var guid = new Guid128(reader);
+                    multiInstrumentStack.Push(guid);
+                    if (!graph.PlaylistEntries.ContainsKey(guid))
+                        graph.PlaylistEntries[guid] = [];
+                    break;
+                }
+
+                // A Scatterer schedules its next spawn on SpawnTime.Minimum/
+                // Maximum regardless of whether the current voice is still
+                // playing - see FindScattererSpawnTimeOffsets for why this
+                // needs patching too, not just the outer trigger box/
+                // transition region.
                 case TagScattererInstrumentBody:
                 {
                     var guid = new Guid128(reader);
+                    reader.ReadInt32(); // MaximumSpawnPolyphony
+                    reader.ReadInt32(); // SpawnCount
+                    var minOffset = reader.BaseStream.Position;
+                    reader.ReadSingle(); // SpawnTime.Minimum
+                    var maxOffset = reader.BaseStream.Position;
+                    reader.ReadSingle(); // SpawnTime.Maximum
+                    graph.ScattererSpawnTimeOffsets[guid] = (minOffset, maxOffset);
+
                     multiInstrumentStack.Push(guid);
                     if (!graph.PlaylistEntries.ContainsKey(guid))
                         graph.PlaylistEntries[guid] = [];
