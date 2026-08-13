@@ -2252,9 +2252,9 @@ marker  = "mmapi_monsters_run_step_begin"
 # clears next_state and returns early; new_tick's boolean return is consumed
 # nowhere in pristine, so the early return is safe. A redirect is bounds- and
 # integer-checked because List.get() asserts out of range and every id in
-# [0, count) is a defined state at spawn. execute_state_change is a
-# zero-argument function, so the injected try/catch is reliable under the
-# engine dialect.
+# [0, count) is a defined state at spawn. The injected try/catch contains a
+# throwing handler on its own, and the enclosing function's arity has no
+# bearing on that; see the old guarded-call quirk note in mmapi.gml.
 [[seam]]
 id      = "fsm_transition"
 file    = "gml/scripts/GameplaySystems/Fsm/StateMachine.gml"
