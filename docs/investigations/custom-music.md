@@ -297,6 +297,15 @@ The vanilla `snd_fall_day_bed` is **27.4 seconds**. That's a strikingly close ma
 
 **Working theory, now with two independent, differently-shaped confirmations**: the game (via the compiled FMOD event data, proven above to be something this feature's patching never touches) references each track's own *originally authored* length - not anything derived from whatever audio is actually in the bank - to decide when to act. For a Multi Instrument/playlist construct, that action is "stop and advance to the next pick." For a plain looping instrument, it's "loop back to the start." Both are consistent with the same underlying fact: **the compiled event only ever expects (and only ever schedules for) the vanilla track's own length**, regardless of what audio the bank itself actually contains.
 
+### Measured directly, not just inferred: FMOD's own Studio API
+
+Went one step further than binary archaeology: the FMOD *Studio* API (a separate, higher-level, publicly documented API from the Core API this feature already uses - `fmodstudio.dll`, already shipped alongside the game's own `fmod.dll`) exposes `Studio::EventDescription::getLength()`, whose own documentation says exactly what was suspected: *"the length of the timeline... the largest of any logic markers, transition leadouts and the end of any trigger boxes."* A small standalone P/Invoke probe - bindings verified against a real working C# FMOD wrapper project and FMOD's own generated docs, not guessed - loaded `Master.strings.bank` (required for path-based lookups), `Master.bank`, and `Fall.bank` through the real Studio API and queried it directly:
+
+- `event:/Ambience/FallDayRandom` → **27,363 ms**. Vanilla `snd_fall_day_bed` is 27.4s. Effectively an exact match - no longer "strikingly close," now confirmed.
+- `event:/Music/Playlists/Fall` → **124,000 ms**. Close to vanilla `ChangingWinds`'s 2:00 (120.0s), but short of the ~2:43-2:50 actually observed in-game. The gap is plausibly the "transition leadout" the API docs call out explicitly - a crossfade that keeps the old track audibly playing for some time after the nominal timeline length while the next pick fades in, which would also explain why the perceived cutoff point wasn't perfectly reproducible across the three earlier build-flag attempts.
+
+This is hard confirmation, not inference: the compiled event genuinely carries a fixed length independent of the audio content, retrieved through FMOD's own official API rather than pattern-matched out of raw bytes. It does not, however, open an editing path - `getLength()` is a read-only query against an already-compiled, already-loaded bank; the Studio API has no corresponding setter, and actually changing it would need FMOD Studio (the authoring application) and the original `.fspro` project source, which doesn't exist for this feature to reach.
+
 ### Practical takeaway
 
 Not narrow to playlists after all - this affects both constructs tested, just differently:
@@ -304,7 +313,7 @@ Not narrow to playlists after all - this affects both constructs tested, just di
 - **Music (playlist) tracks**: a much longer replacement gets cut short and the playlist advances early.
 - **Ambient (single-instrument, looping) tracks**: a much longer replacement gets cut short and loops from the start early.
 
-In both cases, a replacement *close to* the original track's length should be unaffected (and everything shorter clearly works fine, per every other successful test this session). A replacement meaningfully *longer* than the track it replaces will not play to completion, and there is currently no way to change that without reverse-engineering and safely patching FMOD's proprietary compiled event format - out of scope for now, flagged as a real, understood limitation rather than a bug to keep chasing.
+In both cases, a replacement *close to* the original track's length should be unaffected (and everything shorter clearly works fine, per every other successful test this session). A replacement meaningfully *longer* than the track it replaces will not play to completion. Fixing that for real would mean changing the compiled event's own timeline length, and the only way to do that is FMOD Studio (the authoring application) plus the original `.fspro` project source - not something reachable by patching bank bytes, however well understood, since the value is read at load time from data this feature has no source project to regenerate. Documented as a real, confirmed, structural limitation, not a bug to keep chasing.
 
 ## Open questions for later
 

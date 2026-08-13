@@ -125,13 +125,15 @@ didn't, that's the first thing to suspect, not a sign nothing happened.
   re-encoded (not byte-identical to vanilla) once any track in that group is
   replaced.
 - **A replacement meaningfully longer than the track it replaces will not
-  play to completion.** Confirmed on both constructs tested: a playlist
+  play to completion.** Confirmed on both constructs tested, and confirmed
+  the root cause via FMOD's own Studio API, not just observed: a playlist
   track (e.g. a season's background music) gets cut short and the playlist
   advances early; a looping ambient track gets cut short and loops from the
-  start early. Both point to the same root cause - the compiled FMOD event
-  data references the *original* track's own length, not anything about
-  your replacement, to decide when to act, and that data lives outside
-  anything this feature reads or writes. Replacements close to the original
+  start early. Both because the compiled FMOD event carries a fixed
+  timeline length set when the event was authored - independent of
+  whatever audio a bank actually contains, and outside anything this
+  feature reads or writes, so there's no way to change it short of the
+  original FMOD Studio project source. Replacements close to the original
   track's length are unaffected; see
   [docs/investigations/custom-music.md](investigations/custom-music.md)'s "A
   new limit" section for the full investigation.
