@@ -41,12 +41,17 @@ This project is intended for Fields of Mistria 1.0.x. Individual mods may still 
 
 ## Installation
 
-1. Download the latest release from the [AcTePuKc fork releases page](https://github.com/AcTePuKc/Mods-of-Mistria-Installer/releases).
-2. Create or select a mods folder. AIM first checks the detected game directory for `mods`, `Mods`, `MODS`, or `MODs`, then checks the same folder names next to the AIM executable wherever you placed or downloaded it. It also checks the per-user `mistria-mods` and `Mistria-Mods` locations used by Linux/Steam Deck setups. If no automatic location is found, you can select or create a folder anywhere manually.
-3. Put each mod directly in the selected mods folder. A mod folder, ZIP archive, or RAR archive must contain `manifest.toml` or `manifest.json` at its mod root; nested duplicate folders prevent detection.
-   **Important:** Keep only one copy of a given mod in the active folder. When an updated version is added while the older copy remains, AIM does not yet guarantee that it will select the newer copy; the old version may remain the one that is discovered or installed. Close AIM before moving, replacing, or deleting the old copy, because an open mod archive may be locked by the application. Do not leave the same mod there both as an extracted folder and as a ZIP/RAR archive, because AIM may discover both copies.
-4. Start AIM, select the mods to install, and click **Install**.
-5. Use **Play** whenever the game is ready to launch. Installing mods is optional; after an installation attempt, wait for it to complete before starting the game.
+1. Download the latest release from the [releases page](https://github.com/AcTePuKc/Mods-of-Mistria-Installer/releases).
+2. Open AIM and choose a mods folder. AIM automatically checks for `mods`, `Mods`, `MODS`, or `MODs` next to the detected game installation and next to the AIM executable. It also checks the supported per-user Linux/Steam Deck locations. You can select or create another folder manually.
+3. Put each mod directly in the selected folder. A mod folder, ZIP, or RAR archive must contain `manifest.toml` or `manifest.json` at its root.
+4. Select the mods you want and click **Install**. You can add new mods at any time; you do not need to uninstall the other installed mods first.
+5. Start the game with **Play**.
+
+> [!IMPORTANT]
+> Keep only one copy of each mod in the active folder. When updating a mod, remove its old copy first and leave only the new version. Do not keep the same mod both as a folder and as a ZIP/RAR archive.
+
+> [!WARNING]
+> Close AIM before moving, replacing, or deleting mod files. An open mod archive may be locked while AIM is running.
 
 AIM preserves a pristine backup and writes a staged archive before replacing the live `assets.zip`. Do not delete the backup while AIM is managing the installation. Keep a separate game backup before testing unfamiliar mods.
 
