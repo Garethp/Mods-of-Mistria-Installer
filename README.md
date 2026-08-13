@@ -8,6 +8,12 @@ AIM is not intended to replace MOMI. It exists to provide capabilities that are 
 
 The current AIM application version is `0.1.1`.
 
+## Preview
+
+![AIM preview](aim-preview.gif)
+
+This is only a visual preview of AIM. It is not part of the application build or release package.
+
 ## Fork-specific improvements
 
 Compared with the upstream 0.15.1 line, this fork focuses on Fields of Mistria 1.0.x support and safer everyday use:
