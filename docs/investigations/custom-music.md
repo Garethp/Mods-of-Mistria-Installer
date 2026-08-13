@@ -279,9 +279,32 @@ Also checked the GML side again, specifically for anything duration/trigger-regi
 
 **Conclusion**: the per-track playback-length control almost certainly lives inside the compiled Multi Instrument/Playlist event data in those `LIST` chunks - a proprietary, versioned FMOD Studio binary format, structurally separate from the simple FSB5-in-a-container format this feature already understands. Unlike the container format, there's no GPLv3 (or any open-source) reference implementation to port logic from here - Fmod-Bank-Tools never needed to touch event data, only raw audio. Reverse-engineering it well enough to safely locate and patch a "max instrument length" field, without corrupting parameter references, transitions, or mixer routing elsewhere in the same compiled event, would be a substantially larger and riskier undertaking than everything built so far - closer in kind to the already-deferred "add a wholly new track" problem than to a bug in this feature.
 
-### Practical takeaway, and the next real test
+### Going deeper: proving it isn't our patch, and finding where it likely lives
 
-Whatever mechanism is doing this appears tied specifically to `Music/Playlists/Fall`'s Multi Instrument construct - not proven to be a universal limit on every replaceable track. The next concrete, cheap test (no reverse-engineering needed, just another real install + listen): swap a long replacement into a track that **isn't** part of a rotating playlist - e.g. `snd_fall_day_bed`, a single non-playlist ambient loop - and see whether it plays to completion. If simple single-instrument tracks don't have this ceiling, the practical guidance becomes narrow and useful: keep playlist-based music replacements roughly within the original track's length, but SFX/ambience/one-shot replacements aren't affected.
+Went further than reasoning about this - actually verified it, and actually looked at the bytes.
+
+**Byte-for-byte proof our patch never touches this data.** Compared the live, heavily-rebuilt `Fall.bank` (post pain.wav swap) against the pristine backup: the entire event-graph region - everything from the `FEV ` magic up to where `SNDH` starts, 15,800 bytes - is **byte-for-byte identical**, once the one legitimately-different field (the RIFF container's own top-level size, which necessarily changes when the file grows) is excluded. `FmodBankFile.ReplaceGroup` only ever writes from `Groups[0].Offset` onward by construction, but this confirms it directly rather than trusting the code reading. Whatever governs this behavior is reading data our tool has never modified, on every single test.
+
+**Chunk-level structure.** Walked the *full* top-level chunk list of both `Fall.bank` and `Master.bank` (both share the identical shape). Found four repetitions each of `TMLN`/`TLNB` (Timeline), `TRAN`/`TRNS` (Transition), and `MUIT`/`MUIB` (Multi Instrument) - matching the four tracks in the Fall playlist suspiciously well. Targeted searches for the four tracks' own known lengths, encoded as float32 seconds, int32 milliseconds, or int32 samples-at-48kHz, found no exact matches anywhere in that region. Hex-dumping the `MUIT` blocks directly turned up a repeating 4-byte pattern that decodes cleanly to `8.333...` in two blocks and `33.333...` in the other two (`100/12` and `100/3` - plausible weighted-selection percentages or automation-curve keyframes, not a duration field).
+
+This is the point actual reverse-engineering stopped, deliberately: without a documented spec or an existing open-source parser for FMOD Studio's compiled event format (unlike the container format, which had one), continuing past pattern-matching into blind edits risks corrupting cross-references, transitions, or mixer routing this project has no way to validate before a real in-game test - a fundamentally different risk profile than the well-understood, already-extensively-tested SNDH/SND container patching this feature already does safely.
+
+### The real test: a non-playlist track has the same problem, differently
+
+Swapped the same long file into `snd_fall_day_bed` too - a single ambient loop, not part of any `Music/Playlists/*` construct (`SceneAudioPlayer.gml`'s `in_game_ambience_selector` selects ambience directly, by location and day/night, never through a playlist). With the music channel muted to isolate it: **the ambient track plays, but starts looping after ~30 seconds** - not skipping to something else the way the playlist track does, but restarting from the beginning.
+
+The vanilla `snd_fall_day_bed` is **27.4 seconds**. That's a strikingly close match to the observed ~30s loop point - much tighter than the playlist case's own (real but looser) correlation to `ChangingWinds`'s original 2:00.
+
+**Working theory, now with two independent, differently-shaped confirmations**: the game (via the compiled FMOD event data, proven above to be something this feature's patching never touches) references each track's own *originally authored* length - not anything derived from whatever audio is actually in the bank - to decide when to act. For a Multi Instrument/playlist construct, that action is "stop and advance to the next pick." For a plain looping instrument, it's "loop back to the start." Both are consistent with the same underlying fact: **the compiled event only ever expects (and only ever schedules for) the vanilla track's own length**, regardless of what audio the bank itself actually contains.
+
+### Practical takeaway
+
+Not narrow to playlists after all - this affects both constructs tested, just differently:
+
+- **Music (playlist) tracks**: a much longer replacement gets cut short and the playlist advances early.
+- **Ambient (single-instrument, looping) tracks**: a much longer replacement gets cut short and loops from the start early.
+
+In both cases, a replacement *close to* the original track's length should be unaffected (and everything shorter clearly works fine, per every other successful test this session). A replacement meaningfully *longer* than the track it replaces will not play to completion, and there is currently no way to change that without reverse-engineering and safely patching FMOD's proprietary compiled event format - out of scope for now, flagged as a real, understood limitation rather than a bug to keep chasing.
 
 ## Open questions for later
 

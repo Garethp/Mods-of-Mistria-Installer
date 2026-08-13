@@ -124,12 +124,14 @@ didn't, that's the first thing to suspect, not a sign nothing happened.
   compression, so even an untouched sibling track in the same group is
   re-encoded (not byte-identical to vanilla) once any track in that group is
   replaced.
-- **A much longer replacement for a rotating playlist track (e.g. a season's
-  background music) may get cut off partway through and skip to the next
-  track**, well before your file's actual end - confirmed, not yet fully
-  understood; see
+- **A replacement meaningfully longer than the track it replaces will not
+  play to completion.** Confirmed on both constructs tested: a playlist
+  track (e.g. a season's background music) gets cut short and the playlist
+  advances early; a looping ambient track gets cut short and loops from the
+  start early. Both point to the same root cause - the compiled FMOD event
+  data references the *original* track's own length, not anything about
+  your replacement, to decide when to act, and that data lives outside
+  anything this feature reads or writes. Replacements close to the original
+  track's length are unaffected; see
   [docs/investigations/custom-music.md](investigations/custom-music.md)'s "A
-  new limit" section. Likely specific to tracks that are part of an FMOD
-  Multi Instrument/playlist construct, not a universal ceiling - not yet
-  confirmed whether non-playlist tracks (most SFX and ambience) are affected
-  too.
+  new limit" section for the full investigation.
