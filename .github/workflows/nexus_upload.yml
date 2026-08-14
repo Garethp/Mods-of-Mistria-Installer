@@ -75,7 +75,7 @@ jobs:
             echo "::error::SIXLABORS_LICENSE secret is required for ImageSharp 4.x builds."
             exit 1
           fi
-          printf '%s' "$SIXLABORS_LICENSE" > sixlabors.lic
+          printf '%s' "$SIXLABORS_LICENSE" > ModsOfMistriaInstallerLib/sixlabors.lic
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
