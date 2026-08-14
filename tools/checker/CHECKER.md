@@ -39,7 +39,7 @@ This crate also builds a second binary, `momi-gml-probe`, which *does* execute. 
 ## Fabricator Pin
 
 The `rev` on each Fabricator dependency in this crate's `Cargo.toml`
-(`087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33`) is the authoritative Fabricator
+(`f2483a61d53c730020f2357c790603dd6362476b`) is the authoritative Fabricator
 pin.
 
 `src/rev.rs` holds the string both binaries report via `--version`. Keep it in step with the dependency revs. `GmlCompileGateTest` asserts all five

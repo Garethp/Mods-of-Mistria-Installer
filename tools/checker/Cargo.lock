@@ -43,13 +43,13 @@ checksum = "91622ff5e7162018101f2fea40d6ebf4a78bbe5a49736a2020649edf9693679e"
 [[package]]
 name = "fabricator-compiler"
 version = "0.1.0"
-source = "git+https://github.com/kyren/fabricator.git?rev=087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33#087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33"
+source = "git+https://github.com/kyren/fabricator.git?rev=f2483a61d53c730020f2357c790603dd6362476b#f2483a61d53c730020f2357c790603dd6362476b"
 dependencies = [
  "arrayvec",
  "either",
  "fabricator-util",
  "fabricator-vm",
- "gc-arena",
+ "gc-arena 0.7.0",
  "rustc-hash",
  "thiserror",
 ]
@@ -57,10 +57,10 @@ dependencies = [
 [[package]]
 name = "fabricator-stdlib"
 version = "0.1.0"
-source = "git+https://github.com/kyren/fabricator.git?rev=087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33#087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33"
+source = "git+https://github.com/kyren/fabricator.git?rev=f2483a61d53c730020f2357c790603dd6362476b#f2483a61d53c730020f2357c790603dd6362476b"
 dependencies = [
  "fabricator-vm",
- "gc-arena",
+ "gc-arena 0.7.0",
  "rand",
  "rustc-hash",
  "serde_json",
@@ -70,7 +70,7 @@ dependencies = [
 [[package]]
 name = "fabricator-util"
 version = "0.1.0"
-source = "git+https://github.com/kyren/fabricator.git?rev=087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33#087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33"
+source = "git+https://github.com/kyren/fabricator.git?rev=f2483a61d53c730020f2357c790603dd6362476b#f2483a61d53c730020f2357c790603dd6362476b"
 dependencies = [
  "thiserror",
 ]
@@ -78,10 +78,9 @@ dependencies = [
 [[package]]
 name = "fabricator-vm"
 version = "0.1.0"
-source = "git+https://github.com/kyren/fabricator.git?rev=087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33#087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33"
+source = "git+https://github.com/kyren/fabricator.git?rev=f2483a61d53c730020f2357c790603dd6362476b#f2483a61d53c730020f2357c790603dd6362476b"
 dependencies = [
- "fabricator-util",
- "gc-arena",
+ "gc-arena 0.7.0",
  "rustc-hash",
  "thiserror",
 ]
@@ -92,7 +91,16 @@ version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e930dd41c7e12e4f12211d5a33317c77871a214482afd8a3aa63c0a0a51debed"
 dependencies = [
- "gc-arena-derive",
+ "gc-arena-derive 0.6.0",
+]
+
+[[package]]
+name = "gc-arena"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "160a11f93020eea95cb4c59e2eda2e4c6353f75aa4fbb01f2bf8729b2e4d6dd2"
+dependencies = [
+ "gc-arena-derive 0.7.0",
 ]
 
 [[package]]
@@ -100,6 +108,18 @@ name = "gc-arena-derive"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98db22d439d1c003fd875e5961560886e6eb2194637d0705029a017f6f984dbf"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+ "synstructure",
+]
+
+[[package]]
+name = "gc-arena-derive"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd3d24b051bd5a5f44e66bac510393d3d484ef776bb560f6504668239f35959a"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -145,7 +165,7 @@ dependencies = [
  "fabricator-stdlib",
  "fabricator-util",
  "fabricator-vm",
- "gc-arena",
+ "gc-arena 0.6.0",
 ]
 
 [[package]]
