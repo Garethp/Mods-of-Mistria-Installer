@@ -15,7 +15,17 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
+      - name: Configure ImageSharp license
+        shell: bash
+        env:
+          SIXLABORS_LICENSE: ${{ secrets.SIXLABORS_LICENSE }}
+        run: |
+          if [ -z "$SIXLABORS_LICENSE" ]; then
+            echo "::error::SIXLABORS_LICENSE secret is required for ImageSharp 4.x builds."
+            exit 1
+          fi
+          printf '%s' "$SIXLABORS_LICENSE" > ModsOfMistriaInstallerLib/sixlabors.lic
       - name: Build the GML checker and probe
         run: cargo build --release --manifest-path tools/checker/Cargo.toml
       - name: Restore
