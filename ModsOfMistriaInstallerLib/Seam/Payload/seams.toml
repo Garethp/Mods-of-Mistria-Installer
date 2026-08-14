@@ -2088,7 +2088,7 @@ anchor  = '''
                         continue;
                     }
 
-                    if self.parent_object() != obj_monster_rock_stack && has_flag(tarball.flags, CombatFlag.Rockstack) {
+                    if self.parent_object_id != obj_monster_rock_stack && has_flag(tarball.flags, CombatFlag.Rockstack) {
                         continue;
                     }
 
@@ -2111,7 +2111,7 @@ replace = '''
                         continue;
                     }
 
-                    if self.parent_object() != obj_monster_rock_stack && has_flag(tarball.flags, CombatFlag.Rockstack) {
+                    if self.parent_object_id != obj_monster_rock_stack && has_flag(tarball.flags, CombatFlag.Rockstack) {
                         continue;
                     }
 
