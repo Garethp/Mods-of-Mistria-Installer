@@ -1,4 +1,4 @@
-# AIM — Alternative Installer for Mistria 0.1.1
+# AIM — Alternative Installer for Mistria 0.1.2
 
 This is an independently maintained alternative installer for **Fields of Mistria 1.0.x**, based on the open-source **Mods of Mistria Installer (MOMI)** project.
 
@@ -6,7 +6,7 @@ AIM is a fork of MOMI. It was renamed to avoid confusion between the two applica
 
 AIM is not intended to replace MOMI. It exists to provide capabilities that are currently needed by this fork while remaining compatible with the upstream project. If MOMI later adopts at least the capabilities that motivated this fork and fully meets the project's needs, AIM may be retired in favour of the upstream project.
 
-The current AIM application version is `0.1.1`.
+The current AIM application version is `0.1.2`.
 
 ## Preview
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.2 — AIM (draft)
+## 0.1.2 — AIM
 
 - Updated the application and CLI projects to .NET 10 with a shared version source.
 - Updated core dependencies, including SharpCompress, Newtonsoft.Json, and ImageSharp; removed the unused Magick.NET dependency.
