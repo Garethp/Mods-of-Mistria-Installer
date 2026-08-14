@@ -6,7 +6,9 @@ Know the moment a dungeon run begins.
 
 ## Contract
 
-Fires in `enter_dungeon()` after `DUNGEON_RUNNER` is constructed, before the goto to the first level's room. ctx is `{ runner, floor, biome, room_id, grid, level, gm_room, impl }`, each field filled best-effort: every read is wrapped on its own, and a failed read leaves that field absent from the struct.
+Fires in `enter_dungeon()` after the run's `DungeonRunner` is constructed, before the goto to the first level's room. ctx is `{ runner, floor, biome, room_id, grid, level, gm_room, impl }`, and each field is filled best-effort. Every read is wrapped on its own, and a failed read leaves that field absent from the struct.
+
+At emit time the runner is **not yet installed** as `DUNGEON_RUNNER`. The engine hands it to the queued room transition, and the global is assigned as that transition departs. Read the runner from ctx, not from the global.
 
 Because the emit runs before `goto_gm_room()`, the globals in ctx (`room_id`, `grid`, `floor`, `biome`) describe the game as it stands at creation time. The first level's room has not loaded yet. `gm_room` names where the run is headed.
 
@@ -14,7 +16,7 @@ This is the first event of the dungeon sequence, firing once per `enter_dungeon(
 
 | | |
 | --- | --- |
-| **Fires** | In `enter_dungeon()`, after `DUNGEON_RUNNER` is constructed and before the goto to the first level's room. |
+| **Fires** | In `enter_dungeon()`, after the run's `DungeonRunner` is constructed and before the goto to the first level's room. |
 | **ctx** | `{ runner, floor, biome, room_id, grid, level, gm_room, impl }` - each field filled best-effort. |
 | **Kind contract** | The callback observes the moment. Its return value is ignored. |
 
@@ -22,16 +24,16 @@ This is the first event of the dungeon sequence, firing once per `enter_dungeon(
 
 Every field is filled best-effort: a failed read leaves the field absent (not `undefined`-valued), so prefer `_ctx[$ "field"]` over dot access when in doubt.
 
-- `runner` - the freshly constructed `DungeonRunner` (`DUNGEON_RUNNER`).
-- `floor` - the current floor number, read from `DUNGEON_FLOOR`.
-- `biome` - the current dungeon biome, read from `DUNGEON_BIOME`.
+- `runner` - the freshly constructed `DungeonRunner`. Not yet `DUNGEON_RUNNER`. The global is installed as the queued transition departs.
+- `floor` - the run's starting floor number, the runner's `current_floor`.
+- `biome` - the first level's dungeon biome, `runner.current_level().biome`.
 - `room_id` - the current room, read from `room()` at emit time, still the pre-dungeon room.
 - `grid` - the active grid, read from `GRID`.
 - `level` - the runner's current level entry, `runner.current_level()`.
 - `gm_room` - the level's GameMaker room, `level.gm_room`, the room the run is about to goto.
 - `impl` - the level's implementation, `level.impl`.
 
-`level`, `gm_room`, and `impl` fill in one shared read: if `current_level()` throws, all three are absent.
+`level`, `gm_room`, and `impl` fill in one shared read. If `current_level()` throws, all three are absent.
 
 ## Usage
 
@@ -40,9 +42,10 @@ Every field is filled best-effort: a failed read leaves the field absent (not `u
 // You cannot change or stop it here; the return value is ignored.
 function run_tracker_dungeon_runner_created(_ctx) {
     // _ctx is { runner, floor, biome, room_id, grid, level, gm_room, impl }.
-    //   .runner  - the freshly built DungeonRunner (DUNGEON_RUNNER).
-    //   .floor   - the current floor number (DUNGEON_FLOOR).
-    //   .biome   - the current dungeon biome (DUNGEON_BIOME).
+    //   .runner  - the freshly built DungeonRunner (not yet DUNGEON_RUNNER;
+    //              the global is installed as the queued transition departs).
+    //   .floor   - the run's starting floor number (runner.current_floor).
+    //   .biome   - the first level's dungeon biome (runner.current_level().biome).
     //   .room_id - room() at emit time; the first floor has not loaded yet.
     //   .grid    - the active grid (GRID).
     //   .level   - runner.current_level(), the itinerary entry for floor one.
