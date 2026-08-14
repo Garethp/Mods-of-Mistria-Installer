@@ -29,6 +29,11 @@ public partial class Settings : ObservableObject
 
     private static string PreferencesPath => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "AIM",
+        "settings.json");
+
+    private static string LegacyPreferencesPath => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "MOMI",
         "settings.json");
 
@@ -60,8 +65,9 @@ public partial class Settings : ObservableObject
     {
         try
         {
-            if (!File.Exists(PreferencesPath)) return;
-            var preferences = JsonSerializer.Deserialize<LaunchPreferences>(File.ReadAllText(PreferencesPath));
+            var path = File.Exists(PreferencesPath) ? PreferencesPath : LegacyPreferencesPath;
+            if (!File.Exists(path)) return;
+            var preferences = JsonSerializer.Deserialize<LaunchPreferences>(File.ReadAllText(path));
             if (preferences is not null)
             {
                 LaunchGameDirectly = preferences.LaunchGameDirectly;
@@ -79,8 +85,9 @@ public partial class Settings : ObservableObject
     {
         try
         {
-            if (!File.Exists(PreferencesPath)) return "system";
-            var preferences = JsonSerializer.Deserialize<LaunchPreferences>(File.ReadAllText(PreferencesPath));
+            var path = File.Exists(PreferencesPath) ? PreferencesPath : LegacyPreferencesPath;
+            if (!File.Exists(path)) return "system";
+            var preferences = JsonSerializer.Deserialize<LaunchPreferences>(File.ReadAllText(path));
             return string.IsNullOrWhiteSpace(preferences?.UiLanguage) ? "system" : preferences.UiLanguage;
         }
         catch { return "system"; }

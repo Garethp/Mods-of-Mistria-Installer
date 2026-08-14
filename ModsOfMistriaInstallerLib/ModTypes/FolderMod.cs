@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
+using Garethp.ModsOfMistriaInstallerLib.Security;
 using Newtonsoft.Json.Linq;
 using Tomlyn;
 using Tomlyn.Model;
@@ -210,19 +211,31 @@ public class FolderMod : IMod
 
     public bool HasFilesInFolder(string folder) => HasFilesInFolder(folder, "");
 
-    public bool FileExists(string path) => File.Exists(Path.Combine(_location, path));
+    private string ResolveModPath(string path)
+    {
+        if (!Path.IsPathRooted(path)) return InputSafety.ResolveUnderRoot(_location, path);
 
-    public bool FolderExists(string path) => Directory.Exists(Path.Combine(_location, path));
+        var fullPath = Path.GetFullPath(path);
+        var fullRoot = Path.GetFullPath(_location).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        if (!fullPath.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Mod path escapes the mod directory.");
+        return fullPath;
+    }
+
+    public bool FileExists(string path) => File.Exists(ResolveModPath(path));
+
+    public bool FolderExists(string path) => Directory.Exists(ResolveModPath(path));
 
     public List<string> GetFilesInFolder(string folder) => GetFilesInFolder(folder, "");
 
     public List<string> GetFilesInFolder(string folder, string extension)
     {
-        if (!Directory.Exists(Path.Combine(_location, folder))) return [];
+        var folderPath = ResolveModPath(folder);
+        if (!Directory.Exists(folderPath)) return [];
         if (!string.IsNullOrEmpty(extension))
-            return Directory.GetFiles(Path.Combine(_location, folder), $"*{extension}").ToList();
+            return Directory.GetFiles(folderPath, $"*{extension}").ToList();
         
-        return Directory.GetFiles(Path.Combine(_location, folder)).Where(file => !file.EndsWith("__folder_managed_by_vortex")).ToList();
+        return Directory.GetFiles(folderPath).Where(file => !file.EndsWith("__folder_managed_by_vortex")).ToList();
     }
 
     public List<string> GetAllFiles(string extension)
@@ -235,12 +248,12 @@ public class FolderMod : IMod
 
     public string? ReadFile(string path)
     {
-        var fullPath = Path.Combine(_location, path);
+        var fullPath = ResolveModPath(path);
         return !File.Exists(fullPath) ? "" : File.ReadAllText(fullPath);
     }
 
     public Stream ReadFileAsStream(string path)
     {
-        return File.OpenRead(Path.Combine(_location, path));
+        return File.OpenRead(ResolveModPath(path));
     }
 }

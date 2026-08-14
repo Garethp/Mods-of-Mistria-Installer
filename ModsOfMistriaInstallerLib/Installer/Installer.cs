@@ -1,4 +1,5 @@
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Garethp.ModsOfMistriaInstallerLib.Security;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
@@ -23,5 +24,5 @@ public abstract class Installer
     // Returns the absolute destination path in assets/ for a file that lives at
     // relPath inside the mod.
     protected string DestinationPath(string relPath) =>
-        Path.Combine("assets", relPath.Replace('/', Path.DirectorySeparatorChar));
+        InputSafety.AssetPath(relPath);
 }

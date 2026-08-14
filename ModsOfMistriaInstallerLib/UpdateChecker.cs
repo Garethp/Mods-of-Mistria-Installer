@@ -1,6 +1,7 @@
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
+using Garethp.ModsOfMistriaInstallerLib.Security;
 using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib;
@@ -31,6 +32,8 @@ public static class UpdateChecker
         try
         {
             UpdateInfo? info;
+            if (!InputSafety.IsSafeExternalUri(updateUrl)) return null;
+
             if (TryGetGitHubApiUrl(updateUrl, out var apiUrl))
                 info = await CheckGitHub(apiUrl, downloadUrl, ct);
             else
@@ -48,7 +51,7 @@ public static class UpdateChecker
 
     private static async Task<UpdateInfo?> CheckGitHub(string apiUrl, string? fallbackDownload, CancellationToken ct)
     {
-        var response = await Http.GetStringAsync(apiUrl, ct);
+        var response = await GetSafeStringAsync(apiUrl, ct);
         var json     = JObject.Parse(response);
 
         var tag         = json["tag_name"]?.ToString();
@@ -61,7 +64,7 @@ public static class UpdateChecker
 
     private static async Task<UpdateInfo?> CheckJson(string url, string? fallbackDownload, CancellationToken ct)
     {
-        var response = await Http.GetStringAsync(url, ct);
+        var response = await GetSafeStringAsync(url, ct);
         var json     = JObject.Parse(response);
 
         var version     = json["version"]?.ToString();
@@ -69,6 +72,24 @@ public static class UpdateChecker
         if (string.IsNullOrWhiteSpace(version)) return null;
 
         return new UpdateInfo(version, downloadUrl, false);
+    }
+
+    private static async Task<string> GetSafeStringAsync(string url, CancellationToken ct)
+    {
+        if (!InputSafety.IsSafeExternalUri(url))
+            throw new InvalidDataException("Update URL is not a safe public HTTPS endpoint.");
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        using var response = await Http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+        if ((int)response.StatusCode is >= 300 and < 400)
+        {
+            var location = response.Headers.Location?.ToString();
+            if (!InputSafety.IsSafeExternalUri(location))
+                throw new InvalidDataException("Update redirect is not a safe public HTTPS endpoint.");
+            return await GetSafeStringAsync(location!, ct);
+        }
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsStringAsync(ct);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────────

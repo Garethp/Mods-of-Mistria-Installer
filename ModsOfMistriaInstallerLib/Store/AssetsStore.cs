@@ -385,14 +385,25 @@ public class AssetsStore(string fomLocation)
     private static void ValidateArchive(string path)
     {
         using var archive = ZipFile.OpenRead(path);
+        // Current Fields of Mistria assets archives contain about 122k entries.
+        // Keep a bounded ceiling with room for future game updates.
+        const int maxEntries = 250_000;
+        const long maxEntryBytes = 256L * 1024 * 1024;
+        const long maxTotalBytes = 2L * 1024 * 1024 * 1024;
+        if (archive.Entries.Count > maxEntries)
+            throw new InvalidDataException("Archive contains too many entries.");
         var normalized = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var hasAssets = false;
+        long totalBytes = 0;
         foreach (var entry in archive.Entries)
         {
             var name = entry.FullName.Replace('\\', '/');
             var key = name.TrimEnd('/');
-            if (key.Length == 0 || !normalized.Add(key))
+            if (key.Length == 0 || key.StartsWith('/') || key.Contains("../", StringComparison.Ordinal) ||
+                key.Contains(':') || !normalized.Add(key))
                 throw new InvalidDataException($"Archive contains a duplicate or invalid normalized path: {entry.FullName}");
+            if (entry.Length > maxEntryBytes || (totalBytes += entry.Length) > maxTotalBytes)
+                throw new InvalidDataException("Archive exceeds the supported size limits.");
             if (name.StartsWith("assets/", StringComparison.OrdinalIgnoreCase)) hasAssets = true;
 
             using var input = entry.Open();

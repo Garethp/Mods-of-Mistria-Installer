@@ -71,7 +71,18 @@ public class ZipMod() : IMod
     }
 
     private static string NormalizeArchivePath(string path) =>
-        path.Replace('\\', '/').TrimStart('/');
+        ValidateArchivePath(path.Replace('\\', '/'));
+
+    private static string ValidateArchivePath(string path)
+    {
+        if (path.StartsWith('/') || path.Contains(':'))
+            throw new InvalidDataException("Archive path must be relative.");
+
+        var normalized = path.TrimStart('/');
+        if (normalized.Split('/').Any(part => part is "." or ".."))
+            throw new InvalidDataException("Archive path contains an unsafe segment.");
+        return normalized;
+    }
 
     private string ResolvePath(string path)
     {

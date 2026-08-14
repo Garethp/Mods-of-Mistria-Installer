@@ -156,7 +156,7 @@ public partial class ModModel : ObservableObject
     private void OpenUpdateUrl()
     {
         var url = UpdateDownloadUrl ?? Mod.GetDownloadUrl();
-        if (string.IsNullOrEmpty(url)) return;
+        if (!ExternalUrl.IsAllowed(url)) return;
         System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
         {
             FileName        = url,

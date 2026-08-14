@@ -11,6 +11,9 @@ ModsOfMistriaInstaller.sln.DotSettings.user
 /tools/checker/target/
 /tools/checker/dist/
 
+# Private Six Labors build license; never commit or publish this file.
+**/sixlabors.lic
+
 # Local game archives and generated inspection output must never be committed.
 assets.zip
 assets.bak.zip

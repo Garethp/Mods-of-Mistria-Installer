@@ -4,12 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       upload_to_nexus:
-        description: "Upload the Windows test package to Nexus"
+        description: "Upload the Windows portable package to Nexus"
         required: true
         default: true
         type: boolean
 
-# Package-only test branch: deliberately never uploads to Nexus.
+# Test branch: Windows upload is opt-in; Linux and macOS packages are
+# artifact-only for manual Nexus upload.
 # Future upload configuration should use NEXUS_API_KEY, NEXUS_MOD_ID and
 # NEXUS_FILE_ID (the Nexus "Group ID" for the specific file).
 
@@ -57,10 +58,10 @@ jobs:
       matrix:
         project: [ModsOfMistriaGUI]
         arch: [win-x64]
-        os: [windows]
+        os: [ubuntu-latest]
         configuration: [Release]
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -68,7 +69,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Download the checkers
         uses: actions/download-artifact@v4
@@ -95,43 +96,37 @@ jobs:
           VERSION=$(dotnet msbuild -nologo -verbosity:quiet -getProperty:AssemblyVersion ModsOfMistriaGUI)
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
         
-      - name: Compile Windows
-        run: dotnet publish ModsOfMistriaGUI -c Release -r win-x64 -o Release
-      - name: Zip Windows
-        run: zip -j Release/ModsOfMistriaInstaller-windows.zip Release/ModsOfMistriaInstaller.exe
-          
-      - name: Compile Linux
-        run: dotnet publish ModsOfMistriaGUI -c Release -r linux-x64 -o Release
-      - name: Zip Linux
-        uses: vimtor/action-zip@v1.3
-        with:
-          files: Release/ModsOfMistriaInstaller-linux
-          dest: Release/ModsOfMistriaInstaller-linux.zip
-          
-      - name: Compile OSX
-        run: dotnet publish ModsOfMistriaGUI -c Release -r osx-x64 -o Release
-      - name: Zip OSX
-        uses: vimtor/action-zip@v1.3
-        with:
-          files: Release/ModsOfMistriaInstaller-osx
-          dest: Release/ModsOfMistriaInstaller-osx.zip
-          
+      - name: Compile Windows portable
+        run: dotnet publish ModsOfMistriaGUI -c Release -r win-x64 -p:PublishSingleFile=false -p:PublishReadyToRun=false -p:IncludeAllContentForSelfExtract=false -o Release/windows
+      - name: Zip Windows portable
+        run: (cd Release/windows && zip -r "../AIM-${{ env.APP_VERSION }}-windows-portable.zip" .)
+
+      - name: Compile Linux portable
+        run: dotnet publish ModsOfMistriaGUI -c Release -r linux-x64 -p:PublishSingleFile=false -p:PublishReadyToRun=false -p:IncludeAllContentForSelfExtract=false -o Release/linux
+      - name: Zip Linux portable
+        run: (cd Release/linux && zip -r "../AIM-${{ env.APP_VERSION }}-linux-portable.zip" .)
+
+      - name: Compile macOS portable
+        run: dotnet publish ModsOfMistriaGUI -c Release -r osx-x64 -p:PublishSingleFile=false -p:PublishReadyToRun=false -p:IncludeAllContentForSelfExtract=false -o Release/macos
+      - name: Zip macOS portable
+        run: (cd Release/macos && zip -r "../AIM-${{ env.APP_VERSION }}-macos-portable.zip" .)
+
       - name: Upload test artifacts to GitHub Actions only
         uses: actions/upload-artifact@v4
         with:
           name: nexus-test-package-${{ env.APP_VERSION }}
-          path: Release/*
+          path: Release/AIM-*.zip
           if-no-files-found: error
 
-      # Disabled by default. This branch is the only place where the Nexus
+      # Windows upload is opt-in. This branch is the only place where the Nexus
       # upload is being tested; main remains package-only until the test passes.
       - name: Upload Windows test package to Nexus
         if: ${{ inputs.upload_to_nexus == true }}
-        uses: Nexus-Mods/upload-action@v1.0.0-beta.4
+        uses: Nexus-Mods/upload-action@d0321c96e04e91da2caf74cad0c8824f4c748f99 # v1.0.0-beta.4
         with:
           api_key: ${{ secrets.NEXUS_API_KEY }}
           file_group_id: ${{ secrets.NEXUS_FILE_ID_WINDOWS }}
-          filename: Release/ModsOfMistriaInstaller-windows.zip
+          filename: Release/AIM-${{ env.APP_VERSION }}-windows-portable.zip
           version: ${{ env.APP_VERSION }}
           display_name: "AIM Windows test"
           description: "Temporary Windows package for Nexus upload testing"

@@ -3,7 +3,9 @@ using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Newtonsoft.Json.Linq;
+using SharpCompress.Archives;
 using SharpCompress.Archives.Rar;
+using SharpCompress.Readers;
 using Tomlyn;
 using Tomlyn.Model;
 
@@ -23,7 +25,7 @@ public class RarMod() : IMod
 
     private Validation _validation = new Validation();
 
-    private RarArchive? _rarFile;
+    private IRarArchive? _rarFile;
 
     private string _basePath = "";
     
@@ -39,7 +41,7 @@ public class RarMod() : IMod
 
     private bool _requiredHooksValid = true;
 
-    private RarArchiveEntry? GetEntry(RarArchive rarFile, string path)
+    private IArchiveEntry? GetEntry(IRarArchive rarFile, string path)
     {
         var isDirectory = path.EndsWith('/');
         if (isDirectory)
@@ -52,9 +54,9 @@ public class RarMod() : IMod
         return rarFile.Entries.FirstOrDefault(entry => entry.Key == path && entry.IsDirectory == isDirectory);
     }
     
-    private RarArchiveEntry? GetEntry(string path) => GetEntry(_rarFile, path);
+    private IArchiveEntry? GetEntry(string path) => _rarFile is null ? null : GetEntry(_rarFile, path);
 
-    private RarMod(RarArchive rarFile, string basePath) : this()
+    private RarMod(IRarArchive rarFile, string basePath) : this()
     {
         var manifestFile = GetEntry(rarFile, basePath + "manifest.json") ?? GetEntry(rarFile, basePath + "manifest.toml");
         if (manifestFile is null) return;
@@ -84,14 +86,14 @@ public class RarMod() : IMod
         _basePath = basePath;
     }
 
-    private string ReadEntry(RarArchive? rarFile, string entryName)
+    private string ReadEntry(IRarArchive? rarFile, string entryName)
     {
         if (rarFile is null) return "";
         var entry = GetEntry(entryName);
         return entry is null ? "" : ReadEntry(entry);
     }
 
-    private string ReadEntry(RarArchiveEntry entry)
+    private string ReadEntry(IArchiveEntry entry)
     {
         var entryStream = entry.OpenEntryStream();
         using var reader = new StreamReader(entryStream);
@@ -104,13 +106,14 @@ public class RarMod() : IMod
     {
         if (!File.Exists(rarPath)) return null;
 
-        var rarFile = RarArchive.Open(rarPath);
+        var rarFile = RarArchive.OpenArchive(rarPath, new ReaderOptions());
 
         var manifestFiles = rarFile.Entries.Where(entry => entry.Key.EndsWith("manifest.json") || entry.Key.EndsWith("manifest.toml")).ToList();
 
         if (manifestFiles.Count != 1) return null;
 
-        var internalLocation = manifestFiles.First().Key.Replace("manifest.json", "").Replace("manifest.toml", "");
+        var manifestPath = manifestFiles.First().Key;
+        var internalLocation = manifestPath[..manifestPath.LastIndexOf("manifest", StringComparison.Ordinal)];
 
         return new RarMod(rarFile, internalLocation);
     }

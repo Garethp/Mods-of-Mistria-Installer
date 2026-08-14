@@ -13,12 +13,12 @@ public static class AppInfo
     {
         get
         {
-            // Use MOMI's assembly rather than EntryAssembly. The latter is the
+            // Use AIM's assembly rather than EntryAssembly. The latter is the
             // test host when this code runs under the headless UI test suite.
             var assembly = typeof(AppInfo).Assembly;
             // InformationalVersion may be supplied by CI/source-control tooling
             // (for example, a game/mod version). The project FileVersion is the
-            // authoritative MOMI application version shown to users.
+            // authoritative AIM application version shown to users.
             var value = assembly?.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version
                         ?? assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
                         ?? assembly?.GetName().Version?.ToString();

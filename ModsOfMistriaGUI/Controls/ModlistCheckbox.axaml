@@ -25,6 +25,7 @@
             <Expander.Styles>
                 <Style Selector="Expander">
                     <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
                     <Setter Property="Background" Value="{DynamicResource ModStatusBackgroundBrush}" />
                     <Setter Property="Foreground" Value="{DynamicResource ModStatusForegroundBrush}" />
                 </Style>
@@ -38,6 +39,7 @@
                         <Setter Property="BorderBrush" Value="Transparent" />
                     </Style>
                     <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="BorderThickness" Value="0" />
                     <Setter Property="Background" Value="Transparent" />
                     <Setter Property="Padding" Value="0" />
                     <Setter Property="Margin" Value="0" />

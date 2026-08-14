@@ -423,7 +423,7 @@ public partial class ModlistPageViewModel : PageViewBase
                                         ButtonEnum.YesNo).ShowAsync();
 
                                     if (confirm == ButtonResult.Yes)
-                                        foreach (var url in urls)
+                                        foreach (var url in urls.Where(ExternalUrl.IsAllowed))
                                             System.Diagnostics.Process.Start(
                                                 new System.Diagnostics.ProcessStartInfo
                                                 {
@@ -702,7 +702,7 @@ public partial class ModlistPageViewModel : PageViewBase
         }
         catch (Exception e)
         {
-            // Write the diagnostic first so its Recent MOMI log contains only
+            // Write the diagnostic first so its Recent AIM log contains only
             // the progress leading up to the failure, not a second copy of the
             // same full exception.
             var errorLogPath = WriteDiagnosticErrorLog("install", e);
@@ -761,16 +761,16 @@ public partial class ModlistPageViewModel : PageViewBase
             var root = string.IsNullOrWhiteSpace(localAppData)
                 ? AppContext.BaseDirectory
                 : localAppData;
-            var directory = Path.Combine(root, "MOMI", "logs");
+            var directory = Path.Combine(root, "AIM", "logs");
             Directory.CreateDirectory(directory);
 
             var path = Path.Combine(directory, $"aim-error-{DateTime.Now:yyyyMMdd-HHmmssfff}.txt");
-            var contents = $"MOMI diagnostic error log\r\n" +
+            var contents = $"AIM diagnostic error log\r\n" +
                            $"Timestamp (UTC): {DateTime.UtcNow:O}\r\n" +
                            $"Application: {AppInfo.DisplayVersion}\r\n" +
                            $"Operation: {operation}\r\n\r\n" +
                            "Exception:\r\n" + exception + "\r\n\r\n" +
-                           "Recent MOMI log:\r\n" + string.Join("\r\n", Logger.GetLogs());
+                           "Recent AIM log:\r\n" + string.Join("\r\n", Logger.GetLogs());
             File.WriteAllText(path, contents, new System.Text.UTF8Encoding(false));
             Logger.Log($"Diagnostic error log written to: {path}");
             return path;

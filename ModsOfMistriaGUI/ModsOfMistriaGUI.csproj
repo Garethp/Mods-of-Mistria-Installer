@@ -2,15 +2,13 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PublishSingleFile>true</PublishSingleFile>
         <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
-        <AssemblyVersion>0.1.1</AssemblyVersion>
-        <FileVersion>0.1.1</FileVersion>
-        <AssemblyName>ModsOfMistriaInstaller</AssemblyName>
+        <AssemblyName>AIM</AssemblyName>
         <RootNamespace>Garethp.ModsOfMistriaGUI</RootNamespace>
     </PropertyGroup>
 
@@ -26,15 +24,15 @@
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x86'">
-        <AssemblyName>ModsOfMistriaInstaller-win-x86</AssemblyName>
+        <AssemblyName>AIM-win-x86</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
-        <AssemblyName>ModsOfMistriaInstaller-linux</AssemblyName>
+        <AssemblyName>AIM-linux</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
-        <AssemblyName>ModsOfMistriaInstaller-osx</AssemblyName>
+        <AssemblyName>AIM-osx</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -49,7 +47,7 @@
         <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.5" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
         <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
         <PackageReference Include="Projektanker.Icons.Avalonia.FontAwesome" Version="9.4.0" />
         <PackageReference Include="SharpZipLib" Version="1.4.2" />

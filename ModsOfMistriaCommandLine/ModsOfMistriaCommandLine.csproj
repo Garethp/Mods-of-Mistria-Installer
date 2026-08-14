@@ -2,15 +2,13 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <PublishSingleFile>true</PublishSingleFile>
         <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
-        <AssemblyVersion>0.1.1</AssemblyVersion>
-        <FileVersion>0.1.1</FileVersion>
-        <AssemblyName>ModsOfMistriaInstaller-cli</AssemblyName>
+        <AssemblyName>AIM-cli</AssemblyName>
         <RootNamespace>Garethp.ModsOfMistriaCommandLine</RootNamespace>
     </PropertyGroup>
 
@@ -26,15 +24,15 @@
     </PropertyGroup>
     
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'win-x86'">
-        <AssemblyName>ModsOfMistriaInstaller-cli-win-x86</AssemblyName>
+        <AssemblyName>AIM-cli-win-x86</AssemblyName>
     </PropertyGroup>
     
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64'">
-        <AssemblyName>ModsOfMistriaInstaller-cli-linux</AssemblyName>
+        <AssemblyName>AIM-cli-linux</AssemblyName>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
-        <AssemblyName>ModsOfMistriaInstaller-cli-osx</AssemblyName>
+        <AssemblyName>AIM-cli-osx</AssemblyName>
     </PropertyGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
