@@ -63,7 +63,8 @@ public class App : Application
                 });
             }
 
-            _ = CheckForUpdatesAsync(_updateCheckCancellation.Token);
+            // Disabled in this isolated Nexus/sandbox test build. The normal
+            // AIM build keeps the GitHub Releases update check enabled.
         }
 
         PerformanceDiagnostics.Log($"Startup: framework initialization={stopwatch.ElapsedMilliseconds} ms");
