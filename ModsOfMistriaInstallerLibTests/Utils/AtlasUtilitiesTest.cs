@@ -102,6 +102,41 @@ public class AtlasUtilitiesTest
         Assert.That(placements[1], Is.EqualTo(new[] { 11, 1, 8, 8, 8, 8, 0, 0 }));
     }
 
+    // Game 1.0.3 flipped every vanilla atlas from srgb = true to false. A new
+    // page copies the page it overflows instead of trusting a constant. The
+    // test pins both directions, so the created page must agree with the
+    // seeded page no matter which build that page came from.
+    [TestCase(true)]
+    [TestCase(false)]
+    public void ShouldInheritSamplingSettingsWhenOverflowingToANewPage(bool srgb)
+    {
+        Seed("DefaultAtlas_0", """
+            [[asset_properties.animations]]
+            texture_ids = ["aaaabbbbccccdddd::0"]
+            placement = [1, 1, 10, 10, 12, 12, 1, 1]
+            """, srgb);
+
+        // A 30×30 opaque frame cannot fit the seeded 32×32 page around its placement
+        WithUtils(utils => utils.AddStrip("Default", 30, 30, 1,
+            Strip(30, 30, new Rectangle(0, 0, 30, 30)),
+            new Dictionary<string, string>(), "big_sprite"));
+
+        Assert.That(AtlasEntries(), Does.Contain("assets/atlases/DefaultAtlas_1.meta.toml"));
+        Assert.That(SrgbOf("assets/atlases/DefaultAtlas_1.meta.toml"), Is.EqualTo(srgb),
+            "a new page carries the sibling page's srgb instead of a hardcoded value");
+    }
+
+    [Test]
+    public void ShouldDefaultSrgbOffForATypeWithNoExistingPage()
+    {
+        WithUtils(utils => utils.AddStrip("MossCavernWorld", 4, 4, 1,
+            Strip(4, 4, new Rectangle(0, 0, 4, 4)),
+            new Dictionary<string, string>(), "world_sprite"));
+
+        Assert.That(SrgbOf("assets/atlases/MossCavernWorldAtlas_0.meta.toml"), Is.EqualTo(false),
+            "srgb follows the current game build when there is no page to inherit from");
+    }
+
     [Test]
     public void ShouldClearAndRemoveAReplacedPlacementEntry()
     {
@@ -154,7 +189,7 @@ public class AtlasUtilitiesTest
 
     // A 32×32 atlas pair: the given animation entries, plus a red block at
     // (1,1)-(4,4) in the png so a cleared region is observable
-    private void Seed(string atlasName, string animationsToml)
+    private void Seed(string atlasName, string animationsToml, bool srgb = true)
     {
         using var archive = ZipFile.Open(_zipPath, ZipArchiveMode.Update);
 
@@ -172,7 +207,7 @@ public class AtlasUtilitiesTest
                 filter_kind = "Nearest"
                 texture_wrap = "Repeat"
                 mipmap_filter_kind = "Nearest"
-                srgb = true
+                srgb = {(srgb ? "true" : "false")}
 
                 {animationsToml}
                 """);
@@ -203,6 +238,20 @@ public class AtlasUtilitiesTest
                 ? values.Select(Convert.ToInt32).ToList()
                 : null)
             .ToList();
+    }
+
+    // Reads the srgb value from a meta entry's asset_properties. Returns null
+    // when the key is absent.
+    private bool? SrgbOf(string metaEntry)
+    {
+        using var archive = ZipFile.OpenRead(_zipPath);
+        using var reader = new StreamReader(archive.GetEntry(metaEntry)!.Open());
+        var doc = Toml.ParseToml(reader.ReadToEnd());
+
+        return doc["asset_properties"] is TomlTable ap
+               && ap.TryGetValue("srgb", out var value) && value is bool b
+            ? b
+            : null;
     }
 
     private List<string> AtlasEntries()

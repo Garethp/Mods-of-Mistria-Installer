@@ -11,7 +11,7 @@ Most shipped hooks are dispatched from engine seams. A few are emitted directly 
 > [!NOTE]
 > A mod uses the game hooks MOMI already ships. It never packages its own seams. Mods can also publish custom hooks as cross-mod extension points, covered in [Publishing Custom Hooks](#publishing-custom-hooks).
 
-The shipped catalog currently declares **102 hooks**, fed by **110 seams**, **4 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
+The shipped catalog currently declares **104 hooks**, fed by **114 seams**, **3 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
 
 ## Using A Shipped Hook
 

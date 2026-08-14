@@ -90,8 +90,15 @@ public class Atlas
         return true;
     }
 
-    // Creates the atlas meta.toml file if it doesn't exist.
-    public bool EnsureMetaExists()
+    // Creates the atlas meta.toml file if it doesn't exist. Mods only name
+    // the atlas a sprite goes to. They never choose display settings. A new
+    // page copies its settings from the page it extends, and that chain
+    // always starts at one of the game's own atlases. This means new pages
+    // match whatever game version is installed, even when an update changes
+    // the settings. Game 1.0.3 flipped srgb on every atlas. The values below
+    // apply only when a mod names an atlas the game has no file for, and
+    // they match the current game.
+    public bool EnsureMetaExists(AtlasAssetProperties? template = null)
     {
         if (_fileModifier.Exists(MetaPath)) return true;
         var data = new AtlasMetaFile
@@ -104,14 +111,14 @@ public class Atlas
             Asset = new AtlasAssetProperties
             {
                 Dimensions = [ Width, Height ],
-                Filter = "Nearest",
-                MipmapFilter = "Nearest",
-                TextureWrap = "Repeat",
-                Srgb = true,
+                Filter = template is null ? "Nearest" : template.Filter,
+                MipmapFilter = template is null ? "Nearest" : template.MipmapFilter,
+                TextureWrap = template is null ? "Repeat" : template.TextureWrap,
+                Srgb = template is null ? false : template.Srgb,
                 Animations = []
             }
         };
-        
+
         _fileModifier.Write(MetaPath, TomlSerializer.Serialize(data));
         return true;
     }

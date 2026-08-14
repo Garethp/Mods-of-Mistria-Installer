@@ -29,6 +29,4 @@ Burn mode is `chop_node`'s throttle for fire damage over time. While a node's `b
 ## See Also
 
 - [game_step_begin_installs](game_step_begin_installs.md) - This is another of the catalog's engine fixes, the MMAPI lifecycle root.
-- [shroom_puddle_mask](shroom_puddle_mask.md) - This is another of the catalog's engine fixes, a beta-wiring correction.
-- [statue_hp_death_sweep](statue_hp_death_sweep.md) - This is another of the catalog's engine fixes, the griffin statue's missing death check.
 - [node_renderer_set_sprite](node_renderer_set_sprite.md) - The node renderer's sprite filter, elsewhere in the same combat-adjacent draw path.

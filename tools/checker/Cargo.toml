@@ -23,10 +23,10 @@ path = "src/probe.rs"
 # deliberately or not at all, and in all five places at once.
 [dependencies]
 gc-arena = "0.6"
-fabricator-compiler = { git = "https://github.com/kyren/fabricator.git", rev = "087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33" }
-fabricator-stdlib = { git = "https://github.com/kyren/fabricator.git", rev = "087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33" }
-fabricator-vm = { git = "https://github.com/kyren/fabricator.git", rev = "087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33" }
-fabricator-util = { git = "https://github.com/kyren/fabricator.git", rev = "087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33" }
+fabricator-compiler = { git = "https://github.com/kyren/fabricator.git", rev = "f2483a61d53c730020f2357c790603dd6362476b" }
+fabricator-stdlib = { git = "https://github.com/kyren/fabricator.git", rev = "f2483a61d53c730020f2357c790603dd6362476b" }
+fabricator-vm = { git = "https://github.com/kyren/fabricator.git", rev = "f2483a61d53c730020f2357c790603dd6362476b" }
+fabricator-util = { git = "https://github.com/kyren/fabricator.git", rev = "f2483a61d53c730020f2357c790603dd6362476b" }
 
 [profile.release]
 strip = true

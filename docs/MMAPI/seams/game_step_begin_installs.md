@@ -25,4 +25,3 @@ Every runtime-provided hook and every per-frame mod tick ultimately runs because
 
 - [Mod Anatomy](../MOD_ANATOMY.md) - This page describes the boot / first-drain / every-frame lifecycle this edit roots.
 - [camera_culls_processed](camera_culls_processed.md) - This is a seam whose timing story is defined relative to this begin_step tick.
-- [statue_hp_death_sweep](statue_hp_death_sweep.md) - This is another of the catalog's engine fixes, the griffin statue's missing death check.

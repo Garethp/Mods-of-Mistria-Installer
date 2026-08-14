@@ -24,7 +24,6 @@
 # Apply order is catalog order plus `depends_on` edges (topo-sorted, stable).
 # Hook-less edits live in [[engine_fix]]: game_step_begin_installs (the mmapi
 # lifecycle root),
-# statue_hp_death_sweep (the griffin statue's missing depleted-hp death check),
 # tarball_chop_burn_flag (the tarball chop's hardcoded is_burn, which
 # burn-throttled every non-fire tarball chop against stump/fruit-tree iframes),
 # and max_crafts_zero_component (the Item-loop division missing the zero guard
@@ -37,9 +36,9 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 102
-seams = 110
-engine_fixes = 4
+hooks = 104
+seams = 114
+engine_fixes = 3
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -463,6 +462,16 @@ kind = "filter"
 doc  = "Fires at the top of pick_node() and chop_node(), before the tool's modifier is applied to a resource node (rocks, forage, dig sites, trees, stumps). The filtered value is the tool modifier: the charged-tool bonus/penalty added to item.damage and to the item.quality gate. ctx is { grid, x, y, item, action }; action is \"pick\" or \"chop\". Return the replacement modifier (for example clamp a negative charged-tool penalty to 0 to remove the charged-attack damage penalty), or undefined to keep the current value."
 
 [[hook]]
+name = "resource.node_chopped"
+kind = "event"
+doc  = "Fires inside chop_node() when a chop LANDS on a Tree or Stump - the damaging hit and the destroying hit alike - right before the function returns true. Never fires for inadequate-quality bounces, burn i-frame absorbs, grass, or non-choppable targets, and never for slash_node destroys. ctx is { grid, x, y, item, node, destroyed, burn }: node is the node struct (on destroyed=true it is already erased from the grid, but its fields - prototype, stage, top_left_x/y - stay readable), destroyed is node.hitpoints <= 0, and burn is the is_burn argument (true for fire-spread chops, which no player swing caused). The engine grants NO essence or XP inside chop_node - the per-swing rewards live in the Tool FSM closures - so a handler rewarding non-FSM chops (tarball swings) does not double anything the engine does here. The return value is ignored."
+
+[[hook]]
+name = "resource.node_picked"
+kind = "event"
+doc  = "Fires inside pick_node() when a pick LANDS: on a Rock right after damage is applied and the outcome is decided (before drops/teardown run), and on a successful dig-site dig. Furniture and rug picks, inadequate-quality bounces, and empty swings do not fire. ctx is { grid, x, y, item, node, result, destroyed, burn, effect_override }: result is \"rock\" or \"dig_site\", destroyed tells a chip from the break (for dig sites: whether the site is consumed), node for dig sites is read AFTER the dig so it may already reflect the dug/absent state, burn is the is_burn argument, and effect_override is non-undefined exactly for the engine's internal chained picks (the Earthbreaker perk), letting a handler skip picks no player swing caused. Fires for every caller of pick_node - Tool FSM, damage tarballs, and chains alike. The return value is ignored."
+
+[[hook]]
 name = "request_board.fetch_pool"
 kind = "filter"
 doc  = "Fires in create_request_board()'s daily random top-up, after the crown offer and the always-available entries are already pushed and the candidate keys are shuffled, before the availability loop draws from them. The board builds once per day (new day, new game, and some loads), so this fires per build, not per viewing. The filtered value is the struct { random_pool, random_slots, year, season, day, is_crown_quest_day }: random_pool is the shuffled List of candidate request keys (a List with count()/get(), not an array), random_slots is the cap the draw stops at - it counts the WHOLE board, crown and always-available entries included, not just the random picks - year/season/day are the calendar date (day 1-based), and is_crown_quest_day reflects the crown cooldown being ready (an eligible offer may still be absent). ctx is undefined. Return the replacement struct, or undefined to keep the current values. The seam re-reads every field defensively, so a non-struct return or a partial struct keeps the engine values."
@@ -715,6 +724,118 @@ hook    = "resource.node_modifier"
 ctx     = '{ grid: grid, x: x_pos, y: y_pos, item: item, action: "chop" }'
 var     = "modifier"
 indent  = 4
+
+# The Tree case's landed-chop exit: chop_node returns true right after the
+# case's damaged/destroyed branches rejoin, so one emit between the join and
+# the return covers the chip and the fell alike, with the outcome already
+# decided. The context rides the join's distinctive rot_traumatize line plus
+# its closing brace. Context form, not a target: the sister modifier seam's
+# context carries the chop_node head, and a synthesised pristine holding both
+# a head fragment and a target skeleton reads as two definitions.
+[[seam]]
+id      = "chop_node_chopped_tree"
+file    = "gml/scripts/GameplaySystems/Data/Grid/GridActions/Chop.gml"
+context_before = '''
+                rot_traumatize(node.renderer, entry.node_trauma);
+            }
+'''
+context_after = '''
+            return true;
+'''
+op      = "emit"
+hook    = "resource.node_chopped"
+ctx_fields = [
+    ["grid", "grid"],
+    ["x", "x_pos"],
+    ["y", "y_pos"],
+    ["item", "item"],
+    ["node", "node"],
+    ["destroyed", "node.hitpoints <= 0"],
+    ["burn", "is_burn"],
+]
+indent  = 12
+
+# The Stump case's landed-chop exit (stumps and branches): the same join shape
+# as the tree site, anchored on its damaged-trauma line, and context form for
+# the same reason.
+[[seam]]
+id      = "chop_node_chopped_stump"
+file    = "gml/scripts/GameplaySystems/Data/Grid/GridActions/Chop.gml"
+context_before = '''
+                traumatize(node.renderer, chop_fx.damaged.node_trauma);
+            }
+'''
+context_after = '''
+            return true;
+'''
+op      = "emit"
+hook    = "resource.node_chopped"
+ctx_fields = [
+    ["grid", "grid"],
+    ["x", "x_pos"],
+    ["y", "y_pos"],
+    ["item", "item"],
+    ["node", "node"],
+    ["destroyed", "node.hitpoints <= 0"],
+    ["burn", "is_burn"],
+]
+indent  = 12
+
+# The landed-pick rock site, INSIDE the quality-pass branch right after the
+# hitpoints decrement resolves into ToolStatus: one emit covers the chip and
+# the break, and it precedes every early return in the Dead path (the MIST
+# minigame's included). Context form: the sister modifier seam's context
+# carries the pick_node head (see chop_node_chopped_tree).
+[[seam]]
+id      = "pick_node_picked_rock"
+file    = "gml/scripts/GameplaySystems/Data/Grid/GridActions/Pick.gml"
+context_before = '''
+                status = node.hitpoints <= 0 ? ToolStatus.Dead : ToolStatus.Damage;
+'''
+context_after = '''
+            }
+'''
+op      = "emit"
+hook    = "resource.node_picked"
+ctx_fields = [
+    ["grid", "grid"],
+    ["x", "x_pos"],
+    ["y", "y_pos"],
+    ["item", "item"],
+    ["node", "node"],
+    ["result", '"rock"'],
+    ["destroyed", "node.hitpoints <= 0"],
+    ["burn", "is_burn"],
+    ["effect_override", "effect_override"],
+]
+indent  = 16
+
+# The landed-pick dig-site site, on the success branch after
+# dig_site_attempt_dig already ran - so node/destroyed in ctx read the
+# POST-dig state.
+[[seam]]
+id      = "pick_node_picked_dig_site"
+file    = "gml/scripts/GameplaySystems/Data/Grid/GridActions/Pick.gml"
+context_before = '''
+                doppel.play_good(pick_sfx.destroyed.sfx);
+'''
+context_after = '''
+                return PickResult.DigSite;
+'''
+op      = "emit"
+hook    = "resource.node_picked"
+ctx_fields = [
+    ["grid", "grid"],
+    ["x", "x_pos"],
+    ["y", "y_pos"],
+    ["item", "item"],
+    ["node", "grid.node_parent[inst_index]"],
+    ["result", '"dig_site"'],
+    ["destroyed", "grid.node_object_id[inst_index] != ObjectId.DigSite"],
+    ["burn", "is_burn"],
+    ["effect_override", "effect_override"],
+]
+indent  = 16
 
 [[seam]]
 id      = "request_board_fetch_pool"
@@ -1798,27 +1919,29 @@ file    = "gml/scripts/GameplaySystems/Dungeon/enter_dungeon.gml"
 anchor  = '''
 function enter_dungeon(start_floor=0, length=undefined, should_skip=false) {
     var itinerary = create_dungeon_itinerary(length);
-    DUNGEON_RUNNER = new DungeonRunner(itinerary, start_floor);
-    goto_gm_room(DUNGEON_RUNNER.current_level().gm_room, TEST_SUITE || should_skip);
+    var new_runner = new DungeonRunner(itinerary, start_floor);
+    var itinerary = goto_gm_room(new_runner.current_level().gm_room, TEST_SUITE || should_skip);
+    itinerary.new_dungeon_runner = new_runner;
 }'''
 replace = '''
 function enter_dungeon(start_floor=0, length=undefined, should_skip=false) {
     var itinerary = create_dungeon_itinerary(length);
-    DUNGEON_RUNNER = new DungeonRunner(itinerary, start_floor);
+    var new_runner = new DungeonRunner(itinerary, start_floor);
     var __mmapi_dungeon_ctx = {}; // mmapi_dungeon_run_runner_created
-    try { __mmapi_dungeon_ctx.runner = DUNGEON_RUNNER; } catch (__mmapi_dctx_a0) {}
-    try { __mmapi_dungeon_ctx.floor = DUNGEON_FLOOR; } catch (__mmapi_dctx_a1) {}
-    try { __mmapi_dungeon_ctx.biome = DUNGEON_BIOME; } catch (__mmapi_dctx_a2) {}
+    try { __mmapi_dungeon_ctx.runner = new_runner; } catch (__mmapi_dctx_a0) {}
+    try { __mmapi_dungeon_ctx.floor = new_runner.current_floor; } catch (__mmapi_dctx_a1) {}
+    try { __mmapi_dungeon_ctx.biome = new_runner.current_level().biome; } catch (__mmapi_dctx_a2) {}
     try { __mmapi_dungeon_ctx.room_id = room(); } catch (__mmapi_dctx_a3) {}
     try { __mmapi_dungeon_ctx.grid = GRID; } catch (__mmapi_dctx_a4) {}
     try {
-        var __mmapi_dungeon_level = DUNGEON_RUNNER.current_level();
+        var __mmapi_dungeon_level = new_runner.current_level();
         __mmapi_dungeon_ctx.level = __mmapi_dungeon_level;
         __mmapi_dungeon_ctx.gm_room = __mmapi_dungeon_level.gm_room;
         __mmapi_dungeon_ctx.impl = __mmapi_dungeon_level.impl;
     } catch (__mmapi_dctx_a5) {}
     try { mmapi_emit("dungeon.runner_created", __mmapi_dungeon_ctx); } catch (__mmapi_dungeon_runner_created) {}
-    goto_gm_room(DUNGEON_RUNNER.current_level().gm_room, TEST_SUITE || should_skip);
+    var itinerary = goto_gm_room(new_runner.current_level().gm_room, TEST_SUITE || should_skip);
+    itinerary.new_dungeon_runner = new_runner;
 }'''
 marker  = "mmapi_dungeon_run_runner_created"
 provides = ["dungeon.runner_created"]
@@ -2130,9 +2253,9 @@ marker  = "mmapi_monsters_run_step_begin"
 # clears next_state and returns early; new_tick's boolean return is consumed
 # nowhere in pristine, so the early return is safe. A redirect is bounds- and
 # integer-checked because List.get() asserts out of range and every id in
-# [0, count) is a defined state at spawn. execute_state_change is a
-# zero-argument function, so the injected try/catch is reliable under the
-# engine dialect.
+# [0, count) is a defined state at spawn. The injected try/catch contains a
+# throwing handler on its own, and the enclosing function's arity has no
+# bearing on that; see the old guarded-call quirk note in mmapi.gml.
 [[seam]]
 id      = "fsm_transition"
 file    = "gml/scripts/GameplaySystems/Fsm/StateMachine.gml"
@@ -2250,33 +2373,6 @@ replace = '''
             mmapi_run_installs();
             TICK++;'''
 marker  = "mmapi_run_installs();"
-
-# The Living Griffin Statue is the one hp-driven monster with no depleted-hp death
-# check outside its damage drain. Its only Dying transition sits inside
-# `if hit_points > 0 { ... if took_any_damage { ... } }`, so hp reaching zero without
-# a drained hit leaves it alive, hostile, and undamageable forever. The drain gate
-# never passes again. The fix adds the else branch every sibling of this drain
-# template carries (mite, bat, cat, enchantern).
-[[engine_fix]]
-name    = "statue_hp_death_sweep"
-file    = "gml/objects/obj_monster_statue.gml"
-anchor  = '''
-                    if self.hit_points <= 0 {
-                        self.fsm.change_state(StatueState.Dying);
-                    }
-                }
-            }
-        },'''
-replace = '''
-                    if self.hit_points <= 0 {
-                        self.fsm.change_state(StatueState.Dying);
-                    }
-                }
-            } else if csi != StatueState.Dying {
-                self.fsm.change_state(StatueState.Dying); // mmapi_statue_hp_sweep
-            }
-        },'''
-marker  = "mmapi_statue_hp_sweep"
 
 [[engine_fix]]
 name    = "tarball_chop_burn_flag"

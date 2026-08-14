@@ -25,7 +25,7 @@ The injected block builds `__mmapi_fsm_tx = { fsm: self, owner: self.state.owner
 - **Cancel.** `cancel == true` clears `self.next_state = undefined;` and returns early. That means no `stop()`, no `start()`, the machine keeps its state, and `state_frame` stalls for that tick. The early return is safe because `new_tick`'s boolean return is consumed nowhere in pristine code.
 - **Redirect.** The `to` field is bounds- and integer-checked before it is applied: it must be a real, `floor(to) == to`, different from the current `next_state.state_id`, and inside `[0, self.states.count())`. The checks exist because `List.get()` asserts out of range, and every id in `[0, count)` is a defined state at spawn, so anything that passes is a valid `self.states.get(to)`. Non-numeric, fractional, or out-of-range values are silently ignored.
 
-`execute_state_change` is a zero-argument function, so the injected try/catch is reliable under the engine dialect. With zero handlers the block builds one struct per transition and falls straight through to the pristine `if self.state.has_stop() {`.
+The injected try/catch contains a throwing handler on its own, because a catch fires regardless of the enclosing function's arity. With zero handlers the block builds one struct per transition and falls straight through to the pristine `if self.state.has_stop() {`.
 
 ## See Also
 

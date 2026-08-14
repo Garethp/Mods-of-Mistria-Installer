@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **102 hooks**, fed by **110 seams**, **4 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **104 hooks**, fed by **114 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -41,6 +41,8 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [interact.elevator_action](hooks/interact.elevator_action.md) | guard | Block the dungeon elevator before its menu opens. |
 | [interact.ladder_down_action](hooks/interact.ladder_down_action.md) | guard | Stop a dungeon ladder descent before it starts. |
 | [resource.node_modifier](hooks/resource.node_modifier.md) | filter | Change the charged-tool modifier on picks and chops. |
+| [resource.node_chopped](hooks/resource.node_chopped.md) | event | Know the moment a chop lands on a tree or stump. |
+| [resource.node_picked](hooks/resource.node_picked.md) | event | Know the moment a pick lands on a rock or dig site. |
 | [request_board.fetch_pool](hooks/request_board.fetch_pool.md) | filter | Change the request board's daily candidate pool and draw cap. |
 | [request_board.fetch_pool_ready](hooks/request_board.fetch_pool_ready.md) | event | Know the finished request board the moment it is built each day. |
 | [furniture.place_guard](hooks/furniture.place_guard.md) | guard | Veto a furniture placement before it is written. |
@@ -164,6 +166,10 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [interact_ladder_down_action](seams/interact_ladder_down_action.md) | Puts a veto check on the ladder's descend action, before the sound and the floor change. |
 | [pick_node_modifier](seams/pick_node_modifier.md) | Filters the tool modifier at the head of every pick action. |
 | [chop_node_modifier](seams/chop_node_modifier.md) | Filters the tool modifier at the head of every chop action. |
+| [chop_node_chopped_tree](seams/chop_node_chopped_tree.md) | Emits the moment a chop lands on a tree, the damaging hit and the felling hit alike. |
+| [chop_node_chopped_stump](seams/chop_node_chopped_stump.md) | Emits the moment a chop lands on a stump or branch, the damaging hit and the breaking hit alike. |
+| [pick_node_picked_rock](seams/pick_node_picked_rock.md) | Emits the moment a pick lands on a rock, the chip and the break alike. |
+| [pick_node_picked_dig_site](seams/pick_node_picked_dig_site.md) | Emits the moment a dig site is successfully dug. |
 | [request_board_fetch_pool](seams/request_board_fetch_pool.md) | Rewrites the request board's daily random top-up so the candidate pool and draw cap pass through a filter. |
 | [request_board_fetch_pool_ready](seams/request_board_fetch_pool_ready.md) | Emits the finished request board at the tail of the daily build, final pool included. |
 | [furniture_place_guard](seams/furniture_place_guard.md) | Puts a veto check in front of every furniture placement. |
@@ -278,7 +284,6 @@ Hook-less edits the catalog also carries:
 | Name | Kind | Description |
 | ---- | ---- | ----------- |
 | [game_step_begin_installs](seams/game_step_begin_installs.md) | engine fix | Installs the MMAPI per-frame drain at the top of the game's `step_begin`, the framework's lifecycle root. |
-| [statue_hp_death_sweep](seams/statue_hp_death_sweep.md) | engine fix | Adds the Living Griffin Statue's missing depleted-hp death check, closing a potential soft-lock and matching every other monster's sweep. |
 | [tarball_chop_burn_flag](seams/tarball_chop_burn_flag.md) | engine fix | Passes the tarball's real fire flag to its grid chop, so non-fire chops stop being burn-throttled by stump/fruit-tree iframes. |
 | [max_crafts_zero_component](seams/max_crafts_zero_component.md) | engine fix | Skips zero-cost components in the craft-ceiling loop, mirroring the zero guard the duration branch already has. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |

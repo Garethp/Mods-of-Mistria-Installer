@@ -77,7 +77,7 @@ fn run(path: &PathBuf) -> ExitCode {
             }
         };
 
-        let closure = match vm::Closure::new(&ctx, output.chunk_prototype, None) {
+        let closure = match vm::Closure::new(&ctx, output.chunk_prototype, vm::Value::Undefined) {
             Ok(closure) => closure,
             Err(err) => {
                 eprintln!("{}: {}", path.display(), err);

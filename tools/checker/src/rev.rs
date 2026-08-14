@@ -6,4 +6,4 @@
 //! asserts this string and the four dependency revs all agree.
 
 /// The fabricator commit this crate is built against (see Cargo.toml).
-pub const FABRICATOR_REV: &str = "087ace9481bf3bb9ddc86dcbcc4e3b4d48d81c33";
+pub const FABRICATOR_REV: &str = "f2483a61d53c730020f2357c790603dd6362476b";

@@ -52,5 +52,7 @@ mmapi_filter("resource.node_modifier", gentle_swing_resource_node_modifier);
 ## See Also
 
 - [combat.tarball_grid](combat.tarball_grid.md) - Let a swing pick/chop/destroy grid nodes in the first place.
+- [resource.node_chopped](resource.node_chopped.md) - Know the moment a chop lands on a tree or stump.
+- [resource.node_picked](resource.node_picked.md) - Know the moment a pick lands on a rock or dig site.
 - [object.node_sprite](object.node_sprite.md) - Swap the sprite of any world node.
 - [items.dig_artifact](items.dig_artifact.md) - Swap the artifact a dig spot yields.
