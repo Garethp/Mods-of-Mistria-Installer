@@ -10,7 +10,7 @@ on:
         type: boolean
 
 # Package-only test branch: deliberately never uploads to Nexus.
-# Future upload configuration should use NEXUS_TOKEN, NEXUS_MOD_ID and
+# Future upload configuration should use NEXUS_API_KEY, NEXUS_MOD_ID and
 # NEXUS_FILE_ID (the Nexus "Group ID" for the specific file).
 
 jobs:
@@ -129,7 +129,7 @@ jobs:
         if: ${{ inputs.upload_to_nexus == true }}
         uses: Nexus-Mods/upload-action@v1.0.0-beta.4
         with:
-          api_key: ${{ secrets.NEXUS_TOKEN }}
+          api_key: ${{ secrets.NEXUS_API_KEY }}
           file_group_id: ${{ secrets.NEXUS_FILE_ID_WINDOWS }}
           filename: Release/ModsOfMistriaInstaller-windows.zip
           version: ${{ env.APP_VERSION }}
