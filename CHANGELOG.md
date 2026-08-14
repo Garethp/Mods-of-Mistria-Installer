@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.1.2 — AIM (draft)
+
+- Updated the application and CLI projects to .NET 10 with a shared version source.
+- Updated core dependencies, including SharpCompress, Newtonsoft.Json, and ImageSharp; removed the unused Magick.NET dependency.
+- Added the required ImageSharp license handling for local and CI builds.
+- Added portable Windows, Linux, and macOS package workflows while keeping single-file builds available.
+- Added Nexus version-check and upload workflow support, pending a public Nexus application API key.
+- Hardened archive processing and added a maximum archive-entry limit to prevent pathological archives from locking up or exhausting resources.
+- Improved archive recovery and validation diagnostics, including safer handling of malformed or modified game archives.
+- Fixed UI status-row outlines appearing during installation and uninstallation.
+- Replaced the inherited GUI and CLI icons with consistent AIM artwork and regenerated valid multi-resolution ICO files.
+- Merged human-reviewed Russian and Ukrainian translations into the current resource sets while preserving newer AIM keys.
+- Completed Ukrainian translations for all interface-language names instead of falling back to other languages.
+- Verified GUI one-file, GUI portable, and CLI one-file Windows builds with the new icons embedded.
+- Updated MMAPI compatibility for Fields of Mistria 1.0.3: adapted the dungeon runner seam and removed the statue engine fix that is now included in the game itself.
+- Verified all 115 seams and the remaining 3 engine fixes against the installed 1.0.3 `assets.zip`.
+
 ## 0.1.1 — AIM
 
 - Added Polish as a selectable AIM interface language.

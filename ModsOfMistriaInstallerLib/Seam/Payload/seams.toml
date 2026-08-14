@@ -39,7 +39,7 @@ version = 2
 [counts]
 hooks = 106
 seams = 115
-engine_fixes = 4
+engine_fixes = 3
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -1901,27 +1901,29 @@ file    = "gml/scripts/GameplaySystems/Dungeon/enter_dungeon.gml"
 anchor  = '''
 function enter_dungeon(start_floor=0, length=undefined, should_skip=false) {
     var itinerary = create_dungeon_itinerary(length);
-    DUNGEON_RUNNER = new DungeonRunner(itinerary, start_floor);
-    goto_gm_room(DUNGEON_RUNNER.current_level().gm_room, TEST_SUITE || should_skip);
+    var new_runner = new DungeonRunner(itinerary, start_floor);
+    var itinerary = goto_gm_room(new_runner.current_level().gm_room, TEST_SUITE || should_skip);
+    itinerary.new_dungeon_runner = new_runner;
 }'''
 replace = '''
 function enter_dungeon(start_floor=0, length=undefined, should_skip=false) {
     var itinerary = create_dungeon_itinerary(length);
-    DUNGEON_RUNNER = new DungeonRunner(itinerary, start_floor);
+    var new_runner = new DungeonRunner(itinerary, start_floor);
     var __mmapi_dungeon_ctx = {}; // mmapi_dungeon_run_runner_created
-    try { __mmapi_dungeon_ctx.runner = DUNGEON_RUNNER; } catch (__mmapi_dctx_a0) {}
+    try { __mmapi_dungeon_ctx.runner = new_runner; } catch (__mmapi_dctx_a0) {}
     try { __mmapi_dungeon_ctx.floor = DUNGEON_FLOOR; } catch (__mmapi_dctx_a1) {}
     try { __mmapi_dungeon_ctx.biome = DUNGEON_BIOME; } catch (__mmapi_dctx_a2) {}
     try { __mmapi_dungeon_ctx.room_id = room(); } catch (__mmapi_dctx_a3) {}
     try { __mmapi_dungeon_ctx.grid = GRID; } catch (__mmapi_dctx_a4) {}
     try {
-        var __mmapi_dungeon_level = DUNGEON_RUNNER.current_level();
+        var __mmapi_dungeon_level = new_runner.current_level();
         __mmapi_dungeon_ctx.level = __mmapi_dungeon_level;
         __mmapi_dungeon_ctx.gm_room = __mmapi_dungeon_level.gm_room;
         __mmapi_dungeon_ctx.impl = __mmapi_dungeon_level.impl;
     } catch (__mmapi_dctx_a5) {}
     try { mmapi_emit("dungeon.runner_created", __mmapi_dungeon_ctx); } catch (__mmapi_dungeon_runner_created) {}
-    goto_gm_room(DUNGEON_RUNNER.current_level().gm_room, TEST_SUITE || should_skip);
+    var itinerary = goto_gm_room(new_runner.current_level().gm_room, TEST_SUITE || should_skip);
+    itinerary.new_dungeon_runner = new_runner;
 }'''
 marker  = "mmapi_dungeon_run_runner_created"
 provides = ["dungeon.runner_created"]
@@ -2068,7 +2070,7 @@ anchor  = '''
                         continue;
                     }
 
-                    if self.parent_object() != obj_monster_rock_stack && has_flag(tarball.flags, CombatFlag.Rockstack) {
+                    if self.parent_object_id != obj_monster_rock_stack && has_flag(tarball.flags, CombatFlag.Rockstack) {
                         continue;
                     }
 
@@ -2091,7 +2093,7 @@ replace = '''
                         continue;
                     }
 
-                    if self.parent_object() != obj_monster_rock_stack && has_flag(tarball.flags, CombatFlag.Rockstack) {
+                    if self.parent_object_id != obj_monster_rock_stack && has_flag(tarball.flags, CombatFlag.Rockstack) {
                         continue;
                     }
 
@@ -2353,33 +2355,6 @@ replace = '''
             mmapi_run_installs();
             TICK++;'''
 marker  = "mmapi_run_installs();"
-
-# The Living Griffin Statue is the one hp-driven monster with no depleted-hp death
-# check outside its damage drain. Its only Dying transition sits inside
-# `if hit_points > 0 { ... if took_any_damage { ... } }`, so hp reaching zero without
-# a drained hit leaves it alive, hostile, and undamageable forever. The drain gate
-# never passes again. The fix adds the else branch every sibling of this drain
-# template carries (mite, bat, cat, enchantern).
-[[engine_fix]]
-name    = "statue_hp_death_sweep"
-file    = "gml/objects/obj_monster_statue.gml"
-anchor  = '''
-                    if self.hit_points <= 0 {
-                        self.fsm.change_state(StatueState.Dying);
-                    }
-                }
-            }
-        },'''
-replace = '''
-                    if self.hit_points <= 0 {
-                        self.fsm.change_state(StatueState.Dying);
-                    }
-                }
-            } else if csi != StatueState.Dying {
-                self.fsm.change_state(StatueState.Dying); // mmapi_statue_hp_sweep
-            }
-        },'''
-marker  = "mmapi_statue_hp_sweep"
 
 [[engine_fix]]
 name    = "tarball_chop_burn_flag"
