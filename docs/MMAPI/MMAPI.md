@@ -15,9 +15,14 @@ Mods talk to the game through **named hooks**, which are moments in game code MM
 | [Hooks](HOOKS.md) | The named-hook engine. The four hook kinds, registration, ordering, dispatch, and error isolation. |
 | [Seams](SEAMS.md) | How hooks come to exist. The seam catalog, contributor authoring reference, application pipeline, and game-update checks. |
 | [Catalog](CATALOG.md) | Every hook and seam the catalog declares, each with its own page. |
+| [Extension Points](EXTENSIONS.md) | Growing the engine's own rosters: custom NPCs, registrations, art, dialogue, journal visibility. |
 | [Mod Anatomy](MOD_ANATOMY.md) | The mod folder, the boot file skeleton, the lifecycle, and the engine quirks every mod must respect. |
 | [The Manifest](MANIFEST.md) | The JSON and TOML manifest fields a GML mod uses, and how MOMI validates them. |
 | [API Reference](API_REFERENCE.md) | The `mmapi_*` helper areas: config, logging, per-save data, hotkeys, localization, combat, cross-mod coordination, and calling the engine directly. |
+| [Your First Custom NPC](CUSTOM_NPC.md) | Build a custom villager end to end, from an empty folder to a walking, talking NPC. |
+| [Custom Spells](CUSTOM_SPELLS.md) | Add a castable spell: the data entry, learning, and the override handlers that give it behavior. |
+| [Custom Perks](CUSTOM_PERKS.md) | Add a perk: the data entry, granting, effect handlers, and selling it at the Dragon Shrine. |
+| [Custom Status Effects](CUSTOM_STATUS_EFFECTS.md) | Add a status effect: the registration, applying it with a duration, the HUD icon, and reacting when it ends. |
 | [Recipes](RECIPES.md) | Common tasks done with a direct engine call, no hook needed. |
 | [Debug](DEBUG.md) | The in-game debug agent. Using and setting watches, breakpoints, pause and step, and debugger-callable functions. |
 | [Troubleshooting](TROUBLESHOOTING.md) | Why a mod was skipped, a handler did not fire, or a game update broke it. |
@@ -31,9 +36,9 @@ Every hook has exactly one **kind**, and each kind has its own registration **di
 
 | Kind | Directive | The Callback's Contract |
 | ---- | --------- | ----------------------- |
-| event | `mmapi_on` | Reacts to a named moment. Receives `ctx`; the return value is ignored. An individual contract may allow context mutation. |
-| filter | `mmapi_filter` | Receives `(value, ctx)`. Normally returns a replacement value, or `undefined` to keep the current one; hooks declared in place require mutation instead. |
-| guard | `mmapi_guard` | Receives `ctx`. Only the Boolean value `false` vetoes; every other value allows. |
+| event | `mmapi_on` | Reacts to a named moment. Receives `ctx`, and the return value is ignored. An individual contract may allow context mutation. |
+| filter | `mmapi_filter` | Receives `(value, ctx)`. Normally returns a replacement value, or `undefined` to keep the current one. Hooks declared in place require mutation instead. |
+| guard | `mmapi_guard` | Receives `ctx`. Only the Boolean value `false` vetoes, and every other value allows. |
 | override | `mmapi_override` | Receives `ctx`. Returns a value to replace the engine's whole answer, or `undefined` to defer. The first non-`undefined` result wins. |
 
 Registering with the wrong directive is the classic mistake: the handler never runs, and the only clue is a warning in the log. See [Hooks](HOOKS.md).

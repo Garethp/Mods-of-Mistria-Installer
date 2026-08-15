@@ -8,18 +8,10 @@ using Tomlyn;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Installer;
 
-// Handles image strips: reads each spr_*.png from the mod, packs its frames
-// into the correct game atlas, and populates FileNameUIDMapping with the
-// assigned ID so TOMLInstaller can reference it.
-//
-// Two installation modes:
-//   • images/            New sprites — auto-generates a unique ID (or uses preset id).
-//   • images/replace/    Sprite replacements — looks up the existing game texture_id by
-//                        filename, removes old atlas entries, then repacks the replacement
-//                        using the same ID so all game references remain valid.
-//                        A .meta.toml alongside the PNG is optional; if present it can
-//                        override atlas type, frame_size, and frame_len (e.g. different
-//                        canvas size). The ID always comes from the game's own meta.
+// Packs each mod sprite's frames into the game atlas and records the
+// assigned ID in FileNameUIDMapping for TOMLInstaller. images/ holds new
+// sprites. images/replace/ repacks an existing game texture_id under the
+// same ID so game references stay valid.
 public class ImageInstaller(
     Dictionary<string, string> fileNameUidMapping,
     AtlasUtilities atlasUtils,
@@ -72,16 +64,30 @@ public class ImageInstaller(
 
             using var pngStream = mod.ReadFileAsStream(animationGroup.PngRelPath!);
             var id = atlasUtils.AddStrip(
-                metaToml.Asset.Atlas, 
-                metaToml.Asset.FrameWidth, 
-                metaToml.Asset.FrameHeight, 
-                metaToml.Asset.FrameCount ?? 1, 
-                pngStream, 
-                FileNameUIDMapping, 
+                metaToml.Asset.Atlas,
+                metaToml.Asset.FrameWidth,
+                metaToml.Asset.FrameHeight,
+                metaToml.Asset.FrameCount ?? 1,
+                pngStream,
+                FileNameUIDMapping,
                 animationGroup.BaseName
             );
 
             reportStatus($"Packed {animationGroup.BaseName} → {metaToml.Asset.Atlas} atlas (id {id})", "");
+
+            // A named sprite (what string_to_asset resolves) requires a
+            // meta+png pair under animations/, so the png is copied into the
+            // tree beside the meta. images/ sprites stay id-referenced.
+            if (animationGroup.PngRelPath!.Replace('\\', '/').StartsWith("animations/", StringComparison.OrdinalIgnoreCase))
+            {
+                using var source = mod.ReadFileAsStream(animationGroup.PngRelPath!);
+                using var buffer = new MemoryStream();
+                source.CopyTo(buffer);
+                fileModifier.Write(
+                    DestinationPath(animationGroup.PngRelPath!).Replace(Path.DirectorySeparatorChar, '/'),
+                    buffer.ToArray());
+                reportStatus($"Installed named sprite: {animationGroup.PngRelPath}", "");
+            }
         }
     }
 
@@ -98,7 +104,7 @@ public class ImageInstaller(
             var baseName   = spriteName.StartsWith("spr_", StringComparison.OrdinalIgnoreCase)
                              ? spriteName[4..] : spriteName;
 
-            // Find the game's own animation meta — provides id, atlas, frame_size, frame_len
+            // Find the game's own animation meta, which provides id, atlas, frame_size, frame_len
             var gameMetaPath = FindGameAnimationMetaPath(spriteName);
             if (gameMetaPath is null)
             {

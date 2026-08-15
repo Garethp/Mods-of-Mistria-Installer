@@ -270,4 +270,46 @@ public class GmlModLintTest
         Assert.That(clobber[0].ModId, Is.EqualTo("beta"));
         Assert.That(clobber[0].Message, Does.Contain("'alpha'"));
     }
+
+    [Test]
+    public void ShouldCollectTopLevelEnumsAndSkipNestedOnes()
+    {
+        var mod = Mod("alpha", "enum alpha_state { Idle, Busy }\n"
+                               + "function alpha_boot() {\n"
+                               + "    enum inner_state { A }\n"
+                               + "}\n");
+
+        var symbols = GmlModLint.ScanSymbols(mod);
+
+        Assert.That(symbols.Enums.Keys, Is.EquivalentTo(new[] { "alpha_state" }));
+        Assert.That(symbols.Enums["alpha_state"], Is.EqualTo(("gml/Main.gml", 1)));
+    }
+
+    [Test]
+    public void ShouldWarnOnAnUnprefixedEnumAndAcceptAPrefixedOne()
+    {
+        var findings = LintSymbols(Mod("alpha",
+            "enum MyState { Idle }\n"
+            + "enum alpha_mode { On }\n"
+            + "enum __alpha_private { X }\n"));
+
+        var enumFindings = findings.Where(f => f.Message.Contains("top-level enum")).ToList();
+        Assert.That(enumFindings, Has.Count.EqualTo(1));
+        Assert.That(enumFindings[0].Message, Does.Contain("'MyState'"));
+        Assert.That(enumFindings[0].Message, Does.Contain("prefix it alpha_"));
+    }
+
+    [Test]
+    public void ShouldWarnWhenTwoModsDeclareTheSameEnum()
+    {
+        var findings = LintSymbols(
+            Mod("alpha", "enum alpha_state { Idle }\n"),
+            Mod("beta", "enum alpha_state { Idle }\n"));
+
+        var duplicates = findings.Where(f => f.Message.Contains("also declares")).ToList();
+        Assert.That(duplicates, Has.Count.EqualTo(1));
+        Assert.That(duplicates[0].ModId, Is.EqualTo("beta"));
+        Assert.That(duplicates[0].Message, Does.Contain("enum 'alpha_state'"));
+        Assert.That(duplicates[0].Message, Does.Contain("'alpha'"));
+    }
 }

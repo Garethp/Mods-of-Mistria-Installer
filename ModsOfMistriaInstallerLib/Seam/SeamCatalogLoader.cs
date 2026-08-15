@@ -23,6 +23,10 @@ public static class SeamCatalogLoader
     private static readonly Regex HookNameRegex = new(@"\A[a-z0-9_]+(?:\.[a-z0-9_]+)*\z");
     private static readonly Regex GmlIdentRegex = new(@"\A[A-Za-z_][A-Za-z0-9_]*\z");
 
+    // Extension field names are template placeholder keys, so they share the
+    // lower_snake_case shape the templates spell them in.
+    private static readonly Regex ExtensionFieldNameRegex = new(@"\A[a-z][a-z0-9_]*\z");
+
     // The four dispatchers a replace body may call → the hook kind each one
     // implies. Every hand-written replace is linted against this table.
     private static readonly Dictionary<string, HookKind> Dispatchers = new()
@@ -129,6 +133,13 @@ public static class SeamCatalogLoader
             if (rewrite is not null) rewrites.Add(rewrite);
         }
 
+        List<ExtensionPoint> extensions = [];
+        foreach (var (table, index) in Tables(doc, "extension"))
+        {
+            var point = ParseExtension(table, index, errors);
+            if (point is not null) extensions.Add(point);
+        }
+
         // duplicate ids and markers, provides/declared cross-checks, the replace lint
         Dictionary<string, string> seenIds = [];
         Dictionary<string, string> seenMarkers = [];
@@ -167,6 +178,15 @@ public static class SeamCatalogLoader
                     errors.Add($"[[call_rewrite]] '{rewrite.Id}' provides undeclared hook '{hook}' - "
                                + "add a [[hook]] stanza for it");
             }
+        }
+
+        // extension ids share the seam/fix/rewrite id namespace. One namespace
+        // for problem reporting, so `ext:npc_roster` in a batched error is
+        // never ambiguous about which entry it names
+        foreach (var point in extensions)
+        {
+            if (seenIds.ContainsKey(point.Id)) errors.Add($"duplicate id/name '{point.Id}'");
+            seenIds[point.Id] = "extension";
         }
 
         foreach (var rewrite in rewrites)
@@ -211,6 +231,7 @@ public static class SeamCatalogLoader
             ordered,
             declarations.OrderBy(d => d.Name, StringComparer.Ordinal).ToList(),
             rewrites,
+            extensions,
             declaredCounts);
     }
 
@@ -627,6 +648,406 @@ public static class SeamCatalogLoader
         if (!ok) return null;
         return new CallRewrite(rewriteId, callee, to, (int)args, hooks);
     }
+
+    // One [[extension]] stanza, carrying the ordinal domain, the typed fields a registration
+    // supplies, the sites generated lines land at, and the vacancy text for a
+    // ledger entry whose mod is gone. Everything here is catalog-authored -
+    // a mod never ships anchors, templates or engine text, and this
+    // parser is where that stays true.
+    private static ExtensionPoint? ParseExtension(TomlTable table, int index, List<string> errors)
+    {
+        var where = $"[[extension]] #{index + 1}";
+        var pointId = Str(table, "id");
+        if (pointId.Length == 0)
+        {
+            errors.Add($"{where} is missing `id`");
+            return null;
+        }
+
+        where = $"[[extension]] '{pointId}'";
+
+        if (Str(table, "file").Length == 0)
+        {
+            errors.Add($"{where} is missing `file`");
+            return null;
+        }
+
+        var pointFile = NormFilePath(ToStr(table["file"]));
+        CheckFilePath(pointFile, where, errors);
+
+        // [extension.ordinal] is required. Every expressible domain is a
+        // roster enum with a LEN sentinel, the expander makes ordinal order
+        // the determinism basis, and an optional form would be a second
+        // ordering path with no users.
+        if (!table.TryGetValue("ordinal", out var ordinalRaw) || ordinalRaw is not TomlTable ordinal)
+        {
+            errors.Add($"{where} is missing `[extension.ordinal]` - it is required: every "
+                       + "extension point extends a GML-declared roster enum, and ordinal order "
+                       + "is what makes staged output deterministic. This is a deliberate "
+                       + "restriction, not an oversight; add the ordinal-less form when a "
+                       + "concrete point needs one");
+            return null;
+        }
+
+        var ordinalEnum = Str(ordinal, "enum");
+        var ordinalSentinel = Str(ordinal, "sentinel");
+        foreach (var (key, value) in new[] { ("enum", ordinalEnum), ("sentinel", ordinalSentinel) })
+        {
+            if (value.Length == 0) errors.Add($"{where} `[extension.ordinal]` is missing `{key}`");
+            else if (!GmlIdentRegex.IsMatch(value))
+                errors.Add($"{where} `[extension.ordinal].{key}` '{value}' is not a plain identifier");
+        }
+
+        List<ExtensionField> fields = [];
+        HashSet<string> fieldNames = [];
+        foreach (var (fieldTable, fieldIndex) in Tables(table, "fields"))
+        {
+            var field = ParseExtensionField(fieldTable, fieldIndex, where, errors);
+            if (field is null) continue;
+            if (!fieldNames.Add(field.Name))
+            {
+                errors.Add($"{where} declares field '{field.Name}' twice");
+                continue;
+            }
+
+            fields.Add(field);
+        }
+
+        // vacancy templates are keyed by site id, so sites must be parsed first
+        var vacancy = table.TryGetValue("vacancy", out var vacancyRaw) && vacancyRaw is TomlTable vacancyTable
+            ? vacancyTable
+            : null;
+
+        List<ExtensionSite> sites = [];
+        HashSet<string> siteIds = [];
+        foreach (var (siteTable, siteIndex) in Tables(table, "sites"))
+        {
+            var site = ParseExtensionSite(siteTable, siteIndex, where, pointFile, fieldNames, vacancy, errors);
+            if (site is null) continue;
+            if (!siteIds.Add(site.Id))
+            {
+                errors.Add($"{where} declares site '{site.Id}' twice");
+                continue;
+            }
+
+            sites.Add(site);
+        }
+
+        var enumMembers = sites.Count(s => s.Kind == ExtensionSiteKind.EnumMember);
+        if (enumMembers != 1)
+            errors.Add($"{where} declares {enumMembers} `enum_member` site(s) - exactly one is "
+                       + "required: the ordinal domain needs precisely one place to grow");
+
+        var enumSite = sites.FirstOrDefault(s => s.Kind == ExtensionSiteKind.EnumMember);
+        if (enumSite is not null && enumSite.File != pointFile)
+            errors.Add($"{where} site '{enumSite.Id}' overrides `file` - the `enum_member` site "
+                       + "cannot: the ordinal enum lives in the point's own file by definition");
+
+        // An unknown vacancy key is an error, not a no-op. A typo would
+        // otherwise silently mean "no vacancy line for that site", and for the
+        // enum_member site that silence is the fatal-hole case. A gap ordinal
+        // kills the game at launch, before the main menu.
+        if (vacancy is not null)
+        {
+            foreach (var key in vacancy.Keys.Where(k => !siteIds.Contains(k)).Order(StringComparer.Ordinal))
+                errors.Add($"{where} `[extension.vacancy]` key '{key}' names no declared site - "
+                           + "a typo here silently drops that site's vacancy line, and for the "
+                           + "enum_member site a missing vacancy line is a gap ordinal, which "
+                           + "crashes the game at launch");
+        }
+
+        List<ExtensionVacancyFile> vacancyFiles = [];
+        HashSet<string> vacancyPaths = [];
+        foreach (var (fileTable, fileIndex) in Tables(table, "vacancy_files"))
+        {
+            var vacancyFile = ParseExtensionVacancyFile(fileTable, fileIndex, where, errors);
+            if (vacancyFile is null) continue;
+            if (!vacancyPaths.Add(vacancyFile.Path))
+            {
+                errors.Add($"{where} declares two `vacancy_files` with path template "
+                           + $"'{vacancyFile.Path}' - they would render over each other");
+                continue;
+            }
+
+            vacancyFiles.Add(vacancyFile);
+        }
+
+        List<ExtensionCompanion> companions = [];
+        HashSet<string> companionPaths = [];
+        foreach (var (companionTable, companionIndex) in Tables(table, "companions"))
+        {
+            var companion = ParseExtensionCompanion(companionTable, companionIndex, where, errors);
+            if (companion is null) continue;
+            if (!companionPaths.Add(companion.Path))
+            {
+                errors.Add($"{where} declares two `companions` with path template "
+                           + $"'{companion.Path}' - one of them can never say anything new");
+                continue;
+            }
+
+            companions.Add(companion);
+        }
+
+        // An error-level companion asserts "a live member without this data
+        // breaks the boot". A vacancy is the same member with the same needs,
+        // so a point making that assertion must also say what a vacancy gets.
+        if (companions.Any(c => c.Level == ExtensionCompanionLevel.Error) && vacancyFiles.Count == 0)
+            errors.Add($"{where} declares an error-level companion but no "
+                       + "`[[extension.vacancy_files]]` - the companion says absent data breaks "
+                       + "the boot, and a ledger vacancy is a member with no mod behind it, so "
+                       + "it needs a generated stub or every excluded registrant bricks the game");
+
+        return new ExtensionPoint(
+            Id: pointId,
+            File: pointFile,
+            Doc: Str(table, "doc"),
+            OrdinalEnum: ordinalEnum,
+            OrdinalSentinel: ordinalSentinel,
+            Fields: fields,
+            Sites: sites,
+            VacancyFiles: vacancyFiles,
+            Companions: companions);
+    }
+
+    private static ExtensionField? ParseExtensionField(TomlTable table, int index, string where,
+        List<string> errors)
+    {
+        var name = Str(table, "name");
+        if (name.Length == 0)
+        {
+            errors.Add($"{where} `[[extension.fields]]` #{index + 1} is missing `name`");
+            return null;
+        }
+
+        if (!ExtensionFieldNameRegex.IsMatch(name))
+        {
+            errors.Add($"{where} field name '{name}' is not lower_snake_case "
+                       + "(^[a-z][a-z0-9_]*$) - field names are template placeholder keys");
+            return null;
+        }
+
+        var typeText = Str(table, "type");
+        var type = ExtensionEnums.ParseFieldType(typeText);
+        if (type is null)
+        {
+            errors.Add($"{where} field '{name}' type '{typeText}' is not one of "
+                       + ExtensionEnums.FieldTypeNames);
+            return null;
+        }
+
+        return new ExtensionField(name, type.Value, Str(table, "doc"));
+    }
+
+    private static ExtensionSite? ParseExtensionSite(TomlTable table, int index, string where,
+        string pointFile, IReadOnlySet<string> fieldNames, TomlTable? vacancy, List<string> errors)
+    {
+        var siteId = Str(table, "id");
+        if (siteId.Length == 0)
+        {
+            errors.Add($"{where} `[[extension.sites]]` #{index + 1} is missing `id`");
+            return null;
+        }
+
+        var siteWhere = $"{where} site '{siteId}'";
+        var kindText = Str(table, "kind");
+        var kind = ExtensionEnums.ParseSiteKind(kindText);
+        if (kind is null)
+        {
+            errors.Add($"{siteWhere} kind '{kindText}' is not one of {ExtensionEnums.SiteKindNames}");
+            return null;
+        }
+
+        var siteFile = Str(table, "file").Length > 0 ? NormFilePath(ToStr(table["file"])) : pointFile;
+        if (Str(table, "file").Length > 0) CheckFilePath(siteFile, siteWhere, errors);
+
+        var anchor = Norm(RawStr(table, "anchor"));
+        var place = Str(table, "place");
+        if (kind == ExtensionSiteKind.Anchor)
+        {
+            if (anchor.Trim().Length == 0) errors.Add($"{siteWhere} is an anchor site and needs `anchor`");
+            if (place is not ("before" or "after"))
+                errors.Add($"{siteWhere} place '{place}' is not before or after");
+        }
+        else
+        {
+            if (anchor.Length > 0) errors.Add($"{siteWhere} is a {kind.Value.CatalogName()} site - drop `anchor`");
+            if (place.Length > 0) errors.Add($"{siteWhere} is a {kind.Value.CatalogName()} site - drop `place`");
+        }
+
+        var template = RawStr(table, "template");
+        if (template.Trim().Length == 0)
+        {
+            errors.Add($"{siteWhere} is missing `template`");
+            return null;
+        }
+
+        // One registrant, one line, one site. A multi-line template would make
+        // the marker comment, appended by the renderer, land on only the last
+        // line, leaving the rest unidentifiable.
+        if (template.Contains('\n') || template.Contains('\r'))
+        {
+            errors.Add($"{siteWhere} template spans lines - a site renders exactly one line "
+                       + "per registrant, and the marker comment is appended to it");
+            return null;
+        }
+
+        CheckPlaceholders(template, fieldNames, $"{siteWhere} template", errors);
+
+        var vacancyTemplate = "";
+        if (vacancy is null || !vacancy.TryGetValue(siteId, out var vacancyRaw))
+        {
+            errors.Add($"{siteWhere} has no `[extension.vacancy]` entry - every site needs one "
+                       + "(the empty string means 'no line for this site'), because a ledger "
+                       + "entry whose mod is absent still renders at every site");
+        }
+        else
+        {
+            vacancyTemplate = ToStr(vacancyRaw);
+            if (vacancyTemplate.Contains('\n') || vacancyTemplate.Contains('\r'))
+                errors.Add($"{siteWhere} vacancy template spans lines - same one-line rule as `template`");
+            // a vacancy has no mod behind it, so the mod's field values are gone
+            CheckPlaceholders(vacancyTemplate, new HashSet<string>(), $"{siteWhere} vacancy template", errors);
+        }
+
+        var indent = (int)(table.TryGetValue("indent", out var indentRaw)
+            ? Convert.ToInt64(indentRaw, CultureInfo.InvariantCulture)
+            : 0);
+        if (indent < 0)
+        {
+            errors.Add($"{siteWhere} indent {indent} is negative");
+            indent = 0;
+        }
+
+        // The marker-comment leader. An append site may target a TOML file
+        // (the schedule), where a `//` marker is a syntax error, so the
+        // leader is explicit, "#" allowed on append sites only. Non-append
+        // sites splice into GML and stay `//`.
+        var comment = Str(table, "comment");
+        if (comment.Length == 0) comment = "//";
+        if (comment is not ("//" or "#"))
+            errors.Add($"{siteWhere} comment '{comment}' is not // or #");
+        else if (comment == "#" && kind != ExtensionSiteKind.Append)
+            errors.Add($"{siteWhere} states comment '#' - only append sites may target "
+                       + "non-GML files; anchor and enum_member sites splice into GML, where "
+                       + "the marker must be a // comment");
+
+        return new ExtensionSite(siteId, kind.Value, siteFile, anchor, place, template, indent,
+            vacancyTemplate, comment);
+    }
+
+    // Loader-checkable rules only. Collision with an existing archive entry is
+    // a stage-time check (the loader has no pristine source) and lives in the
+    // expander.
+    private static ExtensionVacancyFile? ParseExtensionVacancyFile(TomlTable table, int index, string where,
+        List<string> errors)
+    {
+        var fileWhere = $"{where} `[[extension.vacancy_files]]` #{index + 1}";
+        var path = Str(table, "path");
+        if (path.Length == 0)
+        {
+            errors.Add($"{fileWhere} is missing `path`");
+            return null;
+        }
+
+        // the path carries placeholders, so check the shape of what it renders
+        // to rather than the template, because a symbol is a plain identifier by
+        // construction, so a stand-in proves the surrounding path is safe
+        var probe = NormFilePath(RenderProbe(path));
+        var problem = PathSafety.PathProblem(probe, $"{fileWhere} `path`");
+        if (problem is not null) errors.Add(problem);
+
+        // A vacancy file is data, a fiddle prototype standing in for an
+        // uninstalled mod. Under assets/gml/ it would land in the compile
+        // gate's collection and be handed to momi-gml-check as if it were
+        // source. The gate filters by extension too, but a stub belongs
+        // nowhere near the GML tree in the first place, so refuse it here
+        // where the error can say so.
+        if (probe.StartsWith("assets/gml/", StringComparison.Ordinal))
+            errors.Add($"{fileWhere} `path` '{path}' is under assets/gml/ - vacancy files are "
+                       + "data, not source; a data file in the GML tree reaches the compile gate");
+
+        CheckPlaceholders(path, new HashSet<string>(), $"{fileWhere} path", errors);
+
+        var content = RawStr(table, "content");
+        if (content.Trim().Length == 0) errors.Add($"{fileWhere} is missing `content`");
+        CheckPlaceholders(content, new HashSet<string>(), $"{fileWhere} content", errors);
+
+        return new ExtensionVacancyFile(path, content);
+    }
+
+    // A file a registration must ship alongside itself. Existence checks only.
+    // The other two lints are content-shaped ("the object value appears in an
+    // object_create call", "the companion toml declares a spring outfit key"),
+    // neither is expressible as a path. Both now live as targeted advisory
+    // checks in ExtensionCollector (CheckObjectCreation / CheckNpcRosterOutfits)
+    // - code, not schema. A generic content-check language for two advisory
+    // rules remains the wrong thing to build.
+    private static ExtensionCompanion? ParseExtensionCompanion(TomlTable table, int index, string where,
+        List<string> errors)
+    {
+        var companionWhere = $"{where} `[[extension.companions]]` #{index + 1}";
+        var path = Str(table, "path");
+        if (path.Length == 0)
+        {
+            errors.Add($"{companionWhere} is missing `path`");
+            return null;
+        }
+
+        // mod-relative, so it is checked as it stands rather than under
+        // assets/, the same PathSafety rule mod gml placement uses
+        var problem = PathSafety.PathProblem($"assets/{RenderProbe(path)}", $"{companionWhere} `path`");
+        if (problem is not null) errors.Add(problem);
+        CheckPlaceholders(path, new HashSet<string>(), $"{companionWhere} path", errors);
+
+        var levelText = Str(table, "level");
+        var level = ExtensionEnums.ParseCompanionLevel(levelText);
+        if (level is null)
+        {
+            errors.Add($"{companionWhere} level '{levelText}' is not one of "
+                       + ExtensionEnums.CompanionLevelNames);
+            return null;
+        }
+
+        // the doc is the message a mod author reads when the check fires, so a
+        // companion without one reports a missing file and no reason
+        var doc = Str(table, "doc");
+        if (doc.Length == 0)
+        {
+            errors.Add($"{companionWhere} is missing `doc` - it becomes the message a mod "
+                       + "author sees when the check fires, and 'file missing' alone does not "
+                       + "say why the file matters");
+            return null;
+        }
+
+        return new ExtensionCompanion(path, level.Value, doc);
+    }
+
+    // Every {{placeholder}} must be a declared field or one of the two the
+    // expander always supplies. An undeclared one would render literally into
+    // engine code, which compiles to garbage rather than failing loudly.
+    private static void CheckPlaceholders(string template, IReadOnlySet<string> fieldNames, string where,
+        List<string> errors)
+    {
+        List<string> unknown = [];
+        foreach (Match match in ExtensionPlaceholders.Regex.Matches(template))
+        {
+            var name = match.Groups[1].Value;
+            if (name is ExtensionPlaceholders.Symbol or ExtensionPlaceholders.Ordinal) continue;
+            if (fieldNames.Contains(name)) continue;
+            if (!unknown.Contains(name)) unknown.Add(name);
+        }
+
+        if (unknown.Count == 0) return;
+        var allowed = fieldNames.Count > 0
+            ? $"declared fields ({string.Join(", ", fieldNames.Order(StringComparer.Ordinal))}) plus "
+            : "";
+        errors.Add($"{where} references unknown placeholder(s) "
+                   + $"{string.Join(", ", unknown.Select(u => $"{{{{{u}}}}}"))} - allowed here: "
+                   + $"{allowed}{{{{symbol}}}} and {{{{ordinal}}}}");
+    }
+
+    // A rendered stand-in for a path template, for the PathSafety shape check.
+    private static string RenderProbe(string template) => ExtensionPlaceholders.Regex.Replace(template, "x");
 
     // Cross-check a hand-written replace body against the hook declarations.
     // Every dispatcher call must name a declared hook of the dispatcher's kind

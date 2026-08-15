@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **104 hooks**, fed by **114 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **106 hooks**, fed by **116 seams**, **23 engine fixes**, and **1 call rewrite**, plus two extension points: [npc_roster](extensions/npc_roster.md) and [status_effect](extensions/status_effect.md). The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -72,9 +72,11 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [player.status_effect_register](hooks/player.status_effect_register.md) | filter | Rewrite a status effect as it registers. |
 | [player.status_effect_cancel](hooks/player.status_effect_cancel.md) | event | Know when the game cancels a status effect. |
 | [player.status_effect_expired](hooks/player.status_effect_expired.md) | event | Know the moment a status effect runs out. |
+| [status_effect.hud_icon](hooks/status_effect.hud_icon.md) | filter | Supply the HUD icon for a custom status effect. |
 | [fishing.should_reel](hooks/fishing.should_reel.md) | filter | Change whether the player reels from the fishing Wait state this frame. |
 | [gossip.selections](hooks/gossip.selections.md) | filter | Change which NPCs the day's gossip offers. |
 | [npc.heart_points](hooks/npc.heart_points.md) | filter | Adjust the heart points a villager gains. |
+| [npc.is_unlocked](hooks/npc.is_unlocked.md) | filter | Gate a custom NPC's journal visibility. |
 | [npc.gift_received](hooks/npc.gift_received.md) | event | Know when the player gives an NPC a gift. |
 | [date.run](hooks/date.run.md) | override | Take over a date the moment the player commits to it. |
 | [animal.heart_points](hooks/animal.heart_points.md) | filter | Adjust the heart points a barn animal gains. |
@@ -203,6 +205,8 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [fishing_should_reel](seams/fishing_should_reel.md) | Filters the Wait state's reel decision before the complete vanilla reel block. |
 | [gossip_selections](seams/gossip_selections.md) | Wraps the gossip picker so the day's NPC selection passes through a filter. |
 | [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it applies. |
+| [npc_is_unlocked_vacancy](seams/npc_is_unlocked_vacancy.md) | Makes npc_is_unlocked()'s default arm vacancy-aware and mod-filterable. |
+| [vitals_status_hud_icon](seams/vitals_status_hud_icon.md) | Makes the vitals HUD's status-icon default arm safe for non-infusion ids and mod-suppliable. |
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
 | [date_run](seams/date_run.md) | Puts a claim-scoped override in front of every player-initiated date. |
 | [animal_heart_points](seams/animal_heart_points.md) | Reroutes every barn-animal heart-point delta through a filter before it applies. |
@@ -286,6 +290,23 @@ Hook-less edits the catalog also carries:
 | [game_step_begin_installs](seams/game_step_begin_installs.md) | engine fix | Installs the MMAPI per-frame drain at the top of the game's `step_begin`, the framework's lifecycle root. |
 | [tarball_chop_burn_flag](seams/tarball_chop_burn_flag.md) | engine fix | Passes the tarball's real fire flag to its grid chop, so non-fire chops stop being burn-throttled by stump/fruit-tree iframes. |
 | [max_crafts_zero_component](seams/max_crafts_zero_component.md) | engine fix | Skips zero-cost components in the craft-ceiling loop, mirroring the zero guard the duration branch already has. |
+| [npc_load_missing_blob_guard](seams/npc_load_missing_blob_guard.md) | engine fix | Lets a pre-existing save load after a custom NPC is installed, and a mod-era save load after the NPC is removed (vacancy resume). |
+| [save_load_spells_tolerance](seams/save_load_spells_tolerance.md) | engine fix | A learned custom spell whose mod was removed is forgotten with a warn instead of aborting the load. |
+| [save_load_pinned_spell_tolerance](seams/save_load_pinned_spell_tolerance.md) | engine fix | An unknown pinned spell unpins instead of aborting the load. |
+| [save_load_status_effect_tolerance](seams/save_load_status_effect_tolerance.md) | engine fix | An active status effect whose type no longer resolves is dropped with a warn instead of aborting the load. |
+| [save_load_forget_warn](seams/save_load_forget_warn.md) | engine fix | Every save entry dropped for an unresolvable name is named in the log. |
+| [save_load_date_history_tolerance](seams/save_load_date_history_tolerance.md) | engine fix | A date memory of an unknown NPC is dropped with a warn instead of aborting the load. |
+| [save_load_festival_partner_tolerance](seams/save_load_festival_partner_tolerance.md) | engine fix | An accepted festival date with an unknown partner is cleared with a warn instead of aborting the load. |
+| [save_load_date_photos_tolerance](seams/save_load_date_photos_tolerance.md) | engine fix | A date photo of an unknown NPC is dropped with a warn instead of aborting the load. |
+| [save_load_used_objects_tolerance](seams/save_load_used_objects_tolerance.md) | engine fix | An unknown object name in the daily used-objects flags is skipped instead of aborting the load. |
+| [save_load_renown_list_tolerance](seams/save_load_renown_list_tolerance.md) | engine fix | Keeps dropped renown entries out of the pending list the end-of-day processor walks. |
+| [save_load_renown_item_tolerance](seams/save_load_renown_item_tolerance.md) | engine fix | A pending museum donation of an unknown item is dropped with a warn instead of aborting the load. |
+| [save_load_pet_items_tolerance](seams/save_load_pet_items_tolerance.md) | engine fix | Unknown items queued on the pet are dropped with a warn instead of aborting the load. |
+| [save_load_blueprint_node_tolerance](seams/save_load_blueprint_node_tolerance.md) | engine fix | A construction node for an unknown blueprint is skipped whole, closing both the load crash and the turn-in interact crash. |
+| [save_load_infusion_tolerance](seams/save_load_infusion_tolerance.md) | engine fix | An item's unknown infusion is dropped with a warn instead of aborting the load. |
+| [save_load_animal_variant_tolerance](seams/save_load_animal_variant_tolerance.md) | engine fix | A barn animal's unknown variant falls back to its kind's first variant instead of crashing in play. |
+| [save_load_mount_variant_tolerance](seams/save_load_mount_variant_tolerance.md) | engine fix | The mount's unknown variant falls back to its kind's first variant instead of crashing in play. |
+| [game_stats_seed_on_load](seams/game_stats_seed_on_load.md) | engine fix | Seeds the per-name game-stats structs on every load, so mod-added locations/NPCs/perks cannot crash a same-version save's first stats increment. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Growing The Catalog

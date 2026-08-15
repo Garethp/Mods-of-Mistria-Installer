@@ -15,15 +15,23 @@ public class GeneratedOverlayMod : IMod
     // forward-slash relative path → generated file content
     private readonly IReadOnlyDictionary<string, string> _virtual;
     private readonly IReadOnlyDictionary<string, string> _redirects;
+    // inner rel paths the overlay replaces or renames, excluded from
+    // enumeration so a renamed file does not also install under its original
+    // name, and a content override does not enumerate twice
+    private readonly HashSet<string> _suppressed;
 
     public GeneratedOverlayMod(
         IMod inner,
         IReadOnlyDictionary<string, string> virtualFiles,
-        IReadOnlyDictionary<string, string>? redirects = null)
+        IReadOnlyDictionary<string, string>? redirects = null,
+        IEnumerable<string>? hidden = null)
     {
         _inner     = inner;
         _virtual   = virtualFiles;
         _redirects = redirects ?? new Dictionary<string, string>();
+
+        _suppressed = new HashSet<string>(hidden ?? [], StringComparer.OrdinalIgnoreCase);
+        foreach (var key in _virtual.Keys) _suppressed.Add(key);
     }
 
     // ── File access (augmented with virtual files) ────────────────────────────
@@ -32,7 +40,9 @@ public class GeneratedOverlayMod : IMod
 
     public List<string> GetAllFiles(string extension)
     {
-        var result   = _inner.GetAllFiles(extension).ToList();
+        var result = _inner.GetAllFiles(extension)
+            .Where(path => !_suppressed.Contains(ToRelative(path)))
+            .ToList();
         var basePath = NormalizedBase();
 
         foreach (var relPath in OverlayKeys())
@@ -81,7 +91,9 @@ public class GeneratedOverlayMod : IMod
 
     public List<string> GetFilesInFolder(string folder, string extension)
     {
-        var result  = _inner.GetFilesInFolder(folder, extension).ToList();
+        var result = _inner.GetFilesInFolder(folder, extension)
+            .Where(path => !_suppressed.Contains(ToRelative(path)))
+            .ToList();
         var prefix  = folder.Replace('\\', '/').TrimEnd('/') + '/';
         var basePath = NormalizedBase();
 

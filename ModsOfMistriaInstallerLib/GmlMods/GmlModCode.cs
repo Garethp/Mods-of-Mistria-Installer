@@ -14,7 +14,12 @@ public class GmlModCode(IMod mod, string dirName, IReadOnlyList<string> gmlFiles
 
     // GML-identifier-safe form of the id: dots and dashes → underscores.
     // Names the install dir assets/gml/scripts/<symbol>/
-    public string Symbol { get; } = mod.GetId().Replace('.', '_').Replace('-', '_');
+    public string Symbol { get; } = SymbolFor(mod.GetId());
+
+    // The same derivation, reachable without a GmlModCode, because a mod may ship
+    // extension registrations and no gml/ at all, and its registrant symbols
+    // still have to be prefixed by exactly this.
+    public static string SymbolFor(string id) => id.Replace('.', '_').Replace('-', '_');
 
     // The container's own directory name; counts as a lint namespace alongside
     // the symbol, since mods prefix by either

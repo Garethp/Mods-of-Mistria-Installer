@@ -2,7 +2,7 @@ using Garethp.ModsOfMistriaInstallerLib.Seam;
 
 namespace Garethp.ModsOfMistriaInstallerLib.GmlMods;
 
-// One excluded mod and every reason (D12: one mod, one fate - a mod-content
+// One excluded mod and every reason (one mod, one fate - a mod-content
 // failure excludes the whole mod, content included, and the apply proceeds)
 public class ExcludedMod(GmlModCode mod)
 {
@@ -26,4 +26,10 @@ public class GmlLayerPlan
     public List<ExcludedMod> Excluded { get; } = [];
 
     public List<LintFinding> Findings { get; } = [];
+
+    // Ordinals the expansion assigned that the ledger does not yet hold. The
+    // installer applies these only after the survivor set settles, and
+    // persists them only alongside a successful commit, because an ordinal handed to
+    // a mod that then fails to install would be burned forever.
+    public List<ExtensionLedgerEntry> NewAssignments { get; } = [];
 }

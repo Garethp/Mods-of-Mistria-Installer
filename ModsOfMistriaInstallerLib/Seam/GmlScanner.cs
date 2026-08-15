@@ -120,6 +120,71 @@ public static class GmlScanner
         return spans;
     }
 
+    // Every top-level `enum NAME { ... }` declaration of `name`, members in
+    // declaration order. Values follow GML semantics, and a non-integer
+    // explicit value lands in ValueText for the caller to judge.
+    public static List<GmlEnumScan> ScanEnum(string source, string name, List<GmlToken>? tokens = null)
+    {
+        tokens ??= Tokenize(source);
+        List<GmlEnumScan> found = [];
+        var depth = 0;
+        var i = 0;
+        while (i < tokens.Count)
+        {
+            if (depth == 0 && Text(source, tokens[i]).SequenceEqual("enum")
+                && i + 2 < tokens.Count
+                && IsWordChar(source[tokens[i + 1].Start])
+                && IsChar(source, tokens[i + 2], '{'))
+            {
+                var scan = BuildEnum(source, tokens, i, out var closeIndex);
+                if (scan is not null)
+                {
+                    if (scan.Name == name) found.Add(scan);
+                    i = closeIndex + 1;
+                    continue;
+                }
+            }
+
+            if (IsChar(source, tokens[i], '{')) depth++;
+            else if (IsChar(source, tokens[i], '}')) depth = Math.Max(0, depth - 1);
+            i++;
+        }
+
+        return found;
+    }
+
+    // Every top-level enum declaration, in order. Serves mod linting, where
+    // the declaration itself is the export-surface datum.
+    public static List<GmlEnumScan> ScanEnums(string source, List<GmlToken>? tokens = null)
+    {
+        tokens ??= Tokenize(source);
+        List<GmlEnumScan> found = [];
+        var depth = 0;
+        var i = 0;
+        while (i < tokens.Count)
+        {
+            if (depth == 0 && Text(source, tokens[i]).SequenceEqual("enum")
+                && i + 2 < tokens.Count
+                && IsWordChar(source[tokens[i + 1].Start])
+                && IsChar(source, tokens[i + 2], '{'))
+            {
+                var scan = BuildEnum(source, tokens, i, out var closeIndex);
+                if (scan is not null)
+                {
+                    found.Add(scan);
+                    i = closeIndex + 1;
+                    continue;
+                }
+            }
+
+            if (IsChar(source, tokens[i], '{')) depth++;
+            else if (IsChar(source, tokens[i], '}')) depth = Math.Max(0, depth - 1);
+            i++;
+        }
+
+        return found;
+    }
+
     // Every applied occurrence of `callee`: the exact identifier token whose
     // next significant token is "(". Comments and strings never match (they
     // are not identifier tokens), and a longer identifier the name prefixes
@@ -206,7 +271,7 @@ public static class GmlScanner
     // Every assignment whose target path starts at `global`: global.NAME,
     // global[$ "NAME"], deeper paths like global.NAME.field[i], and compound
     // assigns (+=, ??=). Comparisons (==, !=) never match. Increments (++/--)
-    // are NOT detected: at the token level `global.a - -b` is indistinguishable
+    // are not detected: at the token level `global.a - -b` is indistinguishable
     // from a postfix decrement, so they stay a documented blind spot.
     public static List<GlobalWrite> FindGlobalWrites(string source, List<GmlToken>? tokens = null)
     {
@@ -312,6 +377,48 @@ public static class GmlScanner
         return spans;
     }
 
+    // True when the file ends inside an unterminated block comment. An append
+    // site landing after such a tail would be swallowed silently. The mod
+    // installs clean and does nothing, the worst failure shape available, so
+    // the expander checks this before appending rather than emitting into a
+    // comment.
+    public static bool EndsInsideBlockComment(string source)
+    {
+        var i = 0;
+        var n = source.Length;
+        while (i < n)
+        {
+            var c = source[i];
+            if (c == '"')
+            {
+                var j = i + 1;
+                while (j < n && source[j] != '"') j += source[j] == '\\' ? 2 : 1;
+                i = Math.Min(j + 1, n);
+                continue;
+            }
+
+            if (c == '/' && i + 1 < n && source[i + 1] == '/')
+            {
+                var newline = source.IndexOf('\n', i);
+                if (newline == -1) return false;
+                i = newline + 1;
+                continue;
+            }
+
+            if (c == '/' && i + 1 < n && source[i + 1] == '*')
+            {
+                var end = source.IndexOf("*/", i + 2, StringComparison.Ordinal);
+                if (end == -1) return true;
+                i = end + 2;
+                continue;
+            }
+
+            i++;
+        }
+
+        return false;
+    }
+
     // The char offset of the start of the line containing `pos`.
     public static int LineStart(string source, int pos) =>
         pos <= 0 ? 0 : source.LastIndexOf('\n', pos - 1) + 1;
@@ -330,6 +437,106 @@ public static class GmlScanner
         var end = start;
         while (end < source.Length && source[end] is ' ' or '\t') end++;
         return source[start..end];
+    }
+
+    // The GmlEnumScan for the declaration starting at token i, plus the token
+    // index of its closing brace. Null when the body never closes.
+    private static GmlEnumScan? BuildEnum(string source, List<GmlToken> tokens, int i, out int closeIndex)
+    {
+        var bodyOpen = i + 2;
+        closeIndex = -1;
+
+        // balance to the closing brace, because a member's value may itself carry
+        // braces (a struct literal is legal in an expression), so track depth
+        var depth = 0;
+        var j = bodyOpen;
+        while (j < tokens.Count)
+        {
+            if (IsChar(source, tokens[j], '{')) depth++;
+            else if (IsChar(source, tokens[j], '}'))
+            {
+                depth--;
+                if (depth == 0) break;
+            }
+
+            j++;
+        }
+
+        if (j >= tokens.Count) return null;
+        closeIndex = j;
+
+        List<GmlEnumMember> members = [];
+        long next = 0;
+        var k = bodyOpen + 1;
+        while (k < closeIndex)
+        {
+            if (IsChar(source, tokens[k], ','))
+            {
+                k++;
+                continue;
+            }
+
+            if (!IsWordChar(source[tokens[k].Start])) break;  // not a member list we understand
+
+            var nameToken = tokens[k];
+            var memberName = source[nameToken.Start..nameToken.End];
+            var end = nameToken.End;
+            var valueText = "";
+            k++;
+
+            if (k < closeIndex && IsChar(source, tokens[k], '='))
+            {
+                k++;
+                var valueStart = k < closeIndex ? tokens[k].Start : end;
+                var valueDepth = 0;
+                while (k < closeIndex)
+                {
+                    if (IsOpenBracket(source, tokens[k])) valueDepth++;
+                    else if (IsCloseBracket(source, tokens[k])) valueDepth--;
+                    else if (valueDepth == 0 && IsChar(source, tokens[k], ',')) break;
+
+                    end = tokens[k].End;
+                    k++;
+                }
+
+                valueText = source[valueStart..end].Trim();
+            }
+
+            var value = next;
+            if (valueText.Length > 0 && TryParseIntLiteral(valueText, out var explicitValue)) value = explicitValue;
+            members.Add(new GmlEnumMember(memberName, value, valueText, nameToken.Start, end));
+            next = value + 1;
+        }
+
+        return new GmlEnumScan(
+            Name: source[tokens[i + 1].Start..tokens[i + 1].End],
+            Members: members,
+            Start: tokens[i].Start,
+            BodyOpen: tokens[bodyOpen].Start,
+            BodyClose: tokens[closeIndex].Start);
+    }
+
+    // Decimal, hex (0x1f, $1f) and negative integer , the forms a GML
+    // enum value can take. Anything else leaves the member positional-valued
+    // and its ValueText populated for the caller to reject.
+    private static bool TryParseIntLiteral(string text, out long value)
+    {
+        value = 0;
+        var body = text.Trim();
+        var negative = body.StartsWith('-');
+        if (negative || body.StartsWith('+')) body = body[1..].TrimStart();
+
+        var parsed = body.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
+            ? long.TryParse(body[2..], System.Globalization.NumberStyles.HexNumber,
+                System.Globalization.CultureInfo.InvariantCulture, out value)
+            : body.StartsWith('$')
+                ? long.TryParse(body[1..], System.Globalization.NumberStyles.HexNumber,
+                    System.Globalization.CultureInfo.InvariantCulture, out value)
+                : long.TryParse(body, System.Globalization.NumberStyles.Integer,
+                    System.Globalization.CultureInfo.InvariantCulture, out value);
+
+        if (parsed && negative) value = -value;
+        return parsed;
     }
 
     // (form, name token index, paren token index) when a definition starts at token i

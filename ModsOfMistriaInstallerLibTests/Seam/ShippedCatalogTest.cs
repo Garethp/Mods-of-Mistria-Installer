@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
+using Garethp.ModsOfMistriaInstallerLib.Store;
 using ModsOfMistriaInstallerLibTests.TestUtils;
 
 namespace ModsOfMistriaInstallerLibTests.Seam;
@@ -44,6 +45,45 @@ public class ShippedCatalogTest
             .Select(e => e.Id)
             .Order(StringComparer.Ordinal)
             .ToList()));
+    }
+
+    [Test]
+    public void ShouldAnchorEveryExtensionSiteZeroRegistrant()
+    {
+        // the shipped npc_roster entry proven against its own anchors like
+        // every seam. Enum scans clean, anchors match exactly once post-seam,
+        // append targets exist and end in live code
+        var pristine = new MemoryPristineSource(
+            _pristine.ToDictionary(f => f.Key, f => Encoding.UTF8.GetBytes(f.Value)));
+        var staged = SeamStager.Simulate(_catalog, pristine);
+
+        var problems = ExtensionExpander.Validate(_catalog, staged, pristine, out var anchored);
+
+        Assert.That(problems, Is.Empty);
+        Assert.That(anchored["npc_roster"], Is.EqualTo(5));
+        Assert.That(anchored["status_effect"], Is.EqualTo(1));
+    }
+
+    // Points whose symbols provably cannot appear in a save file, each with
+    // the reasoning that earns its exemption. Empty today, since both shipped
+    // points stamp saves.
+    private static readonly Dictionary<string, string> SaveInvisiblePoints = new();
+
+    [Test]
+    public void ShouldGiveEveryExtensionPointASaveHarvestRuleOrAnExemption()
+    {
+        // The reseed harvest's rule table is code, and a declared point
+        // missing from it is silently skipped there. This test is what makes
+        // that skip impossible to ship. A new point must either add its
+        // harvest rule or record here why saves cannot reference it.
+        foreach (var point in _catalog.Extensions)
+        {
+            var covered = SaveSymbolHarvester.HasRuleFor(point.Id)
+                          || SaveInvisiblePoints.ContainsKey(point.Id);
+            Assert.That(covered, Is.True,
+                $"extension point '{point.Id}' has no save-harvest rule and no recorded "
+                + "save-invisibility exemption - decide which it is before shipping it");
+        }
     }
 
     [Test]

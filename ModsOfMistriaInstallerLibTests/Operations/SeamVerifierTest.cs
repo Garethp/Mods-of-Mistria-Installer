@@ -221,7 +221,7 @@ public class SeamVerifierTest
     [Test]
     public void ShouldLocateWhicheverBackupNameExists()
     {
-        // the seam check never migrates (D14): a not-yet-migrated install's legacy
+        // the seam check never migrates. A not-yet-migrated install's legacy
         // backup name is accepted as it stands, and MOMI's own name wins
         var legacy = Path.Combine(_root, "assets_backup.zip");
         File.WriteAllBytes(legacy, []);

@@ -40,6 +40,29 @@ public class MistriaLocator
         return Path.GetFullPath(mistriaLocation);
     }
     
+    // The game's writable save directory, for the reseed harvest. Windows
+    // keeps it under the local app data root. Under Proton the same tree
+    // lives inside the
+    // install's compatdata prefix, reachable relative to the install
+    // location. Null when neither exists, which skips the harvest.
+    public static string? GetSavesLocation(string? mistriaLocation)
+    {
+        var possibleLocations = new List<string>
+        {
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "FieldsOfMistria", "saves"),
+        };
+
+        if (mistriaLocation is not null)
+        {
+            possibleLocations.Add(Path.Combine(mistriaLocation, "..", "..", "compatdata", "2142790",
+                "pfx", "drive_c", "users", "steamuser", "AppData", "Local", "FieldsOfMistria", "saves"));
+        }
+
+        return possibleLocations.FirstOrDefault(Directory.Exists);
+    }
+
     public static string? GetModsLocation(string? mistriaLocation)
     {
         var possibleLocations = new List<string>();

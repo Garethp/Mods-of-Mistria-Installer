@@ -36,9 +36,9 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 104
-seams = 114
-engine_fixes = 3
+hooks = 106
+seams = 116
+engine_fixes = 23
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -430,6 +430,11 @@ doc  = "Fires at the top of Ari.modify_renown(), before the delta is applied. Th
 name = "player.stamina_delta"
 kind = "filter"
 doc  = "Fires at the top of Ari.modify_stamina(), before stamina_costs_modifier is applied. The filtered value is the signed stamina delta. ctx is { player }. Return the replacement delta, or undefined to keep the current value."
+
+[[hook]]
+name = "status_effect.hud_icon"
+kind = "filter"
+doc  = "Fires in VitalsMenu.refresh_statuses() for a status effect the base game cannot draw: not a hardcoded vanilla id and not a potion infusion. The filtered value starts undefined; ctx is the StatusEffectId ordinal. Return { icon_sprite, color } (color optional, defaults to the vanilla status orange) to draw the HUD icon, or undefined to leave the icon undrawn. Register this for any extension status effect you show with show_hud - without a handler the effect still works, it just has no HUD icon. Vanilla never reaches this hook: every vanilla non-hardcoded id is an infusion."
 
 [[hook]]
 name = "player.status_effect_cancel"
@@ -2850,3 +2855,859 @@ callee   = "local_get"
 to       = "mmapi_local_get"
 args     = 1
 provides = ["local.get", "local.missing"]
+
+# --- npc_roster support ------------------------------------------------------------
+
+# LoadGame walks the CURRENT enum and deserializes each NPC's blob with no
+# guard on the lookup. A save written before a custom NPC existed has no blob
+# for it, the lookup yields undefined, and deserialize dereferences it on its
+# first line - so installing any NPC mod bricked every pre-existing save
+# (observed live). Skipping the absent blob leaves the freshly
+# constructed Npc at its defaults: 0 hearts, no gifts - exactly right for an
+# NPC the save has never met.
+#
+# The skip alone is NOT enough (observed live on the first accept boot): the Npc
+# constructor deliberately leaves location_position undefined, and on a LOADED
+# save deserialize is the only thing that sets it - new games place everyone
+# through the schedule state machine instead. The roster machinery dereferences
+# it unguarded on every-ordinal scans (NpcUtils find_npc_at_or_approaching,
+# NpcDatabase's in-room check), so a constructed-but-unplaced NPC kills the
+# first activity tick after load. Park the blob-less NPC using the engine's
+# own placement idiom - a VACANT one in Aldaria (the pen its basement schedule
+# snaps it back to; nothing paths in or out of the pen, which for a vacant is
+# the point), a LIVE one in Town at the origin: the pen is walk-disconnected
+# (no vanilla schedule ever leaves it), so a live NPC parked there cannot
+# reach its own schedule until the next day-start snap. Town is the connected
+# hub; look_for_entry_transition and the itinerary system take it from there.
+# Never the current room: that would trigger an immediate spawn into whatever
+# room the save opens in.
+#
+# Zero-registrant inert: a same-version vanilla save has a blob for every
+# vanilla NPC, so neither branch's else ever runs; game-version additions are
+# handled upstream by Serialization/Patches.gml migrations.
+#
+# The vacant-with-blob arm, found live on the first vacancy resume: a full
+# Npc.deserialize into a vacancy resolves content that left with the mod -
+# wardrobe.set_outfit and set_animation walk departed sprite sets, and the
+# closing native T2R.schedule_reload aborts the whole load on the departed
+# schedule path (silently - back to the title, nothing in any log; rewriting
+# just the schedule name was tried live and something in the presentation
+# path still killed the load). So a vacancy never deserializes: it restores
+# SOCIAL data only - heart points, gift history and daily flags, via the
+# engine's own tolerant string_to_item_id_or_unknown - parks in the Aldaria
+# pen, and is brain_dead by definition (no t2 schedule query either; the t2
+# side keeps whatever the boot compiled, basement included). A save made
+# while vacant serializes that parked state; reinstalling the mod makes the
+# NPC live again and the first day-start snap walks it back onto its real
+# schedule with hearts intact.
+[[engine_fix]]
+name    = "npc_load_missing_blob_guard"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    for (var i = 0; i < NpcId.LEN; i++) {
+        var npc = NPCS[i];
+        npc.deserialize(files.npcs[$ npc_id_to_string(i)]);
+
+        npc.brain_dead = T2R.schedule_current_action_has_arrived(i);
+    }'''
+replace = '''
+    for (var i = 0; i < NpcId.LEN; i++) {
+        var npc = NPCS[i];
+        var __mmapi_npc_blob = files.npcs[$ npc_id_to_string(i)]; // mmapi_npc_load_guard
+        if (mmapi_ext_is_vacant("npc_roster", i)) {
+            if (__mmapi_npc_blob != undefined) {
+                npc.heart_points = __mmapi_npc_blob.heart_points;
+                npc.talk_flag = __mmapi_npc_blob.talk_flag;
+                npc.gift_flag = __mmapi_npc_blob.gift_flag;
+                npc.times_spoken_today = __mmapi_npc_blob.times_spoken_today;
+                npc.known_gift_preferences = HashSetFromArray(array_map(__mmapi_npc_blob.known_gift_preferences, string_to_item_id_or_unknown));
+                npc.gifts_given = HashSetFromArray(array_map(__mmapi_npc_blob.gifts_given, string_to_item_id_or_unknown));
+            }
+            npc.location_position = new LocationPosition(LocationId.Aldaria, Vec2(0, 0));
+            npc.brain_dead = true;
+        }
+        else {
+            if (__mmapi_npc_blob != undefined) { npc.deserialize(__mmapi_npc_blob); }
+            else { npc.location_position = new LocationPosition(LocationId.Town, Vec2(0, 0)); }
+
+            npc.brain_dead = T2R.schedule_current_action_has_arrived(i);
+        }
+    }'''
+marker  = "mmapi_npc_load_guard"
+
+# GAME_STATS structs (perks, menu_opens, npcs_spoken_to, location_visits) are
+# name-keyed and seeded ONLY at new-game and at version-migration
+# (patch_game_stats, called from NewGame.gml and the versioned block in
+# Serialization/Patches.gml). A same-version save therefore never seeds keys
+# for content added after it was written, and ~90 raw `[$ key] += 1` sites
+# crash with `bad unary op "inc" undefined` on first touch. Found live: first
+# arrival in a mod-added location dies at Taxi's location_visits increment;
+# npcs_spoken_to (T2r) is the same bomb for custom NPCs (masked in earlier
+# testing only because a game update's migration happened to run after the
+# NPC was installed), and two perk sites increment DYNAMIC perk refs. The
+# engine's own patch_game_stats is idempotent (fills only undefined keys,
+# prototype-patches missing fields) - invoking it on every load retires the
+# whole class at one site. Zero-delta: a same-version vanilla save already
+# has every key, so every PATCH probe finds them defined and writes nothing.
+[[engine_fix]]
+name    = "game_stats_seed_on_load"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    GAME_STATS = files.game_stats;
+'''
+replace = '''
+    GAME_STATS = files.game_stats;
+    patch_game_stats(GAME_STATS); // mmapi_game_stats_seed
+'''
+marker  = "mmapi_game_stats_seed"
+
+# Save-load tolerance family. Trace-probe bisection of a mod-era save on a
+# clean install found exactly two hard name lookups in the whole load
+# pipeline: spells_learned resolves through FATAL string_to_spell (vanilla's
+# own inconsistency - the perks/items/recipes lines beside it use try_
+# variants and skip unknowns) and an occupied status-effect slot resolves
+# through FATAL string_to_status_effect_id. Either one aborts the load
+# natively - no dialog, no error_log.json entry, straight back to the title
+# screen - so removing a mod that taught a spell or left a status effect
+# active bricks the save until the mod returns. These fixes route the two
+# sites through the tolerant variants (both builtins probed in-game: they
+# exist and return undefined for unknown names), which makes every mod-era
+# save loadable: unknown content is dropped from memory with a warn, and the
+# next save writes the cleansed arrays. Zero-registrant inert: on an intact
+# install every name resolves, so the new arms never run and behaviour is
+# identical to vanilla.
+#
+# The 2026-08 static sweep completed the
+# enumeration the bisection began. The probed save never exercised the date,
+# pet, renown, construction, or infusion paths, and each of those resolves a
+# save-carried name fatally too. The nine fixes below close the eight
+# remaining sites in the same drop-and-warn mold. The renown path needs two
+# edits, one for its parser and one for its caller. Every tolerant builtin
+# these fixes call is attested in the vanilla tree, so no new in-game builtin
+# probe was required.
+[[engine_fix]]
+name    = "save_load_spells_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.spells_learned = deserialize_array_bool(
+        files.player.spells_learned,
+        string_to_spell,
+        Spell.LEN,
+    );'''
+replace = '''
+    ARI.spells_learned = deserialize_array_bool(
+        files.player.spells_learned,
+        try_string_to_spell, // mmapi_save_spells_tolerance
+        Spell.LEN,
+    );'''
+marker  = "mmapi_save_spells_tolerance"
+
+# An unknown pinned spell becomes set_pinned_spell(undefined), the engine's
+# own unpin call (SpellcastingMenu toggles the pin off the same way). No
+# warn of its own: a pinned spell is always also learned, so the
+# spells-tolerance path has already warned about the name by the time this
+# line runs.
+[[engine_fix]]
+name    = "save_load_pinned_spell_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, string_to_spell));'''
+replace = '''
+    ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, try_string_to_spell)); // mmapi_save_pinned_tolerance'''
+marker  = "mmapi_save_pinned_tolerance"
+
+# A slot whose type no longer resolves deserializes to undefined - exactly
+# what an empty slot already is; the manager's update loop never sees it.
+# Ledgered status effects normally survive removal by tombstone (the vacant
+# enum member keeps the name resolving); this guard is for the remaining
+# cases: ledger wiped by hand, or a save moved to an install with a
+# different ledger.
+[[engine_fix]]
+name    = "save_load_status_effect_tolerance"
+file    = "gml/scripts/Player/StatusEffectManager.gml"
+anchor  = '''
+            self.effects.set(i, opt_and_then(effect, function(e) {
+                e.type = string_to_status_effect_id(e.type);
+                return e;
+            }));'''
+replace = '''
+            self.effects.set(i, opt_and_then(effect, function(e) {
+                var __mmapi_se_type = try_string_to_status_effect_id(e.type); // mmapi_save_status_tolerance
+                if (__mmapi_se_type == undefined) {
+                    warn("MMAPI: save carried unknown status effect '{}' - dropped", e.type);
+                    return undefined;
+                }
+                e.type = __mmapi_se_type;
+                return e;
+            }));'''
+marker  = "mmapi_save_status_tolerance"
+
+# Visibility for every forgetful path, the new one and the ones vanilla
+# already had: deserialize_array_bool silently drops unresolvable entries
+# for perks, items, recipes (and now spells). The DEBUG_ASSERTIONS crash arm
+# is preserved untouched; retail builds fall into the new else and name what
+# was dropped in the log.
+[[engine_fix]]
+name    = "save_load_forget_warn"
+file    = "gml/scripts/Utilities/ArrayBool.gml"
+anchor  = '''
+        var num = string_to_num(string_array[i]);
+        if is_numeric(num) {
+            target[num] = true;
+        } else if DEBUG_ASSERTIONS {
+            crash("unexpected input in functor...{}/{} -> {}", i, string_array[i], num);
+        }'''
+replace = '''
+        var num = string_to_num(string_array[i]);
+        if is_numeric(num) {
+            target[num] = true;
+        } else if DEBUG_ASSERTIONS {
+            crash("unexpected input in functor...{}/{} -> {}", i, string_array[i], num);
+        } else {
+            warn("MMAPI: save carried unknown entry '{}' - dropped", string_array[i]); // mmapi_save_forget_warn
+        }'''
+marker  = "mmapi_save_forget_warn"
+
+# Every date memory resolves its NPC eagerly at load. The docs' claim that
+# date-history consumers never resolve names is true of the consumers but not
+# of this line. A dropped entry no longer counts toward the shared date
+# cooldown, which is the accepted amputation cost.
+[[engine_fix]]
+name    = "save_load_date_history_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.date_history = apply_func(files.player.date_history, function(v) {
+        v.date = string_to_date(v.date);
+        v.npc = string_to_npc_id(v.npc);
+        return v;
+    });'''
+replace = '''
+    ARI.date_history = []; // mmapi_save_date_history_tolerance
+    for (var __mmapi_dhi = 0; __mmapi_dhi < array_length(files.player.date_history); __mmapi_dhi++) {
+        var __mmapi_dh = files.player.date_history[__mmapi_dhi];
+        if (try_string_to_npc_id(__mmapi_dh.npc) == undefined) {
+            warn("MMAPI: save carried a date history entry for unknown NPC '{}' - dropped", __mmapi_dh.npc);
+            continue;
+        }
+        __mmapi_dh.date = string_to_date(__mmapi_dh.date);
+        __mmapi_dh.npc = string_to_npc_id(__mmapi_dh.npc);
+        array_push(ARI.date_history, __mmapi_dh);
+    }'''
+marker  = "mmapi_save_date_history_tolerance"
+
+# An accepted festival date whose partner no longer resolves clears the
+# pending date instead of aborting the load. Fresh saves serialize the field
+# as the empty string, and the vanilla line passes "" through
+# string_to_npc_id without throwing (observed: such saves load), so the
+# tolerant arm engages only for a non-empty unknown name and every other
+# value takes the exact vanilla expression.
+[[engine_fix]]
+name    = "save_load_festival_partner_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.festival_date_partner = opt_and_then(files.player[$ "festival_date_partner"], string_to_npc_id);'''
+replace = '''
+    var __mmapi_fdp = files.player[$ "festival_date_partner"]; // mmapi_save_festival_partner_tolerance
+    if (!is_nullish(__mmapi_fdp) && __mmapi_fdp != "" && try_string_to_npc_id(__mmapi_fdp) == undefined) {
+        warn("MMAPI: save carried festival date partner '{}' who no longer resolves - cleared", __mmapi_fdp);
+        ARI.festival_date_partner = undefined;
+    } else {
+        ARI.festival_date_partner = opt_and_then(__mmapi_fdp, string_to_npc_id);
+    }'''
+marker  = "mmapi_save_festival_partner_tolerance"
+
+# A photo of a departed NPC is dropped whole. The photo blob is the mod-era
+# memory itself, so there is nothing meaningful to keep once the NPC cannot
+# be named.
+[[engine_fix]]
+name    = "save_load_date_photos_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    DATE_PHOTOS = array_map(files.date_photos.photos, function(v) {
+        return {
+            photo: v.photo,
+            photo_decompressed: undefined,
+            timestamp: v.timestamp,
+            npc: string_to_npc_id(v.npc),
+            date: string_to_date(v.date),
+        };
+    });'''
+replace = '''
+    DATE_PHOTOS = []; // mmapi_save_date_photos_tolerance
+    for (var __mmapi_dpi = 0; __mmapi_dpi < array_length(files.date_photos.photos); __mmapi_dpi++) {
+        var __mmapi_dp = files.date_photos.photos[__mmapi_dpi];
+        if (try_string_to_npc_id(__mmapi_dp.npc) == undefined) {
+            warn("MMAPI: save carried a date photo of unknown NPC '{}' - dropped", __mmapi_dp.npc);
+            continue;
+        }
+        array_push(DATE_PHOTOS, {
+            photo: __mmapi_dp.photo,
+            photo_decompressed: undefined,
+            timestamp: __mmapi_dp.timestamp,
+            npc: string_to_npc_id(__mmapi_dp.npc),
+            date: string_to_date(__mmapi_dp.date),
+        });
+    }'''
+marker  = "mmapi_save_date_photos_tolerance"
+
+# The one fatal converter in the used-objects daily flag line. The functor
+# swap routes unknown object names through deserialize_array_bool's existing
+# skip, and save_load_forget_warn names them in the log. Object prototypes
+# are fiddle content, so the domain is mod-reachable.
+[[engine_fix]]
+name    = "save_load_used_objects_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.used_object_today = files.player["used_object_today"] != undefined
+        ? deserialize_array_bool(files.player.used_object_today, string_to_object_id, ObjectId.LEN)
+        : array_bool(ObjectId.LEN);'''
+replace = '''
+    ARI.used_object_today = files.player["used_object_today"] != undefined
+        ? deserialize_array_bool(files.player.used_object_today, try_string_to_object_id, ObjectId.LEN) // mmapi_save_used_objects_tolerance
+        : array_bool(ObjectId.LEN);'''
+marker  = "mmapi_save_used_objects_tolerance"
+
+# Caller half of the renown pair. save_load_renown_item_tolerance makes the
+# parser return undefined for a donation of an unknown item, and this loop
+# keeps undefined entries out of the pending list, where the end-of-day
+# processor would dereference them.
+[[engine_fix]]
+name    = "save_load_renown_list_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.pending_renown_entries = ListFromArray(files.player.pending_renown_entries)
+        .map(deserialize_renown_entry);'''
+replace = '''
+    ARI.pending_renown_entries = List(); // mmapi_save_renown_list_tolerance
+    for (var __mmapi_ri = 0; __mmapi_ri < array_length(files.player.pending_renown_entries); __mmapi_ri++) {
+        var __mmapi_re = deserialize_renown_entry(files.player.pending_renown_entries[__mmapi_ri]);
+        if (__mmapi_re != undefined) {
+            ARI.pending_renown_entries.push(__mmapi_re);
+        }
+    }'''
+marker  = "mmapi_save_renown_list_tolerance"
+
+# Parser half of the renown pair. A pending museum-donation entry naming an
+# unknown item warns and drops instead of aborting the load. The other two
+# entry kinds are untouched.
+[[engine_fix]]
+name    = "save_load_renown_item_tolerance"
+file    = "gml/scripts/GameplaySystems/Player/RenownUtils.gml"
+anchor  = '''
+        case RenownEntryType.MuseumDonation: return RenownEntry.MuseumDonation(string_to_item_id(entry.item));'''
+replace = '''
+        case RenownEntryType.MuseumDonation:
+            var __mmapi_donated = try_string_to_item_id(entry.item); // mmapi_save_renown_item_tolerance
+            if (__mmapi_donated == undefined) {
+                warn("MMAPI: save carried a pending renown entry for unknown item '{}' - dropped", entry.item);
+                return undefined;
+            }
+            return RenownEntry.MuseumDonation(__mmapi_donated);'''
+marker  = "mmapi_save_renown_item_tolerance"
+
+# The pet's queued drop items resolve fatally while the item flag arrays
+# beside them use the try variants. Unknown queued items are dropped with a
+# warn, and the pet pops the rest.
+[[engine_fix]]
+name    = "save_load_pet_items_tolerance"
+file    = "gml/scripts/Pet.gml"
+anchor  = '''
+        self.items_to_pop = array_map(pet_data.items_to_pop, string_to_item_id);'''
+replace = '''
+        self.items_to_pop = []; // mmapi_save_pet_items_tolerance
+        for (var __mmapi_pi = 0; __mmapi_pi < array_length(pet_data.items_to_pop); __mmapi_pi++) {
+            var __mmapi_pit = try_string_to_item_id(pet_data.items_to_pop[__mmapi_pi]);
+            if (__mmapi_pit == undefined) {
+                warn("MMAPI: save carried an unknown item '{}' queued on the pet - dropped", pet_data.items_to_pop[__mmapi_pi]);
+                continue;
+            }
+            array_push(self.items_to_pop, __mmapi_pit);
+        }'''
+marker  = "mmapi_save_pet_items_tolerance"
+
+# A construction node for an unknown blueprint is skipped before it is
+# written, through the same skip path unknown objects already take. Skipping
+# the whole node matters because turn-in boxes dereference
+# BLUEPRINT_PROTOTYPES[node.blueprint_id] on interact, so a cleared field
+# alone would trade the load crash for an interact crash. There is no
+# attested try variant for blueprints, so resolution is a Blueprint.LEN scan
+# over blueprint_to_string, the same reflection the serializer uses. Vanilla
+# names always match, which keeps an intact install identical.
+[[engine_fix]]
+name    = "save_load_blueprint_node_tolerance"
+file    = "gml/scripts/GameplaySystems/Data/Grid/__GridGeneral/Grid.gml"
+anchor  = '''
+            var object_id = try_string_to_object_id(obj.object_id);
+            if object_id == undefined {
+                if DEBUG_ASSERTIONS {
+                    crash("Unexpected ObjectId name `{}`, did not match any ids", obj.object_id)
+                } else {
+                    error("Unexpected object name: `{}`. ignoring...", obj.object_id);
+                    continue;
+                }
+            }'''
+replace = '''
+            var object_id = try_string_to_object_id(obj.object_id);
+            if object_id == undefined {
+                if DEBUG_ASSERTIONS {
+                    crash("Unexpected ObjectId name `{}`, did not match any ids", obj.object_id)
+                } else {
+                    error("Unexpected object name: `{}`. ignoring...", obj.object_id);
+                    continue;
+                }
+            }
+            var __mmapi_bp_name = obj[$ "blueprint_id"]; // mmapi_save_blueprint_tolerance
+            if (__mmapi_bp_name != undefined) {
+                var __mmapi_bp = undefined;
+                for (var __mmapi_bi = 0; __mmapi_bi < Blueprint.LEN; __mmapi_bi++) {
+                    if (blueprint_to_string(__mmapi_bi) == __mmapi_bp_name) {
+                        __mmapi_bp = __mmapi_bi;
+                        break;
+                    }
+                }
+                if (__mmapi_bp == undefined) {
+                    warn("MMAPI: save carried a construction node for unknown blueprint '{}' - node dropped", __mmapi_bp_name);
+                    continue;
+                }
+            }'''
+marker  = "mmapi_save_blueprint_tolerance"
+
+# An unknown infusion is dropped from the item rather than aborting the
+# load. The guarded shape leaves the constructor's default in place instead
+# of overwriting it with undefined, because LiveItem seeds infusion from the
+# prototype's default_infusion. The engine already uses the try variant at
+# its two other infusion read sites.
+[[engine_fix]]
+name    = "save_load_infusion_tolerance"
+file    = "gml/scripts/GameplaySystems/Items/LiveItem.gml"
+anchor  = '''
+    if !is_nullish(item.infusion) {
+        live_item.infusion = string_to_infusion(item.infusion);
+    }'''
+replace = '''
+    if !is_nullish(item.infusion) {
+        var __mmapi_inf = try_string_to_infusion(item.infusion); // mmapi_save_infusion_tolerance
+        if (__mmapi_inf == undefined) {
+            warn("MMAPI: save carried an item with unknown infusion '{}' - dropped", item.infusion);
+        } else {
+            live_item.infusion = __mmapi_inf;
+        }
+    }'''
+marker  = "mmapi_save_infusion_tolerance"
+
+# The pet deserialize falls back to cat_tabby for an unknown variant, and
+# barn animals had no such guard: the saved variant string is copied raw and
+# the first prototype.variants.get dereference (production tier at
+# Animal.gml:64, sprite packs) crashes in play rather than at load. Variants
+# are fiddle content, so mods mint them. The 2026-08 hardening audit found
+# this as the one deref chain the load-pipeline sweep's converter net could
+# not see. Falls back to the kind's first variant with a warn.
+[[engine_fix]]
+name    = "save_load_animal_variant_tolerance"
+file    = "gml/scripts/GameplaySystems/Ranching/Animal.gml"
+anchor  = '''
+        self.variant = animal_data.variant;'''
+replace = '''
+        self.variant = animal_data.variant; // mmapi_save_animal_variant_tolerance
+        if (self.prototype.variants.contains_key(self.variant) == false) {
+            var __mmapi_av_keys = self.prototype.variants.keys();
+            warn("MMAPI: save carried animal variant '{}' that no longer exists - replaced with '{}'", self.variant, __mmapi_av_keys[0]);
+            self.variant = __mmapi_av_keys[0];
+        }'''
+marker  = "mmapi_save_animal_variant_tolerance"
+
+# The mount's copy of the same hazard. LoadGame sets the mount's variant
+# from the save five lines before it assigns the prototype, so the guard
+# anchors on the prototype assignment and normalizes right after it.
+[[engine_fix]]
+name    = "save_load_mount_variant_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+        ARI.mount.prototype = ANIMAL_PROTOTYPES[ARI.mount.kind];'''
+replace = '''
+        ARI.mount.prototype = ANIMAL_PROTOTYPES[ARI.mount.kind];
+        if (ARI.mount.prototype.variants.contains_key(ARI.mount.variant) == false) { // mmapi_save_mount_variant_tolerance
+            var __mmapi_mv_keys = ARI.mount.prototype.variants.keys();
+            warn("MMAPI: save carried mount variant '{}' that no longer exists - replaced with '{}'", ARI.mount.variant, __mmapi_mv_keys[0]);
+            ARI.mount.variant = __mmapi_mv_keys[0];
+        }'''
+marker  = "mmapi_save_mount_variant_tolerance"
+
+# The VitalsMenu default-case seam the survey predicted. Vanilla's default arm
+# assumes every non-hardcoded status id is a potion infusion and resolves it
+# through FATAL string_to_infusion - an extension status effect with show_hud
+# would crash the HUD. The try_ variant plus a filter keeps vanilla
+# pixel-identical (every id vanilla can produce is an infusion hit) and gives
+# extension effects an icon path; no handler means no icon rather than a crash.
+[[seam]]
+id      = "vitals_status_hud_icon"
+file    = "gml/scripts/UI/Anchor/Menus/VitalsMenu.gml"
+anchor  = '''
+                default:
+                    var demons = string_to_infusion(status_effect_id_to_string(state.status.type));
+                    var infusion_data = INFUSIONS.get(demons);
+                    icon_sprite = infusion_data.tooltip_icon;
+                    color = make_color_rgb(
+                        infusion_data.color[0],
+                        infusion_data.color[1],
+                        infusion_data.color[2],
+                    );
+                    break;'''
+replace = '''
+                default:
+                    var __mmapi_se_infusion = try_string_to_infusion(status_effect_id_to_string(state.status.type)); // mmapi_status_hud_icon
+                    if (__mmapi_se_infusion != undefined) {
+                        var infusion_data = INFUSIONS.get(__mmapi_se_infusion);
+                        icon_sprite = infusion_data.tooltip_icon;
+                        color = make_color_rgb(
+                            infusion_data.color[0],
+                            infusion_data.color[1],
+                            infusion_data.color[2],
+                        );
+                        break;
+                    }
+                    var __mmapi_se_hud = mmapi_apply_filters("status_effect.hud_icon", undefined, state.status.type);
+                    if (__mmapi_se_hud == undefined) { continue; }
+                    icon_sprite = __mmapi_se_hud.icon_sprite;
+                    if (__mmapi_se_hud[$ "color"] != undefined) { color = __mmapi_se_hud.color; }
+                    break;'''
+marker   = "mmapi_status_hud_icon"
+provides = ["status_effect.hud_icon"]
+
+# Vacancy containment for spouses and roommates. The vacancy design parks a
+# tombstoned NPC in the Aldaria pen, but is_roommate()/is_spouse() read only
+# the {NpcId}_status world fact, and the new-day roommate branch overrides
+# schedule selection, moves the NPC to the player's bed (roommate_to_sleep)
+# and clears brain_dead - so a vacant spouse would spawn in the player's home
+# as an invisible but fully interactive NPC, and the roommate routine paths
+# resolve {NpcId}_roommate through a fatal lookup the departed mod can no
+# longer satisfy. The guard makes a vacant spouse take the normal schedule
+# path instead, which its aldaria-only table turns into the park. The status
+# fact is untouched (zero loss): reinstalling the mod resumes the marriage on
+# the next day-start. Zero-registrant inert: the vacant table is empty, so
+# the guard variable equals the vanilla predicate.
+[[engine_fix]]
+name    = "vacant_roommate_new_day_guard"
+file    = "gml/scripts/GameplaySystems/NPCs/NpcDatabase.gml"
+anchor  = '''
+        var new_schedule_name = undefined;
+        if npc.is_roommate() {
+            if CALENDAR.day_type() == Day.Friday {
+                new_schedule_name = "Schedules/roommate_schedule_friday";
+            } else if todays_festival() != undefined {
+                new_schedule_name = "Schedules/roommate_schedule_festival";
+            } else {
+                new_schedule_name = "Schedules/roommate_schedule";
+            }
+        } else {
+            new_schedule_name = T2R.request_schedule(i);
+        }
+        var schedule_selected = T2R.schedule_start(i, new_schedule_name);
+
+        //
+        npc.location_position = trellis_point_location_position(schedule_selected.point);
+        for (var k = 0, c = array_length(schedule_selected.actions); k < c; k++) {
+            process_t2_action(schedule_selected.actions[k], i);
+        }
+
+        if npc.is_roommate() {
+            roommate_to_sleep(npc);
+            if npc.is_spouse() {
+                npc.brain_dead = false;
+            }
+        }'''
+replace = '''
+        var new_schedule_name = undefined;
+        var __mmapi_npc_roommate = npc.is_roommate(); // mmapi_vacant_roommate_guard
+        if (__mmapi_npc_roommate && mmapi_ext_is_vacant("npc_roster", i)) {
+            warn("MMAPI: spouse or roommate '{}' is a ledger vacancy - kept parked offscreen until its mod returns", npc_id_to_string(i));
+            __mmapi_npc_roommate = false;
+        }
+        if __mmapi_npc_roommate {
+            if CALENDAR.day_type() == Day.Friday {
+                new_schedule_name = "Schedules/roommate_schedule_friday";
+            } else if todays_festival() != undefined {
+                new_schedule_name = "Schedules/roommate_schedule_festival";
+            } else {
+                new_schedule_name = "Schedules/roommate_schedule";
+            }
+        } else {
+            new_schedule_name = T2R.request_schedule(i);
+        }
+        var schedule_selected = T2R.schedule_start(i, new_schedule_name);
+
+        //
+        npc.location_position = trellis_point_location_position(schedule_selected.point);
+        for (var k = 0, c = array_length(schedule_selected.actions); k < c; k++) {
+            process_t2_action(schedule_selected.actions[k], i);
+        }
+
+        if __mmapi_npc_roommate {
+            roommate_to_sleep(npc);
+            if npc.is_spouse() {
+                npc.brain_dead = false;
+            }
+        }'''
+marker  = "mmapi_vacant_roommate_guard"
+
+# The load-time twin: LoadGame clears brain_dead for every roommate after the
+# blob guard has parked vacancies, and a woken vacant brain serves no purpose.
+# Same predicate, same zero-loss contract, same zero-registrant inertness.
+[[engine_fix]]
+name    = "vacant_roommate_load_guard"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    for (var i = 0; i < NpcId.LEN; i++) {
+        var npc = NPCS[i];
+        if npc.is_roommate() {
+            npc.brain_dead = false;
+        }
+    }'''
+replace = '''
+    for (var i = 0; i < NpcId.LEN; i++) {
+        var npc = NPCS[i];
+        if (npc.is_roommate() && !mmapi_ext_is_vacant("npc_roster", i)) { // mmapi_vacant_roommate_load_guard
+            npc.brain_dead = false;
+        }
+    }'''
+marker  = "mmapi_vacant_roommate_load_guard"
+
+# Date photos are the zero-loss contract's showcase (a departed NPC's photos
+# survive because the tombstone keeps the name resolving), but the photo
+# popup dereferences the NPC's portrait sprite unguarded, and a vacancy's
+# portraits table is empty by necessity (portrait sprite names derive from
+# the symbol through a fatal lookup no absent mod can satisfy). set_sprite
+# then calls sprite_get_number(undefined) and the popup dies. The guard
+# renders the photo without the portrait overlay and says so. It also covers
+# a live extension NPC whose mod ships fewer portrait emotions or outfits
+# than a date's visuals request. Zero-registrant inert: every vanilla
+# NPC-and-date pair resolves a portrait, so the guarded arm never fires.
+[[engine_fix]]
+name    = "date_photo_portrait_guard"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+    var outfit = NPCS[data.npc].wardrobe.outfits.get(outfit_for_date(data.npc, data.date, data.timestamp));
+    var visuals = date.npc_visuals[data.npc];
+    var sprite = outfit.portraits.get(visuals.expression);
+
+    var position = NPC_PROTOTYPES[data.npc].date_photo_offset;
+    ANCHOR.sprite(photo)
+        .set_sprite(sprite)
+        .set_align(Align.Center, Align.BottomIn)
+        .set_index(visuals.frame)
+        .set_x(position[0], position[1])'''
+replace = '''
+    var outfit = NPCS[data.npc].wardrobe.outfits.get(outfit_for_date(data.npc, data.date, data.timestamp)); // mmapi_date_photo_portrait_guard
+    var visuals = date.npc_visuals[data.npc];
+    var sprite = undefined;
+    if (outfit != undefined) { sprite = outfit.portraits.get(visuals.expression); }
+
+    if (sprite == undefined) {
+        warn("MMAPI: date photo portrait for '{}' is not installed - photo shown without the portrait overlay", npc_id_to_string(data.npc));
+    } else {
+        var position = NPC_PROTOTYPES[data.npc].date_photo_offset;
+        ANCHOR.sprite(photo)
+            .set_sprite(sprite)
+            .set_align(Align.Center, Align.BottomIn)
+            .set_index(visuals.frame)
+            .set_x(position[0], position[1])
+    }'''
+marker  = "mmapi_date_photo_portrait_guard"
+
+# --- extension points ----------------------------------------------------------------
+
+# Vacant-NPC visibility. The journal's row loop filters through
+# npc_is_unlocked, whose default arm returns true - so a vacancy would leave a
+# ghost row backed by stub data. The seam turns the default arm mod-aware:
+# vacants hide, and the filter hook lets a mod choose a "departed villager"
+# presentation instead. Hiding also short-circuits the highest-reachability
+# post-Setup stub read (the journal's fiddle lookup sits behind this check).
+[[hook]]
+name = "npc.is_unlocked"
+kind = "filter"
+doc  = "Fires in npc_is_unlocked()'s default arm - every NPC the base game does not explicitly gate, which is every extension NPC and any future vanilla NPC without a case. The filtered value is the unlocked boolean, already false for ledger vacancies; ctx is the npc_id ordinal. Return the replacement value, or undefined to keep the current value. Vanilla NPCs with explicit cases (market vendors, story NPCs) never reach this hook."
+
+[[seam]]
+id      = "npc_is_unlocked_vacancy"
+file    = "gml/scripts/GameplaySystems/NPCs/Npc.gml"
+anchor  = '''
+        case NpcId.Seridia: return requirements_pass(Requirement.SeridiaTransformed);
+        //
+        default: return true;'''
+replace = '''
+        case NpcId.Seridia: return requirements_pass(Requirement.SeridiaTransformed);
+        //
+        default:
+            var __mmapi_npc_unlocked = !mmapi_ext_is_vacant("npc_roster", npc_id); // mmapi_npc_is_unlocked
+            __mmapi_npc_unlocked = mmapi_apply_filters("npc.is_unlocked", __mmapi_npc_unlocked, npc_id);
+            return __mmapi_npc_unlocked;'''
+marker   = "mmapi_npc_is_unlocked"
+provides = ["npc.is_unlocked"]
+
+# The first extension point. One registration
+# per custom NPC: the enum member, the two identity mappings, the manifest
+# macro, and the basement schedule the engine natively requires for every
+# member (t2.rs refuses to boot without it - observed live). The mod ships the
+# object (its own gml), the prototype data (fiddle/npcs/<symbol>.toml,
+# enforced by the error-level companion) and, until the named-asset lane
+# exists, no portraits - see EXTENSIONS.md for what is currently shippable.
+[[extension]]
+id   = "npc_roster"
+file = "gml/scripts/GameplaySystems/NPCs/NpcId.gml"
+doc  = """One registration per custom NPC. Adds the NpcId member, the
+id<->object mappings, the manifest macro and the baseline schedule. The mod
+must object_create the referenced object in its own gml, parented to par_NPC,
+and ship fiddle/npcs/<symbol>.toml carrying every field the prototype builder
+reads directly."""
+
+[extension.ordinal]
+enum     = "NpcId"
+sentinel = "LEN"
+
+[[extension.fields]]
+name = "object"
+type = "identifier"
+doc  = "GML object name for this NPC, created by the mod's own gml"
+
+[[extension.sites]]
+id       = "enum_member"
+kind     = "enum_member"
+template = "{{symbol}} = {{ordinal}},"
+indent   = 4
+
+[[extension.sites]]
+id       = "id_to_obj"
+kind     = "anchor"
+anchor   = '        default: impossible("Unexpected NpcId: {}", npc_id);'
+place    = "before"
+template = "case NpcId.{{symbol}}: return {{object}};"
+indent   = 8
+
+[[extension.sites]]
+id       = "obj_to_id"
+kind     = "anchor"
+anchor   = "        default: return undefined;"
+place    = "before"
+template = "case {{object}}: return NpcId.{{symbol}};"
+indent   = 8
+
+[[extension.sites]]
+id       = "object_macro"
+kind     = "append"
+file     = "gml/objects/object_manifest.gml"
+template = '#macro {{object}} object("{{object}}")'
+
+# Every NpcId member needs a schedule, enforced natively at boot, vacants
+# included. The basement file is a flat name-keyed list (coverage = "all"), so
+# an append site covers live and vacant members with one declaration. The "#"
+# comment leader is why append sites carry one: // is not a TOML comment.
+[[extension.sites]]
+id       = "basement_schedule"
+kind     = "append"
+file     = "t2/Schedules/basement_schedule.s.toml"
+comment  = "#"
+template = '{{symbol}}."6:00am" = "aldaria/default"'
+
+# A vacancy keeps its enum member (saves resolve by name; a date photo of an
+# uninstalled NPC must not crash the load) but maps to the framework's vacant
+# stub object, shipped statically in the mmapi payload with its macro.
+[extension.vacancy]
+enum_member       = "{{symbol}} = {{ordinal}},"
+id_to_obj         = "case NpcId.{{symbol}}: return obj_mmapi_npc_vacant;"
+obj_to_id         = ""
+object_macro      = ""
+basement_schedule = '{{symbol}}."6:00am" = "aldaria/default"'
+
+# Stub rules, not a neutralised vanilla copy: portraits EMPTY (their sprite
+# names derive from the symbol through a fatal lookup no absent mod can
+# satisfy), cycles carrying one idle so any instance init finds a wardrobe
+# pack (cycle sprites degrade to spr_nothing through try_string_to_asset -
+# invisible, which is right for a departed villager), icons pointed at vanilla
+# assets, and every one of the 21 fields the prototype builder reads directly.
+[[extension.vacancy_files]]
+path    = "fiddle/npcs/{{symbol}}.toml"
+content = '''
+name = "Departed Villager"
+aldarian_name = "??"
+outfits = ["spring"]
+tags = []
+birthday = { season = "spring", day = 1 }
+loved_gifts = []
+liked_gifts = []
+disliked_gift_tags = []
+hated_gift = "snail"
+journal_portrait_offset = [0, 0]
+journal_background_color = [200, 200, 200]
+date_photo_offset = [0, 0]
+job = "Departed"
+dateable = false
+icon_sprite = "spr_ui_generic_icon_npc_merri"
+small_icon_sprite = "spr_ui_generic_icon_npc_small_merri"
+small_outlined_icon_sprite = "spr_ui_generic_icon_npc_small_outline_merri"
+portraits = {}
+
+[gossip]
+	line = "merri_gossip"
+	portrait = "happy"
+	effect = "hearts"
+
+[drink_preferences]
+
+[offsets]
+	portrait = [0, 0]
+	sweat = [0, 0]
+	hearts = [0, 0]
+	angry = [0, 0]
+	sparkles = [0, 0]
+	sparkles_dark = [0, 0]
+	sick = [0, 0]
+	music_notes = [0, 0]
+	intensity = [0, 0]
+	surprise = [0, 0]
+	shock = [0, 0]
+	sigh = [0, 0]
+	loud = [0, 0]
+	cheery = [0, 0]
+	drop = [0, 0]
+
+[cycles.idle]
+	default_direction = "south"
+	directions = ["south"]
+	outfits = ["spring"]
+	type = "linear"
+'''
+
+[[extension.companions]]
+path  = "fiddle/npcs/{{symbol}}.toml"
+level = "error"
+doc   = "The NPC prototype. Without it load_npc_prototypes resolves this ordinal to nothing and the game dies during Setup (observed live)."
+
+# The second extension point, and deliberately the simple one (the survey's
+# natural follow-on): StatusEffectId is a pure GML roster enum, the manager is
+# id-agnostic (register/cancel/get_effect_value take any id), lifecycle hooks
+# already ship, serialization round-trips by name, and the update loop skips
+# absent entries - vacancy-benign by construction, so the vacancy template is
+# the enum member alone and there is no data invariant to satisfy. A mod
+# registers the id, then drives the effect entirely from its own GML:
+# ARI.status_effects.register(<ordinal>, ...) plus hook handlers, with
+# status_effect.hud_icon supplying the HUD icon.
+[[extension]]
+id   = "status_effect"
+file = "gml/scripts/Player/StatusEffect.gml"
+doc  = """One registration per custom status effect. Adds the StatusEffectId
+member; the mod applies and reacts to the effect from its own gml via
+ARI.status_effects and the player.status_effect_* / status_effect.hud_icon
+hooks."""
+
+[extension.ordinal]
+enum     = "StatusEffectId"
+sentinel = "LEN"
+
+[[extension.sites]]
+id       = "enum_member"
+kind     = "enum_member"
+template = "{{symbol}} = {{ordinal}},"
+indent   = 4
+
+[extension.vacancy]
+enum_member = "{{symbol}} = {{ordinal}},"

@@ -500,7 +500,7 @@ public partial class ModlistPageViewModel : PageViewBase
             }
             catch (Exception e)
             {
-                // The failure surfaces globally and is TERMINAL for the session:
+                // The failure surfaces globally and is terminal for the session:
                 // the busy latch deliberately stays set, so installing,
                 // uninstalling and the list actions remain disabled under the
                 // error. Saving the log stays live - the error is a bug report.
@@ -517,7 +517,8 @@ public partial class ModlistPageViewModel : PageViewBase
     {
         try
         {
-            var installer     = new ModInstaller(MistriaLocation, ModsLocation);
+            var installer     = new ModInstaller(MistriaLocation, ModsLocation,
+                MistriaLocator.GetSavesLocation(MistriaLocation));
             var modsToInstall = Mods.Where(m => m.Enabled).Select(m => m.Mod).ToList();
 
             // Per-file messages go to the log only; the status line follows
@@ -549,7 +550,7 @@ public partial class ModlistPageViewModel : PageViewBase
         }
         catch (Exception e)
         {
-            // The failure surfaces globally and is TERMINAL for the session: the
+            // The failure surfaces globally and is terminal for the session: the
             // busy latch deliberately stays set, so installing, uninstalling and
             // the list actions remain disabled under the error. Saving the log
             // stays live - the error is a bug report.

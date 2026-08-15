@@ -7,6 +7,7 @@ using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Operations;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
+using Garethp.ModsOfMistriaInstallerLib.Store;
 using Garethp.ModsOfMistriaInstallerLib.Tools;
 
 var currentExe = Assembly.GetEntryAssembly();
@@ -45,7 +46,7 @@ if (args.Contains("--seam-check") || args.Contains("--seam-check-json"))
     Environment.Exit(RunSeamCheck(args));
 }
 
-// Lint likewise: the stage's own log lines stay internal and the report is
+// Lint: the stage's own log lines stay internal and the report is
 // the only thing on stdout.
 if (args.Contains("--lint"))
 {

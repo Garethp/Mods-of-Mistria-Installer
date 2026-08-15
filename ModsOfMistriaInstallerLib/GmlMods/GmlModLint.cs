@@ -8,7 +8,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.GmlMods;
 // Textual, on the same comment- and string-aware token stream the seam engine
 // uses: a hook name riding in a variable is invisible, and the registration
 // checks inside mmapi remain the runtime authority. Findings are warn-tier;
-// StrictLints escalates the file-bearing ones (D12).
+// StrictLints escalates the file-bearing ones.
 public static class GmlModLint
 {
     // The reserved framework namespace. Every name under it is known at apply
@@ -49,6 +49,9 @@ public static class GmlModLint
                 if (known is null || (write.Bare && !known.Bare))
                     symbols.GlobalRoots[write.Name] = new GlobalRoot(rel, LineOf(text, write.Start), write.Bare);
             }
+
+            foreach (var scan in GmlScanner.ScanEnums(text, tokens))
+                symbols.Enums.TryAdd(scan.Name, (rel, LineOf(text, scan.Start)));
         }
 
         return symbols;
@@ -86,6 +89,20 @@ public static class GmlModLint
                     $"top-level function '{name}' is not namespaced - prefix it {mod.DirName}_ "
                     + $"(or __{mod.DirName}_ for private helpers) so it cannot collide with "
                     + "another mod or a future engine export"));
+            }
+
+            // enums share the same flat namespace and the same prefix rule:
+            // an unprefixed `enum MyState` collides silently with
+            // another mod's or a future engine roster
+            foreach (var (name, (rel, line)) in syms.Enums.OrderBy(e => e.Key, StringComparer.Ordinal))
+            {
+                if (prefixes.Any(p => name.StartsWith(p, StringComparison.Ordinal))) continue;
+
+                findings.Add(new LintFinding(mod.Id, rel, line,
+                    $"top-level enum '{name}' is not namespaced - prefix it {mod.DirName}_ "
+                    + "(GML hoists every top-level enum into one flat namespace, so an "
+                    + "unprefixed name can collide with another mod's enum or a future "
+                    + "engine roster)"));
             }
 
             foreach (var (root, info) in syms.GlobalRoots.OrderBy(r => r.Key, StringComparer.Ordinal))
@@ -145,6 +162,29 @@ public static class GmlModLint
             }
         }
 
+        // enum name → first-declaring mod id. Same flat-namespace hazard as
+        // bare global roots, because a cross-mod duplicate declaration collides with
+        // no compiler help, and namespacing (above) is what prevents it.
+        Dictionary<string, string> enumOwners = [];
+        foreach (var mod in mods)
+        {
+            foreach (var (name, info) in symbols[mod.Id].Enums.OrderBy(e => e.Key, StringComparer.Ordinal))
+            {
+                if (!enumOwners.TryGetValue(name, out var owner))
+                {
+                    enumOwners[name] = mod.Id;
+                    continue;
+                }
+
+                if (owner != mod.Id)
+                {
+                    findings.Add(new LintFinding(mod.Id, info.File, info.Line,
+                        $"declares enum '{name}', which mod '{owner}' also declares - "
+                        + "top-level enums share one flat namespace across every installed mod"));
+                }
+            }
+        }
+
         return findings;
     }
 
@@ -185,7 +225,7 @@ public static class GmlModLint
     // Every hook-registration finding across every mod, in mod order, the
     // cross-mod override contention report last. Contention findings are
     // file-less and added once per participating mod, so each mod's expander
-    // shows the conflict (D12).
+    // shows the conflict.
     public static List<LintFinding> LintHooks(IReadOnlyList<GmlModCode> mods, SeamCatalog catalog)
     {
         var declarations = catalog.HookDeclarations.ToDictionary(d => d.Name);

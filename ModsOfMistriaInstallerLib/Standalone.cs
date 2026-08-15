@@ -33,7 +33,8 @@ public static class Standalone
         var totalTime = new Stopwatch();
         totalTime.Start();
         
-        var installer = new ModInstaller(mistriaLocation, modsLocation);
+        var installer = new ModInstaller(mistriaLocation, modsLocation,
+            MistriaLocator.GetSavesLocation(mistriaLocation));
 
         var allMods = MistriaLocator.GetMods(mistriaLocation, modsLocation);
         //installer.ValidateMods(allMods);

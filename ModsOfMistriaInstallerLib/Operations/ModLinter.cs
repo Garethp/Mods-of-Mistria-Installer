@@ -41,7 +41,7 @@ public class ModLintResult(string modId, string version, string? symbol, int gml
 // GML staging as the apply - the skip pass, the three lints and the compile
 // gate - against a pristine zip, and writes nothing. The rendered output is
 // mod-development and bug-report material, so it stays literal English like
-// the findings it carries (D16).
+// the findings it carries.
 public static class ModLinter
 {
     // Stages the whole layer with this one mod in the apply set. StrictLints

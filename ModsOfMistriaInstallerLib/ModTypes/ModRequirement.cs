@@ -6,7 +6,7 @@ public record ModRequirement(string Name, string Author, string? DownloadUrl = n
 {
     public string GetId()
     {
-        var raw = $"{Author.ToLower()}.{Name.ToLower()}".Replace(" ", "_");
+        var raw = $"{Author.ToLowerInvariant()}.{Name.ToLowerInvariant()}".Replace(" ", "_");
         return Regex.Replace(raw, "[^a-zA-Z0-9_\\.]", "");
     }
 }

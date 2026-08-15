@@ -137,7 +137,7 @@ public class RarMod() : IMod
 
     public string GetId()
     {
-        var initialId = $"{GetAuthor().ToLower()}.{GetName().ToLower()}".Replace(" ", "_");
+        var initialId = $"{GetAuthor().ToLowerInvariant()}.{GetName().ToLowerInvariant()}".Replace(" ", "_");
         return Regex.Replace(initialId, "[^a-zA-Z0-9_\\.]", "");
     }
 

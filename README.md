@@ -1,4 +1,4 @@
-﻿# Mods of Mistria Installer
+# Mods of Mistria Installer
 
 This is the in-progress installer for Fields of Mistria mods. As it's currently very early in development, please keep
 in mind that it may have many bugs and may not work on all systems. Similarly, because of the engine change that happened
@@ -361,6 +361,18 @@ Before anything is written, MOMI checks that your mod's GML compiles and doesn't
 mods. A mod that fails those checks is skipped completely.
 
 For additional information, see [MMAPI](docs/MMAPI/MMAPI.md) documentation.
+
+### `momi/extensions/` (extension points)
+If you want your mod to add a custom NPC or a custom status effect, put a registration file in the
+`momi/extensions/` folder, and set the `minInstallerVersion` in your `manifest.json` to no lower than `0.16.0`.
+
+A registration is a small TOML file that names your addition, such as `momi/extensions/npc_roster/luna.toml`
+for a villager. MOMI generates the engine wiring for it, and your mod supplies the content the player sees.
+
+Before anything is written, MOMI validates every registration the same way it checks GML. A mod that fails
+those checks is skipped completely. Removing the mod later never breaks a player's save.
+
+For additional information, see the [Extension Points](docs/MMAPI/EXTENSIONS.md) documentation.
 
 ## Contributing Translations
 

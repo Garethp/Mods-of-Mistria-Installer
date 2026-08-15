@@ -1,10 +1,9 @@
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Seam;
 
 // The whole stage: seamed and rewritten engine files, plus the generated hook
-// catalog. The hook catalog stays out of Files because it is an ADDED file,
+// catalog. The hook catalog stays out of Files because it is an added file,
 // not a seamed one; its destination is SeamStager.HookCatalogRel.
 public class StageResult(IReadOnlyDictionary<string, StagedFile> files, string hookCatalogGml)
 {
@@ -32,10 +31,6 @@ public static class SeamStager
     // exclusion all match it, and a mod whose namespace merely starts with
     // mmapi is not the framework.
     public const string MmapiTreePrefix = "assets/gml/scripts/mmapi/";
-
-    private static readonly Regex WhitespaceRuns = new(@"\s+");
-
-    private static readonly UTF8Encoding Utf8Strict = new(false, true);
 
     // Simulate, then the call rewrites over the whole engine tree, then the
     // generated hook catalog.
@@ -71,10 +66,9 @@ public static class SeamStager
                     continue;
                 }
 
-                string text;
                 try
                 {
-                    text = Utf8Strict.GetString(raw);
+                    current = StagingText.Load(raw);
                 }
                 catch (DecoderFallbackException exception)
                 {
@@ -85,8 +79,6 @@ public static class SeamStager
                     continue;
                 }
 
-                var eol = text.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
-                current = new StagedFile(Norm(text), eol);
                 if (current.Text.Contains(entry.Marker, StringComparison.Ordinal))
                 {
                     problems.Add(new SeamProblem(
@@ -131,11 +123,11 @@ public static class SeamStager
     {
         if (entry.TargetFn.Length > 0) return ApplyTarget(entry, text);
 
-        var occurrences = CountOccurrences(text, entry.Anchor);
+        var occurrences = StagingText.CountOccurrences(text, entry.Anchor);
         if (occurrences != 1)
         {
-            var hint = AnchorHint(entry.Anchor, text);
-            var (line, context) = ClosestContext(entry.Anchor, text);
+            var hint = StagingText.AnchorHint(entry.Anchor, text);
+            var (line, context) = StagingText.ClosestContext(entry.Anchor, text);
             throw new SeamProblemException(new SeamProblem(
                 $"{entry.Kind.CatalogName()} '{entry.Id}': anchor matched {occurrences}x in {entry.File} "
                 + "(expected 1) - the engine file changed; the seam catalog needs updating"
@@ -186,10 +178,10 @@ public static class SeamStager
                     continue;
                 }
 
-                string decoded;
+                StagedFile loaded;
                 try
                 {
-                    decoded = Utf8Strict.GetString(raw);
+                    loaded = StagingText.Load(raw);
                 }
                 catch (DecoderFallbackException exception)
                 {
@@ -199,8 +191,8 @@ public static class SeamStager
                     continue;
                 }
 
-                eol = decoded.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
-                text = Norm(decoded);
+                text = loaded.Text;
+                eol = loaded.Eol;
             }
 
             List<string> applied = [];
@@ -217,7 +209,7 @@ public static class SeamStager
                 List<CallSite> direct = [];
                 foreach (var site in sites)
                 {
-                    var line = CountLines(text, site.NameStart);
+                    var line = StagingText.CountLines(text, site.NameStart);
                     if (site.Kind == CallKind.Member)
                     {
                         problems.Add(new SeamProblem(
@@ -226,7 +218,7 @@ public static class SeamStager
                             + "direct calls only; the engine changed; the seam catalog needs "
                             + "updating",
                             SeamProblemKind.CallRewrite, rewrite.Id, rel,
-                            Line: line, Context: NumberedExcerpt(text, line)));
+                            Line: line, Context: StagingText.NumberedExcerpt(text, line)));
                         continue;
                     }
 
@@ -237,7 +229,7 @@ public static class SeamStager
                             + $"'{rewrite.Callee}' - the engine grew a GML body for it; use a "
                             + "wrap seam instead",
                             SeamProblemKind.CallRewrite, rewrite.Id, rel,
-                            Line: line, Context: NumberedExcerpt(text, line)));
+                            Line: line, Context: StagingText.NumberedExcerpt(text, line)));
                         continue;
                     }
 
@@ -249,7 +241,7 @@ public static class SeamStager
                             + "the engine changed the call shape; the seam catalog needs "
                             + "updating",
                             SeamProblemKind.CallRewrite, rewrite.Id, rel,
-                            Line: line, Context: NumberedExcerpt(text, line)));
+                            Line: line, Context: StagingText.NumberedExcerpt(text, line)));
                     }
 
                     direct.Add(site);
@@ -319,7 +311,7 @@ public static class SeamStager
         }
 
         var span = spans[0];
-        var fnLine = CountLines(text, span.BodyOpen);
+        var fnLine = StagingText.CountLines(text, span.BodyOpen);
 
         if (entry.Op == DispatchOp.Wrap) return ApplyWrap(entry, text, span, tokens);
 
@@ -329,13 +321,13 @@ public static class SeamStager
             // the payload lands on its own line after the opening brace, so
             // the brace must end its line (a one-line body would put the
             // payload outside the function)
-            if (!RestOfLineIsBlank(text, span.BodyOpen + 1))
+            if (!StagingText.RestOfLineIsBlank(text, span.BodyOpen + 1))
             {
                 throw new SeamProblemException(new SeamProblem(
                     $"{entry.Kind.CatalogName()} '{entry.Id}': the body of '{entry.TargetFn}' opens and "
                     + $"continues on one line in {entry.File} - use a text seam",
                     SeamProblemKind.Target, entry.Id, entry.File,
-                    Line: fnLine, Context: NumberedExcerpt(text, fnLine)));
+                    Line: fnLine, Context: StagingText.NumberedExcerpt(text, fnLine)));
             }
 
             pos = GmlScanner.NextLineStart(text, span.BodyOpen);
@@ -351,22 +343,21 @@ public static class SeamStager
                     + $"inside '{entry.TargetFn}' in {entry.File} (expected 1) - the "
                     + "engine file changed; the seam catalog needs updating",
                     SeamProblemKind.Target, entry.Id, entry.File,
-                    Line: fnLine, Context: NumberedExcerpt(text, fnLine)));
+                    Line: fnLine, Context: StagingText.NumberedExcerpt(text, fnLine)));
             }
 
             var (start, end) = matches[0];
             // the insertion is line-wise, so the match must own its lines:
             // code sharing the anchor's first or last line would end up on the
             // wrong side of the payload
-            var prefix = text[GmlScanner.LineStart(text, start)..start];
-            if (prefix.Trim().Length > 0 || !RestOfLineIsBlank(text, end))
+            if (!StagingText.OwnsItsLines(text, start, end))
             {
-                var anchorLine = CountLines(text, start);
+                var anchorLine = StagingText.CountLines(text, start);
                 throw new SeamProblemException(new SeamProblem(
                     $"{entry.Kind.CatalogName()} '{entry.Id}': the target anchor shares a line with other "
                     + $"code in {entry.File} - use a text seam",
                     SeamProblemKind.Target, entry.Id, entry.File,
-                    Line: anchorLine, Context: NumberedExcerpt(text, anchorLine)));
+                    Line: anchorLine, Context: StagingText.NumberedExcerpt(text, anchorLine)));
             }
 
             pos = entry.TargetAt == "before"
@@ -412,84 +403,4 @@ public static class SeamStager
         var insertAt = GmlScanner.NextLineStart(renamed, span.BodyClose + DispatchRenderer.OrigPrefix.Length);
         return renamed[..insertAt] + wrapper + renamed[insertAt..];
     }
-
-    // The closest-match hint for a missed anchor. Whitespace drift is the
-    // common rot, so check that first, then whether the anchor's first line
-    // survives.
-    private static string AnchorHint(string anchor, string text)
-    {
-        var squeezedAnchor = WhitespaceRuns.Replace(anchor, " ").Trim();
-        if (WhitespaceRuns.Replace(text, " ").Contains(squeezedAnchor, StringComparison.Ordinal))
-            return "the anchor matches when whitespace is collapsed - indentation or blank-line drift";
-
-        var first = FirstLine(anchor);
-        if (first.Length == 0) return "";
-        var hits = CountOccurrences(text, first);
-        if (hits == 1) return "the anchor's first line is present; the lines after it diverge";
-        if (hits > 1) return $"the anchor's first line is present {hits}x; the lines after it diverge";
-        return "no part of the anchor is present";
-    }
-
-    // A line-numbered pristine excerpt around a 1-based line, for re-anchoring
-    // a missed seam without opening the file blind.
-    private static string NumberedExcerpt(string text, int line, int before = 3, int after = 6)
-    {
-        var lines = text.Split('\n');
-        var lo = Math.Max(0, line - 1 - before);
-        var hi = Math.Min(lines.Length, line - 1 + after + 1);
-        return string.Join("\n", Enumerable.Range(lo, hi - lo).Select(i => $"{i + 1,5}  {lines[i]}"));
-    }
-
-    // The best-guess pristine location for a missed anchor: the first anchor
-    // line that still occurs in the file, in anchor order. (0, "") when no
-    // line survives - the hint already says so.
-    private static (int Line, string Context) ClosestContext(string anchor, string text)
-    {
-        foreach (var probe in anchor.Trim().Split('\n').Select(l => l.Trim()))
-        {
-            if (probe.Length == 0) continue;
-            var pos = text.IndexOf(probe, StringComparison.Ordinal);
-            if (pos == -1) continue;
-
-            var line = CountLines(text, pos);
-            return (line, NumberedExcerpt(text, line));
-        }
-
-        return (0, "");
-    }
-
-    // True when nothing but whitespace or a line comment follows pos on its line
-    private static bool RestOfLineIsBlank(string text, int pos)
-    {
-        var lineEnd = text.IndexOf('\n', pos);
-        var rest = (lineEnd == -1 ? text[pos..] : text[pos..lineEnd]).Trim();
-        return rest.Length == 0 || rest.StartsWith("//", StringComparison.Ordinal);
-    }
-
-    // Non-overlapping occurrences, the anchor-count contract
-    private static int CountOccurrences(string text, string value)
-    {
-        var count = 0;
-        var index = 0;
-        while ((index = text.IndexOf(value, index, StringComparison.Ordinal)) != -1)
-        {
-            count++;
-            index += value.Length;
-        }
-
-        return count;
-    }
-
-    // 1-based line number of the char offset
-    private static int CountLines(string text, int pos) =>
-        text.AsSpan(0, pos).Count('\n') + 1;
-
-    private static string FirstLine(string anchor)
-    {
-        var trimmed = anchor.Trim();
-        var newline = trimmed.IndexOf('\n');
-        return (newline == -1 ? trimmed : trimmed[..newline]).Trim();
-    }
-
-    private static string Norm(string text) => text.Replace("\r\n", "\n");
 }

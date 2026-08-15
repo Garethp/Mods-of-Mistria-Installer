@@ -10,6 +10,8 @@ Fires in `ConversationDriver.deliver_line()`, before the textbox shows the line.
 
 The filtered text is what the textbox receives however the line is delivered, whether by `say()` for speech, `info()` for info lines, or `ask()` for prompt lines.
 
+For banked lines, the value arrives as the line's path, such as `.../<conversation>/<node>`, rather than localized text. That makes the hook a tracer during development: the path names the conversation and node a player reached. `T2R.request_conversation(npc_id)` is side-effect-free, and may be polled freely alongside it.
+
 | | |
 | --- | --- |
 | **Fires** | In `ConversationDriver.deliver_line()`, before the textbox shows the line. |

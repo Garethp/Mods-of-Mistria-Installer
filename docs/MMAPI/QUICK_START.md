@@ -140,3 +140,4 @@ If nothing appears, look for warnings in the same file. An unknown hook name, a 
 - Read [Mod Anatomy](MOD_ANATOMY.md) for why the boot file looks the way it does, and for the engine quirks that will bite you if you skip it.
 - Browse the [API Reference](API_REFERENCE.md) when you need a helper: config, hotkeys, per-save data, combat.
 - Turn on the [debug agent](DEBUG.md) when a hook doesn't seem to fire.
+- Ready for content? [Your First Custom NPC](CUSTOM_NPC.md) builds a custom villager end to end.

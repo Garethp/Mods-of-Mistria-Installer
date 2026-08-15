@@ -72,6 +72,34 @@ public static class PristineSynthesis
             pristine[file] = text;
         }
 
+        // Extension points validate unconditionally at stage time (even
+        // with zero registrants), so the synthesis must carry their world too:
+        // the ordinal enum in the point's file, every anchor site's anchor,
+        // and a body for every append target. This is what proves the shipped
+        // npc_roster entry against its own anchors with no game checkout.
+        foreach (var point in catalog.Extensions)
+        {
+            foreach (var group in point.Sites.GroupBy(s => s.File))
+            {
+                List<string> parts = [];
+                if (group.Key == point.File)
+                    parts.Add($"enum {point.OrdinalEnum} {{\n    SyntheticBase,\n    {point.OrdinalSentinel},\n}}");
+                parts.AddRange(group
+                    .Where(s => s.Kind == ExtensionSiteKind.Anchor)
+                    .Select(s => s.Anchor));
+
+                var text = parts.Count > 0
+                    ? string.Join("\n\n", parts) + "\n"
+                    : group.Key.EndsWith(".gml", StringComparison.Ordinal)
+                        ? "// synthetic append target\n"
+                        : "# synthetic append target\n";
+
+                pristine[group.Key] = pristine.TryGetValue(group.Key, out var existing)
+                    ? existing + "\n" + text
+                    : text;
+            }
+        }
+
         return pristine;
     }
 }
