@@ -38,7 +38,7 @@ version = 2
 [counts]
 hooks = 106
 seams = 116
-engine_fixes = 23
+engine_fixes = 24
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -3513,6 +3513,28 @@ replace = '''
             .set_x(position[0], position[1])
     }'''
 marker  = "mmapi_date_photo_portrait_guard"
+
+# The mailbox renders every letter's sender icon through get_npc_icon, and an
+# unresolved sender (a letter naming an NPC this install does not provide)
+# indexes NPC_PROTOTYPES with undefined and crashes the menu. The guard
+# returns Adeline's icon for an unresolved sender instead, with a logged
+# warn. The engine already drops letters whose whole definition is gone at
+# load, so the sender field is the one hole. Inert on an unmodded install,
+# since every vanilla letter names a real NPC and never reaches the guard.
+[[engine_fix]]
+name    = "npc_icon_fallback_guard"
+file    = "gml/scripts/GameplaySystems/NPCs/NpcUtils.gml"
+anchor  = '''
+function get_npc_icon(npc_id) {
+    if npc_id == NpcId.Seridia {'''
+replace = '''
+function get_npc_icon(npc_id) {
+    if (npc_id == undefined) { // mmapi_npc_icon_fallback_guard
+        warn("MMAPI: an unresolved npc sender reached get_npc_icon - showing a fallback icon");
+        return NPC_PROTOTYPES[NpcId.Adeline].icon_sprite;
+    }
+    if npc_id == NpcId.Seridia {'''
+marker  = "mmapi_npc_icon_fallback_guard"
 
 # --- extension points ----------------------------------------------------------------
 

@@ -204,6 +204,25 @@ The `npc = "luna"` condition ties the line to your NPC, and MOMI rewrites that v
 
 From here, the whole conversation-tree game vocabulary is available for you to design custom conversations.
 
+## Sending Mail
+
+Luna can send the player letters. Letters are fiddle data, so your mod ships them in `fiddle/letters.toml`:
+
+```toml
+[luna_first_letter]
+	npc = "luna"
+	subject_line = "Come Stargaze With Me"
+	local = """Dear [Ari],
+
+The sky over the Eastern Road is supposed to be clear tonight. Come find me if you'd like to watch the stars for a while."""
+	requirements = { reached_date = { season = "spring", day = 22 } }
+```
+
+The `npc` value is the sender, and MOMI rewrites the **short name** to the full **symbol** at install, the same as everywhere else. The letter arrives on the first day its `requirements` pass, once, unless you set `can_repeat = true`. The `[luna_first_letter]` key is your own name for the letter and stays as written.
+
+> [!NOTE]
+> The rewrite covers your own mod's files only. A different mod writing a letter from your custom NPC must spell the full symbol in its `npc` value.
+
 ## Install and Run
 
 Install with MOMI like any other mod. The install log shows the registration being collected and the prototype, schedules, and art being installed. A skipped mod names its reason, most often a missing companion file or a GML problem. See [Troubleshooting](TROUBLESHOOTING.md).

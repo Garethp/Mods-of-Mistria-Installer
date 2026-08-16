@@ -224,6 +224,84 @@ public static class ExtensionCollector
             + "the mod ships its own outfit selector)"));
     }
 
+    // A letter names its sender in an `npc` value the mailbox resolves by
+    // enum member name, and an unresolved sender falls back to a generic
+    // icon at render. Advisory only, because resolution is an install-wide
+    // question and this check sees one install's registrations.
+    public static void CheckLetterSenders(IMod mod, IReadOnlySet<string> validSenders,
+        List<LintFinding> findings)
+    {
+        const string lettersRel = "fiddle/letters.toml";
+        if (!mod.FileExists(lettersRel)) return;
+
+        string text;
+        TomlTable table;
+        try
+        {
+            using var stream = mod.ReadFileAsStream(lettersRel);
+            using var reader = new StreamReader(stream);
+            text = reader.ReadToEnd();
+            table = Toml.ParseDocument(text);
+        }
+        catch (Exception)
+        {
+            return; // malformed toml is the content pipeline's diagnostic to make
+        }
+
+        foreach (var key in table.Keys.Order(StringComparer.Ordinal))
+        {
+            if (key == "default") continue;
+            if (table[key] is not TomlTable letter) continue;
+            if (!letter.TryGetValue("npc", out var raw) || raw is not string sender) continue;
+            if (validSenders.Contains(sender)) continue;
+
+            findings.Add(new LintFinding(mod.GetId(), lettersRel, LineOf(text, key),
+                $"letter '{key}' names sender '{sender}', which is neither a vanilla NPC "
+                + "nor a custom NPC this install registers - the mailbox will show a "
+                + "fallback icon for it"));
+        }
+    }
+
+    // The 1-based line of the letter's [key] header, for the finding.
+    private static int LineOf(string text, string key)
+    {
+        var lines = text.Split('\n');
+        for (var i = 0; i < lines.Length; i++)
+            if (lines[i].TrimStart().StartsWith($"[{key}]", StringComparison.Ordinal))
+                return i + 1;
+        return 0;
+    }
+
+    // The vanilla sender names, read from the npc_roster point's pristine
+    // enum in the native form letters use. Null when the point or its file
+    // is unavailable, which skips the letters advisory rather than
+    // mis-reporting.
+    public static HashSet<string>? NpcNativeNames(SeamCatalog catalog, IPristineSource pristine)
+    {
+        var point = catalog.Extensions.FirstOrDefault(p => p.Id == "npc_roster");
+        if (point is null) return null;
+
+        try
+        {
+            var raw = pristine.Read(point.File);
+            if (raw is null) return null;
+
+            List<SeamProblem> problems = [];
+            var scan = ExtensionExpander.ScanOrdinalEnum(point,
+                StagingText.Norm(StagingText.Decode(raw)), problems);
+            if (scan is null) return null;
+
+            return scan.Members
+                .Where(m => m.Name != point.OrdinalSentinel)
+                .Select(m => ExtensionSymbols.ToNativeName(m.Name))
+                .ToHashSet(StringComparer.Ordinal);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
     // The files a registration must ship alongside itself. A registration
     // wires up identity. The mod supplies the data behind it. For npc_roster
     // the missing-data case is not a degraded NPC but a crash during Setup -

@@ -337,4 +337,51 @@ public class ExtensionCollectorTest
         Assert.That(result.Problems, Has.Count.EqualTo(2));
         Assert.That(result.Registrations, Is.Empty);
     }
+
+    [Test]
+    public void ShouldWarnOnALetterSenderNothingProvides()
+    {
+        var mod = new MockMod(new Dictionary<string, object>
+        {
+            ["fiddle/letters.toml"] = "[hello]\nnpc = \"lunna\"\n",
+        }) { Id = "author.mod" };
+
+        List<LintFinding> findings = [];
+        ExtensionCollector.CheckLetterSenders(mod,
+            new HashSet<string>(StringComparer.Ordinal) { "adeline" }, findings);
+
+        Assert.That(findings, Has.Count.EqualTo(1));
+        Assert.That(findings[0].Message, Does.Contain("'lunna'"));
+        Assert.That(findings[0].Line, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ShouldAcceptVanillaAndRegisteredLetterSenders()
+    {
+        var mod = new MockMod(new Dictionary<string, object>
+        {
+            ["fiddle/letters.toml"] = "[a]\nnpc = \"adeline\"\n\n[b]\nnpc = \"author_mod_luna\"\n",
+        }) { Id = "author.mod" };
+
+        List<LintFinding> findings = [];
+        ExtensionCollector.CheckLetterSenders(mod,
+            new HashSet<string>(StringComparer.Ordinal) { "adeline", "author_mod_luna" }, findings);
+
+        Assert.That(findings, Is.Empty);
+    }
+
+    [Test]
+    public void ShouldReadVanillaSenderNamesFromThePristineEnum()
+    {
+        var catalogText = Catalog.Replace("id   = \"roster\"", "id   = \"npc_roster\"");
+        var catalog = SeamCatalogLoader.Load(Encoding.UTF8.GetBytes(catalogText), "seams.toml");
+        var pristine = new MemoryPristineSource(new Dictionary<string, byte[]>
+        {
+            ["assets/gml/NpcId.gml"] = "enum NpcId {\n    Adeline,\n    BigMoleDude,\n    LEN\n}\n"u8.ToArray(),
+        });
+
+        var names = ExtensionCollector.NpcNativeNames(catalog, pristine);
+
+        Assert.That(names, Is.EquivalentTo(new[] { "adeline", "big_mole_dude" }));
+    }
 }

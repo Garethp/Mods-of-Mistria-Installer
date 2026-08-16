@@ -53,6 +53,19 @@ public class ExtensionLocalNamesTest
     }
 
     [Test]
+    public void ShouldRewriteLetterSenderValuesInFiddleContent()
+    {
+        var (generated, _, _) = Expand(new Dictionary<string, string>
+        {
+            ["fiddle/letters.toml"] = "[luna_hello_letter]\nnpc = \"luna\"\nsubject_line = \"hi\"\n",
+        }, Reg());
+
+        Assert.That(generated["fiddle/letters.toml"], Does.Contain("npc = \"author_mod_luna\""));
+        // the letter key is the author's own name and stays as written
+        Assert.That(generated["fiddle/letters.toml"], Does.Contain("[luna_hello_letter]"));
+    }
+
+    [Test]
     public void ShouldLeaveAFullSymbolFiddleUntouched()
     {
         var (generated, _, hidden) = Expand(new Dictionary<string, string>

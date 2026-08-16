@@ -147,6 +147,42 @@ public class ModInstaller
             var registrationSkips = result.Skipped.Select(s => s.Id).ToHashSet();
             installMods = mods.Where(m => !registrationSkips.Contains(m.GetId())).ToList();
 
+            // The letters advisory. A mod letter whose `npc` names neither a
+            // vanilla NPC nor a registered symbol renders through the mailbox
+            // fallback icon, so say so at install time. Fail-soft on every
+            // side, because an advisory may never block an install.
+            try
+            {
+                using var lettersPristine = new ZipPristineSource(store.BackupPath);
+                var natives = ExtensionCollector.NpcNativeNames(catalog, lettersPristine);
+                if (natives is not null)
+                {
+                    var senders = new HashSet<string>(natives, StringComparer.Ordinal);
+                    senders.UnionWith(registrations.Select(r => r.Symbol));
+                    var localsByMod = registrations
+                        .GroupBy(r => r.ModId)
+                        .ToDictionary(g => g.Key,
+                            g => g.Select(r => r.LocalName).ToHashSet(StringComparer.Ordinal));
+                    foreach (var mod in installMods)
+                    {
+                        var valid = senders;
+                        if (localsByMod.TryGetValue(mod.GetId(), out var locals))
+                        {
+                            valid = new HashSet<string>(senders, StringComparer.Ordinal);
+                            valid.UnionWith(locals);
+                        }
+
+                        List<LintFinding> letterFindings = [];
+                        ExtensionCollector.CheckLetterSenders(mod, valid, letterFindings);
+                        foreach (var finding in letterFindings) Logger.Log($"  ! {finding}");
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.Log($"  letters advisory skipped: {exception.Message}");
+            }
+
             phase("", "Preparing GML layer");
             try
             {

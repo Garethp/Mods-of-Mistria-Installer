@@ -65,15 +65,35 @@ public static class ModLinter
         var manifestErrors = validation.Errors.Select(e => e.Message).ToList();
         var manifestWarnings = validation.Warnings.Select(w => w.Message).ToList();
 
+        // The letters advisory runs for every mod, gml tree or not. Lint sees
+        // this one mod, so the valid set is the vanilla roster plus its own
+        // registrations, and a sender another installed mod registers still
+        // warns here.
+        List<LintFinding> letterFindings = [];
+        var natives = ExtensionCollector.NpcNativeNames(catalog, pristine);
+        if (natives is not null)
+        {
+            var valid = new HashSet<string>(natives, StringComparer.Ordinal);
+            if (ExtensionCollector.HasRegistrations(mod))
+            {
+                var collected = ExtensionCollector.Collect(mod, catalog);
+                valid.UnionWith(collected.Registrations.Select(r => r.Symbol));
+                valid.UnionWith(collected.Registrations.Select(r => r.LocalName));
+            }
+
+            ExtensionCollector.CheckLetterSenders(mod, valid, letterFindings);
+        }
+
         var code = GmlModCollector.Collect(mod);
         if (code is null)
             return new ModLintResult(mod.GetId(), mod.GetVersion(), null, 0, false,
-                manifestErrors, manifestWarnings, [], []);
+                manifestErrors, manifestWarnings, letterFindings, []);
 
         var plan = GmlLayer.Stage(catalog, pristine, [code], gate, options);
 
         return new ModLintResult(mod.GetId(), mod.GetVersion(), code.Symbol, code.GmlFiles.Count,
-            gate is not null, manifestErrors, manifestWarnings, plan.Findings,
+            gate is not null, manifestErrors, manifestWarnings,
+            plan.Findings.Concat(letterFindings).ToList(),
             plan.Excluded.SelectMany(e => e.Reasons).ToList());
     }
 

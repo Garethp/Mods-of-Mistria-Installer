@@ -50,20 +50,29 @@ public static class ExtensionLocalNames
         foreach (var path in mod.GetAllFiles(".toml"))
         {
             var rel = RelativePath(mod, path);
-            if (!rel.StartsWith("t2/", StringComparison.Ordinal)) continue;
+            var isT2 = rel.StartsWith("t2/", StringComparison.Ordinal);
+            // Other fiddle content names the NPC in `npc` values too, most
+            // notably letters. The npc prototype file has its own lane above.
+            var isFiddle = rel.StartsWith("fiddle/", StringComparison.Ordinal)
+                           && !rel.StartsWith("fiddle/npcs/", StringComparison.Ordinal);
+            if (!isT2 && !isFiddle) continue;
 
             var text = mod.ReadFile(path);
             var rewritten = text;
             foreach (var (_, local, symbol) in map)
             {
                 var escaped = Regex.Escape(local);
-                // [luna."6:00am"] and [[luna....]] table headers
-                rewritten = Regex.Replace(rewritten,
-                    $@"(?m)^(\s*\[\[?\s*){escaped}(?=[.\]])", $"${{1}}{symbol}");
-                // luna."6:00am" = ... dotted-assignment keys (the basement form)
-                rewritten = Regex.Replace(rewritten,
-                    $@"(?m)^(\s*){escaped}(?=\."")", $"${{1}}{symbol}");
-                // npc = "luna" condition values
+                if (isT2)
+                {
+                    // [luna."6:00am"] and [[luna....]] table headers
+                    rewritten = Regex.Replace(rewritten,
+                        $@"(?m)^(\s*\[\[?\s*){escaped}(?=[.\]])", $"${{1}}{symbol}");
+                    // luna."6:00am" = ... dotted-assignment keys (the basement form)
+                    rewritten = Regex.Replace(rewritten,
+                        $@"(?m)^(\s*){escaped}(?=\."")", $"${{1}}{symbol}");
+                }
+
+                // npc = "luna" condition and sender values
                 rewritten = Regex.Replace(rewritten,
                     $@"(npc\s*=\s*""){escaped}("")", $"${{1}}{symbol}${{2}}");
             }
