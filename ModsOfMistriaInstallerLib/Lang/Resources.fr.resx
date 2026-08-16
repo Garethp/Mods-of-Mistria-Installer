@@ -136,7 +136,7 @@
     <value>--compile-check doit être "on", "off" ou "require".</value>
   </data>
   <data name="CLILintUsage" xml:space="preserve">
-    <value>--lint nécessite un dossier mod : --lint &lt;dossier mod&gt; [pristine zip]</value>
+    <value>--lint nécessite un dossier mod : --lint &lt;dossier mod&gt; [zip intact]</value>
   </data>
   <data name="CoreLookingForMistriaAt" xml:space="preserve">
     <value>Recherche de Mistria dans {0}</value>
@@ -445,13 +445,13 @@
     <value>Le mod requiert une version minimum incorrecte de MOMI.</value>
   </data>
   <data name="CoreStoreRebuildFailed" xml:space="preserve">
-    <value>Impossible de recompiler {0}. Fields of Mistria est-il lancé ? Fermez-le et essayez de nouveau; l'installation précédente n'a pas été changée.</value>
+    <value>Impossible de recompiler {0}. Fields of Mistria est-il lancé ? Fermez-le puis essayez de nouveau; l'installation précédente n'a pas été changée.</value>
   </data>
   <data name="CoreStoreFlushFailed" xml:space="preserve">
     <value>Impossible de finir d'écrire {0}. Assurez-vous que votre disque ne soit pas plein ou que le fichier ne soit pas en cours d'utilisation par un autre programme (tel qu'un scan antivirus), puis lancez l'installateur de nouveau.</value>
   </data>
   <data name="CoreStoreRestoreFailed" xml:space="preserve">
-    <value>Impossible de restaurer {0}. Fields of Mistria est-il lancé ? Fermez-le et essayez de nouveau.</value>
+    <value>Impossible de restaurer {0}. Fields of Mistria est-il lancé ? Fermez-le puis essayez de nouveau.</value>
   </data>
   <data name="CoreStoreBackupMissing" xml:space="preserve">
     <value>{0} contient une installation antérieure, mais la sauvegarde {1} est introuvable. Veuillez vérifier les fichiers de jeu via Steam puis essayez de nouveau.</value>
