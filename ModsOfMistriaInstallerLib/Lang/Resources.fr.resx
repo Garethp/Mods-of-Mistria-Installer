@@ -132,6 +132,12 @@
   <data name="CLIWarning32Bit" xml:space="preserve">
     <value>Votre système d'exploitation est une version 64-bit, mais vous avez accidentellement téléchargé la version 32-bit de MOMI. Téléchargez la version de MOMI qui ne contient pas &quot;-x86&quot;.</value>
   </data>
+  <data name="CLICompileCheckUsage" xml:space="preserve">
+    <value>--compile-check doit être "on", "off" ou "require".</value>
+  </data>
+  <data name="CLILintUsage" xml:space="preserve">
+    <value>--lint nécessite un dossier mod : --lint &lt;dossier mod&gt; [pristine zip]</value>
+  </data>
   <data name="CoreLookingForMistriaAt" xml:space="preserve">
     <value>Recherche de Mistria dans {0}</value>
   </data>
@@ -354,6 +360,12 @@
   <data name="GUIModHasErrors" xml:space="preserve">
     <value>Ce mod comporte des erreurs et ne sera pas installé</value>
   </data>
+  <data name="GUIModInstalled" xml:space="preserve">
+    <value>Succès de l'installation.</value>
+  </data>
+  <data name="GUIModSkipped" xml:space="preserve">
+    <value>Ce mod a été ignoré lors de l'installation</value>
+  </data>
   <data name="GUIUpdateNagTitle" xml:space="preserve">
     <value>Nouvelle version disponible</value>
   </data>
@@ -432,10 +444,109 @@
   <data name="CoreModRequiresIncorrectVersion" xml:space="preserve">
     <value>Le mod requiert une version minimum incorrecte de MOMI.</value>
   </data>
+  <data name="CoreStoreRebuildFailed" xml:space="preserve">
+    <value>Impossible de recompiler {0}. Fields of Mistria est-il lancé ? Fermez-le et essayez de nouveau; l'installation précédente n'a pas été changée.</value>
+  </data>
+  <data name="CoreStoreFlushFailed" xml:space="preserve">
+    <value>Impossible de finir d'écrire {0}. Assurez-vous que votre disque ne soit pas plein ou que le fichier ne soit pas en cours d'utilisation par un autre programme (tel qu'un scan antivirus), puis lancez l'installateur de nouveau.</value>
+  </data>
+  <data name="CoreStoreRestoreFailed" xml:space="preserve">
+    <value>Impossible de restaurer {0}. Fields of Mistria est-il lancé ? Fermez-le et essayez de nouveau.</value>
+  </data>
+  <data name="CoreStoreBackupMissing" xml:space="preserve">
+    <value>{0} contient une installation antérieure, mais la sauvegarde {1} est introuvable. Veuillez vérifier les fichiers de jeu via Steam puis essayez de nouveau.</value>
+  </data>
+  <data name="CoreStoreUnreadableNoBackup" xml:space="preserve">
+    <value>{0} n'est pas une archive lisible et la sauvegarde {1} est introuvable. Veuillez vérifier les fichiers de jeu via Steam puis essayez de nouveau.</value>
+  </data>
+  <data name="CoreStoreNoArchives" xml:space="preserve">
+    <value>Impossible de trouver {0} ou {1}. Lancez le jeu, ou vérifiez les fichiers de jeu via Steam.</value>
+  </data>
+  <data name="CoreStoreNothingToUninstall" xml:space="preserve">
+    <value>Aucun assets n'a été trouvé en réserve, il n'y a par conséquent rien à restaurer.</value>
+  </data>
+  <data name="CoreInstallSummary" xml:space="preserve">
+    <value>{0} mod(s) installé(s)</value>
+  </data>
+  <data name="CoreInstallSummaryWithSkipped" xml:space="preserve">
+    <value>{0} mod(s) installé(s), {1} ignoré(s)</value>
+  </data>
+  <data name="CoreGameGmlChanged" xml:space="preserve">
+    <value>Le GML du jeu a changé. Impossible d'installer.</value>
+  </data>
+  <data name="CoreModRequiresMissingHooks" xml:space="preserve">
+    <value>Ce mod requiert des hooks que cette version de MOMI ne peut pas fournir: {0}. Mettez MOMI à jour, ou utilisez une version antérieure de ce mod.</value>
+  </data>
+  <data name="CoreManifestRequiresHooksInvalid" xml:space="preserve">
+    <value>La valeur requires_hooks dans le manifest.json doit être un tableau de chaînes de caractères spécifiant le nom des hooks.</value>
+  </data>
+  <data name="CoreSkippedModReason" xml:space="preserve">
+    <value>{0} ignoré : {1}</value>
+  </data>
+  <data name="CoreVerifyNoBackup" xml:space="preserve">
+    <value>Aucune sauvegarde intacte n'a été trouvée dans {0}. Lancez l'installateur une fois pour en créer une, ou vérifiez les fichiers du jeu via Steam.</value>
+  </data>
   <data name="GUIUninstallCompleteText" xml:space="preserve">
     <value>Désinstallation terminée</value>
   </data>
   <data name="GUIUninstallingText" xml:space="preserve">
     <value>Désinstallation</value>
+  </data>
+  <data name="GUIInstallFatalError" xml:space="preserve">
+    <value>Une erreur fatale s'est produite durant l'installation de mods :</value>
+  </data>
+  <data name="GUIUninstallFatalError" xml:space="preserve">
+    <value>Une erreur fatale s'est produite durant la désinstallation de mods :</value>
+  </data>
+  <data name="CoreCosmeticsFileHasNoCosmetics" xml:space="preserve">
+    <value>Le fichier cosmetics ne comporte aucun cosmétique.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoUiSlot" xml:space="preserve">
+    <value>Le cosmétique {0} n'a aucun ui_slot défini.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoName" xml:space="preserve">
+    <value>Le cosmétique n'a pas de nom.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSlotWrong" xml:space="preserve">
+    <value>Le cosmétique {0} a une valeur ui_slot incorrecte. Il doit avoir une valeur parmi : {1}.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoSubCategory" xml:space="preserve">
+    <value>Le cosmétique {0} n'a aucun ui_sub_category défini.</value>
+  </data>
+  <data name="CoreCosmeticUiSubCategoryWrong" xml:space="preserve">
+    <value>Le cosmétique {0} a une valeur ui_sub_category incorrecte. Il doit avoir une valeur parmi : {1}.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoCosmeticSprites" xml:space="preserve">
+    <value>Le cosmétique {0} ne comporte pas de fichiers cosmetic_sprites.</value>
+  </data>
+  <data name="CoreErrorCosmeticPriceOverrideNegative" xml:space="preserve">
+    <value>Le remplacement du prix du cosmétique {0} doit être un nombre positif.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoLut" xml:space="preserve">
+    <value>Le cosmétique {0} n'a pas de lut. Vous devez définir soit un lut, soit un lut_sprite.</value>
+  </data>
+  <data name="CoreErrorCosmeticNoUiSprites" xml:space="preserve">
+    <value>Le cosmétique {0} ne comporte ni ui_sprites.ui, ni ui_sprites.asset. Vous devez en définir un parmi les deux.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpritesAllDefined" xml:space="preserve">
+    <value>Le cosmétique {0} comporte un ui_sprites.ui et un ui_sprites.asset. Il ne peut en avoir qu'un parmi les deux.</value>
+  </data>
+  <data name="CoreErrorCosmeticSpriteNoOutline" xml:space="preserve">
+    <value>Le cosmétique {0} ne comporte aucun ui_sprites.outline.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpriteNoBody" xml:space="preserve">
+    <value>Le cosmétique {0} ne comporte aucun ui_sprites.body.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpritesNoMerged" xml:space="preserve">
+    <value>Le cosmétique {0} ne comporte aucun ui_sprites.merged.</value>
+  </data>
+  <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve">
+    <value>Le cosmétique {0} ne comporte aucun ui_sprites.merged_outline.</value>
+  </data>
+  <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve">
+    <value>Le cosmétique {0} a une valeur cosmetic_sprites incorrecte ({1}). Il doit avoir une valeur parmi : {2}.</value>
+  </data>
+  <data name="GUIErrorWrongMistriaVersion" xml:space="preserve">
+    <value>Il semble que le dossier Fields of Mistria sélectionné est correct, mais il ne contient aucun fichier assets.zip. Cette version de l'installateur ne fonctionne pas avec d'anciennes versions de Fields of Mistria. Veillez à ce que votre installation est correcte et assurez-vous d'avoir la version de Fields of Mistria la plus récente.</value>
   </data>
 </root>
