@@ -1,5 +1,57 @@
 # Changelog
 
+## 0.1.3 — Unreleased
+
+- Added duplicate-source detection for the same logical mod when it exists as
+  an extracted folder and as a ZIP/RAR archive; installation is blocked until
+  only one copy is selected.
+- Profiles now remember the physical source selected for duplicate mods, so
+  AIM does not select both the folder and archive copy after restarting.
+- Added an installed-state indicator that survives restart and follows the
+  actual installed source; removing that source no longer causes AIM to mark a
+  different copy as installed.
+- Reduced post-install archive work by reusing the recorded installation state
+  instead of performing an unnecessary full archive rescan.
+- Added a self-hosted archive worker fallback. Single-file builds can perform
+  archive operations without shipping a second executable, while portable
+  packages may still use the separate worker.
+- Improved worker discovery from the actual application directory and stopped
+  the worker when AIM closes.
+- Added translated duplicate-copy, already-installed, conflict, hotkey and
+  legacy-GML messages for all supported interface languages.
+- Clarified that legacy GML is only a compatibility warning: it may prevent the
+  game from starting or cause a crash, but AIM does not block it automatically.
+- Added an experimental, non-blocking compatibility scan at mod-list startup
+  for GML, hook and loading-screen signatures associated with older game
+  versions. It is advisory only and may need updates after future game patches.
+- Compatibility warnings are calculated off the UI thread and are visible
+  before installation; hovering the warning icon shows the full reason.
+- Legacy GML warnings are shown for all discovered mods without disabling
+  selection or installation; selected-mod conflicts remain a separate check.
+- Fixed warning and error rows so compatibility messages display their icons
+  and details instead of remaining hidden in the plain mod row.
+- Compatibility-signature checks are now independent of the slower shared-file
+  and hotkey scans, so their warning can appear immediately after selection.
+- Added selection-time asset conflict detection for folders, ZIPs and RARs;
+  mods that replace the same destination files now show a warning before
+  installation.
+- Added non-blocking warnings for likely keyboard-shortcut conflicts, including
+  F6/F8 and the Auxiliary Bag default F1-F7 bindings.
+- Documentation files such as README, text and license files are ignored when
+  checking shared destinations.
+- Clarified that shared localization metadata does not automatically mean that
+  only one language mod can be installed; duplicate entries may still follow
+  load order.
+- Added optional language-specific manifest fields such as `name_bg` and
+  `description_bg`, with the standard fields retained as a fallback.
+- Recomputed conflict warnings after startup, installation and uninstallation
+  on a background task instead of persisting potentially stale warnings.
+
+Compatibility note: `enabledSources` is an AIM profile extension. AIM can read
+older MOMI profiles, but an older MOMI version may ignore or remove this field
+when it rewrites the profile. In that case AIM falls back to selecting one
+physical copy deterministically.
+
 ## 0.1.2 — AIM
 
 - Updated the application and CLI projects to .NET 10 with a shared version source.

@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Diagnostics;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -23,6 +24,7 @@ public sealed record RecordedInstallState(
 public class AssetsStore(string fomLocation)
 {
     private ZipArchive? _archive;
+    private StreamingZipFileModifier? _streamingModifier;
     private string? _temporaryPath;
 
     public string LivePath { get; } = Path.Combine(fomLocation, "assets.zip");
@@ -100,6 +102,14 @@ public class AssetsStore(string fomLocation)
 
         try
         {
+            if (IsTruthy(Environment.GetEnvironmentVariable("AIM_DIAGNOSTICS_STREAMING_REBUILD")))
+            {
+                SafeDelete(TemporaryPath);
+                _temporaryPath = TemporaryPath;
+                _streamingModifier = new StreamingZipFileModifier(BackupPath, TemporaryPath);
+                return _streamingModifier;
+            }
+
             File.Copy(BackupPath, TemporaryPath, true);
             _temporaryPath = TemporaryPath;
             _archive = ZipFile.Open(TemporaryPath, ZipArchiveMode.Update);
@@ -116,27 +126,68 @@ public class AssetsStore(string fomLocation)
 
     public void Commit(IEnumerable<InstalledModState> installedMods)
     {
-        if (_archive is null || _temporaryPath is null)
+        if ((_archive is null && _streamingModifier is null) || _temporaryPath is null)
             throw new InvalidOperationException("Commit without BeginRebuild");
 
+        var commitStopwatch = Stopwatch.StartNew();
         try
         {
-            _archive.Dispose();
-            _archive = null;
+            StoreDiagnosticSnapshot("before archive close");
+            if (_streamingModifier is not null)
+            {
+                _streamingModifier.FinalizeArchive();
+                _streamingModifier = null;
+            }
+            else
+            {
+                _archive!.Dispose();
+                _archive = null;
+            }
+            StoreDiagnostic($"Commit: archive closed at {commitStopwatch.ElapsedMilliseconds} ms");
+            StoreDiagnosticSnapshot("after archive close");
 
+            var validationStopwatch = Stopwatch.StartNew();
+            StoreDiagnosticSnapshot("before archive validation");
             ValidateArchive(_temporaryPath);
+            validationStopwatch.Stop();
+            StoreDiagnostic($"Commit: archive validation={validationStopwatch.ElapsedMilliseconds} ms");
+            StoreDiagnosticSnapshot("after archive validation");
+
+            var pristineHashStopwatch = Stopwatch.StartNew();
+            StoreDiagnosticSnapshot("before pristine SHA-256");
             var pristineHash = Sha256File(BackupPath);
+            pristineHashStopwatch.Stop();
+            StoreDiagnostic($"Commit: pristine SHA-256={pristineHashStopwatch.ElapsedMilliseconds} ms");
+            StoreDiagnosticSnapshot("after pristine SHA-256");
+
+            var generatedHashStopwatch = Stopwatch.StartNew();
+            StoreDiagnosticSnapshot("before generated SHA-256");
             var generatedHash = Sha256File(_temporaryPath);
+            generatedHashStopwatch.Stop();
+            StoreDiagnostic($"Commit: generated SHA-256={generatedHashStopwatch.ElapsedMilliseconds} ms");
+            StoreDiagnosticSnapshot("after generated SHA-256");
+
             var stateText = SerializeState(pristineHash, generatedHash, installedMods);
             Toml.ParseToml(stateText);
             var stateTemp = StatePath + ".tmp";
             SafeDelete(stateTemp);
             WriteExclusiveReplacement(stateTemp, stateText);
+            StoreDiagnostic($"Commit: state prepared at {commitStopwatch.ElapsedMilliseconds} ms");
+            StoreDiagnosticSnapshot("after state prepared");
 
+            var liveReplaceStopwatch = Stopwatch.StartNew();
+            StoreDiagnosticSnapshot("before live archive replacement");
             AtomicReplace(_temporaryPath, LivePath);
+            liveReplaceStopwatch.Stop();
             _temporaryPath = null;
+            StoreDiagnostic($"Commit: live archive replacement={liveReplaceStopwatch.ElapsedMilliseconds} ms");
+            StoreDiagnosticSnapshot("after live archive replacement");
 
+            var stateReplaceStopwatch = Stopwatch.StartNew();
             AtomicReplace(stateTemp, StatePath);
+            stateReplaceStopwatch.Stop();
+            commitStopwatch.Stop();
+            StoreDiagnostic($"Commit: state replacement={stateReplaceStopwatch.ElapsedMilliseconds} ms, total={commitStopwatch.ElapsedMilliseconds} ms");
         }
         catch (IOException exception) when (_archive is null)
         {
@@ -155,7 +206,9 @@ public class AssetsStore(string fomLocation)
     public void Abort()
     {
         try { _archive?.Dispose(); } catch { /* best effort; live is untouched */ }
+        try { _streamingModifier?.Abort(); } catch { /* best effort; live is untouched */ }
         _archive = null;
+        _streamingModifier = null;
         CleanupTemporary();
     }
 
@@ -472,22 +525,70 @@ public class AssetsStore(string fomLocation)
 
     private static void AtomicReplace(string source, string destination)
     {
-        try
+        const int maxAttempts = 15;
+        IOException? lastIOException = null;
+
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            if (File.Exists(destination))
-                File.Replace(source, destination, null, ignoreMetadataErrors: true);
-            else
+            try
+            {
+                if (File.Exists(destination))
+                    File.Replace(source, destination, null, ignoreMetadataErrors: true);
+                else
+                    File.Move(source, destination);
+                return;
+            }
+            catch (PlatformNotSupportedException)
+            {
+                File.Move(source, destination, overwrite: true);
+                return;
+            }
+            catch (IOException) when (!File.Exists(destination))
+            {
                 File.Move(source, destination);
+                return;
+            }
+            catch (IOException exception)
+            {
+                lastIOException = exception;
+                if (attempt == maxAttempts) break;
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
         }
-        catch (PlatformNotSupportedException)
-        {
-            File.Move(source, destination, overwrite: true);
-        }
-        catch (IOException) when (!File.Exists(destination))
-        {
-            File.Move(source, destination);
-        }
+
+        throw new IOException(
+            $"Could not replace '{destination}' after {maxAttempts} attempts because another process kept the file locked.",
+            lastIOException);
     }
+
+    private static void StoreDiagnostic(string message)
+    {
+        if (DiagnosticsEnabled())
+            Logger.Log($"[diagnostic] {message}");
+    }
+
+    private static void StoreDiagnosticSnapshot(string label)
+    {
+        if (!DiagnosticsEnabled()) return;
+
+        using var process = Process.GetCurrentProcess();
+        process.Refresh();
+        var managed = GC.GetTotalMemory(forceFullCollection: false) / 1024d / 1024d;
+        var rss = process.WorkingSet64 / 1024d / 1024d;
+        var privateBytes = process.PrivateMemorySize64 / 1024d / 1024d;
+        StoreDiagnostic($"Commit metrics [{label}]: managed={managed:0} MB, rss={rss:0} MB, private={privateBytes:0} MB");
+    }
+
+    private static bool DiagnosticsEnabled()
+    {
+        var enabled = Environment.GetEnvironmentVariable("AIM_DIAGNOSTICS");
+        return enabled is "1" or "true" or "on";
+    }
+
+    private static bool IsTruthy(string? value) =>
+        value is not null && (value.Equals("1", StringComparison.OrdinalIgnoreCase)
+                              || value.Equals("true", StringComparison.OrdinalIgnoreCase)
+                              || value.Equals("on", StringComparison.OrdinalIgnoreCase));
 
     private void CleanupTemporary()
     {

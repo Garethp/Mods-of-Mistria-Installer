@@ -47,6 +47,7 @@
   <data name="GUIInstallFatalError" xml:space="preserve"><value>Инсталирането се провали; архивът не беше променен:</value></data>
   <data name="GUIUninstallFatalError" xml:space="preserve"><value>Деинсталирането се провали; архивът не беше променен:</value></data>
   <data name="GUIModInstalled" xml:space="preserve"><value>Инсталирането завърши успешно.</value></data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve"><value>Вече е инсталиран.</value></data>
   <data name="GUIModSkipped" xml:space="preserve"><value>Този мод беше пропуснат при инсталирането</value></data>
   <data name="GUIErrorWrongMistriaVersion" xml:space="preserve"><value>Избраната папка изглежда е правилната, но в нея няма assets.zip. Тази версия на инсталатора не работи със стари версии на Fields of Mistria.</value></data>
   <data name="GUINewProfile" xml:space="preserve"><value>Нов профил</value></data>
@@ -96,6 +97,22 @@
   <data name="GUIPhaseInstallingOutfits" xml:space="preserve"><value>Инсталиране на облекла</value></data>
   <data name="GUIPhaseInstallingFurniture" xml:space="preserve"><value>Инсталиране на мебели</value></data>
   <data name="GUIModHasWarnings" xml:space="preserve"><value>Този мод има предупреждения</value></data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve"><value>Открити са няколко копия на този мод. Изберете само едно копие:
+{0}</value></data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve"><value>Инсталацията е спряна: избрани са няколко копия на един и същ мод. Изберете само едно копие за всеки мод.</value></data>
+  <data name="GUIModConflicts" xml:space="preserve"><value>Избраните модове може да си противоречат:
+{0}</value></data>
+  <data name="GUIModFileConflicts" xml:space="preserve"><value>Избраните модове споделят едни и същи файлове. AIM показва как се обработва всеки от тях:
+{0}</value></data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>Внимание: Този мод съдържа стар GML код без декларирани hook-ове. Съвместимостта с текущата версия на играта не може да бъде потвърдена; модът може да е остарял и да попречи на играта да стартира или да причини срив. AIM няма да го блокира автоматично.</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>Избраните модове може да използват един и същ клавиш. Това е само предупреждение; при нужда провери настройките им:
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value> (може да се пренастрои)</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>Инсталацията е спряна: избраните модове заменят един и същ ресурс. Оставете избран само един от конфликтните модове.</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>Замяна на един и същ ресурс; редът на модовете определя кой ще се използва.</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>Сливащи се метаданни; еднакви записи все пак може да бъдат заменени според реда на модовете.</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>Споделени локализационни метаданни; тези модове може да работят заедно, но еднаквите записи могат да се заменят според реда на модовете.</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>Споделен файл; обработката зависи от типа му.</value></data>
   <data name="GUIModHasErrors" xml:space="preserve"><value>Този мод има грешки</value></data>
   <data name="GUILanguageRussian" xml:space="preserve"><value>Руски</value></data>
   <data name="GUILanguageIndonesian" xml:space="preserve"><value>Индонезийски</value></data>
@@ -218,4 +235,6 @@
   <data name="CoreInstallSummary" xml:space="preserve"><value>Инсталирани модове: {0}</value></data>
   <data name="CoreInstallSummaryWithSkipped" xml:space="preserve"><value>Инсталирани модове: {0}; пропуснати: {1}</value></data>
   <data name="GUILanguagePolish" xml:space="preserve"><value>Полски</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>Внимание: Този мод съдържа познат признак за съвместимост от преди версия 1.0.3. Може да е остарял и да попречи на играта да стартира или да причини срив. AIM няма да го блокира автоматично.</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>

@@ -46,9 +46,20 @@ public class ProfileManager
     public (List<string> EnabledMods, List<string> LoadOrder) GetCurrentProfile() =>
         GetProfile(CurrentProfileName);
 
+    public List<string> GetCurrentProfileEnabledSources()
+    {
+        var profile = GetProfileObject(CurrentProfileName);
+        return (profile["enabledSources"] as JArray ?? [])
+            .Select(t => t.ToString()).ToList();
+    }
+
     // ── Mutating operations ───────────────────────────────────────────────────────
 
     public void SaveProfile(string name, List<string> enabledMods, List<string> loadOrder)
+        => SaveProfile(name, enabledMods, loadOrder, null);
+
+    public void SaveProfile(string name, List<string> enabledMods, List<string> loadOrder,
+        List<string>? enabledSources)
     {
         EnsureProfilesObject();
         var profiles = (JObject)_data["profiles"]!;
@@ -56,12 +67,17 @@ public class ProfileManager
         {
             ["enabledMods"] = new JArray(enabledMods),
             ["loadOrder"]   = new JArray(loadOrder),
+            ["enabledSources"] = new JArray(enabledSources ?? []),
         };
         Save();
     }
 
     public void SaveCurrentProfile(List<string> enabledMods, List<string> loadOrder) =>
         SaveProfile(CurrentProfileName, enabledMods, loadOrder);
+
+    public void SaveCurrentProfile(List<string> enabledMods, List<string> loadOrder,
+        List<string> enabledSources) =>
+        SaveProfile(CurrentProfileName, enabledMods, loadOrder, enabledSources);
 
     public void SwitchProfile(string name)
     {
@@ -128,6 +144,25 @@ public class ProfileManager
     public static List<IMod> SortByLoadOrder(List<IMod> allMods, List<string> preferredOrder)
     {
         if (preferredOrder.Count == 0) return allMods;
+
+        // A logical Mod ID is intentionally shared by folder/ZIP/RAR copies.
+        // Do not let the ID-keyed dependency graph collapse those physical
+        // copies into one UI row. They keep the user's preferred ID order and
+        // retain their original relative order within the duplicate group.
+        if (allMods.GroupBy(m => m.GetId(), StringComparer.OrdinalIgnoreCase)
+                   .Any(group => group.Count() > 1))
+        {
+            var ranks = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            for (var i = 0; i < preferredOrder.Count; i++)
+                ranks.TryAdd(preferredOrder[i], i);
+
+            return allMods
+                .Select((mod, index) => (mod, index))
+                .OrderBy(item => ranks.TryGetValue(item.mod.GetId(), out var rank) ? rank : int.MaxValue)
+                .ThenBy(item => item.index)
+                .Select(item => item.mod)
+                .ToList();
+        }
 
         var byId = new Dictionary<string, IMod>(StringComparer.OrdinalIgnoreCase);
         foreach (var m in allMods) byId.TryAdd(m.GetId(), m);

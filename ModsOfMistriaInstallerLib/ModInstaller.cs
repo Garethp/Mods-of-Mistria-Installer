@@ -185,6 +185,16 @@ public class ModInstaller
         phase("", LocalizedPhase("GUISavingAtlases"));
         atlasUtils.Flush();
 
+        if (IsTruthy(Environment.GetEnvironmentVariable("AIM_DIAGNOSTICS_FORCE_GC_BEFORE_COMMIT")))
+        {
+            var before = GC.GetTotalMemory(forceFullCollection: false);
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+            GC.WaitForPendingFinalizers();
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+            var after = GC.GetTotalMemory(forceFullCollection: true);
+            Logger.Log($"[diagnostic] Forced GC before archive commit: managed={before / 1024d / 1024d:0} MB -> {after / 1024d / 1024d:0} MB");
+        }
+
         phase("", LocalizedPhase("GUIWritingGameArchive"));
             store.Commit(installMods.Select(mod => new InstalledModState(mod.GetId(), mod.GetVersion())));
 
@@ -204,6 +214,11 @@ public class ModInstaller
             throw;
         }
     }
+
+    private static bool IsTruthy(string? value) =>
+        value is not null && (value.Equals("1", StringComparison.OrdinalIgnoreCase)
+                              || value.Equals("true", StringComparison.OrdinalIgnoreCase)
+                              || value.Equals("on", StringComparison.OrdinalIgnoreCase));
 
     private GmlLayerPlan StageGmlLayer(AssetsStore store, List<GmlModCode> gmlMods,
         GmlLayerOptions? gmlOptions, CompileGateMode gateMode)

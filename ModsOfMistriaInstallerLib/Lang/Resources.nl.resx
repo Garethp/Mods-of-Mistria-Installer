@@ -543,4 +543,23 @@ Downloadpagina's openen in de browser?</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>AIM-installatie gedetecteerd, maar de versies van geïnstalleerde mods zijn niet beschikbaar.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>De geïnstalleerde modset of versie verschilt van dit profiel. Aanbevolen: eerst verwijderen en daarna installeren. Installatie kan ook opnieuw worden opgebouwd vanuit de ongewijzigde back-up.</value></data>
   <data name="GUILanguagePolish" xml:space="preserve"><value>Poolse taal</value></data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve"><value>Er zijn meerdere kopieën van deze mod gevonden. Laat slechts één kopie geselecteerd:
+{0}</value></data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve"><value>Installatie gestopt: meerdere kopieën van dezelfde mod zijn geselecteerd. Laat voor elke mod slechts één kopie geselecteerd.</value></data>
+  <data name="GUIModConflicts" xml:space="preserve"><value>De geselecteerde mods kunnen conflicteren:
+{0}</value></data>
+  <data name="GUIModFileConflicts" xml:space="preserve"><value>De geselecteerde mods gebruiken dezelfde doelbestanden. AIM laat zien hoe elk bestand wordt verwerkt:
+{0}</value></data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>Waarschuwing: Deze mod bevat verouderde GML-code zonder gedeclareerde hooks. Compatibiliteit met de huidige gameversie kan niet worden gecontroleerd; de mod is mogelijk verouderd en kan voorkomen dat de game start of een crash veroorzaken. AIM blokkeert de mod niet automatisch.</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>Deze geselecteerde mods gebruiken mogelijk dezelfde sneltoets. Dit is alleen een waarschuwing; controleer indien nodig hun instellingen:
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value> (mogelijk opnieuw toewijsbaar)</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>Installatie gestopt: de geselecteerde mods vervangen hetzelfde asset. Laat slechts één van de conflicterende mods geselecteerd.</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>Vervangt hetzelfde asset; de laadvolgorde bepaalt welke wordt gebruikt.</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>Samenvoegbare metadata; dubbele vermeldingen kunnen nog steeds worden overschreven door de laadvolgorde.</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>Gedeelde lokalisatiemetadata; deze mods kunnen samen werken, maar dubbele vermeldingen kunnen worden overschreven door de laadvolgorde.</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>Gedeelde bestemming; de verwerking hangt af van het bestandstype.</value></data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve"><value>Al geïnstalleerd.</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>Waarschuwing: Deze mod bevat een bekende compatibiliteitssignatuur van vóór versie 1.0.3. De mod is mogelijk verouderd en kan voorkomen dat de game start of een crash veroorzaken. AIM blokkeert de mod niet automatisch.</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>

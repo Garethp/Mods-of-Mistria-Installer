@@ -8,9 +8,18 @@ public interface IMod
 
     public string GetName();
 
+    public string GetDisplayName(string? languageCode) => GetName();
+
+    public string GetDisplayDescription(string? languageCode) => "";
+
     public string GetVersion();
 
     public string GetLocation();
+
+    // Physical source that supplied this mod. Unlike GetLocation(), this is
+    // populated for archive-backed mods too and is used to distinguish two
+    // copies with the same logical author/name ID.
+    public string GetSourcePath();
 
     public string GetMinimumInstallerVersion();
 

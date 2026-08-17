@@ -218,4 +218,23 @@
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>存档版本不可用。</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>游戏存档与 AIM 上次管理的版本不同。</value></data>
   <data name="GUILanguagePolish" xml:space="preserve"><value>波兰语</value></data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve"><value>发现了此模组的多个副本。请只选择一个副本：
+{0}</value></data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve"><value>安装已停止：选中了同一模组的多个副本。每个模组只能选择一个副本。</value></data>
+  <data name="GUIModConflicts" xml:space="preserve"><value>选中的模组可能存在冲突：
+{0}</value></data>
+  <data name="GUIModFileConflicts" xml:space="preserve"><value>选中的模组使用了相同的目标文件。AIM 将显示每个文件的处理方式：
+{0}</value></data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>警告：此模组包含未声明钩子的旧版 GML 代码。无法验证它与当前游戏版本的兼容性；它可能已经过时，可能导致游戏无法启动或崩溃。AIM 不会自动阻止它。</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>这些选中的模组可能使用相同的键盘快捷键。这只是警告；如有需要，请检查它们的设置：
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value>（可能可以重新绑定）</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>安装已停止：选中的模组会替换同一资源。请只选择一个冲突的模组。</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>替换同一资源；加载顺序决定使用哪一个。</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>可合并的元数据；重复条目仍可能根据加载顺序被覆盖。</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>共享的本地化元数据；这些模组可能可以一起运行，但重复条目可能根据加载顺序被覆盖。</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>共享目标；处理方式取决于文件类型。</value></data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve"><value>已安装。</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>警告：此模组包含已知的 1.0.3 之前版本兼容性特征。它可能已经过时，可能导致游戏无法启动或崩溃。AIM 不会自动阻止它。</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>

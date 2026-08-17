@@ -218,4 +218,23 @@ Buka halaman unduhan di browser?</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Versi arsip tidak tersedia.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>Arsip game berbeda dari versi yang terakhir dikelola AIM.</value></data>
   <data name="GUILanguagePolish" xml:space="preserve"><value>Polandia</value></data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve"><value>Ditemukan beberapa salinan mod ini. Pilih hanya satu salinan:
+{0}</value></data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve"><value>Instalasi dihentikan: beberapa salinan mod yang sama dipilih. Pilih hanya satu salinan untuk setiap mod.</value></data>
+  <data name="GUIModConflicts" xml:space="preserve"><value>Mod yang dipilih mungkin mengalami konflik:
+{0}</value></data>
+  <data name="GUIModFileConflicts" xml:space="preserve"><value>Mod yang dipilih menggunakan file tujuan yang sama. AIM akan menunjukkan cara setiap file ditangani:
+{0}</value></data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>Peringatan: Mod ini berisi kode GML lama tanpa hook yang dideklarasikan. Kompatibilitas dengan versi game saat ini tidak dapat diverifikasi; mod ini mungkin sudah usang dan dapat mencegah game dimulai atau menyebabkan crash. AIM tidak akan memblokirnya secara otomatis.</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>Mod yang dipilih mungkin menggunakan pintasan keyboard yang sama. Ini hanya peringatan; periksa pengaturannya jika diperlukan:
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value> (mungkin dapat diubah)</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>Instalasi dihentikan: mod yang dipilih mengganti aset yang sama. Pilih hanya satu mod yang berkonflik.</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>Mengganti aset yang sama; urutan pemuatan menentukan mana yang digunakan.</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>Metadata dapat digabungkan; entri duplikat tetap dapat ditimpa berdasarkan urutan pemuatan.</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>Metadata pelokalan bersama; mod ini mungkin dapat bekerja bersama, tetapi entri duplikat dapat ditimpa berdasarkan urutan pemuatan.</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>Tujuan bersama; penanganannya bergantung pada jenis file.</value></data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve"><value>Sudah terpasang.</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>Peringatan: Mod ini berisi tanda kompatibilitas yang diketahui berasal dari sebelum versi 1.0.3. Mod ini mungkin sudah usang dan dapat mencegah game dimulai atau menyebabkan crash. AIM tidak akan memblokirnya secara otomatis.</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>

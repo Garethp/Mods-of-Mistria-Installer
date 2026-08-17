@@ -80,7 +80,21 @@ public sealed class LocalizedTexts : ObservableObject
     public string GUICanCreateModsFolder => T("GUICanCreateModsFolder");
     public string GUIErrorWrongMistriaVersion => T("GUIErrorWrongMistriaVersion");
     public string GUIModHasWarnings => T("GUIModHasWarnings");
+    public string GUIModDuplicateCopies => T("GUIModDuplicateCopies");
+    public string GUIDuplicateModInstallBlocked => T("GUIDuplicateModInstallBlocked");
+    public string GUIModConflicts => T("GUIModConflicts");
+    public string GUIModFileConflicts => T("GUIModFileConflicts");
+    public string GUIModLegacyGml => T("GUIModLegacyGml");
+    public string GUIModLegacyGamePatch => T("GUIModLegacyGamePatch");
+    public string GUIModLegacyGamePatchError => T("GUIModLegacyGamePatchError");
+    public string GUIModHotkeyConflicts => T("GUIModHotkeyConflicts");
+    public string GUIHotkeyRebindable => T("GUIHotkeyRebindable");
+    public string GUIFileConflictReplacement => T("GUIFileConflictReplacement");
+    public string GUIFileConflictMerge => T("GUIFileConflictMerge");
+    public string GUIFileConflictLocalization => T("GUIFileConflictLocalization");
+    public string GUIFileConflictShared => T("GUIFileConflictShared");
     public string GUIModHasErrors => T("GUIModHasErrors");
     public string GUIModSkipped => T("GUIModSkipped");
     public string GUIModInstalled => T("GUIModInstalled");
+    public string GUIModAlreadyInstalled => T("GUIModAlreadyInstalled");
 }

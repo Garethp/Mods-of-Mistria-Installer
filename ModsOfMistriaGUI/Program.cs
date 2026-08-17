@@ -12,6 +12,12 @@ public static class Program
     [STAThread]
     public static void Main(string[] args)
     {
+        if (Garethp.ModsOfMistriaInstallerLib.Worker.ArchiveWorkerRunner.IsWorkerInvocation(args))
+        {
+            Garethp.ModsOfMistriaInstallerLib.Worker.ArchiveWorkerRunner.RunAsync(args).GetAwaiter().GetResult();
+            return;
+        }
+
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
     }

@@ -1,9 +1,27 @@
 using Garethp.ModsOfMistriaInstallerLib;
+using ModsOfMistriaInstallerLibTests.Fixtures;
 
 namespace ModsOfMistriaInstallerLibTests;
 
 public class ProfileManagerTest
 {
+    [Test]
+    public void LoadOrderDoesNotCollapsePhysicalCopiesWithTheSameId()
+    {
+        var first = new MockMod(new List<string>()) { Id = "same.mod", DirName = "first.zip" };
+        var second = new MockMod(new List<string>()) { Id = "same.mod", DirName = "second" };
+        var other = new MockMod(new List<string>()) { Id = "other.mod", DirName = "other" };
+
+        var sorted = ProfileManager.SortByLoadOrder(
+            [first, second, other],
+            ["same.mod", "other.mod"]);
+
+        Assert.That(sorted, Has.Count.EqualTo(3));
+        Assert.That(sorted[0], Is.SameAs(first));
+        Assert.That(sorted[1], Is.SameAs(second));
+        Assert.That(sorted[2], Is.SameAs(other));
+    }
+
     [Test]
     public void SavedLoadOrderSurvivesManagerReloadWithoutReplacingModIds()
     {

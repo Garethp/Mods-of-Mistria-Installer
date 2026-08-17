@@ -218,4 +218,23 @@
   <data name="CoreErrorCosmeticUiSpritesNoMergedOutline" xml:space="preserve"><value>El cosmético {0} no tiene ui_sprites.merged_outline.</value></data>
   <data name="CoreErrorCosmeticCosmeticSpritesWrong" xml:space="preserve"><value>El cosmético {0} tiene el valor incorrecto {1} para cosmetic_sprites. Debe ser uno de: {2}.</value></data>
   <data name="GUILanguagePolish" xml:space="preserve"><value>Polaco</value></data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve"><value>Se encontraron varias copias de este mod. Deja seleccionada solo una copia:
+{0}</value></data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve"><value>Instalación detenida: hay varias copias del mismo mod seleccionadas. Deja seleccionada solo una copia de cada mod.</value></data>
+  <data name="GUIModConflicts" xml:space="preserve"><value>Los mods seleccionados pueden entrar en conflicto:
+{0}</value></data>
+  <data name="GUIModFileConflicts" xml:space="preserve"><value>Los mods seleccionados usan los mismos archivos de destino. AIM mostrará cómo se gestiona cada uno:
+{0}</value></data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>Advertencia: Este mod contiene código GML antiguo sin hooks declarados. No se puede verificar su compatibilidad con la versión actual del juego; puede estar desactualizado e impedir que el juego se inicie o provocar un cierre inesperado. AIM no lo bloqueará automáticamente.</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>Estos mods seleccionados pueden usar el mismo atajo de teclado. Esto es solo una advertencia; revisa sus ajustes si es necesario:
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value> (puede reasignarse)</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>Instalación detenida: los mods seleccionados reemplazan el mismo recurso. Deja seleccionado solo uno de los mods en conflicto.</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>Reemplaza el mismo recurso; el orden de carga determina cuál se usa.</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>Metadatos combinables; las entradas duplicadas aún pueden sobrescribirse según el orden de carga.</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>Metadatos de localización compartidos; estos mods pueden funcionar juntos, pero las entradas duplicadas pueden sobrescribirse según el orden de carga.</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>Destino compartido; la gestión depende del tipo de archivo.</value></data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve"><value>Ya instalado.</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>Advertencia: Este mod contiene una firma conocida de compatibilidad anterior a la versión 1.0.3. Puede estar desactualizado e impedir que el juego se inicie o provocar un cierre inesperado. AIM no lo bloqueará automáticamente.</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>

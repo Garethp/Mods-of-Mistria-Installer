@@ -12,10 +12,13 @@
     </Design.DataContext>
     <Grid HorizontalAlignment="Stretch">
         <WrapPanel IsVisible="{Binding ShowPlainRow}">
-            <CheckBox IsEnabled="{Binding !InError}"
-                      IsChecked="{Binding Enabled}">
-                <TextBlock Text="{Binding Full}" />
-            </CheckBox>
+                <CheckBox IsEnabled="{Binding !InError}"
+                          IsChecked="{Binding Enabled}">
+                    <ToolTip.Tip>
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" MaxWidth="520" />
+                    </ToolTip.Tip>
+                    <TextBlock Text="{Binding Full}" />
+                </CheckBox>
         </WrapPanel>
 
         <Expander IsVisible="{Binding ShowStatusRow}"
@@ -53,13 +56,18 @@
                 <WrapPanel>
                     <CheckBox IsEnabled="{Binding !InError}"
                               IsChecked="{Binding Enabled}">
+                        <ToolTip.Tip>
+                            <TextBlock Text="{Binding Description}" TextWrapping="Wrap" MaxWidth="520" />
+                        </ToolTip.Tip>
                         <TextBlock Text="{Binding Full}" />
                     </CheckBox>
 
                     <Image Height="16" Margin="5 0 0 0"
                            IsVisible="{Binding InWarning}">
                         <ToolTip.Tip>
-                            <TextBlock Text="{Binding Texts.GUIModHasWarnings}" />
+                            <TextBlock Text="{Binding Warnings}"
+                                       TextWrapping="Wrap"
+                                       MaxWidth="720" />
                         </ToolTip.Tip>
                         <Image.Source>
                             <i:IconImage Value="fa-exclamation-triangle"
@@ -70,7 +78,9 @@
                     <Image Height="16" Margin="5 0 0 0"
                            IsVisible="{Binding ShowErrorIcon}">
                         <ToolTip.Tip>
-                            <TextBlock Text="{Binding Texts.GUIModHasErrors}"></TextBlock>
+                            <TextBlock Text="{Binding Errors}"
+                                       TextWrapping="Wrap"
+                                       MaxWidth="720" />
                         </ToolTip.Tip>
                         <Image.Source>
                             <i:IconImage Value="fa-exclamation-triangle"
@@ -103,7 +113,7 @@
                     <Image Height="16" Margin="5 0 0 0"
                            IsVisible="{Binding WasInstalled}">
                         <ToolTip.Tip>
-                            <TextBlock Text="{Binding Texts.GUIModInstalled}" />
+                            <TextBlock Text="{Binding InstallStatusTooltip}" />
                         </ToolTip.Tip>
                         <Image.Source>
                             <i:IconImage Value="fa-circle-check"
@@ -121,6 +131,7 @@
                                      Text="{Binding Errors}"
                                      Foreground="{DynamicResource ModStatusForegroundBrush}" />
                 <SelectableTextBlock IsVisible="{Binding InWarning}" Text="{Binding Warnings}"
+                                     TextWrapping="Wrap"
                                      Foreground="{DynamicResource ModStatusForegroundBrush}" />
             </StackPanel>
         </Expander>

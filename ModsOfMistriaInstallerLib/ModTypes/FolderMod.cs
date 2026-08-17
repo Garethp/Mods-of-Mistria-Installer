@@ -15,6 +15,8 @@ public class FolderMod : IMod
 
     private string _name;
 
+    private string _description = "";
+
     private string _version;
 
     private string _location;
@@ -33,6 +35,9 @@ public class FolderMod : IMod
 
     private string? _downloadUrl;
 
+    private IReadOnlyDictionary<string, string> _localizedNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyDictionary<string, string> _localizedDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
     private List<string> _requiredHooks = [];
 
     private bool _requiredHooksValid = true;
@@ -50,9 +55,15 @@ public class FolderMod : IMod
 
     public string GetName() => _name;
 
+    public string GetDisplayName(string? languageCode) => ModManifest.LocalizedValue(_localizedNames, _name, languageCode);
+
+    public string GetDisplayDescription(string? languageCode) => ModManifest.LocalizedValue(_localizedDescriptions, _description, languageCode);
+
     public string GetVersion() => _version;
 
     public string GetLocation() => _location;
+
+    public string GetSourcePath() => _location;
 
     public string GetMinimumInstallerVersion() => _minimumInstallerVersion;
 
@@ -105,6 +116,7 @@ public class FolderMod : IMod
         {
             _name = manifest.Name,
             _author = manifest.Author,
+            _description = manifest.Description,
             _version = manifest.Version,
             _location = Path.GetDirectoryName(manifestLocation) ?? "",
             _minimumInstallerVersion = manifest.MinInstallerVersion,
@@ -112,6 +124,8 @@ public class FolderMod : IMod
             _requirements = manifest.Requirements,
             _updateUrl   = manifest.UpdateUrl,
             _downloadUrl = manifest.DownloadUrl,
+            _localizedNames = manifest.LocalizedNames,
+            _localizedDescriptions = manifest.LocalizedDescriptions,
             _requiredHooks = manifest.RequiresHooks,
             _requiredHooksValid = manifest.RequiresHooksValid
         };

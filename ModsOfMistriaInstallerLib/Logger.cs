@@ -17,21 +17,31 @@ public class Logger
     public static event EventHandler<LogAddedEventArgs> LogAdded; 
     
     private static readonly List<string> Logs = [];
+    private static readonly object Sync = new();
     
     public static void Log(string message)
     {
-        Logs.Add(message);
-        LogAdded?.Invoke(null, new LogAddedEventArgs(message));
+        Add(message);
     }
     
     public static void Log([StringSyntax("CompositeFormat")] string format, params object[] args)
     {
-        Logs.Add(string.Format(format, args));
-        LogAdded?.Invoke(null, new LogAddedEventArgs(string.Format(format, args)));
+        Add(string.Format(format, args));
     }
     
     public static List<string> GetLogs()
     {
-        return Logs;
+        lock (Sync)
+            return [.. Logs];
+    }
+
+    private static void Add(string message)
+    {
+        lock (Sync)
+            Logs.Add(message);
+
+        // Notify outside the lock: the UI subscriber may synchronously read a
+        // snapshot of the log and must never be able to deadlock the writer.
+        LogAdded?.Invoke(null, new LogAddedEventArgs(message));
     }
 }

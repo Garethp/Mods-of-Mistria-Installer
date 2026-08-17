@@ -1,4 +1,4 @@
-# AIM — Alternative Installer for Mistria 0.1.2
+# AIM — Alternative Installer for Mistria 0.1.3
 
 This is an independently maintained alternative installer for **Fields of Mistria 1.0.x**, based on the open-source **Mods of Mistria Installer (MOMI)** project.
 
@@ -6,7 +6,7 @@ AIM is a fork of MOMI. It was renamed to avoid confusion between the two applica
 
 AIM is not intended to replace MOMI. It exists to provide capabilities that are currently needed by this fork while remaining compatible with the upstream project. If MOMI later adopts at least the capabilities that motivated this fork and fully meets the project's needs, AIM may be retired in favour of the upstream project.
 
-The current AIM application version is `0.1.2`.
+The current AIM application version is `0.1.3`.
 
 ## Preview
 
@@ -28,7 +28,7 @@ Compared with the upstream 0.15.1 line, this fork focuses on Fields of Mistria 1
 
 - Fields of Mistria 1.0.x mod installations.
 - Mod folders, ZIP archives, and RAR archives containing either `manifest.toml` or `manifest.json`.
-- ZIP and RAR mods are read directly by AIM; extracting them first is optional. The manifest must be at the archive's mod root.
+- ZIP and RAR mods are read directly by AIM; extracting them first is optional. AIM can locate the mod manifest inside a supported wrapper folder, but it does not search through unlimited nested folders.
 - TOML, JSON, image, outfit, furniture, item, object, store, shadow, font and manual-load mod content supported by the current AIM installer modules.
 - GML mods using the MMAPI format documented in [`docs/MMAPI`](docs/MMAPI); MMAPI compatibility is retained from the upstream project.
 - Profiles and persisted mod load order.
@@ -43,7 +43,34 @@ This project is intended for Fields of Mistria 1.0.x. Individual mods may still 
 
 1. Download the latest release from the [releases page](https://github.com/AcTePuKc/Mods-of-Mistria-Installer/releases).
 2. Open AIM and choose a mods folder. AIM automatically checks for `mods`, `Mods`, `MODS`, or `MODs` next to the detected game installation and next to the AIM executable. It also checks the supported per-user Linux/Steam Deck locations. You can select or create another folder manually.
-3. Put each mod directly in the selected folder. For an extracted mod, place `manifest.toml` or `manifest.json` in the mod folder, or keep a single outer wrapper folder around it. ZIP and RAR archives can be added directly; AIM locates the mod manifest inside the archive.
+3. Put each mod directly in the selected folder. The manifest may be in the mod folder or in one supported wrapper level:
+
+   ```text
+   mods/
+   ├─ MyMod/
+   │  └─ manifest.toml                 ✅ supported
+   ├─ MyMod/
+   │  └─ Wrapper/
+   │     └─ manifest.toml              ✅ supported
+   └── MyMod/
+       └─ Wrapper/
+          └─ AnotherFolder/
+             └─ manifest.toml           ❌ too deeply nested
+   ```
+
+   ZIP and RAR archives can be added directly. The same rule applies inside the archive:
+
+   ```text
+   MyMod.zip
+   ├─ manifest.toml                     ✅ supported
+   ├─ Wrapper/
+   │  └─ manifest.toml                  ✅ supported
+   └── Wrapper/
+       └─ AnotherFolder/
+          └─ manifest.toml               ❌ too deeply nested
+   ```
+
+   If the manifest is buried deeper than this, move the mod files up one or more folders before starting AIM.
 4. Select the mods you want and click **Install**. You can add new mods at any time; you do not need to uninstall the other installed mods first.
 5. Start the game with **Play**.
 
@@ -54,6 +81,19 @@ This project is intended for Fields of Mistria 1.0.x. Individual mods may still 
 > Close AIM before moving, replacing, or deleting mod files. An open mod archive may be locked while AIM is running.
 
 AIM preserves a pristine backup and writes a staged archive before replacing the live `assets.zip`. Do not delete the backup while AIM is managing the installation. Keep a separate game backup before testing unfamiliar mods.
+
+## Optional localized mod metadata
+
+AIM supports optional language-specific manifest fields for the mod name and description. The normal `name` and `description` fields remain the fallback, so existing mods do not need to change:
+
+```toml
+name = "Bulgarian Localization"
+name_bg = "Българска локализация"
+description = "Adds Bulgarian Language to the game."
+description_bg = "Добавя български език в играта."
+```
+
+When the AIM interface is set to Bulgarian, it uses `name_bg` and `description_bg`. If a language-specific field is missing, AIM uses the standard English field instead. These optional fields are ignored by MOMI and do not change the normal manifest format.
 
 ## Updating the game
 
@@ -70,7 +110,7 @@ For bugs and fork-specific support, use the [fork issue tracker](https://github.
 
 ## Development
 
-Build the solution with .NET 8:
+Build the solution with .NET 10:
 
 ```powershell
 dotnet build ModsOfMistriaInstaller.sln --configuration Release

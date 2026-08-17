@@ -109,16 +109,22 @@ jobs:
         
       - name: Compile Windows portable
         run: dotnet publish ModsOfMistriaGUI -c Release -r win-x64 -p:PublishSingleFile=false -p:PublishReadyToRun=false -p:IncludeAllContentForSelfExtract=false -o Release/windows
+      - name: Add Windows archive worker
+        run: dotnet publish ModsOfMistriaArchiveWorker -c Release -r win-x64 -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:IncludeAllContentForSelfExtract=false -o Release/windows
       - name: Zip Windows portable
         run: (cd Release/windows && zip -r "../AIM-${{ env.APP_VERSION }}-windows-portable.zip" .)
 
       - name: Compile Linux portable
         run: dotnet publish ModsOfMistriaGUI -c Release -r linux-x64 -p:PublishSingleFile=false -p:PublishReadyToRun=false -p:IncludeAllContentForSelfExtract=false -o Release/linux
+      - name: Add Linux archive worker
+        run: dotnet publish ModsOfMistriaArchiveWorker -c Release -r linux-x64 -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:IncludeAllContentForSelfExtract=false -o Release/linux
       - name: Zip Linux portable
         run: (cd Release/linux && zip -r "../AIM-${{ env.APP_VERSION }}-linux-portable.zip" .)
 
       - name: Compile macOS portable
         run: dotnet publish ModsOfMistriaGUI -c Release -r osx-x64 -p:PublishSingleFile=false -p:PublishReadyToRun=false -p:IncludeAllContentForSelfExtract=false -o Release/macos
+      - name: Add macOS archive worker
+        run: dotnet publish ModsOfMistriaArchiveWorker -c Release -r osx-x64 -p:PublishSingleFile=true -p:PublishReadyToRun=false -p:IncludeAllContentForSelfExtract=false -o Release/macos
       - name: Zip macOS portable
         run: (cd Release/macos && zip -r "../AIM-${{ env.APP_VERSION }}-macos-portable.zip" .)
 

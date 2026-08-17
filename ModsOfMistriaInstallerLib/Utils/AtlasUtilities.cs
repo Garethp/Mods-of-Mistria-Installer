@@ -12,6 +12,9 @@ namespace Garethp.ModsOfMistriaInstallerLib.Utils;
 // Packs animation strips into atlases and registers their frame coordinates.
 public class AtlasUtilities
 {
+    private static readonly bool ForceFlushAfterEachStrip =
+        IsTruthy(Environment.GetEnvironmentVariable("AIM_DIAGNOSTICS_FORCE_ATLAS_FLUSH"));
+
     private readonly string _atlasDirectory;
     private readonly List<Atlas> _atlases;
 
@@ -89,8 +92,20 @@ public class AtlasUtilities
             });
         }
 
+        // Diagnostic mode only: release all ImageSharp atlas buffers after each
+        // sprite strip. This trades extra archive writes for a much lower peak
+        // working set and lets us confirm whether retained atlas bitmaps cause
+        // the Windows "Not Responding" symptom.
+        if (ForceFlushAfterEachStrip)
+            _stateManager.Flush();
+
         return id;
     }
+
+    private static bool IsTruthy(string? value) =>
+        value is not null && (value.Equals("1", StringComparison.OrdinalIgnoreCase)
+                              || value.Equals("true", StringComparison.OrdinalIgnoreCase)
+                              || value.Equals("on", StringComparison.OrdinalIgnoreCase));
 
     // Removes all atlas entries whose texture_ids contain any frame of baseId
     // (e.g. "abc123" removes "abc123", "abc123::0", "abc123::1" …).

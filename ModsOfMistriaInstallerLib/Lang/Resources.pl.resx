@@ -218,4 +218,23 @@ Otworzyć strony pobierania w przeglądarce?</value></data>
   <data name="GUIErrorDetailsSaved" xml:space="preserve"><value>Szczegóły błędu zapisano w:</value></data>
   <data name="GUIOpenGameExecutable" xml:space="preserve"><value>Otwórz FieldsOfMistria.exe</value></data>
   <data name="GUIOpenModsFolder" xml:space="preserve"><value>Otwórz folder modów</value></data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve"><value>Znaleziono kilka kopii tego moda. Pozostaw zaznaczoną tylko jedną kopię:
+{0}</value></data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve"><value>Instalacja zatrzymana: wybrano kilka kopii tego samego moda. Dla każdego moda pozostaw zaznaczoną tylko jedną kopię.</value></data>
+  <data name="GUIModConflicts" xml:space="preserve"><value>Wybrane mody mogą powodować konflikty:
+{0}</value></data>
+  <data name="GUIModFileConflicts" xml:space="preserve"><value>Wybrane mody używają tych samych plików docelowych. AIM pokaże sposób obsługi każdego z nich:
+{0}</value></data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>Ostrzeżenie: Ten mod zawiera starszy kod GML bez zadeklarowanych hooków. Nie można zweryfikować zgodności z bieżącą wersją gry; mod może być nieaktualny, uniemożliwić uruchomienie gry lub spowodować jej awarię. AIM nie zablokuje go automatycznie.</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>Te wybrane mody mogą używać tego samego skrótu klawiszowego. To tylko ostrzeżenie — w razie potrzeby sprawdź ich ustawienia:
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value> (można zmienić przypisanie)</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>Instalacja zatrzymana: wybrane mody zastępują ten sam zasób. Pozostaw zaznaczony tylko jeden z konfliktujących modów.</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>Zastępują ten sam zasób; kolejność ładowania decyduje, który mod zostanie użyty.</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>Scalane metadane; zduplikowane wpisy nadal mogą być nadpisywane zgodnie z kolejnością ładowania.</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>Współdzielone metadane lokalizacji; te mody mogą działać razem, ale zduplikowane wpisy mogą być nadpisywane zgodnie z kolejnością ładowania.</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>Współdzielone miejsce docelowe; sposób obsługi zależy od typu pliku.</value></data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve"><value>Już zainstalowano.</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>Ostrzeżenie: Ten mod zawiera znany znacznik zgodności sprzed wersji 1.0.3. Mod może być nieaktualny, uniemożliwić uruchomienie gry lub spowodować jej awarię. AIM nie zablokuje go automatycznie.</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>

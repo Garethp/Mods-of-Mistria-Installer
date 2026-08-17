@@ -546,4 +546,23 @@ Ouvrir les pages de téléchargement dans le navigateur ?</value></data>
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Installation AIM détectée, mais les versions des mods installés sont indisponibles.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>Le jeu de mods installé ou sa version diffère de ce profil. Recommandation : désinstallez, puis installez. L'installation peut aussi être reconstruite depuis la sauvegarde vierge.</value></data>
   <data name="GUILanguagePolish" xml:space="preserve"><value>Polonais</value></data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve"><value>Plusieurs copies de ce mod ont été trouvées. Ne laissez qu'une seule copie sélectionnée :
+{0}</value></data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve"><value>Installation arrêtée : plusieurs copies du même mod sont sélectionnées. Ne laissez qu'une seule copie sélectionnée pour chaque mod.</value></data>
+  <data name="GUIModConflicts" xml:space="preserve"><value>Les mods sélectionnés peuvent entrer en conflit :
+{0}</value></data>
+  <data name="GUIModFileConflicts" xml:space="preserve"><value>Les mods sélectionnés utilisent les mêmes fichiers de destination. AIM indiquera comment chacun est traité :
+{0}</value></data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>Avertissement : ce mod contient du code GML ancien sans hooks déclarés. Sa compatibilité avec la version actuelle du jeu ne peut pas être vérifiée ; il est peut-être obsolète et peut empêcher le jeu de démarrer ou provoquer un crash. AIM ne le bloquera pas automatiquement.</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>Ces mods sélectionnés utilisent peut-être le même raccourci clavier. Ceci est seulement un avertissement ; vérifiez leurs paramètres si nécessaire :
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value> (peut-être reconfigurable)</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>Installation arrêtée : les mods sélectionnés remplacent le même asset. Ne laissez qu'un seul des mods en conflit sélectionné.</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>Remplacement du même asset ; l'ordre de chargement détermine celui qui est utilisé.</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>Métadonnées fusionnables ; les entrées en double peuvent tout de même être remplacées selon l'ordre de chargement.</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>Métadonnées de localisation partagées ; ces mods peuvent fonctionner ensemble, mais les entrées en double peuvent être remplacées selon l'ordre de chargement.</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>Destination partagée ; le traitement dépend du type de fichier.</value></data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve"><value>Déjà installé.</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>Avertissement : ce mod contient une signature de compatibilité connue antérieure à la version 1.0.3. Il est peut-être obsolète et peut empêcher le jeu de démarrer ou provoquer un crash. AIM ne le bloquera pas automatiquement.</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>

@@ -50,6 +50,7 @@ public class App : Application
             {
                 _mainViewModel.SaveCurrentState();
                 _updateCheckCancellation.Cancel();
+                ArchiveWorkerClient.StopAll();
             };
 
             if (Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess)

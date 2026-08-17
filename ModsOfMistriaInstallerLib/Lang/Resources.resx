@@ -354,11 +354,38 @@
   <data name="GUIModHasWarnings" xml:space="preserve">
     <value>This mod has warnings that can be ignored</value>
   </data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve">
+    <value>Multiple copies of this mod were found. Keep only one copy selected:
+{0}</value>
+  </data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve">
+    <value>Installation stopped: multiple copies of the same mod are selected. Keep only one copy selected for each mod.</value>
+  </data>
+  <data name="GUIModConflicts" xml:space="preserve">
+    <value>Selected mods may conflict:
+{0}</value>
+  </data>
+  <data name="GUIModFileConflicts" xml:space="preserve">
+    <value>Selected mods share destination files. AIM will classify how each one is handled:
+{0}</value>
+  </data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>Warning: This mod contains legacy GML code without declared hooks. Compatibility with the current game version cannot be verified; it may be outdated and could prevent the game from starting or cause a crash. AIM will not block it automatically.</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>These selected mods may use the same keyboard shortcut. This is only a warning; check their settings if needed:
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value> (may be rebindable)</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>Installation stopped: selected mods replace the same asset. Keep only one of the conflicting mods selected.</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>Same asset replacement; load order decides which one is used.</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>Mergeable metadata; duplicate entries may still be overridden by load order.</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>Shared localization metadata; these mods may work together, but duplicate entries can be overridden according to load order.</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>Shared destination; handling depends on this file type.</value></data>
   <data name="GUIModHasErrors" xml:space="preserve">
     <value>This mod has errors and will not install</value>
   </data>
   <data name="GUIModInstalled" xml:space="preserve">
     <value>Installed successfully.</value>
+  </data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve">
+    <value>Already installed.</value>
   </data>
   <data name="GUIModSkipped" xml:space="preserve">
     <value>This mod was skipped during install</value>
@@ -617,4 +644,6 @@ Open download page(s) in browser?</value></data>
   <data name="GUILocationModsDetected" xml:space="preserve"><value>Mods folder detected.</value></data>
   <data name="GUIPreparingGmlLayer" xml:space="preserve"><value>Preparing GML layer</value></data>
   <data name="GUILanguagePolish" xml:space="preserve"><value>Polski</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>Warning: This mod contains a known pre-1.0.3 compatibility signature. It may be outdated and could prevent the game from starting or cause a crash. AIM will not block it automatically.</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>

@@ -45,8 +45,42 @@
 * [x] Allow creating a mods folder automatically
 * [ ] Add converting old sprite mods
 
+## 0.1.3 — development branch
+
+* [x] Detect duplicate physical copies of the same logical mod across folders,
+      ZIP archives and RAR archives.
+* [x] Support optional language-specific manifest names and descriptions with
+      fallback to the standard `name` and `description` fields.
+* [x] Block installation when multiple copies of the same mod are selected.
+* [x] Persist the selected physical source for duplicate mods in profiles.
+* [x] Restore the installed state after restarting AIM without a full archive
+      rescan.
+* [x] Run archive work through a worker, with a self-hosted fallback for
+      single-file builds and a separate worker for portable packages.
+* [x] Detect shared destination files between selected folder, ZIP and RAR
+      mods without opening or modifying the game archive.
+* [x] Show non-blocking warnings for likely keyboard-shortcut conflicts in GML
+      mods, including configurable/default bindings.
+* [x] Ignore README, text and license files when reporting shared destinations.
+* [x] Recalculate conflict warnings after startup and archive operations without
+      blocking the GUI.
+* [x] Detect known pre-1.0.3 GML and loading-screen compatibility signatures
+      as non-blocking warnings, excluding the Bulgarian localization package.
+* [x] Translate the new duplicate-copy, already-installed and exception
+      messages for every supported interface language.
+* [x] Detect and present incompatible or conflicting selected mods before
+      installation, with the experimental compatibility scan running during
+      mod-list startup and selection changes.
+* [x] Decide how to report mods that do not support the current game/archive
+      version: use narrow, known signatures and a non-blocking warning rather
+      than guessing from a mod's own version number.
+* [x] Catch GUI exceptions and provide a consistent user-facing error log.
+
 ## Future/Unknown
 * [ ] Allow all "localised" text in easy JSON structures to be multi-lingual
+* [ ] Investigate optional per-mod localization selection. This should only be
+      added if a real mod exposes language-specific resources; AIM must not
+      guess or replace a mod's own UI language files.
 * [ ] Add Validators for Simple Conversations
 * [x] Store selected/deselected mods in the Mods folder
 * [x] Allow load order modifying
@@ -61,6 +95,7 @@
 * [ ] Add translations for exceptions
 * [ ] Catch all exceptions in the GUI
 * [ ] Add a error_log file for the GUI
+* [ ] Render mod names as coloured inline text inside warnings and errors
 * [ ] Add a JSON browser
 * [ ] Scramble JSON automatically on install
 * [ ] Cutscene generator

@@ -81,6 +81,8 @@ public class MockMod : IMod
 
     public string GetLocation() => DirName;
 
+    public string GetSourcePath() => DirName;
+
     public string GetMinimumInstallerVersion() => "1.0";
 
     public string GetManifestVersion() => "1";

@@ -218,4 +218,23 @@
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>封存版本無法使用。</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>遊戲封存與 AIM 上次管理的版本不同。</value></data>
   <data name="GUILanguagePolish" xml:space="preserve"><value>波蘭語</value></data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve"><value>找到此模組的多個副本。請只選擇一個副本：
+{0}</value></data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve"><value>安裝已停止：選取了同一模組的多個副本。每個模組只能選擇一個副本。</value></data>
+  <data name="GUIModConflicts" xml:space="preserve"><value>選取的模組可能發生衝突：
+{0}</value></data>
+  <data name="GUIModFileConflicts" xml:space="preserve"><value>選取的模組使用相同的目標檔案。AIM 將顯示每個檔案的處理方式：
+{0}</value></data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>警告：此模組包含未宣告掛鉤的舊版 GML 程式碼。無法驗證它與目前遊戲版本的相容性；它可能已經過時，可能導致遊戲無法啟動或發生崩潰。AIM 不會自動封鎖它。</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>這些選取的模組可能使用相同的鍵盤快捷鍵。這只是一則警告；如有需要，請檢查它們的設定：
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value>（可能可以重新繫結）</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>安裝已停止：選取的模組會取代相同資產。請只選擇一個衝突的模組。</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>取代相同資產；載入順序決定使用哪一個。</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>可合併的中繼資料；重複項目仍可能依載入順序被覆寫。</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>共用的本地化中繼資料；這些模組可能可以一起運作，但重複項目可能依載入順序被覆寫。</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>共用目的地；處理方式取決於檔案類型。</value></data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve"><value>已安裝。</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>警告：此模組包含已知的 1.0.3 之前版本相容性特徵。它可能已經過時，可能導致遊戲無法啟動或發生崩潰。AIM 不會自動封鎖它。</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>

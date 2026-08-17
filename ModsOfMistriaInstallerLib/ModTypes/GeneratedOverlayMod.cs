@@ -102,8 +102,11 @@ public class GeneratedOverlayMod : IMod
 
     public string GetAuthor()                => _inner.GetAuthor();
     public string GetName()                  => _inner.GetName();
+    public string GetDisplayName(string? languageCode) => _inner.GetDisplayName(languageCode);
+    public string GetDisplayDescription(string? languageCode) => _inner.GetDisplayDescription(languageCode);
     public string GetVersion()               => _inner.GetVersion();
     public string GetLocation()              => _inner.GetLocation();
+    public string GetSourcePath()            => _inner.GetSourcePath();
     public string GetMinimumInstallerVersion() => _inner.GetMinimumInstallerVersion();
     public string GetManifestVersion()       => _inner.GetManifestVersion();
     public Validation GetValidation()        => _inner.GetValidation();

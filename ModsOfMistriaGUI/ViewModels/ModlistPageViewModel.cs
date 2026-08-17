@@ -8,9 +8,11 @@ using CommunityToolkit.Mvvm.Input;
 using Garethp.ModsOfMistriaGUI.Models;
 using Garethp.ModsOfMistriaGUI.Services;
 using Garethp.ModsOfMistriaInstallerLib;
+using Garethp.ModsOfMistriaInstallerLib.GmlMods;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Store;
+using Garethp.ModsOfMistriaInstallerLib.Worker;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
 using UpdateChecker = Garethp.ModsOfMistriaInstallerLib.UpdateChecker;
@@ -19,10 +21,14 @@ namespace Garethp.ModsOfMistriaGUI.ViewModels;
 
 public partial class ModlistPageViewModel : PageViewBase
 {
-    private bool _updating;
+    private int _modlistLoadInProgress;
+    private int _modlistReloadRequested;
+    private DispatcherTimer? _installUiHeartbeat;
+    private long _lastHeartbeatTimestamp;
     private readonly Settings _settings;
     private ProfileManager? _profileManager;
     private int _localizationRefreshVersion;
+    private int _conflictRefreshVersion;
 
     // True when in-GUI state differs from what is saved in the current profile
     private bool _isDirty;
@@ -183,8 +189,10 @@ public partial class ModlistPageViewModel : PageViewBase
     {
         if (_profileManager is null) return;
         var enabled   = Mods.Where(m => m.Enabled).Select(m => m.Mod.GetId()).ToList();
+        var enabledSources = Mods.Where(m => m.Enabled)
+            .Select(m => DuplicateModDetector.NormalizeSource(m.Mod.GetSourcePath())).ToList();
         var loadOrder = Mods.Select(m => m.Mod.GetId()).ToList();
-        _profileManager.SaveCurrentProfile(enabled, loadOrder);
+        _profileManager.SaveCurrentProfile(enabled, loadOrder, enabledSources);
         _isDirty = false;
     }
 
@@ -215,17 +223,28 @@ public partial class ModlistPageViewModel : PageViewBase
 
             // If profile has never been saved (both empty), default to all enabled
             var allMods    = Mods.Select(m => m.Mod).ToList();
-            var enabledSet = enabledIds.Count == 0 && loadOrder.Count == 0
+            var duplicateCopies = BuildDuplicateCopyMap(allMods);
+            var enabledSources = _profileManager.GetCurrentProfileEnabledSources()
+                .Select(DuplicateModDetector.NormalizeSource)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var freshProfile = enabledIds.Count == 0 && loadOrder.Count == 0;
+            var enabledSet = freshProfile
                 ? allMods.Select(m => m.GetId()).ToHashSet(StringComparer.OrdinalIgnoreCase)
                 : enabledIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (enabledSources.Count == 0)
+                enabledSources = DefaultDuplicateSources(allMods, duplicateCopies, enabledSet, freshProfile);
 
             var sorted = ProfileManager.SortByLoadOrder(allMods, loadOrder);
 
             var newModels = sorted.Select((mod, idx) =>
             {
-                var model = Mods.FirstOrDefault(m => m.Mod.GetId() == mod.GetId())
+                // Match the physical mod object, not only its logical ID. Two
+                // copies can intentionally share the same author/name ID.
+                var model = Mods.FirstOrDefault(m => ReferenceEquals(m.Mod, mod))
                             ?? new ModModel(mod);
-                model.Enabled  = enabledSet.Contains(mod.GetId());
+                if (duplicateCopies.TryGetValue(DuplicateModDetector.NormalizeSource(mod.GetSourcePath()), out var copies))
+                    model.SetDuplicateCopies(copies);
+                model.Enabled = IsProfileSelected(mod, enabledSet, enabledSources, duplicateCopies);
                 model.Position = idx + 1;
                 return model;
             }).ToList();
@@ -304,186 +323,395 @@ public partial class ModlistPageViewModel : PageViewBase
 
     // ── Mod list loading ──────────────────────────────────────────────────────────
 
-    private void UpdateModlist() => UpdateModlist(false);
-
-    private void UpdateModlist(bool force)
+    private static Dictionary<string, IReadOnlyList<IMod>> BuildDuplicateCopyMap(IEnumerable<IMod> mods)
     {
-        var totalStopwatch = Stopwatch.StartNew();
-        // UpdateModlist is requested from background tasks because manifest
-        // discovery can involve many archives. ObservableCollection mutations
-        // must nevertheless happen on Avalonia's UI thread; otherwise
-        // ItemsRepeater virtualization can display one mod's row for another.
-        if (!Dispatcher.UIThread.CheckAccess())
+        var map = new Dictionary<string, IReadOnlyList<IMod>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var group in DuplicateModDetector.Find(mods))
         {
-            Dispatcher.UIThread.Post(() => UpdateModlist(force));
+            foreach (var copy in group.Copies)
+                map[DuplicateModDetector.NormalizeSource(copy.GetSourcePath())] = group.Copies;
+        }
+        return map;
+    }
+
+    private static HashSet<string> DefaultDuplicateSources(
+        IEnumerable<IMod> mods,
+        Dictionary<string, IReadOnlyList<IMod>> duplicateCopies,
+        HashSet<string> enabledIds,
+        bool freshProfile)
+    {
+        var sources = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var mod in mods)
+        {
+            var source = DuplicateModDetector.NormalizeSource(mod.GetSourcePath());
+            if (!duplicateCopies.TryGetValue(source, out var copies) ||
+                (ReferenceEquals(copies[0], mod) && (freshProfile || enabledIds.Contains(mod.GetId()))))
+                sources.Add(source);
+        }
+        return sources;
+    }
+
+    private static bool IsProfileSelected(
+        IMod mod,
+        HashSet<string> enabledIds,
+        HashSet<string> enabledSources,
+        Dictionary<string, IReadOnlyList<IMod>> duplicateCopies)
+    {
+        var source = DuplicateModDetector.NormalizeSource(mod.GetSourcePath());
+        if (duplicateCopies.ContainsKey(source))
+            return enabledSources.Contains(source);
+        return enabledIds.Contains(mod.GetId());
+    }
+
+    private void UpdateModlist() => _ = UpdateModlistAsync(false);
+
+    private void UpdateModlist(bool force) => _ = UpdateModlistAsync(force);
+
+    private async Task UpdateModlistAsync(bool force)
+    {
+        if (Interlocked.Exchange(ref _modlistLoadInProgress, 1) != 0)
+        {
+            if (force) Volatile.Write(ref _modlistReloadRequested, 1);
             return;
         }
 
-        if (_updating) return;
-        if (MistriaLocation == _settings.MistriaLocation && ModsLocation == _settings.ModsLocation && !force) return;
-        _updating = true;
-
-        MistriaLocation = _settings.MistriaLocation;
-        ModsLocation    = _settings.ModsLocation;
-
-        Mods.Clear();
-
-        if (Directory.Exists(ModsLocation))
+        try
         {
-            // (Re-)create profile manager when the mods folder changes
-            try { _profileManager = new ProfileManager(ModsLocation); }
-            catch { _profileManager = null; }
+            var snapshot = await Dispatcher.UIThread.InvokeAsync(() =>
+                new ModlistSnapshot(_settings.MistriaLocation, _settings.ModsLocation, MistriaLocation, ModsLocation));
+
+            if (!force && snapshot.MistriaLocation == snapshot.CurrentMistriaLocation &&
+                snapshot.ModsLocation == snapshot.CurrentModsLocation)
+                return;
+
+            var result = await Task.Run(() => LoadModlist(snapshot.MistriaLocation, snapshot.ModsLocation));
+            await Dispatcher.UIThread.InvokeAsync(() => ApplyModlist(result));
+        }
+        finally
+        {
+            Volatile.Write(ref _modlistLoadInProgress, 0);
+            if (Interlocked.Exchange(ref _modlistReloadRequested, 0) != 0)
+                _ = UpdateModlistAsync(true);
+        }
+    }
+
+    private ModlistLoadResult LoadModlist(string mistriaLocation, string modsLocation)
+    {
+        var totalStopwatch = Stopwatch.StartNew();
+        ProfileManager? profileManager = null;
+        List<IMod> rawMods = [];
+        var discoveryMilliseconds = 0L;
+        var validationMilliseconds = 0L;
+        var duplicateCopies = new Dictionary<string, IReadOnlyList<IMod>>(StringComparer.OrdinalIgnoreCase);
+        List<IMod> orderedMods = [];
+        HashSet<string> enabledIds = new(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> enabledSources = new(StringComparer.OrdinalIgnoreCase);
+
+        if (Directory.Exists(modsLocation))
+        {
+            try { profileManager = new ProfileManager(modsLocation); }
+            catch { profileManager = null; }
 
             var discoveryStopwatch = Stopwatch.StartNew();
-            var rawMods = MistriaLocator.GetMods(MistriaLocation, ModsLocation);
-            var discoveryMilliseconds = discoveryStopwatch.ElapsedMilliseconds;
+            rawMods = MistriaLocator.GetMods(mistriaLocation, modsLocation);
+            discoveryMilliseconds = discoveryStopwatch.ElapsedMilliseconds;
 
             var validationStopwatch = Stopwatch.StartNew();
             ModInstaller.ValidateMods(rawMods);
-            var validationMilliseconds = validationStopwatch.ElapsedMilliseconds;
-            
-            // Apply dependency resolution (auto-enable deps)
-            if (_profileManager is not null)
+            validationMilliseconds = validationStopwatch.ElapsedMilliseconds;
+            duplicateCopies = BuildDuplicateCopyMap(rawMods);
+
+            if (profileManager is not null)
             {
-                var (enabledIds, loadOrder) = _profileManager.GetCurrentProfile();
-
-                List<string> resolvedEnabled;
-                if (enabledIds.Count == 0 && loadOrder.Count == 0)
-                {
-                    // Fresh profile: enable everything
-                    resolvedEnabled = rawMods.Select(m => m.GetId()).ToList();
-                }
-                else
-                {
-                    resolvedEnabled = ProfileManager.ResolveEnabledWithDeps(rawMods, enabledIds);
-                }
-
-                var enabledSet  = resolvedEnabled.ToHashSet(StringComparer.OrdinalIgnoreCase);
-                var sortedMods  = ProfileManager.SortByLoadOrder(rawMods, loadOrder);
-
-                for (var i = 0; i < sortedMods.Count; i++)
-                {
-                    var model = new ModModel(sortedMods[i])
-                    {
-                        Enabled  = enabledSet.Contains(sortedMods[i].GetId()),
-                        Position = i + 1
-                    };
-                    // Track enabled changes; cascade enable/disable to dependencies
-                    model.PropertyChanged += async (sender, e) =>
-                    {
-                        if (e.PropertyName != nameof(ModModel.Enabled) || _suppressDirty) return;
-                        _isDirty = true;
-                        RefreshArchiveStatus();
-                        if (_cascading) return;
-                        _cascading = true;
-                        List<ModRequirement> missing;
-                        try
-                        {
-                            var changed = (ModModel)sender!;
-                            if (changed.Enabled)
-                                missing = EnableDependenciesOf(changed);
-                            else
-                            {
-                                DisableDependentsOf(changed);
-                                missing = [];
-                            }
-                        }
-                        finally { _cascading = false; }
-                        InstallModsCommand.NotifyCanExecuteChanged();
-                        UnInstallModsCommand.NotifyCanExecuteChanged();
-
-                        if (missing.Count > 0)
-                        {
-                            var lines = string.Join("\n\n", missing.Select(r =>
-                            {
-                                var line = $"• \"{r.Name}\" by {r.Author}";
-                                if (!string.IsNullOrEmpty(r.DownloadUrl))
-                                    line += $"\n  {r.DownloadUrl}";
-                                return line;
-                            }));
-
-                            var urls = missing
-                                .Where(r => !string.IsNullOrEmpty(r.DownloadUrl))
-                                .Select(r => r.DownloadUrl!)
-                                .ToList();
-
-                            if (urls.Count > 0)
-                            {
-                                var ask = await MessageBoxManager.GetMessageBoxStandard(
-                                    Texts.GUIMissingRequirementsTitle,
-                                    string.Format(Texts.GUIMissingRequirementsMessage, lines),
-                                    ButtonEnum.YesNo).ShowAsync();
-
-                                if (ask == ButtonResult.Yes)
-                                {
-                                    var urlList = string.Join("\n", urls.Select(u => $"• {u}"));
-                                    var confirm = await MessageBoxManager.GetMessageBoxStandard(
-                                        Texts.GUIOpenExternalLinksTitle,
-                                        string.Format(Texts.GUIOpenExternalLinksMessage, urlList),
-                                        ButtonEnum.YesNo).ShowAsync();
-
-                                    if (confirm == ButtonResult.Yes)
-                                        foreach (var url in urls.Where(ExternalUrl.IsAllowed))
-                                            System.Diagnostics.Process.Start(
-                                                new System.Diagnostics.ProcessStartInfo
-                                                {
-                                                    FileName        = url,
-                                                    UseShellExecute = true
-                                                });
-                                }
-                            }
-                            else
-                            {
-                                await MessageBoxManager.GetMessageBoxStandard(
-                                    Texts.GUIMissingRequirementsTitle,
-                                    string.Format(Texts.GUIMissingRequirementsManual, lines),
-                                    ButtonEnum.Ok).ShowAsync();
-                            }
-                        }
-                    };
-                    Mods.Add(model);
-                }
+                var (profileEnabledIds, loadOrder) = profileManager.GetCurrentProfile();
+                var resolvedEnabled = profileEnabledIds.Count == 0 && loadOrder.Count == 0
+                    ? rawMods.Select(m => m.GetId()).ToList()
+                    : ProfileManager.ResolveEnabledWithDeps(rawMods, profileEnabledIds);
+                enabledIds = resolvedEnabled.ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var configuredSources = profileManager.GetCurrentProfileEnabledSources()
+                    .Select(DuplicateModDetector.NormalizeSource)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                enabledSources = configuredSources.Count > 0
+                    ? configuredSources
+                    : DefaultDuplicateSources(rawMods, duplicateCopies, enabledIds, false);
+                orderedMods = ProfileManager.SortByLoadOrder(rawMods, loadOrder);
             }
             else
             {
-                // No profile manager (e.g. can't write to folder): fallback behaviour
                 var allDisabled = rawMods.All(m => !m.IsInstalled());
                 if (allDisabled) rawMods.ForEach(m => m.SetInstalled(true));
+                orderedMods = rawMods;
+            }
+        }
 
-                for (var i = 0; i < rawMods.Count; i++)
+        PerformanceDiagnostics.Log($"Modlist load: total={totalStopwatch.ElapsedMilliseconds} ms, discovery={discoveryMilliseconds} ms, validation={validationMilliseconds} ms, mods={orderedMods.Count}");
+        return new ModlistLoadResult(mistriaLocation, modsLocation, profileManager, orderedMods, enabledIds, enabledSources, duplicateCopies);
+    }
+
+    private void ApplyModlist(ModlistLoadResult result)
+    {
+        {
+            MistriaLocation = result.MistriaLocation;
+            ModsLocation = result.ModsLocation;
+            _profileManager = result.ProfileManager;
+            Mods.Clear();
+
+            for (var i = 0; i < result.OrderedMods.Count; i++)
+            {
+                var mod = result.OrderedMods[i];
+                var model = new ModModel(mod)
                 {
-                    var model = new ModModel(rawMods[i]) { Position = i + 1 };
-                    Mods.Add(model);
-                }
+                    Enabled = IsProfileSelected(mod, result.EnabledIds, result.EnabledSources, result.DuplicateCopies),
+                    Position = i + 1
+                };
+                if (result.DuplicateCopies.TryGetValue(
+                        DuplicateModDetector.NormalizeSource(mod.GetSourcePath()), out var copies))
+                    model.SetDuplicateCopies(copies);
+                AttachModPropertyHandlers(model);
+                Mods.Add(model);
             }
 
             RefreshProfileList();
-            PerformanceDiagnostics.Log($"Modlist load: total={totalStopwatch.ElapsedMilliseconds} ms, discovery={discoveryMilliseconds} ms, validation={validationMilliseconds} ms, mods={Mods.Count}");
-        }
+            _isDirty = false;
+            var modSnapshot = Mods.ToList();
+            _ = Task.Run(() => CheckModUpdatesAsync(modSnapshot));
 
-        _isDirty = false;
-
-        // Kick off background update checks; results trickle in on the UI thread
-        var modSnapshot = Mods.ToList();
-        _ = Task.Run(() => CheckModUpdatesAsync(modSnapshot));
-
-        Dispatcher.UIThread.InvokeAsync(() =>
-        {
             InstallStatus = "";
             RefreshGameReady();
             InstallModsCommand.NotifyCanExecuteChanged();
             UnInstallModsCommand.NotifyCanExecuteChanged();
+            if (MistriaLocation.Equals("")) InstallStatus = Resources.GUICouldNotFindMistria;
+            else if (ModsLocation.Equals("")) InstallStatus = Resources.GUICouldNotFindMods;
+            else if (Mods.Count == 0) InstallStatus = NoModsToInstallText;
+            RefreshSelectedModConflicts();
+        }
+    }
 
-            if (MistriaLocation.Equals(""))
-                InstallStatus = Resources.GUICouldNotFindMistria;
-            else if (ModsLocation.Equals(""))
-                InstallStatus = Resources.GUICouldNotFindMods;
-            else if (Mods.Count == 0)
-                InstallStatus = NoModsToInstallText;
+    private void AttachModPropertyHandlers(ModModel model)
+    {
+        model.PropertyChanged += async (sender, e) =>
+        {
+            if (e.PropertyName != nameof(ModModel.Enabled) || _suppressDirty) return;
+            _isDirty = true;
+            RefreshArchiveStatus();
+            RefreshSelectedModConflicts();
+            if (_cascading) return;
+            _cascading = true;
+            List<ModRequirement> missing;
+            try
+            {
+                var changed = (ModModel)sender!;
+                if (changed.Enabled) missing = EnableDependenciesOf(changed);
+                else
+                {
+                    DisableDependentsOf(changed);
+                    missing = [];
+                }
+            }
+            finally { _cascading = false; }
+            InstallModsCommand.NotifyCanExecuteChanged();
+            UnInstallModsCommand.NotifyCanExecuteChanged();
+
+            if (missing.Count == 0) return;
+
+            var lines = string.Join("\n\n", missing.Select(r =>
+            {
+                var line = $"• \"{r.Name}\" by {r.Author}";
+                if (!string.IsNullOrEmpty(r.DownloadUrl)) line += $"\n  {r.DownloadUrl}";
+                return line;
+            }));
+            var urls = missing.Where(r => !string.IsNullOrEmpty(r.DownloadUrl))
+                .Select(r => r.DownloadUrl!).ToList();
+
+            if (urls.Count > 0)
+            {
+                var ask = await MessageBoxManager.GetMessageBoxStandard(
+                    Texts.GUIMissingRequirementsTitle,
+                    string.Format(Texts.GUIMissingRequirementsMessage, lines),
+                    ButtonEnum.YesNo).ShowAsync();
+                if (ask == ButtonResult.Yes)
+                {
+                    var urlList = string.Join("\n", urls.Select(u => $"• {u}"));
+                    var confirm = await MessageBoxManager.GetMessageBoxStandard(
+                        Texts.GUIOpenExternalLinksTitle,
+                        string.Format(Texts.GUIOpenExternalLinksMessage, urlList),
+                        ButtonEnum.YesNo).ShowAsync();
+                    if (confirm == ButtonResult.Yes)
+                        foreach (var url in urls.Where(ExternalUrl.IsAllowed))
+                            System.Diagnostics.Process.Start(new ProcessStartInfo
+                            {
+                                FileName = url,
+                                UseShellExecute = true
+                            });
+                }
+            }
+            else
+            {
+                await MessageBoxManager.GetMessageBoxStandard(
+                    Texts.GUIMissingRequirementsTitle,
+                    string.Format(Texts.GUIMissingRequirementsManual, lines),
+                    ButtonEnum.Ok).ShowAsync();
+            }
+        };
+    }
+
+    // This runs after loading, selection changes, and archive operations. The
+    // file scan is off the UI thread and never touches the game archive.
+    private void RefreshSelectedModConflicts()
+    {
+        var refreshVersion = Interlocked.Increment(ref _conflictRefreshVersion);
+        var models = Mods.ToList();
+        var selectedModels = models.Where(m => m.Enabled).ToList();
+        var selected = selectedModels.Select(m => m.Mod).ToList();
+
+        // Compatibility checks run for every discovered mod when the list is
+        // loaded and are refreshed after selection changes. They are cheap
+        // metadata/code-signature checks and do not touch the game archive.
+        _ = Task.Run(() =>
+        {
+            var detected = new Dictionary<ModModel, IReadOnlyList<string>>();
+            foreach (var model in models)
+            {
+                try { detected[model] = LegacyGameCompatibilityDetector.Find(model.Mod); }
+                catch (Exception exception)
+                {
+                    Logger.Log($"Modlist compatibility check skipped for {model.Mod.GetId()}: {exception.Message}");
+                    detected[model] = [];
+                }
+            }
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (refreshVersion != Volatile.Read(ref _conflictRefreshVersion)) return;
+                foreach (var model in models)
+                {
+                    if (detected.TryGetValue(model, out var findings) && findings.Count > 0)
+                    {
+                        // Legacy signatures are advisory. They must be visible
+                        // before installation but must never disable a mod.
+                        model.SetCompatibilityWarnings([string.Join("\r\n", new[]
+                        {
+                            Texts.GUIModLegacyGamePatch,
+                            $"  • {string.Join("\r\n  • ", findings)}"
+                        })]);
+                    }
+                    else if (model.Mod.GetAllFiles(".gml").Count > 0 &&
+                             model.Mod.GetRequiredHooks().Count == 0)
+                    {
+                        model.SetCompatibilityWarnings([Texts.GUIModLegacyGml]);
+                    }
+                    else
+                    {
+                        model.SetCompatibilityWarnings([]);
+                    }
+                }
+            });
         });
 
-        _updating = false;
+        _ = Task.Run(() =>
+        {
+            IReadOnlyList<ModConflict> conflicts;
+            try { conflicts = ModConflictDetector.Find(selected); }
+            catch (Exception exception)
+            {
+                Logger.Log($"Selection conflict check skipped: {exception.Message}");
+                conflicts = [];
+            }
+
+            IReadOnlyList<ModFileConflict> fileConflicts;
+            try { fileConflicts = ModFileConflictDetector.Find(selected); }
+            catch (Exception exception)
+            {
+                Logger.Log($"Selection file-conflict check skipped: {exception.Message}");
+                fileConflicts = [];
+            }
+
+            IReadOnlyList<ModHotkeyConflict> hotkeyConflicts;
+            try { hotkeyConflicts = HotkeyConflictDetector.Find(selected); }
+            catch (Exception exception)
+            {
+                Logger.Log($"Selection hotkey-conflict check skipped: {exception.Message}");
+                hotkeyConflicts = [];
+            }
+
+            foreach (var conflict in fileConflicts)
+                Logger.Log($"Selection file conflict: {conflict.Kind}; {conflict.Path}; mods={string.Join(", ", conflict.ModIds)}");
+
+            Dispatcher.UIThread.Post(() =>
+            {
+                if (refreshVersion != Volatile.Read(ref _conflictRefreshVersion)) return;
+
+                foreach (var model in models)
+                {
+                    var warnings = conflicts
+                        .Where(conflict => conflict.ModIds.Contains(model.Mod.GetId(), StringComparer.OrdinalIgnoreCase))
+                        .Select(conflict => string.Format(Texts.GUIModConflicts, $"• {conflict.Description}"))
+                        .ToList();
+                    var sharedPaths = fileConflicts
+                        .Where(conflict => conflict.ModIds.Contains(model.Mod.GetId(), StringComparer.OrdinalIgnoreCase))
+                        .Select(conflict => FormatFileConflict(conflict, selected))
+                        .ToList();
+                    if (sharedPaths.Count > 0)
+                        warnings.Add(string.Format(Texts.GUIModFileConflicts, string.Join("\r\n", sharedPaths)));
+                    var hotkeys = hotkeyConflicts
+                        .Where(conflict => conflict.Usages.Any(usage =>
+                            usage.ModId.Equals(model.Mod.GetId(), StringComparison.OrdinalIgnoreCase)))
+                        .Select(conflict => FormatHotkeyConflict(conflict, selected))
+                        .ToList();
+                    if (hotkeys.Count > 0)
+                        warnings.Add(string.Format(Texts.GUIModHotkeyConflicts, string.Join("\r\n", hotkeys)));
+                    model.SetConflictWarnings(warnings);
+                }
+            });
+        });
     }
+
+    private string FormatFileConflict(ModFileConflict conflict, IReadOnlyList<IMod> selected)
+    {
+        var description = conflict.Kind switch
+        {
+            ModFileConflictKind.HardReplacement => Texts.GUIFileConflictReplacement,
+            ModFileConflictKind.MergeableMetadata => Texts.GUIFileConflictMerge,
+            ModFileConflictKind.SharedLocalization => Texts.GUIFileConflictLocalization,
+            _ => Texts.GUIFileConflictShared
+        };
+        var owners = selected
+            .Where(mod => conflict.ModIds.Contains(mod.GetId(), StringComparer.OrdinalIgnoreCase))
+            .Select(mod => $"{mod.GetName()} v{mod.GetVersion()} [{mod.GetSourcePath()}]")
+            .ToList();
+        return $"• {conflict.Path}\r\n  {description}\r\n  {string.Join("\r\n  ", owners)}";
+    }
+
+    private string FormatHotkeyConflict(ModHotkeyConflict conflict, IReadOnlyList<IMod> selected)
+    {
+        var owners = selected
+            .Where(mod => conflict.Usages.Any(usage =>
+                usage.ModId.Equals(mod.GetId(), StringComparison.OrdinalIgnoreCase)))
+            .Select(mod =>
+            {
+                var usage = conflict.Usages.First(usage =>
+                    usage.ModId.Equals(mod.GetId(), StringComparison.OrdinalIgnoreCase));
+                var suffix = usage.Rebindable ? Texts.GUIHotkeyRebindable : "";
+                return $"{mod.GetName()} v{mod.GetVersion()} [{mod.GetSourcePath()}]{suffix}";
+            })
+            .ToList();
+        return $"• {conflict.Key}\r\n  {string.Join("\r\n  ", owners)}";
+    }
+
+    private sealed record ModlistSnapshot(
+        string MistriaLocation,
+        string ModsLocation,
+        string CurrentMistriaLocation,
+        string CurrentModsLocation);
+
+    private sealed record ModlistLoadResult(
+        string MistriaLocation,
+        string ModsLocation,
+        ProfileManager? ProfileManager,
+        List<IMod> OrderedMods,
+        HashSet<string> EnabledIds,
+        HashSet<string> EnabledSources,
+        Dictionary<string, IReadOnlyList<IMod>> DuplicateCopies);
 
     // Checks all mods for updates in parallel; each result updates the matching
     // ModModel on the UI thread so the update badge appears as responses arrive.
@@ -569,6 +797,25 @@ public partial class ModlistPageViewModel : PageViewBase
     [RelayCommand(CanExecute = nameof(CanInstall))]
     private void InstallMods()
     {
+        var duplicate = FindSelectedDuplicateGroup();
+        if (duplicate is not null)
+        {
+            var message = Localized("GUIDuplicateModInstallBlocked");
+            Exception = message;
+            InstallStatus = message;
+            return;
+        }
+
+        var hardConflict = FindSelectedHardReplacementConflict();
+        if (hardConflict is not null)
+        {
+            var selected = Mods.Where(model => model.Enabled).Select(model => model.Mod).ToList();
+            var message = Localized("GUIHardFileConflictBlocked") + "\n\n" + FormatFileConflict(hardConflict, selected);
+            Exception = message;
+            InstallStatus = message;
+            return;
+        }
+
         Exception = "";
 
         // Auto-save profile state before installing so load order is persisted
@@ -579,7 +826,8 @@ public partial class ModlistPageViewModel : PageViewBase
 
         InstallStatus = InstallInProgressText;
         IsInstalling  = true;
-        Task.Run(BackgroundInstall);
+        StartInstallUiDiagnostics();
+        _ = BackgroundInstall();
     }
 
     [RelayCommand]
@@ -600,6 +848,9 @@ public partial class ModlistPageViewModel : PageViewBase
         if (files is not null)
             await File.WriteAllTextAsync(files.Path.AbsolutePath, string.Join("\r\n", logs));
     }
+
+    [RelayCommand]
+    private void DismissException() => Exception = "";
 
     [RelayCommand]
     private void ReloadModlist()
@@ -633,71 +884,122 @@ public partial class ModlistPageViewModel : PageViewBase
         IsInstalling  = true;
         InstallStatus = Resources.GUIUninstallingText;
 
-        Task.Run(async () =>
-        {
-            try
-            {
-                new ModInstaller(MistriaLocation, ModsLocation).Uninstall();
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    IsInstalling  = false;
-                    InstallStatus = Resources.GUIUninstallCompleteText;
-                    RefreshGameReady();
-                    // Nothing is installed any more; the outcome icons are stale
-                    foreach (var mod in Mods) mod.SetInstallOutcome(ModInstallState.None);
-                });
-            }
-            catch (Exception e)
-            {
-                var errorLogPath = WriteDiagnosticErrorLog("uninstall", e);
-                Logger.Log($"{Resources.GUIUninstallFatalError}\r\n{e}");
-
-                // Keep the page recoverable. The archive transaction has already
-                // aborted, so the user can inspect the error and retry.
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    IsInstalling  = false;
-                    InstallStatus = Resources.GUIUninstallFatalError;
-                    RefreshGameReady();
-                    Exception     = FormatErrorMessage(Resources.GUIUninstallFatalError, e, errorLogPath);
-                });
-            }
-        });
+        _ = BackgroundUninstall();
     }
 
-    private async void BackgroundInstall()
+    private async Task BackgroundUninstall()
     {
+        var stopwatch = Stopwatch.StartNew();
         try
         {
-            var installer     = new ModInstaller(MistriaLocation, ModsLocation);
+            var request = new ArchiveWorkerRequest(
+                "uninstall", MistriaLocation, ModsLocation, [], "", GateMode: "auto");
+            await new ArchiveWorkerClient().RunAsync(
+                request,
+                status => Dispatcher.UIThread.Post(() =>
+                {
+                    if (IsInstalling) InstallStatus = status;
+                }),
+                CancellationToken.None);
+            stopwatch.Stop();
+            PerformanceDiagnostics.Log($"Uninstall completed: elapsed={stopwatch.ElapsedMilliseconds} ms");
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                StopInstallUiDiagnostics();
+                IsInstalling  = false;
+                InstallStatus = Resources.GUIUninstallCompleteText;
+                GameReady = IsLaunchableGameInstallation(MistriaLocation);
+                InstallationNeedsRebuild = true;
+                _archiveStatusKey = "GUIArchiveNoInstallation";
+                _archiveStatusModCount = 0;
+                RefreshCachedArchiveStatusText();
+                // Nothing is installed any more; the outcome icons are stale
+                foreach (var mod in Mods) mod.SetInstallOutcome(ModInstallState.None);
+                RefreshSelectedModConflicts();
+            });
+        }
+        catch (Exception e)
+        {
+            var errorLogPath = WriteDiagnosticErrorLog("uninstall", e);
+            Logger.Log($"{Resources.GUIUninstallFatalError}\r\n{e}");
+            stopwatch.Stop();
+            PerformanceDiagnostics.Log($"Uninstall failed: elapsed={stopwatch.ElapsedMilliseconds} ms, exception={e.GetType().Name}");
+
+            // Keep the page recoverable. The archive transaction has already
+            // aborted, so the user can inspect the error and retry.
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                StopInstallUiDiagnostics();
+                IsInstalling  = false;
+                InstallStatus = Resources.GUIUninstallFatalError;
+                RefreshGameReady();
+                Exception     = FormatErrorMessage(Resources.GUIUninstallFatalError, e, errorLogPath);
+            });
+        }
+    }
+
+    private async Task BackgroundInstall()
+    {
+        var totalStopwatch = Stopwatch.StartNew();
+        try
+        {
             var modsToInstall = Mods.Where(m => m.Enabled).Select(m => m.Mod).ToList();
 
-            // Per-file messages go to the log only; the status line follows
-            // the coarse mod + phase channel so it doesn't redraw per file
-            var result = installer.InstallMods(modsToInstall,
-                (message, _) => Logger.Log(message),
-                reportPhase: (mod, phaseText) =>
-                    InstallStatus = mod.Length == 0 ? phaseText : $"{mod} - {phaseText}");
+            PerformanceDiagnostics.Log($"Install worker requested: mods={modsToInstall.Count}");
+            var request = new ArchiveWorkerRequest(
+                "install",
+                MistriaLocation,
+                ModsLocation,
+                modsToInstall.Select(mod => mod.GetSourcePath()).ToArray(),
+                "",
+                GateMode: "auto");
+            var result = await new ArchiveWorkerClient().RunAsync(
+                request,
+                status =>
+                {
+                    PerformanceDiagnostics.Log($"Worker phase: {status}");
+                    if (PerformanceDiagnostics.SuppressInstallProgressUi)
+                    {
+                        PerformanceDiagnostics.Log("Install UI phase callback skipped by AIM_DIAGNOSTICS_NO_PROGRESS_UI");
+                        return;
+                    }
+                    var queuedAt = Stopwatch.GetTimestamp();
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        var delay = Stopwatch.GetElapsedTime(queuedAt).TotalMilliseconds;
+                        PerformanceDiagnostics.Log($"Install UI phase callback: delay={delay:0} ms, thread={Environment.CurrentManagedThreadId}");
+                        if (IsInstalling) InstallStatus = status;
+                    });
+                },
+                CancellationToken.None);
 
-            Dispatcher.UIThread.InvokeAsync(() =>
+            totalStopwatch.Stop();
+            PerformanceDiagnostics.Log($"Install completed: elapsed={totalStopwatch.ElapsedMilliseconds} ms, installed={result.Installed.Length}, skipped={result.Skipped.Length}");
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
+                StopInstallUiDiagnostics();
                 IsInstalling  = false;
-                InstallStatus = result.Summary();
-                RefreshGameReady();
+                InstallStatus = result.Summary;
+                GameReady = IsLaunchableGameInstallation(MistriaLocation);
+                InstallationNeedsRebuild = false;
+                _archiveStatusKey = "GUIArchiveMatch";
+                _archiveStatusModCount = result.Installed.Length;
+                RefreshCachedArchiveStatusText();
 
                 // Checkmark for what landed, red X with the reasons for what
                 // was skipped; a skipped mod's reasons also landed as
                 // validation errors, so refresh the expander bindings too
-                var installed = result.Installed.ToHashSet();
-                var skipped   = result.Skipped.ToDictionary(s => s.Id, StringComparer.OrdinalIgnoreCase);
+                var installed = result.Installed.ToHashSet(StringComparer.OrdinalIgnoreCase);
+                var skipped   = result.Skipped.ToHashSet(StringComparer.OrdinalIgnoreCase);
                 foreach (var mod in Mods)
                 {
-                    if (skipped.TryGetValue(mod.Mod.GetId(), out var skip))
-                        mod.SetInstallOutcome(ModInstallState.Skipped, string.Join("\r\n", skip.Reasons));
-                    else if (installed.Contains(mod.Mod))
+                    if (skipped.Contains(mod.Mod.GetId()))
+                        mod.SetInstallOutcome(ModInstallState.Skipped, Resources.GUIModSkipped);
+                    else if (installed.Contains(mod.Mod.GetId()))
                         mod.SetInstallOutcome(ModInstallState.Installed, Resources.GUIModInstalled);
-                    mod.RefreshValidation();
                 }
+                RefreshSelectedModConflicts();
             });
         }
         catch (Exception e)
@@ -708,11 +1010,14 @@ public partial class ModlistPageViewModel : PageViewBase
             var errorLogPath = WriteDiagnosticErrorLog("install", e);
             Logger.Log($"{Resources.GUIInstallFatalError}\r\n{e}");
             var failedModId = (e as ModInstallationException)?.ModId;
+            totalStopwatch.Stop();
+            PerformanceDiagnostics.Log($"Install failed: elapsed={totalStopwatch.ElapsedMilliseconds} ms, exception={e.GetType().Name}");
 
             // Keep the page recoverable. The archive transaction has already
             // aborted, so the user can disable the failing mod and retry.
-            Dispatcher.UIThread.InvokeAsync(() =>
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
+                StopInstallUiDiagnostics();
                 if (!string.IsNullOrEmpty(failedModId))
                 {
                     var failedMod = Mods.FirstOrDefault(m =>
@@ -728,6 +1033,34 @@ public partial class ModlistPageViewModel : PageViewBase
                 Exception     = FormatErrorMessage(Resources.GUIInstallFatalError, e, errorLogPath);
             });
         }
+    }
+
+    private void StartInstallUiDiagnostics()
+    {
+        if (!PerformanceDiagnostics.Enabled) return;
+        _installUiHeartbeat?.Stop();
+        _installUiHeartbeat = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(250)
+        };
+        _lastHeartbeatTimestamp = Stopwatch.GetTimestamp();
+        _installUiHeartbeat.Tick += (_, _) =>
+        {
+            var now = Stopwatch.GetTimestamp();
+            var gap = Stopwatch.GetElapsedTime(_lastHeartbeatTimestamp).TotalMilliseconds;
+            _lastHeartbeatTimestamp = now;
+            PerformanceDiagnostics.Log($"UI heartbeat: gap={gap:0} ms, installing={IsInstalling}, thread={Environment.CurrentManagedThreadId}, {PerformanceDiagnostics.ProcessMetrics()}");
+        };
+        _installUiHeartbeat.Start();
+        PerformanceDiagnostics.Log("UI heartbeat started");
+    }
+
+    private void StopInstallUiDiagnostics()
+    {
+        if (_installUiHeartbeat is null) return;
+        _installUiHeartbeat.Stop();
+        _installUiHeartbeat = null;
+        PerformanceDiagnostics.Log("UI heartbeat stopped");
     }
 
     private static string FormatErrorMessage(string heading, Exception exception, string? errorLogPath)
@@ -862,20 +1195,10 @@ public partial class ModlistPageViewModel : PageViewBase
             return true;
 
         var archivePath = Path.Combine(location, "assets.zip");
-        if (!File.Exists(archivePath))
-            return false;
-
-        try
-        {
-            using var archive = System.IO.Compression.ZipFile.OpenRead(archivePath);
-            return archive.Entries.Any(entry =>
-                entry.FullName.Replace('\\', '/')
-                    .StartsWith("assets/", StringComparison.OrdinalIgnoreCase));
-        }
-        catch (Exception)
-        {
-            return false;
-        }
+        // The archive contents are validated by the archive worker during the
+        // transaction. Do not reopen and enumerate a potentially 600+ MB ZIP
+        // on the UI thread merely to refresh the Play button after completion.
+        return File.Exists(archivePath);
     }
 
     private void RefreshArchiveStatus()
@@ -892,6 +1215,7 @@ public partial class ModlistPageViewModel : PageViewBase
         var store = new AssetsStore(MistriaLocation);
         if (!store.HasMomiInstallation())
         {
+            foreach (var mod in Mods) mod.SetAlreadyInstalled(false);
             InstallationNeedsRebuild = true;
             _archiveStatusKey = "GUIArchiveNoInstallation";
             _archiveStatusModCount = 0;
@@ -903,6 +1227,7 @@ public partial class ModlistPageViewModel : PageViewBase
         try { recorded = store.GetRecordedInstallState(); }
         catch
         {
+            foreach (var mod in Mods) mod.SetAlreadyInstalled(false);
             InstallationNeedsRebuild = true;
             _archiveStatusKey = "GUIArchiveStateUnavailable";
             _archiveStatusModCount = 0;
@@ -912,6 +1237,7 @@ public partial class ModlistPageViewModel : PageViewBase
 
         if (recorded is null)
         {
+            foreach (var mod in Mods) mod.SetAlreadyInstalled(false);
             InstallationNeedsRebuild = true;
             _archiveStatusKey = "GUIArchiveVersionsUnavailable";
             _archiveStatusModCount = 0;
@@ -919,13 +1245,26 @@ public partial class ModlistPageViewModel : PageViewBase
             return;
         }
 
+        // A folder and an archive can represent the same logical mod.  The
+        // duplicate-copy warning handles that situation in the list, but the
+        // archive status is keyed by logical ID and must therefore not throw
+        // when multiple physical copies are present.
         var desired = Mods
             .Where(mod => mod.Enabled)
-            .ToDictionary(mod => mod.Mod.GetId(), mod => mod.Mod.GetVersion(),
+            .GroupBy(mod => mod.Mod.GetId(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First().Mod.GetVersion(),
                 StringComparer.OrdinalIgnoreCase);
         var actual = recorded.Mods
-            .ToDictionary(mod => mod.Id, mod => mod.Version,
+            .GroupBy(mod => mod.Id, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First().Version,
                 StringComparer.OrdinalIgnoreCase);
+
+        foreach (var mod in Mods)
+        {
+            var alreadyInstalled = actual.TryGetValue(mod.Mod.GetId(), out var installedVersion) &&
+                                    string.Equals(installedVersion, mod.Mod.GetVersion(), StringComparison.OrdinalIgnoreCase);
+            mod.SetAlreadyInstalled(alreadyInstalled);
+        }
 
         var matches = desired.Count == actual.Count &&
                       desired.All(pair => actual.TryGetValue(pair.Key, out var version) &&
@@ -939,6 +1278,21 @@ public partial class ModlistPageViewModel : PageViewBase
 
     private static string Localized(string key) =>
         Resources.ResourceManager.GetString(key, Resources.Culture) ?? key;
+
+    private DuplicateModGroup? FindSelectedDuplicateGroup()
+    {
+        var groups = DuplicateModDetector.Find(Mods.Select(model => model.Mod));
+        return groups.FirstOrDefault(group =>
+            group.Copies.Count(copy => Mods.Any(model =>
+                ReferenceEquals(model.Mod, copy) && model.Enabled)) > 1);
+    }
+
+    private ModFileConflict? FindSelectedHardReplacementConflict()
+    {
+        var selected = Mods.Where(model => model.Enabled).Select(model => model.Mod).ToList();
+        return ModFileConflictDetector.Find(selected)
+            .FirstOrDefault(conflict => conflict.Kind == ModFileConflictKind.HardReplacement);
+    }
 
     private bool CanInstall() =>
         !MistriaLocation.Equals("") && !ModsLocation.Equals("") && Mods.Any(mod => mod.Enabled) &&

@@ -13,6 +13,8 @@ public class ZipMod() : IMod
 {
     private string _name = "";
 
+    private string _description = "";
+
     private string _author = "";
 
     private string _version = "";
@@ -26,6 +28,8 @@ public class ZipMod() : IMod
     private ZipArchive? _zipFile;
 
     private string _basePath = "";
+
+    private string _sourcePath = "";
     
     private bool _isInstalled = false;
 
@@ -34,6 +38,9 @@ public class ZipMod() : IMod
     private string? _updateUrl;
 
     private string? _downloadUrl;
+
+    private IReadOnlyDictionary<string, string> _localizedNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyDictionary<string, string> _localizedDescriptions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
     private List<string> _requiredHooks = [];
 
@@ -58,6 +65,7 @@ public class ZipMod() : IMod
         else return;
         
         _name = manifest.Name;
+        _description = manifest.Description;
         _author = manifest.Author;
         _version = manifest.Version;
         _minimumInstallerVersion = manifest.MinInstallerVersion;
@@ -65,6 +73,8 @@ public class ZipMod() : IMod
         _requirements = manifest.Requirements;
         _downloadUrl = manifest.DownloadUrl;
         _updateUrl = manifest.UpdateUrl;
+        _localizedNames = manifest.LocalizedNames;
+        _localizedDescriptions = manifest.LocalizedDescriptions;
         _requiredHooks = manifest.RequiresHooks;
         _requiredHooksValid = manifest.RequiresHooksValid;
 
@@ -133,16 +143,26 @@ public class ZipMod() : IMod
 
         var internalLocation = manifestFiles.First().FullName.Replace("manifest.json", "").Replace("manifest.toml", "");
 
-        return new ZipMod(zipFile, internalLocation);
+        var mod = new ZipMod(zipFile, internalLocation)
+        {
+            _sourcePath = Path.GetFullPath(ZipPath)
+        };
+        return mod;
     }
 
     public string GetAuthor() => _author;
 
     public string GetName() => _name;
 
+    public string GetDisplayName(string? languageCode) => ModManifest.LocalizedValue(_localizedNames, _name, languageCode);
+
+    public string GetDisplayDescription(string? languageCode) => ModManifest.LocalizedValue(_localizedDescriptions, _description, languageCode);
+
     public string GetVersion() => _version;
 
     public string GetLocation() => "";
+
+    public string GetSourcePath() => _sourcePath;
 
     public string GetMinimumInstallerVersion() => _minimumInstallerVersion;
 

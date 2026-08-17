@@ -218,4 +218,23 @@
   <data name="GUIArchiveVersionsUnavailable" xml:space="preserve"><value>Версии архива недоступны.</value></data>
   <data name="GUIArchiveDifferent" xml:space="preserve"><value>Игровой архив отличается от последней версии, которой управлял AIM.</value></data>
   <data name="GUILanguagePolish" xml:space="preserve"><value>Польский</value></data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve"><value>Найдено несколько копий этого мода. Оставьте выбранной только одну копию:
+{0}</value></data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve"><value>Установка остановлена: выбрано несколько копий одного и того же мода. Для каждого мода оставьте выбранной только одну копию.</value></data>
+  <data name="GUIModConflicts" xml:space="preserve"><value>Выбранные моды могут конфликтовать:
+{0}</value></data>
+  <data name="GUIModFileConflicts" xml:space="preserve"><value>Выбранные моды используют одни и те же целевые файлы. AIM покажет способ обработки каждого из них:
+{0}</value></data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>Внимание: этот мод содержит устаревший код GML без объявленных хуков. Совместимость с текущей версией игры невозможно проверить; мод может быть устаревшим, помешать запуску игры или вызвать сбой. AIM не будет блокировать его автоматически.</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>Эти выбранные моды могут использовать одну и ту же клавиатурную комбинацию. Это только предупреждение; при необходимости проверьте их настройки:
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value> (возможно, можно переназначить)</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>Установка остановлена: выбранные моды заменяют один и тот же ресурс. Оставьте выбранным только один конфликтующий мод.</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>Замена одного и того же ресурса; порядок загрузки определяет, какой мод будет использован.</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>Объединяемые метаданные; дублирующиеся записи всё равно могут быть перезаписаны в соответствии с порядком загрузки.</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>Общие метаданные локализации; эти моды могут работать вместе, но дублирующиеся записи могут быть перезаписаны в соответствии с порядком загрузки.</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>Общее назначение; способ обработки зависит от типа файла.</value></data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve"><value>Уже установлено.</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>Внимание: этот мод содержит известный признак совместимости, относящийся к версии до 1.0.3. Мод может быть устаревшим, помешать запуску игры или вызвать сбой. AIM не будет блокировать его автоматически.</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>

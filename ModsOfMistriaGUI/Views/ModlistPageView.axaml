@@ -14,7 +14,7 @@
         <!-- Bottom toolbar: settings, language and actions share one compact row. -->
         <Grid DockPanel.Dock="Bottom" Height="44" Margin="0 8 0 0"
               ColumnDefinitions="Auto,Auto,*,Auto">
-            <Menu Grid.Column="0">
+            <Menu Grid.Column="0" Margin="-7 0 0 0">
                 <MenuItem>
                     <MenuItem.Header>
                         <Image Height="16" Margin="5 0 0 0">
@@ -34,7 +34,7 @@
                 </MenuItem>
             </Menu>
 
-            <Menu Grid.Column="1" Margin="6 0 0 0">
+            <Menu Grid.Column="1" Margin="-1 0 0 0">
                 <MenuItem Header="{Binding Texts.GUILanguageMenu}"
                           IsEnabled="{Binding !IsInstalling}">
                     <MenuItem x:Name="LanguageSystemMenuItem" Header="{Binding Texts.GUILanguageSystem}" Tag="system" Click="LanguageMenuClick" />
@@ -104,7 +104,7 @@
             <!-- Mod list. The recoverable error is an overlay so it does not
                  reduce the list viewport or move the normal page content. -->
             <Grid>
-                <ScrollViewer Margin="15 5 0 0">
+                <ScrollViewer Margin="0 5 0 0">
                     <ItemsRepeater ItemsSource="{Binding Mods}" x:Name="ModRepeater">
                         <ItemsRepeater.ItemTemplate>
                             <DataTemplate>
@@ -138,7 +138,8 @@
                                                    FontSize="16"
                                                    Foreground="Gray"
                                                    HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center" />
+                                                   VerticalAlignment="Center"
+                                                   Margin="-7 0 0 0" />
                                     </Border>
                                     <!-- Position number -->
                                     <TextBlock Width="24" Grid.Column="1" VerticalAlignment="Center"
@@ -206,10 +207,19 @@
                         Background="#5C1F1F"
                         CornerRadius="4"
                         Padding="8">
-                    <ScrollViewer MaxHeight="76">
-                        <SelectableTextBlock Text="{Binding Exception}"
-                                             TextWrapping="Wrap" />
-                    </ScrollViewer>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <ScrollViewer Grid.Column="0" MaxHeight="76">
+                            <SelectableTextBlock Text="{Binding Exception}"
+                                                 TextWrapping="Wrap" />
+                        </ScrollViewer>
+                        <Button Grid.Column="1"
+                                Content="×"
+                                FontSize="18"
+                                Padding="8 0"
+                                VerticalAlignment="Top"
+                                ToolTip.Tip="Close"
+                                Command="{Binding DismissExceptionCommand}" />
+                    </Grid>
                 </Border>
             </Grid>
         </DockPanel>

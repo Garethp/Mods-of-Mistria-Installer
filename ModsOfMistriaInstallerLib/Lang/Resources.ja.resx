@@ -218,4 +218,23 @@
   <data name="CoreErrorOutfitUiSubCategoryWrong" xml:space="preserve"><value>服{0}のui_sub_categoryが不正です。次のいずれかである必要があります：{1}。</value></data>
   <data name="CoreErrorReadingVersionForMod" xml:space="preserve"><value>Modのバージョン読み込み中にエラーが発生しました：{0}</value></data>
   <data name="GUILanguagePolish" xml:space="preserve"><value>ポーランド語</value></data>
+  <data name="GUIModDuplicateCopies" xml:space="preserve"><value>このMODの複数のコピーが見つかりました。選択するコピーは1つだけにしてください：
+{0}</value></data>
+  <data name="GUIDuplicateModInstallBlocked" xml:space="preserve"><value>インストールを停止しました：同じMODのコピーが複数選択されています。各MODにつき1つだけ選択してください。</value></data>
+  <data name="GUIModConflicts" xml:space="preserve"><value>選択したMODは競合する可能性があります：
+{0}</value></data>
+  <data name="GUIModFileConflicts" xml:space="preserve"><value>選択したMODは同じ保存先ファイルを使用しています。AIMがそれぞれの処理方法を表示します：
+{0}</value></data>
+  <data name="GUIModLegacyGml" xml:space="preserve"><value>警告：このMODにはフックが宣言されていない古いGMLコードが含まれています。現在のゲームバージョンとの互換性を確認できません。古いMODである可能性があり、ゲームが起動しなかったりクラッシュしたりする場合があります。AIMは自動的にはブロックしません。</value></data>
+  <data name="GUIModHotkeyConflicts" xml:space="preserve"><value>選択したMODが同じキーボードショートカットを使用している可能性があります。これは警告にすぎません。必要に応じて設定を確認してください：
+{0}</value></data>
+  <data name="GUIHotkeyRebindable" xml:space="preserve"><value>（変更できる可能性があります）</value></data>
+  <data name="GUIHardFileConflictBlocked" xml:space="preserve"><value>インストールを停止しました：選択したMODが同じアセットを置き換えます。競合するMODは1つだけ選択してください。</value></data>
+  <data name="GUIFileConflictReplacement" xml:space="preserve"><value>同じアセットを置き換えます。どれが使用されるかは読み込み順で決まります。</value></data>
+  <data name="GUIFileConflictMerge" xml:space="preserve"><value>統合可能なメタデータです。重複する項目は読み込み順によって上書きされる場合があります。</value></data>
+  <data name="GUIFileConflictLocalization" xml:space="preserve"><value>共有ローカライズメタデータです。これらのMODは同時に動作する可能性がありますが、重複する項目は読み込み順によって上書きされる場合があります。</value></data>
+  <data name="GUIFileConflictShared" xml:space="preserve"><value>共有された保存先です。処理方法はファイルの種類によって異なります。</value></data>
+  <data name="GUIModAlreadyInstalled" xml:space="preserve"><value>インストール済み。</value></data>
+ <data name="GUIModLegacyGamePatch" xml:space="preserve"><value>警告：このMODにはバージョン1.0.3以前の既知の互換性シグネチャが含まれています。古いMODである可能性があり、ゲームが起動しなかったりクラッシュしたりする場合があります。AIMは自動的にはブロックしません。</value></data>
+  <data name="GUIModLegacyGamePatchError" xml:space="preserve"><value>Installation blocked: this mod contains a known pre-1.0.3 compatibility signature. It may break the game on the current version. Update the mod or use a version compatible with the current game.</value></data>
 </root>
