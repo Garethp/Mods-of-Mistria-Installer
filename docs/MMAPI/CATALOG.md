@@ -135,7 +135,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [ui.item_node](hooks/ui.item_node.md) | filter | Adjust UI item slots as they are populated. |
 | [ui.button_sprites](hooks/ui.button_sprites.md) | filter | Swap the sprite set a UI button is built from. |
 | [ui.spawn_tutorial_guard](hooks/ui.spawn_tutorial_guard.md) | guard | Block a tutorial popup before it spawns. |
-| [ui.sprite](hooks/ui.sprite.md) | filter | Swap the backplate sprites behind the mines menu and spell cards. |
+| [ui.backplate_sprite](hooks/ui.backplate_sprite.md) | filter | Swap the backplate sprites behind the mines menu and spell cards. |
 | [dialogue.play_guard](hooks/dialogue.play_guard.md) | guard | Block a conversation before it starts. |
 | [dialogue.path](hooks/dialogue.path.md) | filter | Change which conversation plays before it starts. |
 | [dialogue.line](hooks/dialogue.line.md) | filter | Reword any dialogue line before the textbox shows it. |
@@ -280,8 +280,8 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [ui_item_node_crafting_menu](seams/ui_item_node_crafting_menu.md) | Hands each crafting-grid icon node to mods as the menu builds. |
 | [ui_button_sprites](seams/ui_button_sprites.md) | Puts a filter on each built button sprite set before it enters the cache. |
 | [ui_spawn_tutorial_guard](seams/ui_spawn_tutorial_guard.md) | Puts a veto check at the head of `spawn_tutorial()`. |
-| [ui_sprite_mines_backplate](seams/ui_sprite_mines_backplate.md) | Routes the mines menu backplate sprite through a filter on dungeon room start. |
-| [ui_sprite_spell_card_backplate](seams/ui_sprite_spell_card_backplate.md) | Routes each spell card's backplate sprite through a filter. |
+| [ui_backplate_sprite_mines](seams/ui_backplate_sprite_mines.md) | Routes the mines menu backplate sprite through a filter on dungeon room start. |
+| [ui_backplate_sprite_spell_card](seams/ui_backplate_sprite_spell_card.md) | Routes each spell card's backplate sprite through a filter. |
 | [dialogue_play_guard](seams/dialogue_play_guard.md) | Puts a veto check at the head of `play_conversation()`. |
 | [dialogue_path](seams/dialogue_path.md) | Rebuilds `play_conversation()`'s four arguments through the `dialogue.path` filter. |
 | [dialogue_line](seams/dialogue_line.md) | Filters each localized dialogue line before the textbox shows it. |

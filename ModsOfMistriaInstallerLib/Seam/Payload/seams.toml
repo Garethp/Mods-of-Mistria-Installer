@@ -610,7 +610,7 @@ kind = "guard"
 doc  = "Fires at the top of spawn_tutorial(tutorial), before the tutorial is marked seen and before its popup is built. ctx is { tutorial }, the Tutorial enum id. Return false to veto the popup (spawn_tutorial returns undefined, and the tutorial stays unmarked in ARI.tutorials_seen, so the game offers it again on its next trigger); undefined or true allows. The guard sits above the function's own test-suite early return, so it also fires - vacuously - in test-suite runs."
 
 [[hook]]
-name = "ui.sprite"
+name = "ui.backplate_sprite"
 kind = "filter"
 doc  = "Fires at backplate sprite assignments. ctx.source names the site: mines_menu_backplate (the mines menu backplate on dungeon room start, ctx { source }) and spellcasting_card_backplate (the spell card backplate, ctx { source, spell }). The filtered value is the default backplate sprite. Return the replacement sprite, or undefined to keep the current value."
 
@@ -1340,7 +1340,7 @@ blank_after = true
 marker  = "mmapi_ui_run_draw_gui_callbacks"
 
 [[seam]]
-id      = "ui_sprite_mines_backplate"
+id      = "ui_backplate_sprite_mines"
 file    = "gml/scripts/UI/Anchor/Menus/MinesMenu.gml"
 anchor  = '''
         .set_room_start_callback(function() {
@@ -1350,11 +1350,11 @@ replace = '''
         .set_room_start_callback(function() {
             if is_dungeon_room(room()) {
                 try {
-                    self.backplate.set_sprite(mmapi_apply_filters("ui.sprite", spr_ui_dungeon_backplate, { source: "mines_menu_backplate" }));
+                    self.backplate.set_sprite(mmapi_apply_filters("ui.backplate_sprite", spr_ui_dungeon_backplate, { source: "mines_menu_backplate" }));
                 } catch (__mmapi_mines_backplate_sprite) {}
                 self.backplate.enable();'''
 marker  = "mmapi_mines_backplate_sprite"
-provides = ["ui.sprite"]
+provides = ["ui.backplate_sprite"]
 
 [[seam]]
 id      = "dialogue_path"
@@ -1617,16 +1617,16 @@ catch_var = "__mmapi_spell_cast_callback"
 marker  = "mmapi_spell_cast_callback"
 
 [[seam]]
-id      = "ui_sprite_spell_card_backplate"
+id      = "ui_backplate_sprite_spell_card"
 file    = "gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml"
 anchor  = '''
         self.card.set_sprite(spr_ui_journal_magic_card_backplate);
 '''
 replace = '''
-        self.card.set_sprite(mmapi_apply_filters("ui.sprite", spr_ui_journal_magic_card_backplate, { source: "spellcasting_card_backplate", spell: spell })); // mmapi_spell_card_backplate
+        self.card.set_sprite(mmapi_apply_filters("ui.backplate_sprite", spr_ui_journal_magic_card_backplate, { source: "spellcasting_card_backplate", spell: spell })); // mmapi_spell_card_backplate
 '''
 marker  = "mmapi_spell_card_backplate"
-provides = ["ui.sprite"]
+provides = ["ui.backplate_sprite"]
 
 [[seam]]
 id      = "spells_cost_menu"

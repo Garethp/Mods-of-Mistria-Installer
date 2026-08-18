@@ -28,4 +28,4 @@ Because all four cost reads dispatch the same [spells.cost](../hooks/spells.cost
 - [spells_cost_can_cast](spells_cost_can_cast.md) - This is the cost read in the can-cast mana check.
 - [spells_cost_fsm_loop](spells_cost_fsm_loop.md) - This is the mana deduction in the looping cast state.
 - [spells_cost_fsm_default](spells_cost_fsm_default.md) - This is the mana deduction in the default cast state.
-- [ui_sprite_spell_card_backplate](ui_sprite_spell_card_backplate.md) - This is the same menu's card backplate sprite filter.
+- [ui_backplate_sprite_spell_card](ui_backplate_sprite_spell_card.md) - This is the same menu's card backplate sprite filter.
