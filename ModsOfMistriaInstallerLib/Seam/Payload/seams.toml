@@ -36,8 +36,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 104
-seams = 114
+hooks = 113
+seams = 121
 engine_fixes = 3
 call_rewrites = 1
 
@@ -372,6 +372,21 @@ kind = "event"
 doc  = "Fires every frame for every monster in par_monster's begin step, right after the aggro update. ctx is the monster instance. Hot path. Keep handlers cheap."
 
 [[hook]]
+name = "museum.donate_item"
+kind = "event"
+doc  = "Fires at the top of donate_item_to_museum(), before the item is registered to the collection and before the pending renown entry is pushed. ctx is { item_id }. Observation only - the DonationResult the function goes on to compute (progress, completed set, rewards) is decided after the emit. Fires once per donated item, from the museum donation menu and the engine's test suite; save load and the ALL_UNLOCKS new-game path write donations through register_item_to_museum() directly and never fire this hook."
+
+[[hook]]
+name = "player.acquire_perk"
+kind = "event"
+doc  = "Fires at the top of Ari.acquire_perk(perk), before the perk is flagged owned and active and before its acquisition side effects (the Guardian's Shield extra invulnerable hit, the Ancient Inspiration timer reset) run. ctx is { perk }, the Perk enum id. Observation only. Fires on every acquisition path - the Dragonshrine purchase (the essence is already spent when the emit runs), the debug CLI grant, and the ALL_UNLOCKS new-game grant-all loop - but never on save load, which restores the perk arrays directly. Toggling an owned perk on or off never fires either: the shrine menu and the debug CLI flip perks_active directly, without entering acquire_perk."
+
+[[hook]]
+name = "player.died"
+kind = "event"
+doc  = "Fires when the player actually dies: on should_die()'s final death path, after the screen fade completes and right after MIST.run_scene(\"dying\") starts the dying scene. ctx is the obj_ari instance. Observation only - ARI.end_of_day_status is already EndOfDayStatus.Died and the scene is under way when handlers run. A revive by the Fairy status effect never gets here, and neither does an averted death, which routes through pass_out() instead (see player.pass_out)."
+
+[[hook]]
 name = "player.equipment_bonus"
 kind = "filter"
 doc  = "Fires at the return of the player's equipment bonus lookup. The filtered value is the computed bonus. ctx is { player, infusion, key }. Return the replacement value, or undefined to keep the current value."
@@ -422,9 +437,19 @@ kind = "filter"
 doc  = "Fires at the end of the player's move speed computation, after the status effect multipliers. The filtered value is the speed. ctx is { player, on_mount }. Return the replacement speed, or undefined to keep the current value. Mounted movement routes through this computation too (ctx.on_mount is true); the mounted base speed is separately filterable earlier in the computation via player.mount_speed. Swimming does not route through here - that is player.swim_speed."
 
 [[hook]]
+name = "player.pass_out"
+kind = "event"
+doc  = "Fires in pass_out(), immediately after end_day() - the day rollover is already under way, stamina is zeroed, and the player is flagged invulnerable when handlers run. ctx is { faint }: true for the 2 AM collapse, false when the player went down to a killing blow but the death was averted (ARI.end_of_day_status tells the cases apart: Fainted for the plain collapse, Protected otherwise). Observation only. A normal bed sleep ends the day without pass_out(), and a death that is not averted runs the dying scene instead - see player.died."
+
+[[hook]]
 name = "player.renown_delta"
 kind = "filter"
 doc  = "Fires at the top of Ari.modify_renown(), before the delta is applied. The filtered value is the renown delta. The engine's one gameplay caller is the on_new_day drain of pending_renown_entries, so this fires at day rollover, once per pending entry (quest completions, museum donations, the prior day's shipping gold). ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. set_renown clamps the resulting total to [0, max renown], so any replacement is safe: a negative delta lowers renown and the computed level, plays no celebration, and never revokes already-granted level rewards, while a gain that crosses several levels grants each crossed level's reward. The end-of-day menu tallies the raw pending entries before the drain, so its renown-earned figure shows unfiltered values. Absolute sets (debug, test suite, new game) do not route through modify_renown and never fire this hook."
+
+[[hook]]
+name = "player.skill_leveled"
+kind = "event"
+doc  = "Fires in gain_xp() when the applied XP raises the skill's level, right after the new total is written and before the level-up celebration. ctx is { skill, old_level, new_level, silent }: skill is the Skill enum id and silent is gain_xp's own flag, so silent engine gains (crafting XP, stable breeding) fire too, celebration or not. Gains only - a level lowered through a negative player.xp_delta replacement never fires. A single large gain can cross several levels and still fires once; compare old_level and new_level. Save load and the debug menu write skill_xp directly and never fire."
 
 [[hook]]
 name = "player.stamina_delta"
@@ -455,6 +480,21 @@ doc  = "Fires at the end of Ari.get_swim_speed(), after the fast/slow stroke bra
 name = "player.xp_delta"
 kind = "filter"
 doc  = "Fires at the top of Ari.gain_xp(skill, xp, silent), before the XP is applied. The filtered value is the XP delta; ctx is { player, skill, silent }, skill being the Skill.* enum id. Return the replacement delta, or undefined to keep the current value. A negative delta genuinely deducts XP and can lower the skill's level: the seam floors the filtered result at -skill_xp[skill] so the total never goes negative (levels 0 and 1 cost 0 XP, so the computed level bottoms out at 1, never the -1 a negative total would read as), and the seam narrows the level celebration to genuine gains, so a level DOWN does not play the LevelUp chime and dingaling (vanilla celebrates any level change; the narrowed condition is unreachable without a negative delta). The floor never binds on engine values (vanilla deltas are all non-negative). The engine's own cap at MAX_SKILL_LEVEL_COSTS still applies after the filter, and already-granted level rewards are not revoked by leveling down."
+
+[[hook]]
+name = "quest.complete"
+kind = "event"
+doc  = "Fires inside QuestLog.complete(quest_name), after the completion is validated (the quest is active and its final task is done) and before any completion bookkeeping - the T2R quest facts, the active-to-completed move, the request-board cleanup, the pending renown entry, and the achievements refresh all land after the emit. Calls that fail validation return early and never fire. ctx is { quest_name, quest }: quest is the ActiveQuest being completed (its prototype is quest.quest, its rewards quest.quest.reward_list). Observation only."
+
+[[hook]]
+name = "renown.level_gained"
+kind = "event"
+doc  = "Fires inside Ari.set_renown() when the write raises the renown level, past the gains-only early return and before the crossed levels' rewards are granted. ctx is { old_level, new_level }; a single write can cross several levels and still fires once. The engine's gameplay path here is the day-rollover drain of pending entries (each already filtered through player.renown_delta), and debug sets route through set_renown too; save load restores the renown field directly and never fires. Losses and level-neutral writes never fire - set_renown bails before the emit unless the level rose."
+
+[[hook]]
+name = "renown.rank_gained"
+kind = "event"
+doc  = "Fires inside Ari.set_renown() when a renown level gain crosses a rank boundary, immediately after renown.level_gained. ctx is { old_rank, new_rank }: integer indexes into RENOWN.ranks, clamped to the last rank (RENOWN.ranks.get(new_rank) is the rank struct). A gain within one rank fires renown.level_gained alone, and once the final rank is reached further level gains never fire this hook again."
 
 [[hook]]
 name = "resource.node_modifier"
@@ -563,6 +603,11 @@ doc  = "Fires in StoreMenu right after a shelf tap adds an item to the shopping 
 name = "ui.menu_refreshed"
 kind = "event"
 doc  = "Fires after a menu rebuilds its content from game state, at the tail of the rebuild function. Emitting menus today: ToolbarMenu.update() (slot items re-resolved from the inventory: subscriber pull, page flips, tab taps, forced rebuilds, constructor) and VitalsMenu.refresh_statuses() (status icon strip rebuilt: register, cancel, and the expiry poll). ctx is { menu, kind }, with kind read from menu.type. Emits only on rebuild edges, never per idle frame, including during the menu's constructor before ui.menu_opened fires for it (ctx.menu is not yet in ANCHOR.open_menus then). Handlers must be idempotent and must not unconditionally force another rebuild from inside the handler."
+
+[[hook]]
+name = "ui.spawn_tutorial_guard"
+kind = "guard"
+doc  = "Fires at the top of spawn_tutorial(tutorial), before the tutorial is marked seen and before its popup is built. ctx is { tutorial }, the Tutorial enum id. Return false to veto the popup (spawn_tutorial returns undefined, and the tutorial stays unmarked in ARI.tutorials_seen, so the game offers it again on its next trigger); undefined or true allows. The guard sits above the function's own test-suite early return, so it also fires - vacuously - in test-suite runs."
 
 [[hook]]
 name = "ui.sprite"
@@ -1840,9 +1885,16 @@ replace = '''
             MAX_SKILL_LEVEL_COSTS[skill],
         );
 
+        try {
+            var __mmapi_new_skill_level = ARI.level(skill);
+            if (old_skill_level < __mmapi_new_skill_level) {
+                mmapi_emit("player.skill_leveled", { skill: skill, old_level: old_skill_level, new_level: __mmapi_new_skill_level, silent: silent });
+            }
+        } catch (__mmapi_player_skill_leveled) {} // mmapi_player_run_skill_leveled
+
         if !silent && old_skill_level < ARI.level(skill) {'''
 marker  = "mmapi_player_run_xp_delta_filters"
-provides = ["player.xp_delta"]
+provides = ["player.xp_delta", "player.skill_leveled"]
 
 [[seam]]
 id      = "player_renown_delta"
@@ -2850,3 +2902,95 @@ callee   = "local_get"
 to       = "mmapi_local_get"
 args     = 1
 provides = ["local.get", "local.missing"]
+
+[[seam]]
+id      = "ui_spawn_tutorial_guard"
+file    = "gml/scripts/UI/Anchor/anchor_utils.gml"
+target  = { fn = "spawn_tutorial", at = "head" }
+op      = "guard"
+hook    = "ui.spawn_tutorial_guard"
+ctx     = "{ tutorial: tutorial }"
+on_veto = "return undefined;"
+marker  = "mmapi_ui_spawn_tutorial_guard"
+
+[[seam]]
+id      = "player_acquire_perk"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+target  = { fn = "acquire_perk", at = "head" }
+op      = "emit"
+hook    = "player.acquire_perk"
+ctx     = "{ perk: perk }"
+indent  = 8
+marker  = "mmapi_player_acquire_perk"
+
+[[seam]]
+id      = "museum_donate_item"
+file    = "gml/scripts/Museum.gml"
+target  = { fn = "donate_item_to_museum", at = "head" }
+op      = "emit"
+hook    = "museum.donate_item"
+ctx     = "{ item_id: item_id }"
+marker  = "mmapi_museum_donate_item"
+
+[[seam]]
+id      = "player_pass_out"
+file    = "gml/scripts/Player/pass_out.gml"
+target  = { fn = "pass_out", at = "after", anchor = "end_day();" }
+op      = "emit"
+hook    = "player.pass_out"
+ctx     = "{ faint: faint }"
+marker  = "mmapi_player_pass_out"
+
+[[seam]]
+id      = "player_died"
+file    = "gml/objects/characters/obj_ari.gml"
+target  = { fn = "should_die", at = "after", anchor = '''MIST.run_scene("dying");''' }
+op      = "emit"
+hook    = "player.died"
+ctx     = "self"
+indent  = 28
+marker  = "mmapi_player_died"
+
+# renown.level_gained and renown.rank_gained emit from one text seam inside
+# set_renown(), below its gains-only early return: only writes that raise the
+# level reach the emits, matching the hooks' names. A text seam because the
+# rank emit needs the boundary comparison, which the template ops cannot express.
+[[seam]]
+id      = "renown_gains"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+anchor  = '''
+        if sign(new_levels) != 1 {
+            return;
+        }
+
+        var rewards_len = RENOWN.rewards.count();'''
+replace = '''
+        if sign(new_levels) != 1 {
+            return;
+        }
+
+        try { mmapi_emit("renown.level_gained", { old_level: level, new_level: new_level }); } catch (__mmapi_renown_level_gained) {} // mmapi_renown_run_gains
+        try {
+            var __mmapi_old_rank = min(level div RENOWN.levels_per_rank, RENOWN.ranks.count() - 1);
+            var __mmapi_new_rank = min(new_level div RENOWN.levels_per_rank, RENOWN.ranks.count() - 1);
+            if (__mmapi_old_rank != __mmapi_new_rank) {
+                mmapi_emit("renown.rank_gained", { old_rank: __mmapi_old_rank, new_rank: __mmapi_new_rank });
+            }
+        } catch (__mmapi_renown_rank_gained) {}
+
+        var rewards_len = RENOWN.rewards.count();'''
+marker  = "mmapi_renown_run_gains"
+provides = ["renown.level_gained", "renown.rank_gained"]
+
+# quest.complete emits below QuestLog.complete()'s validation early-return (anchored
+# on the first T2R fact write) rather than at head, so a call for a quest that is not
+# active or not finished never fires. finished_quest is in scope and non-undefined there.
+[[seam]]
+id      = "quest_complete"
+file    = "gml/scripts/GameplaySystems/Quests/QuestLog.gml"
+target  = { fn = "complete", at = "before", anchor = 'T2R.write(format("quest_{}_in_progress", quest_name), false);' }
+op      = "emit"
+hook    = "quest.complete"
+ctx     = "{ quest_name: quest_name, quest: finished_quest }"
+indent  = 8
+marker  = "mmapi_quest_complete"

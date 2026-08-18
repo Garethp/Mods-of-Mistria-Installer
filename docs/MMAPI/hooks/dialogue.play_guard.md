@@ -51,3 +51,4 @@ mmapi_guard("dialogue.play_guard", quiet_town_dialogue_play_guard);
 - [dialogue.path](dialogue.path.md) - Change which conversation plays. It has the same struct shape and runs after the guard allows.
 - [dialogue.line](dialogue.line.md) - Reword any dialogue line before the textbox shows it.
 - [dialogue.npc_blip](dialogue.npc_blip.md) - Swap the blip sound an NPC speaks with.
+- [ui.spawn_tutorial_guard](ui.spawn_tutorial_guard.md) - Block a tutorial popup before it spawns.
