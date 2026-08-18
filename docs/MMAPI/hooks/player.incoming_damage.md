@@ -61,3 +61,4 @@ mmapi_filter("player.incoming_damage", stone_skin_player_incoming_damage);
 - [combat.damage_resolved](combat.damage_resolved.md) - Observe the hit after it resolves.
 - [combat.damage_injected](combat.damage_injected.md) - Observe synthetic hits from `mmapi_deal_damage()`.
 - [player.health_delta](player.health_delta.md) - This is the last filter the damage passes through, inside `modify_health`.
+- [player.died](player.died.md) - Know when the player dies.

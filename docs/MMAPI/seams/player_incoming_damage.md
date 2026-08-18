@@ -32,3 +32,4 @@ This is the largest text rewrite in the combat set. Pristine code sets `took_dam
 - [player.incoming_damage](../hooks/player.incoming_damage.md) - This is the hook this seam dispatches.
 - [combat_damage_pre](combat_damage_pre.md) - This is where a `combat.damage` filter sets the popup/flinch fields this seam reads.
 - [player_health_delta](player_health_delta.md) - This is the general filter inside the `modify_health` call this seam gates.
+- [player_died](player_died.md) - This is the emit on the final death path.

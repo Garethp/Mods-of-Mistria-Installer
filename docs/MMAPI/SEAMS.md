@@ -20,7 +20,7 @@ The catalog is `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`, embedded int
 
 The catalog opens with a `[counts]` integrity table declaring those totals; the loader refuses a catalog whose parsed stanzas disagree, so a truncated or mis-merged file fails at load. The shipped-catalog test also holds the count sentences on this page, the [Catalog](CATALOG.md), and [Hooks](HOOKS.md) to the same numbers.
 
-The shipped catalog currently declares **104 hooks**, fed by **114 seams**, **3 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
+The shipped catalog currently declares **113 hooks**, fed by **121 seams**, **3 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
 
 Some hooks use `provider = "runtime"`. The framework emits those itself, with no engine edit behind them. `combat.damage_injected`, `game.day_changed`, and `game.room_changed` are the current runtime-provided hooks. The derived ones are polls over live state (`room()`, `total_days()`): they lag the change they report, and the first poll of a session only records the baseline, so no event fires for the state a session starts in. Treat them as edge triggers: react to the change, but read the live state at any later decision point rather than caching their ctx (see the warning on [game.room_changed](hooks/game.room_changed.md)). For the day boundary specifically, the in-engine [game.new_day](hooks/game.new_day.md) fires from `new_day()` itself, before the end-of-day autosave and never on a load. The derived `game.day_changed` lags both.
 

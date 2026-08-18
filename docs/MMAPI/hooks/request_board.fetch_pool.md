@@ -54,3 +54,4 @@ mmapi_filter("request_board.fetch_pool", bigger_board_request_board_fetch_pool);
 
 - [request_board.fetch_pool_ready](request_board.fetch_pool_ready.md) - Observe the finished board after the final availability pass.
 - [game.new_day](game.new_day.md) - The day rollover this build rides on.
+- [quest.complete](quest.complete.md) - Know when a quest is completed.

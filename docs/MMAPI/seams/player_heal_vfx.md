@@ -26,3 +26,4 @@ The locator is structural (function + head, matched token-wise), immune to white
 
 - [player.heal_vfx](../hooks/player.heal_vfx.md) - This is the hook this seam dispatches.
 - [player_health_delta](player_health_delta.md) - This is the filter on the health change itself, in the same file.
+- [player_acquire_perk](player_acquire_perk.md) - This is the emit at the head of `acquire_perk()`, in the same file.

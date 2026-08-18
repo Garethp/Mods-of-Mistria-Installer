@@ -54,3 +54,4 @@ mmapi_on("store.item_added", basket_bundler_store_item_added);
 
 - [items.give](items.give.md) - Rewrite any item the player is about to receive.
 - [ui.menu_opened](ui.menu_opened.md) - Know when a menu (the store included) opens.
+- [museum.donate_item](museum.donate_item.md) - Know when an item is donated to the museum.

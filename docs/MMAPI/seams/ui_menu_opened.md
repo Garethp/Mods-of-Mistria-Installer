@@ -24,3 +24,4 @@ ANCHOR's open path spawns the menu (`spawn(menu_id, arg1, ..., arg6)`), pushes i
 - [ui.menu_opened](../hooks/ui.menu_opened.md) - This is the hook this seam dispatches.
 - [ui_menu_closed_drain](ui_menu_closed_drain.md) - This is the closing edge on the per-frame drain.
 - [ui_menu_closed_shutdown](ui_menu_closed_shutdown.md) - This is the closing edge on anchor shutdown.
+- [ui_spawn_tutorial_guard](ui_spawn_tutorial_guard.md) - This is the veto check in front of tutorial popups.
