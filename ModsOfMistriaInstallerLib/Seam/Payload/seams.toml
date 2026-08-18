@@ -36,8 +36,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 104
-seams = 114
+hooks = 113
+seams = 123
 engine_fixes = 3
 call_rewrites = 1
 
@@ -372,6 +372,16 @@ kind = "event"
 doc  = "Fires every frame for every monster in par_monster's begin step, right after the aggro update. ctx is the monster instance. Hot path. Keep handlers cheap."
 
 [[hook]]
+name = "museum.donate_item"
+kind = "event"
+doc = "Fires at the top of donate_item_to_museum(), before the item is registered to the museum. ctx is { item_id }." 
+
+[[hook]]
+name = "player.acquire_perk"
+kind = "event"
+doc  = "Fires at the top of acquire_perk(). ctx is perk, as the perk id"
+
+[[hook]]
 name = "player.equipment_bonus"
 kind = "filter"
 doc  = "Fires at the return of the player's equipment bonus lookup. The filtered value is the computed bonus. ctx is { player, infusion, key }. Return the replacement value, or undefined to keep the current value."
@@ -422,9 +432,24 @@ kind = "filter"
 doc  = "Fires at the end of the player's move speed computation, after the status effect multipliers. The filtered value is the speed. ctx is { player, on_mount }. Return the replacement speed, or undefined to keep the current value. Mounted movement routes through this computation too (ctx.on_mount is true); the mounted base speed is separately filterable earlier in the computation via player.mount_speed. Swimming does not route through here - that is player.swim_speed."
 
 [[hook]]
+name = "player.pass_out"
+kind = "event"
+doc  = "Fires in pass_out(), immediately after end_day()."
+
+[[hook]]
 name = "player.renown_delta"
 kind = "filter"
 doc  = "Fires at the top of Ari.modify_renown(), before the delta is applied. The filtered value is the renown delta. The engine's one gameplay caller is the on_new_day drain of pending_renown_entries, so this fires at day rollover, once per pending entry (quest completions, museum donations, the prior day's shipping gold). ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. set_renown clamps the resulting total to [0, max renown], so any replacement is safe: a negative delta lowers renown and the computed level, plays no celebration, and never revokes already-granted level rewards, while a gain that crosses several levels grants each crossed level's reward. The end-of-day menu tallies the raw pending entries before the drain, so its renown-earned figure shows unfiltered values. Absolute sets (debug, test suite, new game) do not route through modify_renown and never fire this hook."
+
+[[hook]]
+name = "player.should_die"
+kind = "event"
+doc  = "Fires after the cutscene for the player dying runs."
+
+[[hook]]
+name = "player.skill_xp_to_level"
+kind = "event"
+doc  = "Fires in skill_xp_to_level(), after the level has been calculated. ctx is { skill, level } - skill is the array position from Skill, while level is the skill level (the player's skills begin at level 2)"
 
 [[hook]]
 name = "player.stamina_delta"
@@ -472,6 +497,16 @@ kind = "event"
 doc  = "Fires inside pick_node() when a pick LANDS: on a Rock right after damage is applied and the outcome is decided (before drops/teardown run), and on a successful dig-site dig. Furniture and rug picks, inadequate-quality bounces, and empty swings do not fire. ctx is { grid, x, y, item, node, result, destroyed, burn, effect_override }: result is \"rock\" or \"dig_site\", destroyed tells a chip from the break (for dig sites: whether the site is consumed), node for dig sites is read AFTER the dig so it may already reflect the dug/absent state, burn is the is_burn argument, and effect_override is non-undefined exactly for the engine's internal chained picks (the Earthbreaker perk), letting a handler skip picks no player swing caused. Fires for every caller of pick_node - Tool FSM, damage tarballs, and chains alike. The return value is ignored."
 
 [[hook]]
+name = "renown.to_level"
+kind = "event"
+doc  = "Fires at the end of renown_to_level(), after the level has been calculated. ctx is { level }."
+
+[[hook]]
+name = "renown.level_to_rank"
+kind = "event"
+doc  = "Fires at the end of renown_level_to_rank(), after the rank has been calculated. ctx is { rank }, with rank as an int."
+
+[[hook]]
 name = "request_board.fetch_pool"
 kind = "filter"
 doc  = "Fires in create_request_board()'s daily random top-up, after the crown offer and the always-available entries are already pushed and the candidate keys are shuffled, before the availability loop draws from them. The board builds once per day (new day, new game, and some loads), so this fires per build, not per viewing. The filtered value is the struct { random_pool, random_slots, year, season, day, is_crown_quest_day }: random_pool is the shuffled List of candidate request keys (a List with count()/get(), not an array), random_slots is the cap the draw stops at - it counts the WHOLE board, crown and always-available entries included, not just the random picks - year/season/day are the calendar date (day 1-based), and is_crown_quest_day reflects the crown cooldown being ready (an eligible offer may still be absent). ctx is undefined. Return the replacement struct, or undefined to keep the current values. The seam re-reads every field defensively, so a non-struct return or a partial struct keeps the engine values."
@@ -480,6 +515,11 @@ doc  = "Fires in create_request_board()'s daily random top-up, after the crown o
 name = "request_board.fetch_pool_ready"
 kind = "event"
 doc  = "Fires at the end of create_request_board(), after the final retain pass and the re-randomize, just before the built board list is returned. The board builds once per day (new day, new game, and some loads), so this fires per build, not per viewing. ctx is { year, season, day, is_crown_quest_day, final_pool }: the date fields match request_board.fetch_pool's, and final_pool is the LIVE List the function returns - pushing or removing entries here changes the actual board, so treat it as read-only unless that is the intent. The return value is ignored."
+
+[[hook]]
+name = "quest.complete"
+kind = "event"
+doc  = "Fires at the top of Questlog.complete(). ctx is { quest_name }."
 
 [[hook]]
 name = "save.game_loaded"
@@ -563,6 +603,11 @@ doc  = "Fires in StoreMenu right after a shelf tap adds an item to the shopping 
 name = "ui.menu_refreshed"
 kind = "event"
 doc  = "Fires after a menu rebuilds its content from game state, at the tail of the rebuild function. Emitting menus today: ToolbarMenu.update() (slot items re-resolved from the inventory: subscriber pull, page flips, tab taps, forced rebuilds, constructor) and VitalsMenu.refresh_statuses() (status icon strip rebuilt: register, cancel, and the expiry poll). ctx is { menu, kind }, with kind read from menu.type. Emits only on rebuild edges, never per idle frame, including during the menu's constructor before ui.menu_opened fires for it (ctx.menu is not yet in ANCHOR.open_menus then). Handlers must be idempotent and must not unconditionally force another rebuild from inside the handler."
+
+[[hook]]
+name = "ui.spawn_tutorial_guard"
+kind = "guard"
+doc  = "Fires at the top of spawn_tutorial(tutorial), before the tutorial menu displays. Return false to suppress the tutorial from running; undefined or true allows."
 
 [[hook]]
 name = "ui.sprite"
@@ -2850,3 +2895,85 @@ callee   = "local_get"
 to       = "mmapi_local_get"
 args     = 1
 provides = ["local.get", "local.missing"]
+
+[[seam]]
+id      = "ui_spawn_tutorial_guard"
+file    = "gml/scripts/UI/Anchor/anchor_utils.gml"
+target  = { fn = "spawn_tutorial", at = "head" }
+op    = "guard"
+hook    = "ui.spawn_tutorial_guard"
+ctx     = "{ tutorial: tutorial }"
+on_veto = "return undefined;"
+marker  = "mmapi_ui_spawn_tutorial_guard"
+
+[[seam]]
+id      = "player_acquire_perk"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+target  = { fn = "acquire_perk", at = "head"}
+op      = "emit"
+hook    = "player.acquire_perk"
+ctx     = "{ perk: perk }"
+marker  = "mmapi_player_acquire_perk"
+
+[[seam]]
+id      = "player_skill_xp_to_level"
+file    = "gml/scripts/Xp.gml"
+target  = { fn = "skill_xp_to_level", at = "before", anchor = "return level - 1;" }
+op      = "emit"
+hook    = "player.skill_xp_to_level"
+ctx     = "{ skill: skill, level: level }"
+marker  = "mmapi_player_skill_xp_to_level"
+
+[[seam]]
+id      = "renown_level_to_rank"
+file    = "gml/scripts/GameplaySystems/Player/RenownUtils.gml"
+target  = { fn = "renown_level_to_rank", at = "before", anchor = "return RENOWN.ranks.get(rank);" }
+op      = "emit"
+hook    = "renown.level_to_rank"
+ctx     = "{ rank: rank }"
+marker  = "mmapi_renown_level_to_rank"
+
+[[seam]]
+id      = "renown_to_level"
+file    = "gml/scripts/GameplaySystems/Player/RenownUtils.gml"
+target  = { fn = "renown_to_level", at = "before", anchor = "return lo;" }
+op      = "emit"
+hook    = "renown.to_level"
+ctx     = "{ level: lo }"
+marker  = "mmapi_renown_to_level"
+
+[[seam]]
+id      = "donate_item_to_museum"
+file    = "gml/scripts/Museum.gml"
+target  = { fn = "donate_item_to_museum", at = "head" }
+op      = "emit"
+hook    = "museum.donate_item"
+ctx     = "{item_id: item_id}"
+marker  = "mmapi_donate_item_to_museum"
+
+[[seam]]
+id      = "player_pass_out"
+file    = "gml/scripts/Player/pass_out.gml"
+target  = { fn = "pass_out", at = "after", anchor = "end_day();" }
+op      = "emit"
+hook    = "player.pass_out"
+ctx     = "{faint: faint}"
+marker  = "mmapi_player_pass_out"
+
+[[seam]]
+id      = "player_should_die"
+file    = "gml/objects/characters/obj_ari.gml"
+target  = { fn = "should_die", at = "after", anchor = '''MIST.run_scene("dying");''' }
+op      = "emit"
+hook    = "player.should_die"
+ctx     = "self"
+marker  = "mmapi_player_should_die"
+
+[[seam]]
+id      = "quest_complete"
+file    = "gml/scripts/GameplaySystems/Quests/QuestLog.gml"
+target  = { fn = "complete", at = "head" }
+op      = "emit"
+hook    = "quest.complete"
+ctx     = "{ quest_name: quest_name }"
+marker  = "mmapi_quest_complete"
