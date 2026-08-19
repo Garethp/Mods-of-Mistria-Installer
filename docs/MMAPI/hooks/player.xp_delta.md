@@ -47,10 +47,11 @@ mmapi_filter("player.xp_delta", battle_scholar_player_xp_delta);
 
 ## Engine Wiring
 
-- Seam [`player_xp_delta`](../seams/player_xp_delta.md) dispatches from `gml/scripts/GameplaySystems/Player/Ari.gml`, at the head of `gain_xp(skill, xp, silent)`, filtering `xp` and flooring the result before the engine's capped add. The same edit narrows the level celebration from any level change to a genuine gain.
+- Seam [`player_xp_delta`](../seams/player_xp_delta.md) dispatches from `gml/scripts/GameplaySystems/Player/Ari.gml`, at the head of `gain_xp(skill, xp, silent)`, filtering `xp` and flooring the result before the engine's capped add. The same edit narrows the level celebration from any level change to a genuine gain and emits [player.skill_leveled](player.skill_leveled.md) when the write raises the level.
 
 ## See Also
 
 - [player.essence_delta](player.essence_delta.md) - The similar filter shape for essence change.
 - [npc.heart_points](npc.heart_points.md) - The equivalent delta filter for villager hearts.
 - [animal.heart_points](animal.heart_points.md) - The equivalent delta filter for barn animals.
+- [player.skill_leveled](player.skill_leveled.md) - The level-up event the same seam emits after this filter's delta applies.

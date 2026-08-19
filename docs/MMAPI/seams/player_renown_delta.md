@@ -27,3 +27,6 @@ This seam sets `try_catch = false`. The dispatch is a direct assignment, not wra
 - [player.renown_delta](../hooks/player.renown_delta.md) - This is the hook this seam dispatches.
 - [player_gold_delta](player_gold_delta.md) - This seam is the same shape on `modify_gold()`.
 - [player_xp_delta](player_xp_delta.md) - The other progression delta, where the engine has no floor and the seam supplies one.
+- [museum_donate_item](museum_donate_item.md) - This is the emit at the head of a museum donation, one source of the pending entries this filter drains.
+- [quest_complete](quest_complete.md) - This is the emit inside a validated quest completion, the other pending-entry source.
+- [renown_gains](renown_gains.md) - This is the emit downstream in `set_renown()`, where a drained gain's level-ups land.

@@ -47,3 +47,4 @@ mmapi_on("player.max_health_item", vital_feast_player_max_health_item);
 - [items.consumed](items.consumed.md) - Know when the player eats any item, modifier or not.
 - [player.health_delta](player.health_delta.md) - Filter the item's regular `health_modifier` heal, which applies right after this event.
 - [ui.menu_refreshed](ui.menu_refreshed.md) - Know when the vitals menu rebuilds its content.
+- [player.acquire_perk](player.acquire_perk.md) - Know when the player acquires a perk.
