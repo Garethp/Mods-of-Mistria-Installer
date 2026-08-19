@@ -164,14 +164,19 @@ public class ImageInstaller(
             IDManager.RegisterId(gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id);
             atlasUtils.RemoveById(gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id);
 
-            using var pngStream = new MemoryStream(pngBytes);
-
             if (gameMeta.Asset.Atlas is null)
             {
-                // Not all animations live in an Atlas file.
-                // @TODO: Write the replacements directly to the file instead? Or should we always do that?
+                // Atlas-less animations (wrapping textures, tiled layer assets) render from
+                // their standalone PNG, so overwrite that file in place. The meta rewrite
+                // above already recorded any resize.
+                var gamePngPath = gameMetaPath[..^".meta.toml".Length] + ".png";
+                fileModifier.Write(gamePngPath, pngBytes);
+
+                reportStatus($"Replaced {spriteName} → standalone PNG (id {gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id})", "");
                 continue;
             }
+
+            using var pngStream = new MemoryStream(pngBytes);
             var id = atlasUtils.AddStrip(
                 gameMeta.Asset.Atlas!, 
                 gameMeta.Asset.FrameWidth, 
