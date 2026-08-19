@@ -36,8 +36,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 113
-seams = 121
+hooks = 114
+seams = 122
 engine_fixes = 3
 call_rewrites = 1
 
@@ -603,6 +603,11 @@ doc  = "Fires in StoreMenu right after a shelf tap adds an item to the shopping 
 name = "ui.menu_refreshed"
 kind = "event"
 doc  = "Fires after a menu rebuilds its content from game state, at the tail of the rebuild function. Emitting menus today: ToolbarMenu.update() (slot items re-resolved from the inventory: subscriber pull, page flips, tab taps, forced rebuilds, constructor) and VitalsMenu.refresh_statuses() (status icon strip rebuilt: register, cancel, and the expiry poll). ctx is { menu, kind }, with kind read from menu.type. Emits only on rebuild edges, never per idle frame, including during the menu's constructor before ui.menu_opened fires for it (ctx.menu is not yet in ANCHOR.open_menus then). Handlers must be idempotent and must not unconditionally force another rebuild from inside the handler."
+
+[[hook]]
+name = "ui.preset_popup_layout"
+kind = "filter"
+doc  = "Fires each time the customization menu generates its preset popup body, on popup open and again after a preset is added or deleted. The filtered value is the layout struct { frame_width: 46, frame_height: 47, columns: 4, rows: 2, spacing: 4 }: frame_width and frame_height size each preset frame, columns and rows shape the grid, and spacing is the gap centered_positions puts between frames. ctx is the CustomizationMenu struct. Return the replacement struct, or undefined to keep the engine values. The seam re-reads every field defensively, so an undefined return (or a partial struct) keeps the engine value for each field it lacks. Growing columns or rows grows the preset capacity (the stock 4x2 grid holds seven presets plus the button that creates a new preset), and a grid smaller than the current preset count leaves the overflow presets unreachable in the popup without deleting them. The popup backplate is sized at popup open (230x164) and does not adapt, so frames that outgrow it draw outside its art."
 
 [[hook]]
 name = "ui.spawn_tutorial_guard"
@@ -1355,6 +1360,34 @@ replace = '''
                 self.backplate.enable();'''
 marker  = "mmapi_mines_backplate_sprite"
 provides = ["ui.backplate_sprite"]
+
+[[seam]]
+id      = "ui_preset_popup_layout"
+file    = "gml/scripts/UI/Anchor/Menus/CustomizationMenu.gml"
+anchor  = '''
+        static FRAME_WIDTH = 46;
+        static FRAME_HEIGHT = 47; //
+        static HORZ_LAYOUT = centered_positions(4, FRAME_WIDTH, 4);
+        static VERT_LAYOUT = centered_positions(2, FRAME_HEIGHT, 4);'''
+replace = '''
+        var __mmapi_preset_layout = { frame_width: 46, frame_height: 47, columns: 4, rows: 2, spacing: 4 };
+        try { __mmapi_preset_layout = mmapi_apply_filters("ui.preset_popup_layout", __mmapi_preset_layout, self); } catch (__mmapi_preset_layout_err) {} // mmapi_ui_run_preset_popup_layout_filters
+        var FRAME_WIDTH = 46;
+        var FRAME_HEIGHT = 47;
+        var COLUMNS = 4;
+        var ROWS = 2;
+        var SPACING = 4;
+        if (__mmapi_preset_layout != undefined) {
+            try { FRAME_WIDTH = __mmapi_preset_layout.frame_width; } catch (__mmapi_preset_layout_width) {}
+            try { FRAME_HEIGHT = __mmapi_preset_layout.frame_height; } catch (__mmapi_preset_layout_height) {}
+            try { COLUMNS = __mmapi_preset_layout.columns; } catch (__mmapi_preset_layout_columns) {}
+            try { ROWS = __mmapi_preset_layout.rows; } catch (__mmapi_preset_layout_rows) {}
+            try { SPACING = __mmapi_preset_layout.spacing; } catch (__mmapi_preset_layout_spacing) {}
+        }
+        var HORZ_LAYOUT = centered_positions(COLUMNS, FRAME_WIDTH, SPACING);
+        var VERT_LAYOUT = centered_positions(ROWS, FRAME_HEIGHT, SPACING);'''
+marker  = "mmapi_ui_run_preset_popup_layout_filters"
+provides = ["ui.preset_popup_layout"]
 
 [[seam]]
 id      = "dialogue_path"
