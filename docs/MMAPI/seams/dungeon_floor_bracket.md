@@ -9,7 +9,7 @@ Brackets dungeon floor entry with three emits: floor enter, room-build begin, an
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Dungeon/enter_dungeon.gml` |
-| **Locator** | text anchor: the floor-entry sequence from the `GS_MINES_FLOOR` bookkeeping through `build_dungeon_room(GRID)` to `DUNGEON_RUNNER.on_room_start()` |
+| **Locator** | text anchor: the floor-entry sequence from `build_dungeon_room(GRID)` to `DUNGEON_RUNNER.on_room_start()` |
 | **Feeds** | [`dungeon.floor_enter`](../hooks/dungeon.floor_enter.md), [`dungeon.room_build_begin`](../hooks/dungeon.room_build_begin.md), [`dungeon.floor_built`](../hooks/dungeon.floor_built.md) |
 | **ctx built** | `{ runner, floor, biome, room_id, grid, level, gm_room, impl }` - one struct, field-by-field, per-field `try`/`catch`, shared by all three emits |
 | **Marker** | `mmapi_dungeon_run_floor_enter` |
@@ -18,7 +18,7 @@ Brackets dungeon floor entry with three emits: floor enter, room-build begin, an
 
 One text seam, three hooks. The replace brackets `build_dungeon_room()` inside the floor-entry sequence:
 
-1. `dungeon.floor_enter` emits after the `GS_MINES_FLOOR` bookkeeping, before anything is built.
+1. `dungeon.floor_enter` emits at the top of the floor-entry sequence, before anything is built.
 2. `dungeon.room_build_begin` emits immediately after, still before `build_dungeon_room(GRID)`. This shares the same ctx and is the last observation point before the room exists.
 3. `build_dungeon_room(GRID)` runs.
 4. `dungeon.floor_built` emits right after the build, before `DUNGEON_RUNNER.on_room_start()`.

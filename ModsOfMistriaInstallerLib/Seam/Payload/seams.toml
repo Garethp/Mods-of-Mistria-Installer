@@ -2003,14 +2003,10 @@ id      = "dungeon_floor_bracket"
 file    = "gml/scripts/GameplaySystems/Dungeon/enter_dungeon.gml"
 anchor  = '''
     //
-    GS_MINES_FLOOR = game_stats_current_mines_floor();
-    GL_MINES_FLOOR_WRITTEN = false;
     build_dungeon_room(GRID);
     DUNGEON_RUNNER.on_room_start();'''
 replace = '''
     //
-    GS_MINES_FLOOR = game_stats_current_mines_floor();
-    GL_MINES_FLOOR_WRITTEN = false;
     var __mmapi_dungeon_ctx = {}; // mmapi_dungeon_run_floor_enter
     try { __mmapi_dungeon_ctx.runner = DUNGEON_RUNNER; } catch (__mmapi_dctx_b0) {}
     try { __mmapi_dungeon_ctx.floor = DUNGEON_FLOOR; } catch (__mmapi_dctx_b1) {}
