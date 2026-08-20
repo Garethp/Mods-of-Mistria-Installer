@@ -6,7 +6,7 @@ Cancel an accepted date after its acceptance conversation, before the cutscene.
 
 ## Contract
 
-Fires inside run_date(date, npc) (Dates.gml), in the DateAcceptance conversation's completion callback and right after that conversation has played and the writes have applied and immediately before start_date_cutscene(npc, date). ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return false to cancel the accepted date (start_date_cutscene is skipped, so no date cutscene plays); any other return lets the date begin.
+Fires inside run_date(date, npc) (Dates.gml), in the DateAcceptance conversation's completion callback and right after that conversation has played and the writes have applied and immediately before start_date_cutscene(npc, date). ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return false to cancel the accepted date (start_date_cutscene is skipped, so no date cutscene plays). Any other return lets the date begin.
 
 Because it lives in `run_date`'s own body, it only fires when that body runs: a date claimed by a `date.run` override (which replaces `run_date` entirely) never reaches this guard. A `date.run` override that wants to honour decline can dispatch the guard itself with `mmapi_check_guards("date.begin", { npc, date })` before starting the cutscene.
 
@@ -41,7 +41,7 @@ mmapi_guard("date.begin", date_preferences_date_begin);
 
 ## Engine Wiring
 
-- Seam [`date_begin`](../seams/date_begin.md) dispatches from `gml/scripts/GameplaySystems/../Dates.gml`, guarding the `start_date_cutscene(npc, date)` call inside `run_date`'s `play_conversation` callback in a guard check.
+- Seam [`date_begin`](../seams/date_begin.md) dispatches from `gml/scripts/Dates.gml`, guarding the `start_date_cutscene(npc, date)` call inside `run_date`'s `play_conversation` callback.
 
 ## See Also
 
