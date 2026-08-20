@@ -56,4 +56,5 @@ The `{NpcId}` format placeholder stringifies the NPC enum by name, the same way 
 ## See Also
 
 - [date.run](date.run.md) - Take over a date at `run_date`'s head, before the acceptance conversation. A `date.run` claimant that calls `start_date_cutscene` directly still flows through this filter.
+- [date.begin](date.begin.md) - Cancel an accepted date after its acceptance conversation, before this filter fires.
 - [npc.heart_points](npc.heart_points.md) - Filter the heart points the completed date awards.

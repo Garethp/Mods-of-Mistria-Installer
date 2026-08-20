@@ -59,3 +59,4 @@ When no handler is registered, or every handler declines, `__mmapi_date_scene` e
 
 - [date.cutscene](../hooks/date.cutscene.md) - This is the hook this seam dispatches.
 - [date_cutscene_chain_args](date_cutscene_chain_args.md) - The companion edit that carries the chosen name into the reward gate.
+- [date_begin](date_begin.md) - The guard dispatch that runs earlier, before `start_date_cutscene` is called.

@@ -46,4 +46,5 @@ mmapi_guard("date.begin", date_preferences_date_begin);
 ## See Also
 
 - [date.run](date.run.md) - Take over a date at `run_date`'s head, before the acceptance conversation.
+- [date.cutscene](date.cutscene.md) - Swap which cutscene the date plays, after this guard has allowed it to begin.
 - [dialogue.play_guard](dialogue.play_guard.md) - Decline the acceptance conversation itself before it plays.

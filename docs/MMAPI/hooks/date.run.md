@@ -49,6 +49,7 @@ Calling `start_date_cutscene(npc, date)` is the engine's own next step; it reads
 
 ## See Also
 
+- [date.begin](date.begin.md) - Cancel an accepted date after its acceptance conversation, before the cutscene.
 - [date.cutscene](date.cutscene.md) - Swap which cutscene the date plays while keeping the vanilla pipeline. A claimant that calls `start_date_cutscene` directly still flows through it.
 - [dialogue.play_guard](dialogue.play_guard.md) - Veto or reshape the conversation `run_date` would otherwise play.
 - [npc.heart_points](npc.heart_points.md) - Filter the heart points the completed date awards.
