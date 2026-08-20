@@ -243,7 +243,7 @@ public class ModInstaller
         
         foreach (var generator in GetGenerators())
         {
-            generatedInformation.Merge(generator.Generate(mod));
+            generatedInformation.Merge(generator.Generate(effectiveMod));
         }
         
         generatedInformation.Merge(new TOMLCollector().Collect(effectiveMod));
