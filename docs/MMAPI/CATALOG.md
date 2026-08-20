@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **113 hooks**, fed by **121 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **114 hooks**, fed by **122 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -85,6 +85,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [npc.heart_points](hooks/npc.heart_points.md) | filter | Adjust the heart points a villager gains. |
 | [npc.gift_received](hooks/npc.gift_received.md) | event | Know when the player gives an NPC a gift. |
 | [date.run](hooks/date.run.md) | override | Take over a date the moment the player commits to it. |
+| [date.begin](hooks/date.begin.md) | guard | Cancel an accepted date after its acceptance conversation, before the cutscene. |
 | [animal.heart_points](hooks/animal.heart_points.md) | filter | Adjust the heart points a barn animal gains. |
 | [animal.pet](hooks/animal.pet.md) | event | Know when the player pets or puts down an animal. |
 | [combat.damage](hooks/combat.damage.md) | filter | Change any hit before it resolves. |
@@ -220,6 +221,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it applies. |
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
 | [date_run](seams/date_run.md) | Puts a claim-scoped override in front of every player-initiated date. |
+| [date_begin](seams/date_begin.md) | Guards start_date_cutscene inside run_date, after the acceptance conversation. |
 | [animal_heart_points](seams/animal_heart_points.md) | Reroutes every barn-animal heart-point delta through a filter before it applies. |
 | [animal_on_pet](seams/animal_on_pet.md) | Announces the moment the player pets a barn animal. |
 | [animal_put_down](seams/animal_put_down.md) | Announces the moment a held animal is set back down. |

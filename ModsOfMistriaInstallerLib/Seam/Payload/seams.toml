@@ -36,8 +36,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 113
-seams = 121
+hooks = 114
+seams = 122
 engine_fixes = 3
 call_rewrites = 1
 
@@ -131,7 +131,12 @@ doc  = "Fires at the top of interact(node) (Interact.gml, the shared grid-object
 name = "date.run"
 kind = "override"
 contention = "claim-scoped"
-doc  = "Fires at the top of run_date(date, npc) (Dates.gml), before the DateAcceptance conversation is requested and played and before the NPC is posed. ctx is { date, npc }: date is the Date enum id, npc is the NpcId. Return a non-undefined value to replace run_date entirely (the acceptance conversation and NPC posing are skipped and your value becomes run_date's return; return true for a handled date). Return undefined to defer to the engine's normal handling: request the DateAcceptance conversation, pose the NPC, then start_date_cutscene(npc, date) once it is accepted. run_date is the single entry point the date-selection UI routes every date through (await_popup(run_date, [date, npc])), so this hook sees every player-initiated date. Claim-scoped: many mods may register, but return undefined for the dates/partners you do not own; the first non-undefined return claims the date. A handler that wants to start the cutscene directly can call the engine's start_date_cutscene(npc, date)."
+doc  = "Fires at the top of run_date(date, npc) (Dates.gml), before the DateAcceptance conversation is requested and played and before the NPC is posed. ctx is { date, npc }: date is the Date enum id, npc is the NpcId. Return a non-undefined value to replace run_date entirely: the acceptance conversation and NPC posing are skipped, and your value becomes run_date's return (return true for a handled date). Return undefined to defer to the engine's normal handling: request the DateAcceptance conversation, pose the NPC, then start_date_cutscene(npc, date) once it is accepted. run_date is the single entry point the date-selection UI routes every date through (await_popup(run_date, [date, npc])), so this hook sees every player-initiated date. Claim-scoped: many mods may register, but return undefined for the dates/partners you do not own. The first non-undefined return claims the date. A handler that wants to start the cutscene directly can call the engine's start_date_cutscene(npc, date)."
+
+[[hook]]
+name = "date.begin"
+kind = "guard"
+doc  = "Fires inside run_date(date, npc) (Dates.gml), in the DateAcceptance conversation's completion callback and right after that conversation has played and the writes have applied and immediately before start_date_cutscene(npc, date). ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return false to cancel the accepted date (start_date_cutscene is skipped, so no date cutscene plays). Any other return lets the date begin."
 
 [[hook]]
 name = "furniture.place_guard"
@@ -1051,6 +1056,23 @@ function run_date(date, npc) {
 '''
 marker  = "mmapi_date_run_override"
 provides = ["date.run"]
+
+[[seam]]
+id      = "date_begin"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+    play_conversation(npc, date_convo, function(_, npc, date) {
+        start_date_cutscene(npc, date);
+    }, [npc, date]);
+'''
+replace = '''
+    play_conversation(npc, date_convo, function(_, npc, date) {
+        if (mmapi_check_guards("date.begin", { npc: npc, date: date }) == false) { return; } // mmapi_date_begin_guards
+        start_date_cutscene(npc, date);
+    }, [npc, date]);
+'''
+marker  = "mmapi_date_begin_guards"
+provides = ["date.begin"]
 
 [[seam]]
 id      = "furniture_place_guard"
