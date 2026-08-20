@@ -6,7 +6,11 @@ Take over a date the moment the player commits to it.
 
 ## Contract
 
-Fires at the top of `run_date(date, npc)` (`Dates.gml`), before the `DateAcceptance` conversation is requested and played and before the NPC is posed. ctx is `{ date, npc }`: `date` is the `Date` enum id, `npc` is the `NpcId`. Return a non-`undefined` value to replace `run_date` entirely: the acceptance conversation and NPC posing are skipped, and your value becomes `run_date`'s return (return `true` for a handled date). Return `undefined` to defer to the engine's normal handling: request the `DateAcceptance` conversation, pose the NPC, then `start_date_cutscene(npc, date)` once it is accepted.
+Fires at the top of `run_date(date, npc)` (`Dates.gml`), before the `DateAcceptance` conversation is requested and played and before the NPC is posed. ctx is `{ date, npc }`: `date` is the `Date` enum id, `npc` is the `NpcId`.
+
+Return a non-`undefined` value to replace `run_date` entirely. The acceptance conversation and NPC posing are skipped, and your value becomes `run_date`'s return (return `true` for a handled date).
+
+Return `undefined` to defer to the engine's normal handling.
 
 `run_date` is the single entry point the date-selection UI routes every date through (`await_popup(run_date, [date, npc])`), so this hook sees every player-initiated date.
 
@@ -45,5 +49,6 @@ Calling `start_date_cutscene(npc, date)` is the engine's own next step; it reads
 
 ## See Also
 
+- [date.cutscene](date.cutscene.md) - Swap which cutscene the date plays while keeping the vanilla pipeline. A claimant that calls `start_date_cutscene` directly still flows through it.
 - [dialogue.play_guard](dialogue.play_guard.md) - Veto or reshape the conversation `run_date` would otherwise play.
 - [npc.heart_points](npc.heart_points.md) - Filter the heart points the completed date awards.

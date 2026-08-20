@@ -36,8 +36,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 114
-seams = 122
+hooks = 115
+seams = 124
 engine_fixes = 3
 call_rewrites = 1
 
@@ -132,6 +132,11 @@ name = "date.run"
 kind = "override"
 contention = "claim-scoped"
 doc  = "Fires at the top of run_date(date, npc) (Dates.gml), before the DateAcceptance conversation is requested and played and before the NPC is posed. ctx is { date, npc }: date is the Date enum id, npc is the NpcId. Return a non-undefined value to replace run_date entirely (the acceptance conversation and NPC posing are skipped and your value becomes run_date's return; return true for a handled date). Return undefined to defer to the engine's normal handling: request the DateAcceptance conversation, pose the NPC, then start_date_cutscene(npc, date) once it is accepted. run_date is the single entry point the date-selection UI routes every date through (await_popup(run_date, [date, npc])), so this hook sees every player-initiated date. Claim-scoped: many mods may register, but return undefined for the dates/partners you do not own; the first non-undefined return claims the date. A handler that wants to start the cutscene directly can call the engine's start_date_cutscene(npc, date)."
+
+[[hook]]
+name = "date.cutscene"
+kind = "filter"
+doc  = "Fires in start_date_cutscene(npc, date) (Dates.gml), after the date blackboard writes and the prop selection and immediately before MIST.run_scene starts the date cutscene. The filtered value is the cutscene name about to run, defaulting to DATES[date].cutscene. ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return a replacement cutscene name to swap which scene plays, or undefined to keep the current value. A replacement must name a loaded cutscene, meaning a fiddle cutscenes entry backed by a mist script. An unknown name is dropped with a rate-limited warning and the vanilla scene runs. The chosen name is threaded through the date's completion chain, so the reward gate honours the replacement scene's own ends_day flag and the replacement's cutscenes.toml entry governs whether the date ends the day. The rest of the completion pipeline (heart points, the date photo, the reward popup, date_history) is keyed by npc and date and runs unchanged. Because the dispatch lives inside start_date_cutscene, a date.run override that calls start_date_cutscene directly still flows through this filter."
 
 [[hook]]
 name = "furniture.place_guard"
@@ -1056,6 +1061,66 @@ function run_date(date, npc) {
 '''
 marker  = "mmapi_date_run_override"
 provides = ["date.run"]
+
+[[seam]]
+id      = "date_cutscene"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+    MIST.blackboard.insert("prop_sprite", prop_sprite);
+    MIST.run_scene(data.cutscene);
+
+    new_chain().append(LinkId.Await, function(npc, date, item) {
+        if MIST.is_running() {
+            return false;
+        }
+
+        //
+        //
+        //
+        if CUTSCENES.get(DATES[date].cutscene).ends_day && ANCHOR.get_menu(Menu.Eod) == undefined {
+'''
+replace = '''
+    MIST.blackboard.insert("prop_sprite", prop_sprite);
+    var __mmapi_date_scene = data.cutscene;
+    try { __mmapi_date_scene = mmapi_apply_filters("date.cutscene", __mmapi_date_scene, { npc: npc, date: date }); } catch (__mmapi_date_cutscene) {} // mmapi_date_cutscene_filter
+    try {
+        if (__mmapi_date_scene != data.cutscene && CUTSCENES.get(__mmapi_date_scene) == undefined) {
+            mmapi_warn_rate_limited("date.cutscene:" + string(__mmapi_date_scene), "mmapi", "date.cutscene returned unknown cutscene `" + string(__mmapi_date_scene) + "`, keeping the vanilla date cutscene");
+            __mmapi_date_scene = data.cutscene;
+        }
+    } catch (__mmapi_date_cutscene_probe) {
+        mmapi_warn_rate_limited("date.cutscene:probe", "mmapi", "date.cutscene probe failed error=`" + string(__mmapi_date_cutscene_probe) + "`, keeping the vanilla date cutscene");
+        __mmapi_date_scene = data.cutscene;
+    }
+    MIST.run_scene(__mmapi_date_scene);
+
+    new_chain().append(LinkId.Await, function(npc, date, item, __mmapi_date_scene) {
+        if MIST.is_running() {
+            return false;
+        }
+
+        //
+        //
+        //
+        if CUTSCENES.get(__mmapi_date_scene).ends_day && ANCHOR.get_menu(Menu.Eod) == undefined {
+'''
+marker  = "mmapi_date_cutscene_filter"
+provides = ["date.cutscene"]
+
+[[seam]]
+id      = "date_cutscene_chain_args"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+        return true;
+    }, [npc, date, item]);
+'''
+replace = '''
+        return true;
+    }, [npc, date, item, __mmapi_date_scene]); // mmapi_date_cutscene_chain_args
+'''
+marker  = "mmapi_date_cutscene_chain_args"
+provides = ["date.cutscene"]
+depends_on = ["date_cutscene"]
 
 [[seam]]
 id      = "furniture_place_guard"
