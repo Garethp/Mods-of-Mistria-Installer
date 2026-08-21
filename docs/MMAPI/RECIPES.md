@@ -74,3 +74,37 @@ Missing names are silent, so check first. Every `TANGO.play` still runs the `aud
 ## Read Your Config
 
 Load lazily and validate. See [The House Pattern](API_REFERENCE.md#the-house-pattern) for the full form.
+
+## Weather Conditions (World Fact)
+
+The `weather` world fact holds one of three values, written at day start: `"pleasant"`, `"rainy"`, or `"snowy"`. Severity is a separate fact, `weather_is_strong`. A storm is `"rainy"` plus strong, and a blizzard is `"snowy"` plus strong.
+
+### Matching Any Bad Weather
+`Inclement` weather writes `"rainy"` in Spring, Summer, and Fall and `"snowy"` in Winter. As a result, a rain-only condition won't match in Winter. Match on both `"rainy"` and `"snowy"`:
+
+```toml
+requires = [
+   { any = [ { weather = "rainy" }, { weather = "snowy" } ] },
+]
+```
+
+### Matching Severe Weather Only
+
+For severe weather, which are storms and blizzards, add an additional condition on `weather_is_strong`:
+
+```toml
+requires = [
+   { any = [ { weather = "rainy" }, { weather = "snowy" } ] },
+   { weather_is_strong = true },
+]
+```
+
+### Matching Rain Only
+
+This example includes storms, and never matches in Winter:
+
+```toml
+requires = [
+   { weather = "rainy" },
+]
+```

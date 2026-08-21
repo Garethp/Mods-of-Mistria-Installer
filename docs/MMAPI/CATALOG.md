@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **114 hooks**, fed by **122 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **117 hooks**, fed by **126 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -86,6 +86,8 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [npc.gift_received](hooks/npc.gift_received.md) | event | Know when the player gives an NPC a gift. |
 | [date.run](hooks/date.run.md) | override | Take over a date the moment the player commits to it. |
 | [date.begin](hooks/date.begin.md) | guard | Cancel an accepted date after its acceptance conversation, before the cutscene. |
+| [date.cutscene](hooks/date.cutscene.md) | filter | Swap which cutscene a date plays while keeping the vanilla date pipeline. |
+| [date.cooldown](hooks/date.cooldown.md) | filter | Change the cooldown between dates with the same NPC. |
 | [animal.heart_points](hooks/animal.heart_points.md) | filter | Adjust the heart points a barn animal gains. |
 | [animal.pet](hooks/animal.pet.md) | event | Know when the player pets or puts down an animal. |
 | [combat.damage](hooks/combat.damage.md) | filter | Change any hit before it resolves. |
@@ -136,7 +138,8 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [ui.item_node](hooks/ui.item_node.md) | filter | Adjust UI item slots as they are populated. |
 | [ui.button_sprites](hooks/ui.button_sprites.md) | filter | Swap the sprite set a UI button is built from. |
 | [ui.spawn_tutorial_guard](hooks/ui.spawn_tutorial_guard.md) | guard | Block a tutorial popup before it spawns. |
-| [ui.sprite](hooks/ui.sprite.md) | filter | Swap the backplate sprites behind the mines menu and spell cards. |
+| [ui.backplate_sprite](hooks/ui.backplate_sprite.md) | filter | Swap the backplate sprites behind the mines menu and spell cards. |
+| [ui.preset_popup_layout](hooks/ui.preset_popup_layout.md) | filter | Resize the customization menu's preset popup frames and grid. |
 | [dialogue.play_guard](hooks/dialogue.play_guard.md) | guard | Block a conversation before it starts. |
 | [dialogue.path](hooks/dialogue.path.md) | filter | Change which conversation plays before it starts. |
 | [dialogue.line](hooks/dialogue.line.md) | filter | Reword any dialogue line before the textbox shows it. |
@@ -222,6 +225,9 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
 | [date_run](seams/date_run.md) | Puts a claim-scoped override in front of every player-initiated date. |
 | [date_begin](seams/date_begin.md) | Guards start_date_cutscene inside run_date, after the acceptance conversation. |
+| [date_cutscene](seams/date_cutscene.md) | Threads the date cutscene name through a filter and into the completion chain. |
+| [date_cutscene_chain_args](seams/date_cutscene_chain_args.md) | Extends the date chain's args so the filtered cutscene name reaches the reward gate. |
+| [date_cooldown](seams/date_cooldown.md) | Threads the date cooldown through a filter before the eligibility scan uses it. |
 | [animal_heart_points](seams/animal_heart_points.md) | Reroutes every barn-animal heart-point delta through a filter before it applies. |
 | [animal_on_pet](seams/animal_on_pet.md) | Announces the moment the player pets a barn animal. |
 | [animal_put_down](seams/animal_put_down.md) | Announces the moment a held animal is set back down. |
@@ -238,7 +244,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [spells_cast_override](seams/spells_cast_override.md) | Puts an override at the head of `cast_spell()` that can consume the whole cast. |
 | [spells_cast_done](seams/spells_cast_done.md) | Emits at the end of the engine's `cast_spell()`. |
 | [spells_cost_can_cast](seams/spells_cost_can_cast.md) | Filters the mana-cost read inside `can_cast_spell()`'s mana check. |
-| [spells_cost_menu](seams/spells_cost_menu.md) | Filters the mana-cost read behind the spellcasting menu's cost display. |
+| [spells_cost_menu](seams/spells_cost_menu.md) | Filters the mana-cost read behind the spellcasting menu's cost display and renders it at quarter granularity. |
 | [spells_cost_fsm_loop](seams/spells_cost_fsm_loop.md) | Filters the mana deduction in the player's looping cast state. |
 | [spells_cost_fsm_default](seams/spells_cost_fsm_default.md) | Filters the mana deduction in the player's default cast state. |
 | [fsm_transition](seams/fsm_transition.md) | Filters every executed shared-FSM state transition through one funnel. |
@@ -282,8 +288,9 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [ui_item_node_crafting_menu](seams/ui_item_node_crafting_menu.md) | Hands each crafting-grid icon node to mods as the menu builds. |
 | [ui_button_sprites](seams/ui_button_sprites.md) | Puts a filter on each built button sprite set before it enters the cache. |
 | [ui_spawn_tutorial_guard](seams/ui_spawn_tutorial_guard.md) | Puts a veto check at the head of `spawn_tutorial()`. |
-| [ui_sprite_mines_backplate](seams/ui_sprite_mines_backplate.md) | Routes the mines menu backplate sprite through a filter on dungeon room start. |
-| [ui_sprite_spell_card_backplate](seams/ui_sprite_spell_card_backplate.md) | Routes each spell card's backplate sprite through a filter. |
+| [ui_backplate_sprite_mines](seams/ui_backplate_sprite_mines.md) | Routes the mines menu backplate sprite through a filter on dungeon room start. |
+| [ui_backplate_sprite_spell_card](seams/ui_backplate_sprite_spell_card.md) | Routes each spell card's backplate sprite through a filter. |
+| [ui_preset_popup_layout](seams/ui_preset_popup_layout.md) | Rebuilds the preset popup's layout constants through a filter each time the popup body is generated. |
 | [dialogue_play_guard](seams/dialogue_play_guard.md) | Puts a veto check at the head of `play_conversation()`. |
 | [dialogue_path](seams/dialogue_path.md) | Rebuilds `play_conversation()`'s four arguments through the `dialogue.path` filter. |
 | [dialogue_line](seams/dialogue_line.md) | Filters each localized dialogue line before the textbox shows it. |

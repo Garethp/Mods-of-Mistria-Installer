@@ -36,8 +36,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 114
-seams = 122
+hooks = 117
+seams = 126
 engine_fixes = 3
 call_rewrites = 1
 
@@ -136,7 +136,17 @@ doc  = "Fires at the top of run_date(date, npc) (Dates.gml), before the DateAcce
 [[hook]]
 name = "date.begin"
 kind = "guard"
-doc  = "Fires inside run_date(date, npc) (Dates.gml), in the DateAcceptance conversation's completion callback and right after that conversation has played and the writes have applied and immediately before start_date_cutscene(npc, date). ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return false to cancel the accepted date (start_date_cutscene is skipped, so no date cutscene plays). Any other return lets the date begin."
+doc  = "Fires inside run_date(date, npc) (Dates.gml), in the DateAcceptance conversation's completion callback. The conversation has already played and its writes have applied by then, and start_date_cutscene(npc, date) is what runs next. ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return false to cancel the accepted date, which skips start_date_cutscene so no date cutscene plays. Any other return lets the date begin."
+
+[[hook]]
+name = "date.cutscene"
+kind = "filter"
+doc  = "Fires in start_date_cutscene(npc, date) (Dates.gml), after the date blackboard writes and the prop selection and immediately before MIST.run_scene starts the date cutscene. The filtered value is the cutscene name about to run, defaulting to DATES[date].cutscene. ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return a replacement cutscene name to swap which scene plays, or undefined to keep the current value. A replacement must name a loaded cutscene, meaning a fiddle cutscenes entry backed by a mist script. An unknown name is dropped with a rate-limited warning and the vanilla scene runs. The chosen name is threaded through the date's completion chain, so the reward gate honours the replacement scene's own ends_day flag and the replacement's cutscenes.toml entry governs whether the date ends the day. The rest of the completion pipeline (heart points, the date photo, the reward popup, date_history) is keyed by npc and date and runs unchanged. Because the dispatch lives inside start_date_cutscene, a date.run override that calls start_date_cutscene directly still flows through this filter."
+
+[[hook]]
+name = "date.cooldown"
+kind = "filter"
+doc  = "Fires in ari_eligible_for_date(npc, time_to_check) (Dates.gml), once per eligibility check, before the date history is scanned. The filtered value is the date cooldown in game seconds, defaulting to days(6), the cooldown the engine enforces between listed dates with the same NPC. ctx is { npc, time_to_check }: npc is the NpcId being checked, time_to_check is the calendar time the check is for (usually now). Return a replacement duration, or undefined to keep the current value. Return 0 to remove the per NPC cooldown. This does not allow a second date on the same day: a separate engine clause rejects any date whose timestamp matches an existing history entry, CALENDAR.time advances a whole day at a time, and that clause is not scoped to an NPC, so once any date is taken no further date is possible that day whatever this hook returns. A non-numeric return is dropped with a rate-limited warning and the vanilla cooldown applies. Eligibility gates whether the Date option appears at all, so this hook runs upstream of date.run and fires from the talk menu and the date eligibility UI. Keep handlers cheap."
 
 [[hook]]
 name = "furniture.place_guard"
@@ -610,12 +620,17 @@ kind = "event"
 doc  = "Fires after a menu rebuilds its content from game state, at the tail of the rebuild function. Emitting menus today: ToolbarMenu.update() (slot items re-resolved from the inventory: subscriber pull, page flips, tab taps, forced rebuilds, constructor) and VitalsMenu.refresh_statuses() (status icon strip rebuilt: register, cancel, and the expiry poll). ctx is { menu, kind }, with kind read from menu.type. Emits only on rebuild edges, never per idle frame, including during the menu's constructor before ui.menu_opened fires for it (ctx.menu is not yet in ANCHOR.open_menus then). Handlers must be idempotent and must not unconditionally force another rebuild from inside the handler."
 
 [[hook]]
+name = "ui.preset_popup_layout"
+kind = "filter"
+doc  = "Fires each time the customization menu generates its preset popup body, on popup open and again after a preset is added or deleted. The filtered value is the layout struct { frame_width: 46, frame_height: 47, columns: 4, rows: 2, spacing: 4 }: frame_width and frame_height size each preset frame, columns and rows shape the grid, and spacing is the gap centered_positions puts between frames. ctx is the CustomizationMenu struct. Return the replacement struct, or undefined to keep the engine values. The seam re-reads every field defensively, so an undefined return (or a partial struct) keeps the engine value for each field it lacks. Growing columns or rows grows the preset capacity (the stock 4x2 grid holds seven presets plus the button that creates a new preset), and a grid smaller than the current preset count leaves the overflow presets unreachable in the popup without deleting them. The popup backplate is sized at popup open (230x164) and does not adapt, so frames that outgrow it draw outside its art."
+
+[[hook]]
 name = "ui.spawn_tutorial_guard"
 kind = "guard"
 doc  = "Fires at the top of spawn_tutorial(tutorial), before the tutorial is marked seen and before its popup is built. ctx is { tutorial }, the Tutorial enum id. Return false to veto the popup (spawn_tutorial returns undefined, and the tutorial stays unmarked in ARI.tutorials_seen, so the game offers it again on its next trigger); undefined or true allows. The guard sits above the function's own test-suite early return, so it also fires - vacuously - in test-suite runs."
 
 [[hook]]
-name = "ui.sprite"
+name = "ui.backplate_sprite"
 kind = "filter"
 doc  = "Fires at backplate sprite assignments. ctx.source names the site: mines_menu_backplate (the mines menu backplate on dungeon room start, ctx { source }) and spellcasting_card_backplate (the spell card backplate, ctx { source, spell }). The filtered value is the default backplate sprite. Return the replacement sprite, or undefined to keep the current value."
 
@@ -1075,6 +1090,104 @@ marker  = "mmapi_date_begin_guards"
 provides = ["date.begin"]
 
 [[seam]]
+id      = "date_cutscene"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+    MIST.blackboard.insert("prop_sprite", prop_sprite);
+    MIST.run_scene(data.cutscene);
+
+    new_chain().append(LinkId.Await, function(npc, date, item) {
+        if MIST.is_running() {
+            return false;
+        }
+
+        //
+        //
+        //
+        if CUTSCENES.get(DATES[date].cutscene).ends_day && ANCHOR.get_menu(Menu.Eod) == undefined {
+'''
+replace = '''
+    MIST.blackboard.insert("prop_sprite", prop_sprite);
+    var __mmapi_date_scene = data.cutscene;
+    try { __mmapi_date_scene = mmapi_apply_filters("date.cutscene", __mmapi_date_scene, { npc: npc, date: date }); } catch (__mmapi_date_cutscene) {} // mmapi_date_cutscene_filter
+    try {
+        if (__mmapi_date_scene != data.cutscene && CUTSCENES.get(__mmapi_date_scene) == undefined) {
+            mmapi_warn_rate_limited("date.cutscene:" + string(__mmapi_date_scene), "mmapi", "date.cutscene returned unknown cutscene `" + string(__mmapi_date_scene) + "`, keeping the vanilla date cutscene");
+            __mmapi_date_scene = data.cutscene;
+        }
+    } catch (__mmapi_date_cutscene_probe) {
+        mmapi_warn_rate_limited("date.cutscene:probe", "mmapi", "date.cutscene probe failed error=`" + string(__mmapi_date_cutscene_probe) + "`, keeping the vanilla date cutscene");
+        __mmapi_date_scene = data.cutscene;
+    }
+    MIST.run_scene(__mmapi_date_scene);
+
+    new_chain().append(LinkId.Await, function(npc, date, item, __mmapi_date_scene) {
+        if MIST.is_running() {
+            return false;
+        }
+
+        //
+        //
+        //
+        if CUTSCENES.get(__mmapi_date_scene).ends_day && ANCHOR.get_menu(Menu.Eod) == undefined {
+'''
+marker  = "mmapi_date_cutscene_filter"
+provides = ["date.cutscene"]
+
+[[seam]]
+id      = "date_cutscene_chain_args"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+        return true;
+    }, [npc, date, item]);
+'''
+replace = '''
+        return true;
+    }, [npc, date, item, __mmapi_date_scene]); // mmapi_date_cutscene_chain_args
+'''
+marker  = "mmapi_date_cutscene_chain_args"
+provides = ["date.cutscene"]
+depends_on = ["date_cutscene"]
+
+[[seam]]
+id      = "date_cooldown"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+function ari_eligible_for_date(npc, time_to_check) {
+    time_to_check = time_to_check == undefined ? CALENDAR.time : time_to_check;
+
+    for (var i = 0; i < array_length(ARI.date_history); i++) {
+        var v = ARI.date_history[i];
+        if DATES[v.date].unlisted {
+            continue;
+        }
+        if time_to_check == v.timestamp
+            || (v.npc == npc && time_to_check - v.timestamp < days(6))
+        {
+'''
+replace = '''
+function ari_eligible_for_date(npc, time_to_check) {
+    time_to_check = time_to_check == undefined ? CALENDAR.time : time_to_check;
+
+    var __mmapi_date_cooldown = days(6);
+    try { __mmapi_date_cooldown = mmapi_apply_filters("date.cooldown", __mmapi_date_cooldown, { npc: npc, time_to_check: time_to_check }); } catch (__mmapi_date_cooldown_err) {} // mmapi_date_cooldown_filter
+    if (is_numeric(__mmapi_date_cooldown) == false) {
+        mmapi_warn_rate_limited("date.cooldown:type", "mmapi", "date.cooldown returned a non-numeric value, keeping the vanilla cooldown");
+        __mmapi_date_cooldown = days(6);
+    }
+    for (var i = 0; i < array_length(ARI.date_history); i++) {
+        var v = ARI.date_history[i];
+        if DATES[v.date].unlisted {
+            continue;
+        }
+        if time_to_check == v.timestamp
+            || (v.npc == npc && time_to_check - v.timestamp < __mmapi_date_cooldown)
+        {
+'''
+marker  = "mmapi_date_cooldown_filter"
+provides = ["date.cooldown"]
+
+[[seam]]
 id      = "furniture_place_guard"
 file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
 context_before = '''
@@ -1362,7 +1475,7 @@ blank_after = true
 marker  = "mmapi_ui_run_draw_gui_callbacks"
 
 [[seam]]
-id      = "ui_sprite_mines_backplate"
+id      = "ui_backplate_sprite_mines"
 file    = "gml/scripts/UI/Anchor/Menus/MinesMenu.gml"
 anchor  = '''
         .set_room_start_callback(function() {
@@ -1372,11 +1485,39 @@ replace = '''
         .set_room_start_callback(function() {
             if is_dungeon_room(room()) {
                 try {
-                    self.backplate.set_sprite(mmapi_apply_filters("ui.sprite", spr_ui_dungeon_backplate, { source: "mines_menu_backplate" }));
+                    self.backplate.set_sprite(mmapi_apply_filters("ui.backplate_sprite", spr_ui_dungeon_backplate, { source: "mines_menu_backplate" }));
                 } catch (__mmapi_mines_backplate_sprite) {}
                 self.backplate.enable();'''
 marker  = "mmapi_mines_backplate_sprite"
-provides = ["ui.sprite"]
+provides = ["ui.backplate_sprite"]
+
+[[seam]]
+id      = "ui_preset_popup_layout"
+file    = "gml/scripts/UI/Anchor/Menus/CustomizationMenu.gml"
+anchor  = '''
+        static FRAME_WIDTH = 46;
+        static FRAME_HEIGHT = 47; //
+        static HORZ_LAYOUT = centered_positions(4, FRAME_WIDTH, 4);
+        static VERT_LAYOUT = centered_positions(2, FRAME_HEIGHT, 4);'''
+replace = '''
+        var __mmapi_preset_layout = { frame_width: 46, frame_height: 47, columns: 4, rows: 2, spacing: 4 };
+        try { __mmapi_preset_layout = mmapi_apply_filters("ui.preset_popup_layout", __mmapi_preset_layout, self); } catch (__mmapi_preset_layout_err) {} // mmapi_ui_run_preset_popup_layout_filters
+        var FRAME_WIDTH = 46;
+        var FRAME_HEIGHT = 47;
+        var COLUMNS = 4;
+        var ROWS = 2;
+        var SPACING = 4;
+        if (__mmapi_preset_layout != undefined) {
+            try { FRAME_WIDTH = __mmapi_preset_layout.frame_width; } catch (__mmapi_preset_layout_width) {}
+            try { FRAME_HEIGHT = __mmapi_preset_layout.frame_height; } catch (__mmapi_preset_layout_height) {}
+            try { COLUMNS = __mmapi_preset_layout.columns; } catch (__mmapi_preset_layout_columns) {}
+            try { ROWS = __mmapi_preset_layout.rows; } catch (__mmapi_preset_layout_rows) {}
+            try { SPACING = __mmapi_preset_layout.spacing; } catch (__mmapi_preset_layout_spacing) {}
+        }
+        var HORZ_LAYOUT = centered_positions(COLUMNS, FRAME_WIDTH, SPACING);
+        var VERT_LAYOUT = centered_positions(ROWS, FRAME_HEIGHT, SPACING);'''
+marker  = "mmapi_ui_run_preset_popup_layout_filters"
+provides = ["ui.preset_popup_layout"]
 
 [[seam]]
 id      = "dialogue_path"
@@ -1639,25 +1780,60 @@ catch_var = "__mmapi_spell_cast_callback"
 marker  = "mmapi_spell_cast_callback"
 
 [[seam]]
-id      = "ui_sprite_spell_card_backplate"
+id      = "ui_backplate_sprite_spell_card"
 file    = "gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml"
 anchor  = '''
         self.card.set_sprite(spr_ui_journal_magic_card_backplate);
 '''
 replace = '''
-        self.card.set_sprite(mmapi_apply_filters("ui.sprite", spr_ui_journal_magic_card_backplate, { source: "spellcasting_card_backplate", spell: spell })); // mmapi_spell_card_backplate
+        self.card.set_sprite(mmapi_apply_filters("ui.backplate_sprite", spr_ui_journal_magic_card_backplate, { source: "spellcasting_card_backplate", spell: spell })); // mmapi_spell_card_backplate
 '''
 marker  = "mmapi_spell_card_backplate"
-provides = ["ui.sprite"]
+provides = ["ui.backplate_sprite"]
 
+# The replace widens the pristine one-line cost read into a quarter-granularity
+# render so fractional filtered costs draw a partial orb instead of truncating.
+# The partial ladder mirrors VitalsMenu's set_mana ladder, where the sprite
+# names describe the drained portion of the orb.
 [[seam]]
 id      = "spells_cost_menu"
 file    = "gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml"
 anchor  = '''
         var cost = self.spell_data.cost div 4;
+        var cost_icon = spr_ui_hud_health_mana_ball_on;
+        var positions = centered_positions(cost, sprite_get_width(cost_icon), 2);
+        for (var i = 0; i < array_length(positions); i++) {
+            var pos = positions[i];
+            ANCHOR.sprite(self.cost_zone)
+                .set_sprite(cost_icon)
+                .set_x(pos)
+                .set_align(Align.Center, Align.Middle)
+        }
 '''
 replace = '''
-        var cost = mmapi_apply_filters("spells.cost", self.spell_data.cost, spell) div 4; // mmapi_spell_menu_cost
+        var cost = mmapi_apply_filters("spells.cost", self.spell_data.cost, spell); // mmapi_spell_menu_cost
+        var full_orbs = cost div 4;
+        var partial = cost - full_orbs * 4;
+        var cost_icon = spr_ui_hud_health_mana_ball_on;
+        var icon_count = full_orbs + (partial > 0 ? 1 : 0);
+        var positions = centered_positions(icon_count, sprite_get_width(cost_icon), 2);
+        for (var i = 0; i < array_length(positions); i++) {
+            var pos = positions[i];
+            var sprite = cost_icon;
+            if i >= full_orbs {
+                if partial <= 1 {
+                    sprite = spr_ui_hud_health_mana_ball_threethirds;
+                } else if partial <= 2 {
+                    sprite = spr_ui_hud_health_mana_ball_half;
+                } else if partial <= 3 {
+                    sprite = spr_ui_hud_health_mana_ball_onequarter;
+                }
+            }
+            ANCHOR.sprite(self.cost_zone)
+                .set_sprite(sprite)
+                .set_x(pos)
+                .set_align(Align.Center, Align.Middle)
+        }
 '''
 marker  = "mmapi_spell_menu_cost"
 provides = ["spells.cost"]

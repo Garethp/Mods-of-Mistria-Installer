@@ -1,8 +1,8 @@
-# Hook: ui.sprite
+# Hook: ui.backplate_sprite
 
 Swap the backplate sprites behind the mines menu and spell cards.
 
-`ui.sprite` is a **filter** hook. Register a callback with `mmapi_filter`. See [Hooks](../HOOKS.md) for how registration and dispatch work.
+`ui.backplate_sprite` is a **filter** hook. Register a callback with `mmapi_filter`. See [Hooks](../HOOKS.md) for how registration and dispatch work.
 
 ## Contract
 
@@ -23,9 +23,9 @@ Fires at backplate sprite assignments. `ctx.source` names the site: `mines_menu_
 ## Usage
 
 ```gml
-// ui.sprite is a FILTER: you receive (value, ctx) and return a
+// ui.backplate_sprite is a FILTER: you receive (value, ctx) and return a
 // replacement, or undefined to keep the game's value.
-function deco_backplates_ui_sprite(_value, _ctx) {
+function deco_backplates_backplate_sprite(_value, _ctx) {
     // _value is the default backplate sprite.
     // _ctx is { source } at the mines site, { source, spell } at the
     // spell card site.
@@ -38,13 +38,13 @@ function deco_backplates_ui_sprite(_value, _ctx) {
     return undefined; // undefined = keep the game's value
 }
 
-mmapi_filter("ui.sprite", deco_backplates_ui_sprite);
+mmapi_filter("ui.backplate_sprite", deco_backplates_backplate_sprite);
 ```
 
 ## Engine Wiring
 
-- Seam [`ui_sprite_mines_backplate`](../seams/ui_sprite_mines_backplate.md) dispatches from `gml/scripts/UI/Anchor/Menus/MinesMenu.gml`, in the room start callback: on dungeon room start it filters `spr_ui_dungeon_backplate` and sets the result before `self.backplate.enable()`.
-- Seam [`ui_sprite_spell_card_backplate`](../seams/ui_sprite_spell_card_backplate.md) dispatches from `gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml`, filtering `spr_ui_journal_magic_card_backplate` as the card's sprite is set.
+- Seam [`ui_backplate_sprite_mines`](../seams/ui_backplate_sprite_mines.md) dispatches from `gml/scripts/UI/Anchor/Menus/MinesMenu.gml`, in the room start callback: on dungeon room start it filters `spr_ui_dungeon_backplate` and sets the result before `self.backplate.enable()`.
+- Seam [`ui_backplate_sprite_spell_card`](../seams/ui_backplate_sprite_spell_card.md) dispatches from `gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml`, filtering `spr_ui_journal_magic_card_backplate` as the card's sprite is set.
 
 ## See Also
 

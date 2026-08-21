@@ -6,9 +6,9 @@ Change every skill XP gain before it applies, or turn it into a deduction.
 
 ## Contract
 
-Fires at the top of `Ari.gain_xp(skill, xp, silent)`, before the XP is applied. The filtered value is the XP delta. ctx is `{ player, skill, silent }`; `skill` is the `Skill.*` enum id, so one handler covers every skill and can branch on the one it cares about. Return the replacement delta, or `undefined` to keep the current value.
+Fires at the top of `Ari.gain_xp(skill, xp, silent)`, before the XP is applied. The filtered value is the XP delta. ctx is `{ player, skill, silent }`. `skill` is the `Skill.*` enum id, so one handler covers every skill and can branch on the one it cares about. Return the replacement delta, or `undefined` to keep the current value.
 
-A negative delta genuinely deducts XP and can lower the skill's level. The seam makes that safe: it floors the filtered result at `-skill_xp[skill]`, so the running total never goes negative.
+A negative delta genuinely deducts XP and can lower the skill's level. The seam makes that safe. It floors the filtered result at `-skill_xp[skill]`, so the running total never goes negative.
 
 The engine's own cap at `MAX_SKILL_LEVEL_COSTS` still applies after the filter, and already-granted level rewards are not revoked by leveling down. A mod that wants to deduct XP outright (rather than transform an engine gain) calls `ARI.gain_xp(skill, -amount)` directly. The deduction routes through this filter and the same floor.
 
@@ -23,7 +23,7 @@ The engine's own cap at `MAX_SKILL_LEVEL_COSTS` still applies after the filter, 
 
 - `player` - the `Ari` struct gaining the XP.
 - `skill` - the `Skill.*` enum id of the skill the XP applies to.
-- `silent` - the `silent` flag `gain_xp` received: whether the engine caller asked to skip the level-up celebration.
+- `silent` - the `silent` flag `gain_xp` received, whether the engine caller asked to skip the level-up celebration.
 
 ## Usage
 

@@ -49,6 +49,6 @@ mmapi_filter("ui.button_sprites", fresh_coat_ui_button_sprites);
 
 ## See Also
 
-- [ui.sprite](ui.sprite.md) - Swap the backplate sprites behind the mines menu and spell cards.
+- [ui.backplate_sprite](ui.backplate_sprite.md) - Swap the backplate sprites behind the mines menu and spell cards.
 - [ui.item_icon](ui.item_icon.md) - Swap the sprite an item shows as its icon.
 - [ui.item_node](ui.item_node.md) - Adjust UI item slots as they are populated.
