@@ -244,7 +244,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [spells_cast_override](seams/spells_cast_override.md) | Puts an override at the head of `cast_spell()` that can consume the whole cast. |
 | [spells_cast_done](seams/spells_cast_done.md) | Emits at the end of the engine's `cast_spell()`. |
 | [spells_cost_can_cast](seams/spells_cost_can_cast.md) | Filters the mana-cost read inside `can_cast_spell()`'s mana check. |
-| [spells_cost_menu](seams/spells_cost_menu.md) | Filters the mana-cost read behind the spellcasting menu's cost display. |
+| [spells_cost_menu](seams/spells_cost_menu.md) | Filters the mana-cost read behind the spellcasting menu's cost display and renders it at quarter granularity. |
 | [spells_cost_fsm_loop](seams/spells_cost_fsm_loop.md) | Filters the mana deduction in the player's looping cast state. |
 | [spells_cost_fsm_default](seams/spells_cost_fsm_default.md) | Filters the mana deduction in the player's default cast state. |
 | [fsm_transition](seams/fsm_transition.md) | Filters every executed shared-FSM state transition through one funnel. |

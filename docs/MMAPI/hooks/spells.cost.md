@@ -41,7 +41,7 @@ mmapi_filter("spells.cost", mana_miser_spells_cost);
 ## Engine Wiring
 
 - Seam [`spells_cost_can_cast`](../seams/spells_cost_can_cast.md) dispatches from `gml/scripts/Spells.gml`, in `can_cast_spell()`'s mana check (`ARI.get_mana() < cost`).
-- Seam [`spells_cost_menu`](../seams/spells_cost_menu.md) dispatches from `gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml`, at the spell card's cost display. The menu shows the filtered cost `div 4`.
+- Seam [`spells_cost_menu`](../seams/spells_cost_menu.md) dispatches from `gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml`, at the spell card's cost display. The menu draws one orb per 4 mana of the filtered cost, plus a partial orb for any remainder.
 - Seam [`spells_cost_fsm_loop`](../seams/spells_cost_fsm_loop.md) dispatches from `gml/scripts/Player/AriFsm.gml`, at the mana deduction in the player's looping cast state (skipped while `MIST.is_running()`).
 - Seam [`spells_cost_fsm_default`](../seams/spells_cost_fsm_default.md) dispatches from `gml/scripts/Player/AriFsm.gml`, at the mana deduction in the default cast state, right after `cast_spell()`.
 

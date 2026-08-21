@@ -1791,14 +1791,49 @@ replace = '''
 marker  = "mmapi_spell_card_backplate"
 provides = ["ui.backplate_sprite"]
 
+# The replace widens the pristine one-line cost read into a quarter-granularity
+# render so fractional filtered costs draw a partial orb instead of truncating.
+# The partial ladder mirrors VitalsMenu's set_mana ladder, where the sprite
+# names describe the drained portion of the orb.
 [[seam]]
 id      = "spells_cost_menu"
 file    = "gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml"
 anchor  = '''
         var cost = self.spell_data.cost div 4;
+        var cost_icon = spr_ui_hud_health_mana_ball_on;
+        var positions = centered_positions(cost, sprite_get_width(cost_icon), 2);
+        for (var i = 0; i < array_length(positions); i++) {
+            var pos = positions[i];
+            ANCHOR.sprite(self.cost_zone)
+                .set_sprite(cost_icon)
+                .set_x(pos)
+                .set_align(Align.Center, Align.Middle)
+        }
 '''
 replace = '''
-        var cost = mmapi_apply_filters("spells.cost", self.spell_data.cost, spell) div 4; // mmapi_spell_menu_cost
+        var cost = mmapi_apply_filters("spells.cost", self.spell_data.cost, spell); // mmapi_spell_menu_cost
+        var full_orbs = cost div 4;
+        var partial = cost - full_orbs * 4;
+        var cost_icon = spr_ui_hud_health_mana_ball_on;
+        var icon_count = full_orbs + (partial > 0 ? 1 : 0);
+        var positions = centered_positions(icon_count, sprite_get_width(cost_icon), 2);
+        for (var i = 0; i < array_length(positions); i++) {
+            var pos = positions[i];
+            var sprite = cost_icon;
+            if i >= full_orbs {
+                if partial <= 1 {
+                    sprite = spr_ui_hud_health_mana_ball_threethirds;
+                } else if partial <= 2 {
+                    sprite = spr_ui_hud_health_mana_ball_half;
+                } else if partial <= 3 {
+                    sprite = spr_ui_hud_health_mana_ball_onequarter;
+                }
+            }
+            ANCHOR.sprite(self.cost_zone)
+                .set_sprite(sprite)
+                .set_x(pos)
+                .set_align(Align.Center, Align.Middle)
+        }
 '''
 marker  = "mmapi_spell_menu_cost"
 provides = ["spells.cost"]
