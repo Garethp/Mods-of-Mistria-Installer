@@ -36,8 +36,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 116
-seams = 125
+hooks = 117
+seams = 126
 engine_fixes = 3
 call_rewrites = 1
 
@@ -136,12 +136,17 @@ doc  = "Fires at the top of run_date(date, npc) (Dates.gml), before the DateAcce
 [[hook]]
 name = "date.begin"
 kind = "guard"
-doc  = "Fires inside run_date(date, npc) (Dates.gml), in the DateAcceptance conversation's completion callback and right after that conversation has played and the writes have applied and immediately before start_date_cutscene(npc, date). ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return false to cancel the accepted date (start_date_cutscene is skipped, so no date cutscene plays). Any other return lets the date begin."
+doc  = "Fires inside run_date(date, npc) (Dates.gml), in the DateAcceptance conversation's completion callback. The conversation has already played and its writes have applied by then, and start_date_cutscene(npc, date) is what runs next. ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return false to cancel the accepted date, which skips start_date_cutscene so no date cutscene plays. Any other return lets the date begin."
 
 [[hook]]
 name = "date.cutscene"
 kind = "filter"
 doc  = "Fires in start_date_cutscene(npc, date) (Dates.gml), after the date blackboard writes and the prop selection and immediately before MIST.run_scene starts the date cutscene. The filtered value is the cutscene name about to run, defaulting to DATES[date].cutscene. ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return a replacement cutscene name to swap which scene plays, or undefined to keep the current value. A replacement must name a loaded cutscene, meaning a fiddle cutscenes entry backed by a mist script. An unknown name is dropped with a rate-limited warning and the vanilla scene runs. The chosen name is threaded through the date's completion chain, so the reward gate honours the replacement scene's own ends_day flag and the replacement's cutscenes.toml entry governs whether the date ends the day. The rest of the completion pipeline (heart points, the date photo, the reward popup, date_history) is keyed by npc and date and runs unchanged. Because the dispatch lives inside start_date_cutscene, a date.run override that calls start_date_cutscene directly still flows through this filter."
+
+[[hook]]
+name = "date.cooldown"
+kind = "filter"
+doc  = "Fires in ari_eligible_for_date(npc, time_to_check) (Dates.gml), once per eligibility check, before the date history is scanned. The filtered value is the date cooldown in game seconds, defaulting to days(6), the cooldown the engine enforces between listed dates with the same NPC. ctx is { npc, time_to_check }: npc is the NpcId being checked, time_to_check is the calendar time the check is for (usually now). Return a replacement duration, or undefined to keep the current value. Return 0 to remove the per NPC cooldown. This does not allow a second date on the same day: a separate engine clause rejects any date whose timestamp matches an existing history entry, CALENDAR.time advances a whole day at a time, and that clause is not scoped to an NPC, so once any date is taken no further date is possible that day whatever this hook returns. A non-numeric return is dropped with a rate-limited warning and the vanilla cooldown applies. Eligibility gates whether the Date option appears at all, so this hook runs upstream of date.run and fires from the talk menu and the date eligibility UI. Keep handlers cheap."
 
 [[hook]]
 name = "furniture.place_guard"
@@ -1143,6 +1148,44 @@ replace = '''
 marker  = "mmapi_date_cutscene_chain_args"
 provides = ["date.cutscene"]
 depends_on = ["date_cutscene"]
+
+[[seam]]
+id      = "date_cooldown"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+function ari_eligible_for_date(npc, time_to_check) {
+    time_to_check = time_to_check == undefined ? CALENDAR.time : time_to_check;
+
+    for (var i = 0; i < array_length(ARI.date_history); i++) {
+        var v = ARI.date_history[i];
+        if DATES[v.date].unlisted {
+            continue;
+        }
+        if time_to_check == v.timestamp
+            || (v.npc == npc && time_to_check - v.timestamp < days(6))
+        {
+'''
+replace = '''
+function ari_eligible_for_date(npc, time_to_check) {
+    time_to_check = time_to_check == undefined ? CALENDAR.time : time_to_check;
+
+    var __mmapi_date_cooldown = days(6);
+    try { __mmapi_date_cooldown = mmapi_apply_filters("date.cooldown", __mmapi_date_cooldown, { npc: npc, time_to_check: time_to_check }); } catch (__mmapi_date_cooldown_err) {} // mmapi_date_cooldown_filter
+    if (is_numeric(__mmapi_date_cooldown) == false) {
+        mmapi_warn_rate_limited("date.cooldown:type", "mmapi", "date.cooldown returned a non-numeric value, keeping the vanilla cooldown");
+        __mmapi_date_cooldown = days(6);
+    }
+    for (var i = 0; i < array_length(ARI.date_history); i++) {
+        var v = ARI.date_history[i];
+        if DATES[v.date].unlisted {
+            continue;
+        }
+        if time_to_check == v.timestamp
+            || (v.npc == npc && time_to_check - v.timestamp < __mmapi_date_cooldown)
+        {
+'''
+marker  = "mmapi_date_cooldown_filter"
+provides = ["date.cooldown"]
 
 [[seam]]
 id      = "furniture_place_guard"

@@ -48,6 +48,11 @@ mmapi_filter("date.cutscene", custom_dates_date_cutscene);
 
 The `{NpcId}` format placeholder stringifies the NPC enum by name, the same way the engine uses when it writes a T2 fact for each NPC. Since the `{Date}` placeholder is claimed for localizing calendar dates, use `date_to_string(date)` with a plain `{}` placeholder for the date's name instead.
 
+## Interactions
+
+- Festival dates reach this filter when they run through `start_date_cutscene`. The festival code starts the harvest dance and the shooting star romantic scene that way, so this filter and the threaded reward gate apply to them, while `date.run`, `date.begin`, and `date.cooldown` never fire for a festival date.
+- The wedding never reaches this filter. Its scene starts through `MIST.request_scene` on the wedding morning, and its date photo comes from a wedding special case in the engine rather than the date completion chain.
+
 ## Engine Wiring
 
 - Seam [`date_cutscene`](../seams/date_cutscene.md) dispatches from `gml/scripts/Dates.gml`, immediately before `MIST.run_scene` in `start_date_cutscene(npc, date)`, and threads the chosen name into the completion chain.

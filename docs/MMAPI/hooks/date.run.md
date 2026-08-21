@@ -49,6 +49,7 @@ Calling `start_date_cutscene(npc, date)` is the engine's own next step; it reads
 
 ## See Also
 
+- [date.cooldown](date.cooldown.md) - Change the date cooldown that decides whether the Date option appears at all, upstream of this hook.
 - [date.begin](date.begin.md) - Cancel an accepted date after its acceptance conversation, before the cutscene.
 - [date.cutscene](date.cutscene.md) - Swap which cutscene the date plays while keeping the vanilla pipeline. A claimant that calls `start_date_cutscene` directly still flows through it.
 - [dialogue.play_guard](dialogue.play_guard.md) - Veto or reshape the conversation `run_date` would otherwise play.
