@@ -84,9 +84,11 @@
                             <StackPanel Orientation="Horizontal" Margin="0 2 0 2">
                                 <!-- Position number -->
                                 <Border sortable:Sortable.IsSortable="True" Cursor="Hand">
-                                    <TextBlock FontSize="18" Width="24" VerticalAlignment="Center"
-                                               Text="≡"
-                                               Margin="0 0 6 0" />
+                                    <TextBlock MinWidth="30" 
+                                               VerticalAlignment="Center"
+                                               Text="{Binding Position, StringFormat='≡ {0}'}"
+                                               Margin="0 0 6 0">
+                                    </TextBlock>
                                 </Border>
                                 <!-- Mod checkbox + warnings -->
                                 <controls:ModlistCheckbox DataContext="{Binding}" />

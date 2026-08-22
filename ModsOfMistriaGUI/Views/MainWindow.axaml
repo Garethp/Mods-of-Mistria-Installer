@@ -9,7 +9,7 @@
         x:DataType="vm:MainWindowViewModel"
         Title="{x:Static lang:Resources.GUIApplicationTitle}"
         Icon="/Assets/small_icon.png"
-        Width="900" Height="800">
+        Width="1000" Height="800">
     
     <Window.Resources>
         <ResourceDictionary>
@@ -30,14 +30,25 @@
 
     <Grid RowDefinitions="Auto,*" Container.Name="main" Container.Sizing="Height">
         <Grid.Styles>
-            <ContainerQuery Name="main" Query="max-height:650">
-                <Style Selector="Image#HeaderImage">
-                    <Setter Property="IsVisible" Value="False" />
-                </Style>
+            <!-- Show the full header at more than 700 -->
+            <ContainerQuery Name="main" Query="min-height:750">
+                <Style Selector="Image#HeaderImage"><Setter Property="IsVisible" Value="True" /> </Style>
+                <Style Selector="Image#HeaderImageShort"><Setter Property="IsVisible" Value="False" /> </Style>
+            </ContainerQuery>
+            
+            <ContainerQuery Name="main" Query="min-height:400 and max-height:749">
+                <Style Selector="Image#HeaderImage"><Setter Property="IsVisible" Value="False" /> </Style>
+                <Style Selector="Image#HeaderImageShort"><Setter Property="IsVisible" Value="True" /> </Style>
+            </ContainerQuery>
+            
+            <ContainerQuery Name="main" Query="max-height:399">
+                <Style Selector="Image#HeaderImage"><Setter Property="IsVisible" Value="False" /> </Style>
+                <Style Selector="Image#HeaderImageShort"><Setter Property="IsVisible" Value="False" /> </Style>
             </ContainerQuery>
         </Grid.Styles>
         
-        <Image Name="HeaderImage" Source="/Assets/header.jpg" MaxHeight="300"/>
+        <Image Name="HeaderImage" Source="/Assets/header.jpg" MaxHeight="350" />
+        <Image Name="HeaderImageShort" Source="/Assets/header-short.jpg" />
 
         <Panel Grid.Row="1" Margin="50 20 50 0">
             <TransitioningContentControl Content="{Binding CurrentPage}" />
