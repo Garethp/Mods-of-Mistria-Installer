@@ -469,7 +469,7 @@
     <value>{0} mod(s) installed, {1} skipped</value>
   </data>
   <data name="CoreGameGmlChanged" xml:space="preserve">
-    <value>Game GML changed. Unable to install.</value>
+    <value>Game GML change caused by game update. Unable to install. A new version of MOMI required when available.</value>
   </data>
   <data name="CoreModRequiresMissingHooks" xml:space="preserve">
     <value>The mod requires hooks this version of MOMI does not provide: {0}. Update MOMI, or use an older version of the mod.</value>

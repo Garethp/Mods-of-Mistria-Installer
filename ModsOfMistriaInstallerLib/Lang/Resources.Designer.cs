@@ -519,7 +519,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Game GML changed. Unable to install..
+        ///   Looks up a localized string similar to Game GML change caused by game update. Unable to install. A new version of MOMI required when available..
         /// </summary>
         public static string CoreGameGmlChanged {
             get {
