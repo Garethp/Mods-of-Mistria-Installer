@@ -9,7 +9,7 @@
         x:DataType="vm:MainWindowViewModel"
         Title="{x:Static lang:Resources.GUIApplicationTitle}"
         Icon="/Assets/small_icon.png"
-        Width="1000" Height="800">
+        Width="900" Height="800">
     
     <Window.Resources>
         <ResourceDictionary>
@@ -28,8 +28,16 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*">
-        <Image Source="/Assets/header.jpg" MaxHeight="350"/>
+    <Grid RowDefinitions="Auto,*" Container.Name="main" Container.Sizing="Height">
+        <Grid.Styles>
+            <ContainerQuery Name="main" Query="max-height:650">
+                <Style Selector="Image#HeaderImage">
+                    <Setter Property="IsVisible" Value="False" />
+                </Style>
+            </ContainerQuery>
+        </Grid.Styles>
+        
+        <Image Name="HeaderImage" Source="/Assets/header.jpg" MaxHeight="300"/>
 
         <Panel Grid.Row="1" Margin="50 20 50 0">
             <TransitioningContentControl Content="{Binding CurrentPage}" />
