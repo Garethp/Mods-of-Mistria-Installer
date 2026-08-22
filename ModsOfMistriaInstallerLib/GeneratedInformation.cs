@@ -13,11 +13,14 @@ public class GeneratedInformation
     public List<JsonItem> Json = [];
     
     public Dictionary<string, AnimationGroup> AnimationGroups = [];
+
+    public List<FileItem> Mist = [];
     
     public void Merge(GeneratedInformation information)
     {
         Toml.AddRange(information.Toml);
         Json.AddRange(information.Json);
+        Mist.AddRange(information.Mist);
         
         foreach (var key in information.AnimationGroups.Keys)
         {
@@ -26,7 +29,7 @@ public class GeneratedInformation
     }
 }
 
-public class GeneratedTomlItem
+public class FileItem
 {
     public string FilePath;
     
@@ -34,22 +37,27 @@ public class GeneratedTomlItem
 
     public string? Contents;
 
-    public TomlTable ReadToml(IMod mod)
+    public FileItem()
     {
-        if (!string.IsNullOrEmpty(Contents))
-        {
-            return TomlSerializer.Deserialize<TomlTable>(Contents)!;
-        }
-
-        if (!string.IsNullOrEmpty(ReadFilePath))
-        {
-            return TomlSerializer.Deserialize<TomlTable>(mod.ReadFile(ReadFilePath))!;
-        }
-
-        // TODO: Should this throw an exception?
-        return new TomlTable();
     }
 
+    public FileItem(IMod mod, string filePath, string? contents = null)
+    {
+        FilePath = filePath;
+
+        if (mod.FileExists(filePath))
+        {
+            ReadFilePath = filePath;
+        }
+
+        if (!string.IsNullOrEmpty(contents))
+        {
+            Contents = contents;
+        }
+        
+        // @TODO: Should we throw an exception for null on both?
+    }
+    
     public string ReadString(IMod mod)
     {
         if (!string.IsNullOrEmpty(Contents))
@@ -64,6 +72,38 @@ public class GeneratedTomlItem
 
         // TODO: Should this throw an exception?
         return "";
+    }
+    
+    public static FileItem FromFile(IMod mod, string filePath)
+    {
+        return new FileItem(mod, filePath);
+    }
+}
+
+public class GeneratedTomlItem: FileItem
+{
+    public GeneratedTomlItem()
+    {
+    }
+
+    public GeneratedTomlItem(IMod mod, string filePath, string? contents = null) : base(mod, filePath, contents)
+    {
+    }
+
+public TomlTable ReadToml(IMod mod)
+    {
+        if (!string.IsNullOrEmpty(Contents))
+        {
+            return TomlSerializer.Deserialize<TomlTable>(Contents)!;
+        }
+
+        if (!string.IsNullOrEmpty(ReadFilePath))
+        {
+            return TomlSerializer.Deserialize<TomlTable>(mod.ReadFile(ReadFilePath))!;
+        }
+
+        // TODO: Should this throw an exception?
+        return new TomlTable();
     }
 
     public static GeneratedTomlItem FromFileOrContents(IMod mod, string filePath, string contents)
@@ -85,13 +125,15 @@ public class GeneratedTomlItem
     }
 }
 
-public class JsonItem
+public class JsonItem: FileItem
 {
-    public string FilePath;
-    
-    public string? ReadFilePath;
+    public JsonItem()
+    {
+    }
 
-    public string? Contents;
+    public JsonItem(IMod mod, string filePath, string? contents = null): base(mod, filePath, contents)
+    {
+    }
 
     public JObject ReadJson(IMod mod)
     {
@@ -107,21 +149,5 @@ public class JsonItem
 
         // TODO: Should this throw an exception?
         return new JObject();
-    }
-
-    public string ReadString(IMod mod)
-    {
-        if (!string.IsNullOrEmpty(Contents))
-        {
-            return Contents;
-        }
-
-        if (!string.IsNullOrEmpty(ReadFilePath))
-        {
-            return mod.ReadFile(ReadFilePath);
-        }
-
-        // TODO: Should this throw an exception?
-        return "";
     }
 }
