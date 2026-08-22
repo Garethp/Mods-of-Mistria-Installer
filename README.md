@@ -1,11 +1,5 @@
 ﻿# Mods of Mistria Installer
 
-This is the in-progress installer for Fields of Mistria mods. As it's currently very early in development, please keep
-in mind that it may have many bugs and may not work on all systems. Similarly, because of the engine change that happened
-on **July 7th 2026, all mods made before the engine change will be outdated and won't be supported anymore**. As a rule
-of thumb, all mods that have been released before July 2026 will need to be updated to work with this installer, which
-many modders are already doing. Make sure the mods you download are not too old !
-
 ## Installation
 1. Create a mods folder to put your mods
    * On Windows, you'll want to create "mods" folder inside your Fields of Mistria folder, next to the `FieldsOfMistria.exe`.
@@ -49,20 +43,18 @@ There's a `#modding-game-help` channel that you'll see after you accept the rule
 more information, try downloading the `-cli` version of the installer, running that and then screenshotting the window
 that popped up. The `-cli` version doesn't look as nice, but should provide more information about what's going wrong.
 
-## Mod Format [need to be updated for the engine change]
+## Mod Format
 If you're a modder and want to make your mod compatible with this installer, feel free to refer to the [`mods`](./mods)
 folder for example mods. Below is information for what you'll need. This is not a comprehensive list and more
 documentation will be added in the future.
 
-### `manifest.json`
-```json
-{
-  "author": "Mod Author Name",
-  "name": "Mod Name",
-  "version": "1.0.0",
-  "minInstallerVersion": "0.1.3",
-  "manifestVersion": 1
-}
+### `manifest.toml`
+```toml
+name = "Mod Name"
+author = "Mod Author Name"
+version = "1.0.0"
+minInstallerVersion = "0.13.1"
+manifestVersion = "2"
 ```
 
 Your mod will be given an ID that's based on the author and name fields, so make sure that those two combined are unique.
@@ -71,282 +63,26 @@ new enough to install the mod and tell the user if they're unable to install the
 The `manifestVersion` field isn't used yet, but will allow for backwards compatibility in future versions of the installer
 if large changes are made to how mods are structured.
 
-### `fiddle/`
-JSON files in the `fiddle/` folder will get merged into the game's `__fiddle__.json` file. You can name the files however
-you want and have multiple JSON values in one file or split them up into multiple files as you see fit.
+### `momi/cosmetics/`
+If you want to add new cosmetics to the game, you can do so by placing a TOML definition for the cosmetic in the 
+`momi/cosmetics/` folder and the sprites should be in a `images/` folder, however they can go anywhere. Here's an example
+file:
 
-### `localisation/`
-JSON files in the `localisation/` folder will get merged into the game's `__localisation__.json` file. You can name them
-however you want, but they should end in `.eng.json` or `.jpn.json` (or using a similar language code) to specify the
-language they're for. For now Mistria only supports English, but more languages may be supported in the future. Here's
-an example file:
+```toml
+[lryn_celine_summer_skirt]
+name = "Celine's summer skirt"
+ui_slot = "bottom"
+ui_sub_category = "skirt"
+default_unlocked = true
 
-`localisation/first_mod.eng.json`
-```json
-{
-  "letters/first_mod/subject_line": "Olrics Favour",
-  "letters/first_mod/local": "I found something when rummaging through my items the other day and I want you to have it.\n\nCome see me at the Blacksmith shop when you have a moment."
+cosmetic_sprites = { waist = "img/skirt.png" }
+
+lut = "img/lut.png"
+ui_sprites = {
+    ui = "img/ui.png",
+    outline = "img/outline.png"
 }
 ```
-
-### `outfits/`
-If you want to add new outfits to the game, you can do so by placing a JSON definition for the outfit in the `outfits/`
-folder and the sprites should be in a `images/` folder. Files that are multiple frames of the same animation should be
-in their own folder, separate from other sprites. Here's an example file:
-
-```json
-{
-  "dolphin_tail": {
-    "name": "Dolphin Tail",
-    "description": "A dolphins tale.",
-    "ui_slot": "back",
-    "default_unlocked": true,
-    "ui_sub_category": "capes",
-    "lut_file": "images/lut.png",
-    "ui_item": "images/ui.png",
-    "outline_file": "images/outline.png",
-    "animation_files": {
-      "back_gear": "images/tail_animation"
-    },
-    "price_override": 0 // This is an optional field, but cannot be below 0
-  }
-}
-```
-
-For a full example, check out the [`dolphin_tail`](./mods/dolphin_tail) example.
-
-### `objects/`
-If you want to add new objects to the game, you can do so by placing a JSON definition for the object in the `objects/`
-folder. The format of the file should be
-
-```json
-{
-  "object_id": {
-    "category": "category",
-    "overwrites_other_mod": false,
-    "data": {
-      ...
-    }
-  }
-}
-```
-
-The category of the object must be one of the following: "breakable", "building", "bush", "crop", "dig_site", "furniture",
-"grass", "rock", "stump", "tree". Trying to add another value will result in MOMI having an error for the mod.
-
-`overwrites_other_mod` is required for all objects but doesn't change how MOMI works. In a future version of MOMI, this
-key will be used to automatically detect and warn users about conflicting mods. In that future update, if two mods add
-objects with the same ID and they both have `overwrites_other_mod` set to `false`, the installer will warn the user
-that these two mods probably conflict with each other.
-
-Here's an example file:
-
-```json
-{
-  "my_new_object": {
-    "category": "furniture",
-    "overwrites_other_mod": false,
-    "data": {
-      "size": [
-        3,
-        2
-      ],
-      "collision_grid": "2",
-      "south": {
-        "sprite": "spr_decor_dragon_statue_v1_spring_south",
-        "offset": [
-          12,
-          8
-        ]
-      },
-      "north": {
-        "sprite": "spr_decor_dragon_statue_v1_spring_north",
-        "offset": [
-          12,
-          8
-        ]
-      }
-    }
-  }
-}
-```
-
-### `items/`
-If you want to add new items to the game, you can do so by placing a JSON definition for the item in the `items/`
-folder. The format of the file should be
-
-```json
-{
-  "item_id": {
-    "overwrites_other_mod": false,
-      ...
-  }
-}
-```
-
-`overwrites_other_mod` is required for all items but doesn't change how MOMI works. In a future version of MOMI, this
-key will be used to automatically detect and warn users about conflicting mods. In that future update, if two mods add
-items with the same ID and they both have `overwrites_other_mod` set to `false`, the installer will warn the user
-that these two mods probably conflict with each other.
-
-An example of a full file is:
-
-```json
-{
-  "wheedle_statue":  {
-    "icon_sprite": "spr_ui_item_dragon_statue_replica_v1",
-    "name": "Wheedle Statue",
-    "overwrites_other_mod": false,
-    "description": "items/furniture/mistrian_history_set/dragon_statue_replica_v1/description",
-    "object": "dragon_statue_replica_v1",
-    "tags": [
-      "furniture",
-      "mistrian_history_set",
-      "misc_decor"
-    ],
-    "recipe_key": "dragon_statue_replica",
-    "crafting_level_requirement": 20,
-    "recipe": [
-      {
-        "count": 100,
-        "item": "ore_stone"
-      },
-      {
-        "count": 2,
-        "item": "monster_core"
-      },
-      {
-        "count": 2,
-        "item": "monster_horn"
-      },
-      {
-        "hours": 0,
-        "minutes": 30
-      }
-    ],
-    "value": { 
-      "bin": "self.recipe*1.1"
-    }
-  }
-}
-```
-
-### `stores/`
-If you want to add categories to a store, or new items to a category in a store, you can do so by placing a JSON in the
-`stores/` folder of your mod. In your JSON, you can either define a list of new categories to add to a store, a list
-of new items to add to categories or both. Below is an example of the options that you can set:
-
-```json
-{
-  "items": [
-    {
-      "item": "seed_turnip",
-      "store": "general",
-      "category": "modded_icon",
-      "season": "spring"
-    },
-    {
-      "item": { "cosmetic":  "froggy_hat" },
-      "store": "general",
-      "category": "modded_icon"
-    },
-    {
-      "item": { "recipe_scroll":  "custom_recipe" },
-      "store": "general",
-      "category": "modded_icon"
-    },
-    {
-      "item": { "cosmetic":  "froggy_hat" },
-      "store": "louis",
-      "category": "modded_icon",
-      "random_stock": true
-    }
-  ],
-  "categories": [
-    {
-      "store": "general",
-      "icon_name": "modded_icon",
-      "sprite": "images/icon_modded.png"
-    },
-    {
-      "store": "louis",
-      "icon_name": "modded_icon",
-      "sprite": "images/icon_modded.png",
-      "target_selections": 5
-    }
-  ]
-}
-```
-
-If multiple mods add a category with the same `icon_name` to the same store, only one category by that name will be added.
-The `category` key for an item should always match the `icon_name` of the category you want to add it to, whether it's a
-category that's been modded in or a vanilla category. If you set the `season` key for an item, it will be added to the
-seasonal stock for that category, otherwise it will be added to the year-round stock.
-
-### `sprites/`
-If you want to add new sprites to the game, you can do so by placing the sprites in the `images/` folder and then
-creating a definition JSON file in the `sprites/` folder. Here's an example file:
-
-```json
-{
-  "spr_furniture_stone_storage_chest_spring_v1_bounce": {
-    "is_animated": true,
-    "location": "images/v1/bounce",
-    "origin_x": 16,
-    "origin_y": 56,
-    "margin_left": 3,
-    "margin_right": 29,
-    "margin_bottom": 39,
-    "margin_top": 15
-  }
-}
-```
-
-For a full example, take a look at the [`Effe's Decor - Fridge`](./mods/Effe's%20Decor%20-%20Fridge) example. Files 
-that are multiple frames of the same animation should be in their own folder, separate from other sprites. For reference,
-the full list of sprite properties that you can control are:
-
-```json
-{
-  "sprite_name": {
-    "location": "imageLocation.png",
-    "is_animated": true,
-    "bounding_box_mode": 2,
-    "origin_x": 0,
-    "origin_y": 0,
-    "margin_right": 0,
-    "margin_left": 0,
-    "margin_top": 0,
-    "margin_bottom": 0,
-    "is_player_sprite": true,
-    "is_ui_sprite": true
-  }
-}
-```
-
-### `shadows/`
-If you want to add shadow sprites to the game, create a JSON file in the `shadows/` folder with the following shape:
-
-```json
-{
-  "shadow_sprite_name": {
-    "regular_sprite_name": "spr_regular_sprite_name",
-    "sprite": "images/sprite.png",
-    "is_animated": false
-  }
-}
-```
-
-This will create new sprites in the `data.win` folder with the name `shadow_sprite_name` as well as an entry in
-`animation/generated/shadow_manifest.json` which will look like:
-
-```json
-{
-  "spr_regular_sprite_name": "shadow_sprite_name"
-}
-```
-
-If you use this, please set `minInstallerVersion` in your `manifest.json` to no lower than `0.1.4`
 
 ### `gml/` (behavioural mods)
 If you want your mod to change how the game behaves, put GML your files in a `gml/` folder, and set the `minInstallerVersion` in your `manifest.json` to no lower than `0.14.0`.
