@@ -6,8 +6,11 @@
              xmlns:lang="clr-namespace:Garethp.ModsOfMistriaInstallerLib.Lang;assembly=ModsOfMistriaInstallerLib"
              xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
              xmlns:i="https://github.com/projektanker/icons.avalonia"
+             xmlns:vms="using:Garethp.ModsOfMistriaGUI.ViewModels"
+             xmlns:sortable="clr-namespace:Sortable.Avalonia;assembly=Sortable.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Garethp.ModsOfMistriaGUI.Views.ModlistPageView"
+             x:DataType="vms:ModlistPageViewModel"
              d:DataContext="{x:Static models:DesignData.ModlistPageViewModel}">
     <DockPanel LastChildFill="True">
 
@@ -71,30 +74,22 @@
 
             <!-- Mod list -->
             <ScrollViewer Margin="15 5 0 0" IsVisible="{Binding !Exception.Length}">
-                <ItemsRepeater ItemsSource="{Binding Mods}" x:Name="ModRepeater">
-                    <ItemsRepeater.ItemTemplate>
+                <ItemsControl 
+                    ItemsSource="{Binding Mods}"
+                    x:Name="ModRepeater" 
+                    sortable:Sortable.Sortable="True"
+                    sortable:Sortable.UpdateCommand="{Binding UpdateModOrderCommand}">
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" Margin="0 2 0 2">
-                                <!-- Load-order controls -->
-                                <StackPanel Orientation="Vertical" Width="22" Margin="0 0 4 0"
-                                            VerticalAlignment="Center">
-                                    <Button Padding="2 0"
-                                            FontSize="10"
-                                            Command="{Binding $parent[ItemsRepeater].DataContext.MoveModUpCommand}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip.Tip="Move up in load order">▲</Button>
-                                    <Button Padding="2 0"
-                                            FontSize="10"
-                                            Command="{Binding $parent[ItemsRepeater].DataContext.MoveModDownCommand}"
-                                            CommandParameter="{Binding}"
-                                            ToolTip.Tip="Move down in load order">▼</Button>
-                                </StackPanel>
                                 <!-- Position number -->
-                                <TextBlock Width="24" VerticalAlignment="Center"
-                                           Text="{Binding Position}"
-                                           HorizontalAlignment="Right"
-                                           Margin="0 0 6 0"
-                                           Foreground="Gray" />
+                                <Border sortable:Sortable.IsSortable="True" Cursor="Hand">
+                                    <TextBlock MinWidth="30" 
+                                               VerticalAlignment="Center"
+                                               Text="{Binding Position, StringFormat='≡ {0}'}"
+                                               Margin="0 0 6 0">
+                                    </TextBlock>
+                                </Border>
                                 <!-- Mod checkbox + warnings -->
                                 <controls:ModlistCheckbox DataContext="{Binding}" />
                                 <!-- Update available badge -->
@@ -109,8 +104,8 @@
                                         ToolTip.Tip="{Binding UpdateTooltip}">↑ Update</Button>
                             </StackPanel>
                         </DataTemplate>
-                    </ItemsRepeater.ItemTemplate>
-                </ItemsRepeater>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </ScrollViewer>
         </DockPanel>
     </DockPanel>
