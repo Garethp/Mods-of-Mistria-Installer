@@ -113,3 +113,22 @@ some steps on how to go about doing that!
 
 MOMI was built to be translatable from the start with a focus on being as accessible to as many people as possible! Any
 contributions you can make in terms of translations is super appreciated! Thank you!
+
+## AI Policy
+
+As MOMI is meant to be a community project there's no policy against AI assisted contributions with the exception of
+Translations which cannot be AI assisted or Machine Translated, due to the difficulty of performing a meaningful review
+of other languages. That being said, it is expected that if AI is used, it should be used for assistance, not for doing
+the entire contribution.
+
+Regardless of whether AI was used to assist in a contribution or not, each contribution should meet the following
+standards:
+
+1. The contributor should fully understand what it is they're contributing and how it'll affect the application.
+2. The contributor should be able to meaningfully communicate the changes and the purpose of the changes.
+3. The contributor should be able to support those changes after they go live.
+
+In effect, this means that your PR should not contain AI written summaries and you should be able to explain the changes
+made and their purpose. If there are any questions or requested clarifications for your PR the responses should come from
+you, not from an AI. If the communication for your PR is written by AI then it's difficult to be confident that you
+understand the changes made and can support them.
