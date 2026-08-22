@@ -1,4 +1,5 @@
-﻿using Garethp.ModsOfMistriaInstallerLib.Models.SDK;
+﻿using Garethp.ModsOfMistriaInstallerLib.Generator;
+using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Tomlyn.Serialization;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Models.MOMI;
@@ -75,4 +76,11 @@ public class SpriteToml
 
     [TomlPropertyName("poly_offset")]
     public List<int> PolyOffset;
+
+    public Validation Validate(Validation validation, IMod mod, string file)
+    {
+        // @TODO: Add more validation
+        
+        return validation;
+    }
 }
