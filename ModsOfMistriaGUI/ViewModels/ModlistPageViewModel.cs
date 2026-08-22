@@ -9,6 +9,7 @@ using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
+using Sortable.Avalonia;
 using UpdateChecker = Garethp.ModsOfMistriaInstallerLib.UpdateChecker;
 
 namespace Garethp.ModsOfMistriaGUI.ViewModels;
@@ -146,23 +147,10 @@ public partial class ModlistPageViewModel : PageViewBase
     // ── Load order ────────────────────────────────────────────────────────────────
 
     [RelayCommand]
-    private void MoveModUp(ModModel mod)
+    private void UpdateModOrder(SortableUpdateEventArgs eventArgs)
     {
-        var index = Mods.IndexOf(mod);
-        if (index <= 0) return;
-        Mods.Move(index, index - 1);
+        Mods.Move(eventArgs.OldIndex, eventArgs.NewIndex);
         RefreshPositions();
-        _isDirty = true;
-    }
-
-    [RelayCommand]
-    private void MoveModDown(ModModel mod)
-    {
-        var index = Mods.IndexOf(mod);
-        if (index < 0 || index >= Mods.Count - 1) return;
-        Mods.Move(index, index + 1);
-        RefreshPositions();
-        _isDirty = true;
     }
 
     private void RefreshPositions()
