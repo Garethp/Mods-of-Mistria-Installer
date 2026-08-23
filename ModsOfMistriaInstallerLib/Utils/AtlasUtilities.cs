@@ -123,6 +123,41 @@ public class AtlasUtilities
         }
     }
 
+    // For LUT Merging so that I can get the current LUT in the atlas (and then merge it, which is not done in this method).
+    public Image<Rgba32>? ExtractFrame(string baseId, int frame = 0)
+    {
+        var exact  = baseId;
+        var framed = $"{baseId}::{frame}";
+
+        foreach (var atlas in _stateManager.GetAtlases())
+        {
+            var state = _stateManager.GetAtlas(atlas.PngPath);
+            if (state is null) continue;
+
+            foreach (var animation in state.Data.Asset.Animations)
+            {
+                var match = animation.TextureIds.Any(s =>
+                    s.Equals(exact,  StringComparison.OrdinalIgnoreCase) ||
+                    s.Equals(framed, StringComparison.OrdinalIgnoreCase));
+                if (!match) continue;
+                if (!TryReadRegion(animation, out var trimRegion)) continue;
+
+                using var trimmed = state.GetImage().Clone(ctx => ctx.Crop(trimRegion));
+
+                var frameWidth  = animation.Placement.Count >= 6 ? animation.Placement[4] : trimRegion.Width;
+                var frameHeight = animation.Placement.Count >= 6 ? animation.Placement[5] : trimRegion.Height;
+                var trimX       = animation.Placement.Count >= 8 ? animation.Placement[6] : 0;
+                var trimY       = animation.Placement.Count >= 8 ? animation.Placement[7] : 0;
+
+                var full = new Image<Rgba32>(frameWidth, frameHeight);
+                full.Mutate(ctx => ctx.DrawImage(trimmed, new Point(trimX, trimY), 1f));
+                return full;
+            }
+        }
+
+        return null;
+    }
+
     // Removes or prunes animation entries that reference baseId (no ::N suffix).
     // Entries with multiple IDs only have the matching ones removed; if that empties
     // the texture_ids array the whole entry is removed.
