@@ -36,8 +36,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 117
-seams = 126
+hooks = 119
+seams = 128
 engine_fixes = 3
 call_rewrites = 1
 
@@ -59,9 +59,19 @@ kind = "event"
 doc  = "Fires when the player pets a barn/coop animal (top of obj_player_animal on_pet()) or puts a held animal down (end of put_down()). ctx is the obj_player_animal instance, not the Animal data struct: its Animal data is ctx.me, and ctx.create_animal_currency_dance(count, face_ari) plays the celebration that drops count AnimalCurrency 'beads' at this animal (itself a no-op unless Perk.CurrencyOfCare is active). Observation only. The two call sites share one hook, so a handler that wants once-per-day (or once-per-animal) behavior must latch itself. The on_pet site fires before the animal's own can_pet() gate, so it can fire even when the pet turns out to be a no-op."
 
 [[hook]]
+name = "animal.production_gate"
+kind = "filter"
+doc  = "Fires in Stable.on_new_day(), once per barn/coop animal in the stall list, babies and unhappy animals included, after the day's happiness result is settled and the CloseBond heart bonuses have applied. The filtered value is the vanilla production gate boolean, !animal.is_baby() && is_happy. ctx is { animal, stable, production, is_happy }: animal is the Animal struct, stable is the Stable processing its new day, production is the production struct for the animal's sex from its prototype, and is_happy is the vanilla happiness result (not left outside, fed, and petted). Return a replacement boolean, or undefined to keep the current value. A final true runs the vanilla production step, where production_days increments and the animal.product_ready decision follows. A final false skips the step entirely, so no production progress accrues that day. The CloseBond bonuses read the raw is_happy above the seam, so forcing the gate open does not fake happiness for hearts."
+
+[[hook]]
+name = "animal.product_ready"
+kind = "filter"
+doc  = "Fires inside Stable.on_new_day()'s production step, after production_days increments, for every barn/coop animal the animal.production_gate decision let through. The filtered value is the readiness comparison animal.production_days >= production.days_to_produce, computed with the incremented counter. ctx is { animal, stable, production, is_happy }: is_happy is the vanilla happiness result, and it is only false here when an animal.production_gate handler forced the gate open. Return a replacement boolean, or undefined to keep the current value. A final true runs the complete vanilla drop block. The counter resets to 0, the production tier and perk bonuses compute, and the product drops land in the stable grid. A final false skips the drop block and leaves the incremented counter in place, so the counter keeps climbing until a later day passes the threshold or a handler releases it."
+
+[[hook]]
 name = "npc.heart_points"
 kind = "filter"
-doc  = "Fires at the top of Npc.add_heart_points(), before the delta is applied. The filtered value is the heart points delta (amount). ctx is the Npc struct. Return the replacement value, or undefined to keep the current value. Distinct from animal.heart_points, which covers barn animals rather than villagers."
+doc  = "Fires at the top of Npc.add_heart_points(), before the delta is applied. The filtered value is the heart points delta (amount). ctx is the Npc struct. Return the replacement value, or undefined to keep the current value. Distinct from animal.heart_points, which covers barn/coop animals rather than villagers."
 
 [[hook]]
 name = "audio.music_selector"
@@ -3045,6 +3055,46 @@ hook    = "animal.pet"
 ctx     = "self"
 indent  = 16
 marker  = "mmapi_animal_run_pet_put_down"
+
+# The animal production pair hoists the two decisions of Stable.on_new_day()'s
+# daily production step into filtered locals, in the style of
+# fishing_should_reel. animal_production_gate filters the outer accrual gate
+# (!animal.is_baby() && is_happy), so a mod can let unhappy animals or babies
+# accrue progress and reach the ready check. The CloseBond heart bonuses read
+# the raw is_happy above the seam and are unaffected. animal_product_ready
+# filters the counter comparison after the increment. A final true releases the
+# untouched vanilla drop block, reset included. A final false leaves the
+# incremented counter climbing. The anchors are disjoint and each replace
+# preserves the other's anchor text, so the pair needs no depends_on edge.
+[[seam]]
+id      = "animal_production_gate"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+            if !animal.is_baby() && is_happy {
+                //
+                animal.production_days += 1;'''
+replace = '''
+            var __mmapi_animal_production_gate = !animal.is_baby() && is_happy;
+            try { __mmapi_animal_production_gate = mmapi_apply_filters("animal.production_gate", __mmapi_animal_production_gate, { animal: animal, stable: self, production: production, is_happy: is_happy }); } catch (__mmapi_animal_production_gate_error) {} // mmapi_stable_run_production_gate_filters
+            if (__mmapi_animal_production_gate) {
+                //
+                animal.production_days += 1;'''
+marker  = "mmapi_stable_run_production_gate_filters"
+provides = ["animal.production_gate"]
+
+[[seam]]
+id      = "animal_product_ready"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+                if animal.production_days >= production.days_to_produce {
+                    animal.production_days = 0;'''
+replace = '''
+                var __mmapi_animal_product_ready = animal.production_days >= production.days_to_produce;
+                try { __mmapi_animal_product_ready = mmapi_apply_filters("animal.product_ready", __mmapi_animal_product_ready, { animal: animal, stable: self, production: production, is_happy: is_happy }); } catch (__mmapi_animal_product_ready_error) {} // mmapi_stable_run_product_ready_filters
+                if (__mmapi_animal_product_ready) {
+                    animal.production_days = 0;'''
+marker  = "mmapi_stable_run_product_ready_filters"
+provides = ["animal.product_ready"]
 
 # camera.culls_processed emits at the end of Camera.process_culls, right after instance_activate_region
 # reactivates the in-view node renderers. A text seam (not target/at=after) because the anchor is the

@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **117 hooks**, fed by **126 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **119 hooks**, fed by **128 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -88,8 +88,10 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [date.begin](hooks/date.begin.md) | guard | Cancel an accepted date after its acceptance conversation, before the cutscene. |
 | [date.cutscene](hooks/date.cutscene.md) | filter | Swap which cutscene a date plays while keeping the vanilla date pipeline. |
 | [date.cooldown](hooks/date.cooldown.md) | filter | Change the cooldown between dates with the same NPC. |
-| [animal.heart_points](hooks/animal.heart_points.md) | filter | Adjust the heart points a barn animal gains. |
+| [animal.heart_points](hooks/animal.heart_points.md) | filter | Adjust the heart points an animal gains. |
 | [animal.pet](hooks/animal.pet.md) | event | Know when the player pets or puts down an animal. |
+| [animal.production_gate](hooks/animal.production_gate.md) | filter | Change which animals are eligible to produce each day. |
+| [animal.product_ready](hooks/animal.product_ready.md) | filter | Change whether an animal produces today. |
 | [combat.damage](hooks/combat.damage.md) | filter | Change any hit before it resolves. |
 | [combat.damage_resolved](hooks/combat.damage_resolved.md) | event | Know the moment a hit lands or is blocked. |
 | [combat.damage_injected](hooks/combat.damage_injected.md) | event | Know when a mod injects a hit through the damage pipeline. |
@@ -228,9 +230,11 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [date_cutscene](seams/date_cutscene.md) | Threads the date cutscene name through a filter and into the completion chain. |
 | [date_cutscene_chain_args](seams/date_cutscene_chain_args.md) | Extends the date chain's args so the filtered cutscene name reaches the reward gate. |
 | [date_cooldown](seams/date_cooldown.md) | Threads the date cooldown through a filter before the eligibility scan uses it. |
-| [animal_heart_points](seams/animal_heart_points.md) | Reroutes every barn-animal heart-point delta through a filter before it applies. |
-| [animal_on_pet](seams/animal_on_pet.md) | Announces the moment the player pets a barn animal. |
+| [animal_heart_points](seams/animal_heart_points.md) | Reroutes every animal heart-point delta through a filter before it applies. |
+| [animal_on_pet](seams/animal_on_pet.md) | Announces the moment the player pets an animal. |
 | [animal_put_down](seams/animal_put_down.md) | Announces the moment a held animal is set back down. |
+| [animal_production_gate](seams/animal_production_gate.md) | Filters the daily production gate so unhappy or baby animals can accrue and produce. |
+| [animal_product_ready](seams/animal_product_ready.md) | Filters the readiness comparison after the counter increments, before the drop block. |
 | [combat_damage_pre](seams/combat_damage_pre.md) | Threads every enqueued hit through a damage filter before it resolves. |
 | [combat_damage_resolved](seams/combat_damage_resolved.md) | Announces the outcome of every hit the receiver's resolution switch lands or blocks. |
 | [combat_tarball_grid](seams/combat_tarball_grid.md) | Hands every active swing's tarball to mods before the grid pick/chop/destroy blocks read it. |

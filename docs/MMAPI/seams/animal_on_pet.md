@@ -1,6 +1,6 @@
 # Seam: animal_on_pet
 
-Announces the moment the player pets a barn animal.
+Announces the moment the player pets an animal.
 
 `animal_on_pet` is a **template seam** (`op = "emit"`). It feeds [animal.pet](../hooks/animal.pet.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
@@ -25,4 +25,4 @@ ctx is the `obj_player_animal` instance, not the `Animal` data struct. The data 
 
 - [animal.pet](../hooks/animal.pet.md) - This is the hook this seam dispatches.
 - [animal_put_down](animal_put_down.md) - This is the twin emit when a held animal is set back down, placed after the FSM change instead of before it.
-- [animal_heart_points](animal_heart_points.md) - This is the filter on barn-animal heart-point deltas.
+- [animal_heart_points](animal_heart_points.md) - This is the filter on animal heart-point deltas.
