@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **117 hooks**, fed by **126 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **117 hooks**, fed by **127 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -278,6 +278,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [ui_menu_closed_shutdown](seams/ui_menu_closed_shutdown.md) | Emits per menu as the anchor shuts down and closes everything. |
 | [ui_toolbar_refreshed](seams/ui_toolbar_refreshed.md) | Emits at the tail of `ToolbarMenu.update()`, after the slots re-resolve from the inventory. |
 | [ui_vitals_refreshed](seams/ui_vitals_refreshed.md) | Emits at the tail of `VitalsMenu.refresh_statuses()`, after the status icon strip rebuilds. |
+| [ui_crafting_refreshed](seams/ui_crafting_refreshed.md) | Emits at the tail of `CraftingMenu.select_category()`, after the recipe grid and scroller rebuild. |
 | [ui_toolbar_tick](seams/ui_toolbar_tick.md) | Emits every toolbar tick, between the subscriber pull and press-and-hold processing. |
 | [ui_draw_gui](seams/ui_draw_gui.md) | Emits on every GUI draw, right after the anchor draws the UI. |
 | [ui_hud_should_show](seams/ui_hud_should_show.md) | Wraps `hud_should_show()` so mods get the last word on HUD visibility. |
