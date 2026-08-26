@@ -44,7 +44,7 @@ mmapi_filter("animal.product_ready", eager_rancher_animal_product_ready);
 
 ## Interactions
 
-- The released drop block is entirely engine-owned. The production tier derives from heart level, the BarnyardBounty and Eggstra perk bonuses roll, `GAME_STATS.animal_production` records, and the CurrencyOfCareTwo bead drop and the bonus gather item spawn roll too. To change the drop lists themselves rather than the schedule, this hook is the wrong altitude.
+- The released drop block is entirely engine-owned. The production tier derives from heart level, the BarnyardBounty and Eggstra perk bonuses roll, `GAME_STATS.animal_production` records, and the CurrencyOfCareTwo bead drop and the bonus gather item spawn roll too. To change the drop lists themselves rather than the schedule, filter [animal.product_drops](animal.product_drops.md) instead.
 - Heart level selects the production tier, so [animal.heart_points](animal.heart_points.md) indirectly decides how many products a delivery yields.
 - `Stable.on_new_day()` also runs from the engine's own debug progression helper and test-suite callers, so the hook also fires when those callers skip days.
 
@@ -55,5 +55,6 @@ mmapi_filter("animal.product_ready", eager_rancher_animal_product_ready);
 ## See Also
 
 - [animal.production_gate](animal.production_gate.md) - This hook is the outer half of the pair. It decides which animals run the production step at all.
+- [animal.product_drops](animal.product_drops.md) - Change what an animal's production drops.
 - [animal.heart_points](animal.heart_points.md) - Adjust the heart points an animal gains.
 - [game.new_day](game.new_day.md) - The day-boundary event that fires after all stables have processed.
