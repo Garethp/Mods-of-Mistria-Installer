@@ -113,3 +113,19 @@ some steps on how to go about doing that!
 
 MOMI was built to be translatable from the start with a focus on being as accessible to as many people as possible! Any
 contributions you can make in terms of translations is super appreciated! Thank you!
+
+## Licensing
+
+MOMI is licensed under GPL-3.0 (see `LICENCE.txt`).
+
+The MMAPI framework in `ModsOfMistriaInstallerLib/Seam/Payload/mmapi` is
+GPL-3.0 with additional terms under GPLv3 section 7. Those terms are
+attribution preservation, no misrepresentation of origin, and no trademark
+grant. They are stated in the `LICENSE` file in that directory, and every
+MMAPI source file carries a header pointing to it.
+
+The MMAPI seam catalog (`ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`)
+contains excerpts of Fields of Mistria game code used as anchor patterns.
+That content belongs to NPC Studio. No ownership of it is claimed by this
+project, and no license to it is granted here. See the notice at the top of
+that file.

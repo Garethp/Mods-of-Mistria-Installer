@@ -1,3 +1,14 @@
+# MMAPI seam catalog
+#
+# THIRD-PARTY CONTENT NOTICE
+#
+# Seam definitions reference code and identifiers from Fields of Mistria,
+# which are (C) NPC Studio. No ownership is claimed over that content.
+#
+# The catalog format, the seam and hook names, and the selection and
+# arrangement of entries are Copyright (C) 2026 Anna Nomoly, licensed under
+# the terms in ModsOfMistriaInstallerLib/Seam/Payload/mmapi/LICENSE.
+
 # The mmapi v2 seam catalog: the hook declarations and the anchored engine edits
 # that wire the named-hook API into the game. Each [[hook]] declares one named
 # hook once: its kind, its contract, and (provider = "runtime") whether the
