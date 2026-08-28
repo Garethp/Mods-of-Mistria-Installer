@@ -1,3 +1,16 @@
+// MMAPI - A GML modding framework for Fields of Mistria
+// Copyright (C) 2026 Anna Nomoly
+//
+// This file is part of MMAPI, distributed with the Mods of Mistria Installer.
+// Licensed under the GNU General Public License v3.0 or later, WITH
+// ADDITIONAL TERMS under GPLv3 section 7 (attribution preservation, no
+// misrepresentation of origin, no trademark grant).
+//
+// See the LICENSE file in this directory for those additional terms.
+// See LICENCE.txt at the repository root for the full GPL text.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // mmapi_hotkeys.gml. The hotkey registry: mods register a keyboard vk, a
 // gamepad button, or a compound binding (a chord like SHIFT+F5) → callback,
 // and the module polls once per frame through its own lifecycle install -

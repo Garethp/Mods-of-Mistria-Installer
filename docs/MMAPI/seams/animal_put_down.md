@@ -25,4 +25,4 @@ ctx is the `obj_player_animal` instance, not the `Animal` data struct. The data 
 
 - [animal.pet](../hooks/animal.pet.md) - This is the hook this seam dispatches.
 - [animal_on_pet](animal_on_pet.md) - This is the twin emit at the head of `on_pet()`, where a head emit's state is safe.
-- [animal_heart_points](animal_heart_points.md) - This is the filter on barn-animal heart-point deltas.
+- [animal_heart_points](animal_heart_points.md) - This is the filter on animal heart-point deltas.

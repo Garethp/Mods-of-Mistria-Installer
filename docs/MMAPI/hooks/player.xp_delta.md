@@ -53,5 +53,5 @@ mmapi_filter("player.xp_delta", battle_scholar_player_xp_delta);
 
 - [player.essence_delta](player.essence_delta.md) - The similar filter shape for essence change.
 - [npc.heart_points](npc.heart_points.md) - The equivalent delta filter for villager hearts.
-- [animal.heart_points](animal.heart_points.md) - The equivalent delta filter for barn animals.
+- [animal.heart_points](animal.heart_points.md) - The equivalent delta filter for barn/coop animals.
 - [player.skill_leveled](player.skill_leveled.md) - The level-up event the same seam emits after this filter's delta applies.
