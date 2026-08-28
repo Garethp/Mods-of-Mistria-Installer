@@ -9,7 +9,6 @@ using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Enums;
-using Sortable.Avalonia;
 using UpdateChecker = Garethp.ModsOfMistriaInstallerLib.UpdateChecker;
 
 namespace Garethp.ModsOfMistriaGUI.ViewModels;
@@ -146,11 +145,21 @@ public partial class ModlistPageViewModel : PageViewBase
 
     // ── Load order ────────────────────────────────────────────────────────────────
 
-    [RelayCommand]
-    private void UpdateModOrder(SortableUpdateEventArgs eventArgs)
+    // Drag-and-drop reorder. The slot is the gap the insertion line was sitting in,
+    // counted with the dragged mod still in place: 0 is above the first mod and
+    // Mods.Count is below the last.
+    public void MoveMod(ModModel source, int slot)
     {
-        Mods.Move(eventArgs.OldIndex, eventArgs.NewIndex);
+        var origin = Mods.IndexOf(source);
+        if (origin < 0) return;
+
+        // Pulling the mod out shifts every gap after it down one.
+        var index = slot > origin ? slot - 1 : slot;
+        if (index == origin) return;
+
+        Mods.Move(origin, index);
         RefreshPositions();
+        _isDirty = true;
     }
 
     private void RefreshPositions()

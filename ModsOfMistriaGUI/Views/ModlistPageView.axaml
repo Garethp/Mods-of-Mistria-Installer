@@ -7,7 +7,6 @@
              xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
              xmlns:i="https://github.com/projektanker/icons.avalonia"
              xmlns:vms="using:Garethp.ModsOfMistriaGUI.ViewModels"
-             xmlns:sortable="clr-namespace:Sortable.Avalonia;assembly=Sortable.Avalonia"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Garethp.ModsOfMistriaGUI.Views.ModlistPageView"
              x:DataType="vms:ModlistPageViewModel"
@@ -74,38 +73,59 @@
 
             <!-- Mod list -->
             <ScrollViewer Margin="15 5 0 0" IsVisible="{Binding !Exception.Length}">
-                <ItemsControl 
-                    ItemsSource="{Binding Mods}"
-                    x:Name="ModRepeater" 
-                    sortable:Sortable.Sortable="True"
-                    sortable:Sortable.UpdateCommand="{Binding UpdateModOrderCommand}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="0 2 0 2">
-                                <!-- Position number -->
-                                <Border sortable:Sortable.IsSortable="True" Cursor="Hand">
-                                    <TextBlock MinWidth="30" 
-                                               VerticalAlignment="Center"
-                                               Text="{Binding Position, StringFormat='≡ {0}'}"
-                                               Margin="0 0 6 0">
-                                    </TextBlock>
-                                </Border>
-                                <!-- Mod checkbox + warnings -->
-                                <controls:ModlistCheckbox DataContext="{Binding}" />
-                                <!-- Update available badge -->
-                                <Button IsVisible="{Binding UpdateAvailable}"
-                                        Command="{Binding OpenUpdateUrlCommand}"
-                                        Margin="6 0 0 0"
-                                        Padding="5 1"
-                                        Background="#2e7d32"
-                                        Foreground="White"
-                                        CornerRadius="4"
-                                        VerticalAlignment="Center"
-                                        ToolTip.Tip="{Binding UpdateTooltip}">↑ Update</Button>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <Panel>
+                    <ItemsControl
+                        ItemsSource="{Binding Mods}"
+                        x:Name="ModRepeater"
+                        Background="Transparent"
+                        DragDrop.AllowDrop="True"
+                        DragDrop.DragOver="OnModsDragOver"
+                        DragDrop.DragLeave="OnModsDragLeave"
+                        DragDrop.Drop="OnModsDrop">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0 2 0 2">
+                                    <!-- Position number, doubles as the drag handle.
+                                         Background="Transparent" is load-bearing: a null
+                                         background is not hit-testable, so only the
+                                         glyphs would be grabbable. -->
+                                    <Border Background="Transparent"
+                                            Cursor="Hand"
+                                            Padding="2 0 6 0"
+                                            PointerPressed="OnModHandlePressed"
+                                            ToolTip.Tip="Drag to change load order">
+                                        <TextBlock MinWidth="30"
+                                                   VerticalAlignment="Center"
+                                                   Text="{Binding Position, StringFormat='≡ {0}'}">
+                                        </TextBlock>
+                                    </Border>
+                                    <!-- Mod checkbox + warnings -->
+                                    <controls:ModlistCheckbox DataContext="{Binding}" />
+                                    <!-- Update available badge -->
+                                    <Button IsVisible="{Binding UpdateAvailable}"
+                                            Command="{Binding OpenUpdateUrlCommand}"
+                                            Margin="6 0 0 0"
+                                            Padding="5 1"
+                                            Background="#2e7d32"
+                                            Foreground="White"
+                                            CornerRadius="4"
+                                            VerticalAlignment="Center"
+                                            ToolTip.Tip="{Binding UpdateTooltip}">↑ Update</Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Overlaid on the list, so showing it never disturbs row layout.
+                         Positioned by Margin from the top of the ItemsControl. -->
+                    <Border x:Name="InsertionLine"
+                            Width="300" Height="2"
+                            HorizontalAlignment="Left" VerticalAlignment="Top"
+                            Background="#3d8bfd"
+                            CornerRadius="1"
+                            IsVisible="False"
+                            IsHitTestVisible="False" />
+                </Panel>
             </ScrollViewer>
         </DockPanel>
     </DockPanel>
