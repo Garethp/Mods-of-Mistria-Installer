@@ -47,8 +47,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 117
-seams = 126
+hooks = 122
+seams = 132
 engine_fixes = 3
 call_rewrites = 1
 
@@ -70,9 +70,34 @@ kind = "event"
 doc  = "Fires when the player pets a barn/coop animal (top of obj_player_animal on_pet()) or puts a held animal down (end of put_down()). ctx is the obj_player_animal instance, not the Animal data struct: its Animal data is ctx.me, and ctx.create_animal_currency_dance(count, face_ari) plays the celebration that drops count AnimalCurrency 'beads' at this animal (itself a no-op unless Perk.CurrencyOfCare is active). Observation only. The two call sites share one hook, so a handler that wants once-per-day (or once-per-animal) behavior must latch itself. The on_pet site fires before the animal's own can_pet() gate, so it can fire even when the pet turns out to be a no-op."
 
 [[hook]]
+name = "animal.production_gate"
+kind = "filter"
+doc  = "Fires in Stable.on_new_day(), once per barn/coop animal in the stall list, babies and unhappy animals included, after the day's happiness result is settled and the CloseBond heart bonuses have applied. The filtered value is the vanilla production gate boolean, !animal.is_baby() && is_happy. ctx is { animal, stable, production, is_happy }: animal is the Animal struct, stable is the Stable processing its new day, production is the production struct for the animal's sex from its prototype, and is_happy is the vanilla happiness result (not left outside, fed, and petted). Return a replacement boolean, or undefined to keep the current value. A final true runs the vanilla production step, where production_days increments and the animal.product_ready decision follows. A final false skips the step entirely, so no production progress accrues that day. The CloseBond bonuses read the raw is_happy above the seam, so forcing the gate open does not fake happiness for hearts."
+
+[[hook]]
+name = "animal.product_ready"
+kind = "filter"
+doc  = "Fires inside Stable.on_new_day()'s production step, after production_days increments, for every barn/coop animal the animal.production_gate decision let through. The filtered value is the readiness comparison animal.production_days >= production.days_to_produce, computed with the incremented counter. ctx is { animal, stable, production, is_happy }: is_happy is the vanilla happiness result, and it is only false here when an animal.production_gate handler forced the gate open. Return a replacement boolean, or undefined to keep the current value. A final true runs the complete vanilla drop block. The counter resets to 0, the production tier and perk bonuses compute, and the product drops land in the stable grid. A final false skips the drop block and leaves the incremented counter in place, so the counter keeps climbing until a later day passes the threshold or a handler releases it."
+
+[[hook]]
+name = "animal.breeding_result"
+kind = "filter"
+doc  = "Fires in Stable.on_new_day() for each breeding pair, after the engine rolls the offspring and before the fetus is stored in incubating_fetuses. The filtered value is the rolled offspring struct { kind, variant, sex, name }. ctx is { female, male, stable, is_gemini }: female and male are the parent Animal structs, stable is the Stable processing its new day, and is_gemini is true for the extra fetus the GeminiSeason perk adds. Two seams share this hook, one per push site, and is_gemini tells them apart. Return a replacement struct, mutate the given struct in place, or return undefined to keep the roll. A non-struct return is dropped and the roll stands. The name field is only a starting value, because the player renames the newborn at the hatching popup. Changing kind bypasses checks the engine ran before the roll. Incubator space was tested against the mother's species, and on_room_start() pairs egg fetuses to incubator instances by count, so a kind swap into an egg species can exceed the room's incubators."
+
+[[hook]]
+name = "animal.product_drops"
+kind = "filter"
+doc  = "Fires in Stable.on_new_day()'s drop block, after the normal and golden product lists are rolled and the Eggstra perk may add its extra product, and before the production stats record and the drops land in the stable grid. The filtered value is the struct { normal_products, golden_products }, and both fields are Lists of LiveItem (count()/get()), not arrays. Mutate the Lists in place, return a replacement struct, or return undefined to keep the current lists. The seam re-reads both fields defensively, so a non-struct return or a partial struct keeps the engine lists. ctx is { animal, stable, production, production_tier }: production is the production struct for the animal's sex from its prototype, and production_tier is the tier entry the animal's heart level resolved. Emptying both lists suppresses the drops and their stats records, because the engine's push blocks test is_empty(). The CurrencyOfCareTwo bead roll and the bonus gather item roll sit outside this value and still run."
+
+[[hook]]
+name = "animal.adoption_variant_unlocked"
+kind = "filter"
+doc  = "Fires in AdoptionMenu.setup_right_page(), once per acquirable variant row, as the menu reads ARI.animal_variant_unlocks for that variant. The filtered value is the unlocked boolean, and it gates the variant's name reveal, icon blackout, entry fade, and buyability together. ctx is { animal_kind, variant, has_gold, has_room }: variant is the variant data struct (read variant.key and variant.tier), and has_gold and has_room are the menu's other purchase gates, which the engine still enforces either way. Return a replacement boolean, or undefined to keep the save's unlock state. A final true offers the variant without writing anything to the save, and buying still flows through initialize_new_animal_for_ari(), which records the real unlock. A final false hides a variant the save has unlocked. Locked species never reach this page, so the filter cannot unlock a species early. Variants flagged not acquirable are filtered out earlier and never dispatch. The page rebuilds after each purchase, so the hook fires again with fresh gates."
+
+[[hook]]
 name = "npc.heart_points"
 kind = "filter"
-doc  = "Fires at the top of Npc.add_heart_points(), before the delta is applied. The filtered value is the heart points delta (amount). ctx is the Npc struct. Return the replacement value, or undefined to keep the current value. Distinct from animal.heart_points, which covers barn animals rather than villagers."
+doc  = "Fires at the top of Npc.add_heart_points(), before the delta is applied. The filtered value is the heart points delta (amount). ctx is the Npc struct. Return the replacement value, or undefined to keep the current value. Distinct from animal.heart_points, which covers barn/coop animals rather than villagers."
 
 [[hook]]
 name = "audio.music_selector"
@@ -3056,6 +3081,155 @@ hook    = "animal.pet"
 ctx     = "self"
 indent  = 16
 marker  = "mmapi_animal_run_pet_put_down"
+
+# The animal production pair hoists the two decisions of Stable.on_new_day()'s
+# daily production step into filtered locals, in the style of
+# fishing_should_reel. animal_production_gate filters the outer accrual gate
+# (!animal.is_baby() && is_happy), so a mod can let unhappy animals or babies
+# accrue progress and reach the ready check. The CloseBond heart bonuses read
+# the raw is_happy above the seam and are unaffected. animal_product_ready
+# filters the counter comparison after the increment. A final true releases the
+# untouched vanilla drop block, reset included. A final false leaves the
+# incremented counter climbing. The anchors are disjoint and each replace
+# preserves the other's anchor text, so the pair needs no depends_on edge.
+[[seam]]
+id      = "animal_production_gate"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+            if !animal.is_baby() && is_happy {
+                //
+                animal.production_days += 1;'''
+replace = '''
+            var __mmapi_animal_production_gate = !animal.is_baby() && is_happy;
+            try { __mmapi_animal_production_gate = mmapi_apply_filters("animal.production_gate", __mmapi_animal_production_gate, { animal: animal, stable: self, production: production, is_happy: is_happy }); } catch (__mmapi_animal_production_gate_error) {} // mmapi_stable_run_production_gate_filters
+            if (__mmapi_animal_production_gate) {
+                //
+                animal.production_days += 1;'''
+marker  = "mmapi_stable_run_production_gate_filters"
+provides = ["animal.production_gate"]
+
+[[seam]]
+id      = "animal_product_ready"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+                if animal.production_days >= production.days_to_produce {
+                    animal.production_days = 0;'''
+replace = '''
+                var __mmapi_animal_product_ready = animal.production_days >= production.days_to_produce;
+                try { __mmapi_animal_product_ready = mmapi_apply_filters("animal.product_ready", __mmapi_animal_product_ready, { animal: animal, stable: self, production: production, is_happy: is_happy }); } catch (__mmapi_animal_product_ready_error) {} // mmapi_stable_run_product_ready_filters
+                if (__mmapi_animal_product_ready) {
+                    animal.production_days = 0;'''
+marker  = "mmapi_stable_run_product_ready_filters"
+provides = ["animal.product_ready"]
+
+# animal.breeding_result dispatches from both fetus push sites in
+# Stable.on_new_day(), one seam per site, as animal.pet does. Each replace
+# hoists the roll into a local, filters it, and pushes the accepted result. A
+# non-struct return is dropped, following the
+# request_board_fetch_pool defensive style. The base site passes is_gemini
+# false and the GeminiSeason extra push passes is_gemini true. The deserialize
+# path pushes saved fetuses with a different body, so the anchors stay unique.
+[[seam]]
+id      = "animal_breeding_result"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+            self.incubating_fetuses.push({
+                male_parent: male_idx,
+                female_parent: female_idx,
+                days: -1,
+                animal: roll_animal_breeding(female.kind, female, male),
+            });'''
+replace = '''
+            var __mmapi_animal_breeding_roll = roll_animal_breeding(female.kind, female, male);
+            try {
+                var __mmapi_animal_breeding_filtered = mmapi_apply_filters("animal.breeding_result", __mmapi_animal_breeding_roll, { female: female, male: male, stable: self, is_gemini: false }); // mmapi_stable_run_breeding_result_filters
+                if (is_struct(__mmapi_animal_breeding_filtered)) {
+                    __mmapi_animal_breeding_roll = __mmapi_animal_breeding_filtered;
+                }
+            } catch (__mmapi_animal_breeding_error) {}
+            self.incubating_fetuses.push({
+                male_parent: male_idx,
+                female_parent: female_idx,
+                days: -1,
+                animal: __mmapi_animal_breeding_roll,
+            });'''
+marker  = "mmapi_stable_run_breeding_result_filters"
+provides = ["animal.breeding_result"]
+
+[[seam]]
+id      = "animal_breeding_result_gemini"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+                self.incubating_fetuses.push({
+                    male_parent: male_idx,
+                    female_parent: female_idx,
+                    days: -1,
+                    animal: roll_animal_breeding(female.kind, female, male),
+                });
+                GAME_STATS.perks[$ perk_to_string(Perk.GeminiSeason)] += 1;'''
+replace = '''
+                var __mmapi_animal_breeding_roll_gem = roll_animal_breeding(female.kind, female, male);
+                try {
+                    var __mmapi_animal_breeding_filtered_gem = mmapi_apply_filters("animal.breeding_result", __mmapi_animal_breeding_roll_gem, { female: female, male: male, stable: self, is_gemini: true }); // mmapi_stable_run_breeding_result_gemini_filters
+                    if (is_struct(__mmapi_animal_breeding_filtered_gem)) {
+                        __mmapi_animal_breeding_roll_gem = __mmapi_animal_breeding_filtered_gem;
+                    }
+                } catch (__mmapi_animal_breeding_gem_error) {}
+                self.incubating_fetuses.push({
+                    male_parent: male_idx,
+                    female_parent: female_idx,
+                    days: -1,
+                    animal: __mmapi_animal_breeding_roll_gem,
+                });
+                GAME_STATS.perks[$ perk_to_string(Perk.GeminiSeason)] += 1;'''
+marker  = "mmapi_stable_run_breeding_result_gemini_filters"
+provides = ["animal.breeding_result"]
+
+# animal.product_drops filters both product lists in one struct value, in the
+# defensive re-read style of request_board_fetch_pool. The dispatch sits after
+# the Eggstra roll and before the stats records and grid pushes, so the stats
+# see the final lists. Handlers may mutate the live Lists in place, and a
+# partial or non-struct return keeps the engine lists per field.
+[[seam]]
+id      = "animal_product_drops"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+                    //
+                    var pos = trellis_point(self.building.prototype.stall_points.get(i));'''
+replace = '''
+                    var __mmapi_animal_product_drops = { normal_products: normal_products, golden_products: golden_products };
+                    try {
+                        __mmapi_animal_product_drops = mmapi_apply_filters("animal.product_drops", __mmapi_animal_product_drops, { animal: animal, stable: self, production: production, production_tier: my_tier }); // mmapi_stable_run_product_drops_filters
+                    } catch (__mmapi_animal_product_drops_error) {}
+                    if (!is_struct(__mmapi_animal_product_drops)) {
+                        __mmapi_animal_product_drops = {};
+                    }
+                    if (__mmapi_animal_product_drops[$ "normal_products"] != undefined) {
+                        normal_products = __mmapi_animal_product_drops.normal_products;
+                    }
+                    if (__mmapi_animal_product_drops[$ "golden_products"] != undefined) {
+                        golden_products = __mmapi_animal_product_drops.golden_products;
+                    }
+                    //
+                    var pos = trellis_point(self.building.prototype.stall_points.get(i));'''
+marker  = "mmapi_stable_run_product_drops_filters"
+provides = ["animal.product_drops"]
+
+# animal.adoption_variant_unlocked filters the adoption menu's unlock read at
+# the one line every gate derives from, so the name reveal, icon blackout,
+# entry fade, and buyability stay coherent. has_gold and has_room are already
+# computed at the site and ride along in ctx. The purchase path is untouched
+# and still writes real unlocks through initialize_new_animal_for_ari().
+[[seam]]
+id      = "adoption_variant_unlocked"
+file    = "gml/scripts/UI/Anchor/Menus/AdoptionMenu.gml"
+anchor  = '''
+            var unlocked = ARI.animal_variant_unlocks[animal_kind].contains(variant.key);'''
+replace = '''
+            var unlocked = ARI.animal_variant_unlocks[animal_kind].contains(variant.key);
+            try { unlocked = mmapi_apply_filters("animal.adoption_variant_unlocked", unlocked, { animal_kind: animal_kind, variant: variant, has_gold: has_gold, has_room: has_room }); } catch (__mmapi_adoption_variant_error) {} // mmapi_adoption_run_variant_unlocked_filters'''
+marker  = "mmapi_adoption_run_variant_unlocked_filters"
+provides = ["animal.adoption_variant_unlocked"]
 
 # camera.culls_processed emits at the end of Camera.process_culls, right after instance_activate_region
 # reactivates the in-view node renderers. A text seam (not target/at=after) because the anchor is the
