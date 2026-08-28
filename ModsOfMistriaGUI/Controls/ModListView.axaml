@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="using:Garethp.ModsOfMistriaGUI.Models"
              xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
+             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaInstallerLib.Lang;assembly=ModsOfMistriaInstallerLib"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Garethp.ModsOfMistriaGUI.Controls.ModListView"
              x:Name="Root">
@@ -26,14 +27,14 @@
                                 Cursor="Hand"
                                 Padding="2 0 6 0"
                                 PointerPressed="OnModHandlePressed"
-                                ToolTip.Tip="Drag to change load order">
+                                ToolTip.Tip="{x:Static lang:Resources.GUIDragAndDropTooltip}">
                             <TextBlock MinWidth="30"
                                        VerticalAlignment="Center"
                                        Text="{Binding Position, StringFormat='≡ {0}'}">
                             </TextBlock>
                         </Border>
-                        <!-- Mod checkbox + warnings -->
                         
+                        <!-- Mod checkbox + warnings -->
                         <controls:ModlistCheckbox DataContext="{Binding}" />
                         
                         <!-- Update available badge -->

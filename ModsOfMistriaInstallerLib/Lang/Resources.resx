@@ -546,4 +546,7 @@
   <data name="GUIErrorWrongMistriaVersion" xml:space="preserve">
     <value>It looks like the Fields of Mistria Folder that has been selected is correct, but there was no assets.zip file in there. This version of the installer does not work with old versions of Fields of Mistria. Check if your installation is correct and make sure you have the latest version of Fields of Mistria.</value>
   </data>
+  <data name="GUIDragAndDropTooltip" xml:space="preserve">
+    <value>Drag to change load order</value>
+  </data>
 </root>

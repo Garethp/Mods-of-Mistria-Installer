@@ -1032,6 +1032,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Drag to change load order.
+        /// </summary>
+        public static string GUIDragAndDropTooltip {
+            get {
+                return ResourceManager.GetString("GUIDragAndDropTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Enable All Mods.
         /// </summary>
         public static string GUIEnableAllMods {
