@@ -164,7 +164,22 @@ public class ImageInstaller(
             IDManager.RegisterId(gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id);
             atlasUtils.RemoveById(gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id);
 
-            if (gameMeta.Asset.Atlas is null)
+            // Assets tagged manual-load are read straight from their own PNG while the game
+            // boots, before any atlas has been built.
+            var isManualLoad = false;
+            if (gameMeta.Asset.Tags is not null)
+            {
+                foreach (var tag in gameMeta.Asset.Tags)
+                {
+                    if (string.Equals(tag, "manual-load", StringComparison.OrdinalIgnoreCase))
+                    {
+                        isManualLoad = true;
+                        break;
+                    }
+                }
+            }
+
+            if (gameMeta.Asset.Atlas is null || isManualLoad)
             {
                 // Atlas-less animations (wrapping textures, tiled layer assets) render from
                 // their standalone PNG, so overwrite that file in place. The meta rewrite
@@ -172,8 +187,13 @@ public class ImageInstaller(
                 var gamePngPath = gameMetaPath[..^".meta.toml".Length] + ".png";
                 fileModifier.Write(gamePngPath, pngBytes);
 
-                reportStatus($"Replaced {spriteName} → standalone PNG (id {gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id})", "");
-                continue;
+                if (gameMeta.Asset.Atlas is null)
+                {
+                    reportStatus($"Replaced {spriteName} → standalone PNG (id {gameMeta.Meta.ReplaceId ?? gameMeta.Meta.Id})", "");
+                    continue;
+                }
+
+                reportStatus($"Replaced {spriteName} → standalone PNG (manual-load)", "");
             }
 
             using var pngStream = new MemoryStream(pngBytes);

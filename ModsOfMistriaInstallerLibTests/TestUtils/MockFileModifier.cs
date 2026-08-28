@@ -47,7 +47,14 @@ public class MockFileModifier: IFileModifier
     public Stream GetReadStream(string file)
     {
         file = file.Replace("\\", "/");
-        
+
+        // Binary payloads read back byte-exact. Anything written as bytes (an atlas image,
+        // a replaced PNG) would be corrupted by the lossy string mirror below.
+        if (_binaryFiles.TryGetValue(file, out var bytes))
+        {
+            return new MemoryStream(bytes, writable: false);
+        }
+
         var stream = new MemoryStream();
         var writer = new StreamWriter(stream);
         writer.Write(_resultingFiles[file]);
@@ -76,7 +83,28 @@ public class MockFileModifier: IFileModifier
 
     public Stream GetWriteStream(string file)
     {
-        throw new NotImplementedException();
+        file = file.Replace("\\", "/");
+
+        // Callers write to the stream and then dispose it. Capture the bytes at that point
+        // so atlas images land in the binary store exactly like a direct Write does.
+        return new DisposeCapturingStream(contents => Write(file, contents));
+    }
+
+    // A MemoryStream that hands its bytes to a callback when the writer disposes it.
+    private sealed class DisposeCapturingStream(Action<byte[]> onDispose) : MemoryStream
+    {
+        private bool _captured;
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && !_captured)
+            {
+                _captured = true;
+                onDispose(ToArray());
+            }
+
+            base.Dispose(disposing);
+        }
     }
 
     public bool ConditionalRestoreBackup(string file, Func<bool> condition)

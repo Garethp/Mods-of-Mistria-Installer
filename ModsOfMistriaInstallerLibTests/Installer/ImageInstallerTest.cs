@@ -89,6 +89,54 @@ public class ImageInstallerTest
         });
     }
 
+    // A manual-load sprite carries an atlas and is read straight from its own PNG while the
+    // game boots, before any atlas has been built.
+    [Test]
+    public void ShouldAlsoWriteTheStandalonePngForAManualLoadSprite()
+    {
+        var pngBytes = MakePng(8, 8);
+        var (modifier, statuses) = InstallReplacement(pngBytes, """
+            [meta_properties]
+            id = "19f4c499cafbf498"
+            asset_kind = "Animation"
+
+            [asset_properties]
+            frame_size = [8, 8]
+            atlas = "UI"
+            tags = ["manual-load"]
+            """);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(modifier.HasBinaryFile(GamePngPath), Is.True,
+                "a manual-load sprite is read from its standalone PNG at boot, so it must be written");
+            Assert.That(modifier.GetBinaryFile(GamePngPath), Is.EqualTo(pngBytes),
+                "the PNG must land byte-exact");
+            Assert.That(statuses, Has.Some.Contains("manual-load"),
+                "the extra write should be reported, not silent");
+        });
+    }
+
+    // The guard for the ordinary case. Title screen sprites live on an atlas and render from
+    // it, so their standalone PNG must be left exactly as the game shipped it.
+    [Test]
+    public void ShouldNotWriteTheStandalonePngForAnOrdinaryAtlasSprite()
+    {
+        var pngBytes = MakePng(8, 8);
+        var (modifier, _) = InstallReplacement(pngBytes, """
+            [meta_properties]
+            id = "19f4c499cafbf498"
+            asset_kind = "Animation"
+
+            [asset_properties]
+            frame_size = [8, 8]
+            atlas = "UI"
+            """);
+
+        Assert.That(modifier.HasBinaryFile(GamePngPath), Is.False,
+            "an atlas sprite renders from the atlas, so its standalone PNG must not be touched");
+    }
+
     // Installs one images/replace/ mod against a game tree holding a single sprite.
     private static (MockFileModifier, List<string>) InstallReplacement(byte[] pngBytes, string gameMeta)
     {
