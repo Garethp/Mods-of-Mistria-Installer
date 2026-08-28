@@ -24,4 +24,5 @@ As with every `ui.menu_refreshed` emit, handlers must be idempotent and must not
 ## See Also
 
 - [ui.menu_refreshed](../hooks/ui.menu_refreshed.md) - This is the hook this seam dispatches.
-- [ui_toolbar_refreshed](ui_toolbar_refreshed.md) - This seam is the twin emit at the tail of `ToolbarMenu.update()`.
+- [ui_toolbar_refreshed](ui_toolbar_refreshed.md) - This seam is the sibling emit at the tail of `ToolbarMenu.update()`.
+- [ui_crafting_refreshed](ui_crafting_refreshed.md) - This seam is the sibling emit at the tail of `CraftingMenu.select_category()`.
