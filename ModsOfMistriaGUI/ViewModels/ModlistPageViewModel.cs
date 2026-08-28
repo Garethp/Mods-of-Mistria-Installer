@@ -144,17 +144,14 @@ public partial class ModlistPageViewModel : PageViewBase
     }
 
     // ── Load order ────────────────────────────────────────────────────────────────
-
-    // Drag-and-drop reorder. The slot is the gap the insertion line was sitting in,
-    // counted with the dragged mod still in place: 0 is above the first mod and
-    // Mods.Count is below the last.
-    public void MoveMod(ModModel source, int slot)
+    [RelayCommand]
+    private void MoveMod((ModModel Mod, int Slot) move)
     {
-        var origin = Mods.IndexOf(source);
+        var origin = Mods.IndexOf(move.Mod);
         if (origin < 0) return;
 
         // Pulling the mod out shifts every gap after it down one.
-        var index = slot > origin ? slot - 1 : slot;
+        var index = move.Slot > origin ? move.Slot - 1 : move.Slot;
         if (index == origin) return;
 
         Mods.Move(origin, index);
