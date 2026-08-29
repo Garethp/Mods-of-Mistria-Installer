@@ -549,4 +549,28 @@
   <data name="GUIDragAndDropTooltip" xml:space="preserve">
     <value>Drag to change load order</value>
   </data>
+  <data name="GUIProfileIndicator" xml:space="preserve">
+    <value>Profile:</value>
+  </data>
+  <data name="GUINewProfileToolitp" xml:space="preserve">
+    <value>New profile</value>
+  </data>
+  <data name="GUIDeleteProfileTooltip" xml:space="preserve">
+    <value>Delete current profile</value>
+  </data>
+  <data name="GUIUpdateModButton" xml:space="preserve">
+    <value>↑ Update</value>
+  </data>
+  <data name="GUIModUpdateAvailable" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="GUIModUpdateAvailableWIthVersion" xml:space="preserve">
+    <value>Update available: v0} - click to open download page</value>
+  </data>
+  <data name="GUIFoMPickerTitle" xml:space="preserve">
+    <value>Open FieldsOfMistria.exe</value>
+  </data>
+  <data name="GUIModsFolderPickerTitle" xml:space="preserve">
+    <value>Open Mods Folder</value>
+  </data>
 </root>

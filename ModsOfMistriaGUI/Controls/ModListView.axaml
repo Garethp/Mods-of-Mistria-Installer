@@ -46,7 +46,8 @@
                                 Foreground="White"
                                 CornerRadius="4"
                                 VerticalAlignment="Center"
-                                ToolTip.Tip="{Binding UpdateTooltip}">↑ Update</Button>
+                                ToolTip.Tip="{Binding UpdateTooltip}"
+                                Content="{x:Static lang:Resources.GUIUpdateModButton}" />
                     </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

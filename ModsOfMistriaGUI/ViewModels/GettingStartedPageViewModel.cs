@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Garethp.ModsOfMistriaGUI.Models;
 using Garethp.ModsOfMistriaInstallerLib;
+using Garethp.ModsOfMistriaInstallerLib.Lang;
 
 namespace Garethp.ModsOfMistriaGUI.ViewModels;
 
@@ -23,7 +24,7 @@ public partial class GettingStartedPageViewModel(Settings settings) : PageViewBa
 
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Open FieldsOfMistria.exe",
+            Title = Resources.GUIFoMPickerTitle,
             FileTypeFilter =
             [
                 new FilePickerFileType("FieldsOfMistria.exe")
@@ -59,7 +60,7 @@ public partial class GettingStartedPageViewModel(Settings settings) : PageViewBa
 
         var files = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "Open Mods Folder",
+            Title = Resources.GUIModsFolderPickerTitle,
             AllowMultiple = false
         });
 
