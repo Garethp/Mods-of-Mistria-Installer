@@ -112,8 +112,8 @@ public partial class ModModel : ObservableObject
 
     public string UpdateTooltip =>
         LatestVersion is null
-            ? "Update available"
-            : $"Update available: v{LatestVersion} — click to open download page";
+            ? Resources.GUIModUpdateAvailable
+            : string.Format(Resources.GUIModByAuthorWithVersion, LatestVersion);
 
     [RelayCommand]
     private void OpenUpdateUrl()
