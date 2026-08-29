@@ -59,14 +59,14 @@
 
                 <!-- Profile selector -->
                 <WrapPanel Margin="0 8 0 0" VerticalAlignment="Center">
-                    <TextBlock VerticalAlignment="Center" Margin="0 0 6 0" Text="Profile:" />
+                    <TextBlock VerticalAlignment="Center" Margin="0 0 6 0" Text="{x:Static lang:Resources.GUIProfileIndicator}" />
                     <ComboBox ItemsSource="{Binding Profiles}"
                               SelectedItem="{Binding CurrentProfile, Mode=OneWay}"
                               MinWidth="140"
                               SelectionChanged="OnProfileSelectionChanged" />
-                    <Button Margin="6 0 0 0" ToolTip.Tip="New profile"
+                    <Button Margin="6 0 0 0" ToolTip.Tip="{x:Static lang:Resources.GUINewProfileToolitp}"
                             Command="{Binding CreateProfileCommand}">+</Button>
-                    <Button Margin="4 0 0 0" ToolTip.Tip="Delete current profile"
+                    <Button Margin="4 0 0 0" ToolTip.Tip="{x:Static lang:Resources.GUIDeleteProfileTooltip}"
                             Command="{Binding DeleteCurrentProfileCommand}">-</Button>
                 </WrapPanel>
             </StackPanel>

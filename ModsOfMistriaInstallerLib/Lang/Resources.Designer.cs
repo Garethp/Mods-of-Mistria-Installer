@@ -1023,6 +1023,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Delete current profile.
+        /// </summary>
+        public static string GUIDeleteProfileTooltip {
+            get {
+                return ResourceManager.GetString("GUIDeleteProfileTooltip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable All Mods.
         /// </summary>
         public static string GUIDisableAllMods {
@@ -1064,6 +1073,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string GUIFieldsOfMistriaDetectedLocation {
             get {
                 return ResourceManager.GetString("GUIFieldsOfMistriaDetectedLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open FieldsOfMistria.exe.
+        /// </summary>
+        public static string GUIFoMPickerTitle {
+            get {
+                return ResourceManager.GetString("GUIFoMPickerTitle", resourceCulture);
             }
         }
         
@@ -1167,6 +1185,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Open Mods Folder.
+        /// </summary>
+        public static string GUIModsFolderPickerTitle {
+            get {
+                return ResourceManager.GetString("GUIModsFolderPickerTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This mod was skipped during install.
         /// </summary>
         public static string GUIModSkipped {
@@ -1203,6 +1230,33 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Update available.
+        /// </summary>
+        public static string GUIModUpdateAvailable {
+            get {
+                return ResourceManager.GetString("GUIModUpdateAvailable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update available: v0} - click to open download page.
+        /// </summary>
+        public static string GUIModUpdateAvailableWIthVersion {
+            get {
+                return ResourceManager.GetString("GUIModUpdateAvailableWIthVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New profile.
+        /// </summary>
+        public static string GUINewProfileToolitp {
+            get {
+                return ResourceManager.GetString("GUINewProfileToolitp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No mods found to install.
         /// </summary>
         public static string GUINoModsToInstall {
@@ -1235,6 +1289,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string GUIPreinstallInformationTitle {
             get {
                 return ResourceManager.GetString("GUIPreinstallInformationTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Profile:.
+        /// </summary>
+        public static string GUIProfileIndicator {
+            get {
+                return ResourceManager.GetString("GUIProfileIndicator", resourceCulture);
             }
         }
         
@@ -1316,6 +1379,15 @@ namespace Garethp.ModsOfMistriaInstallerLib.Lang {
         public static string GUIUninstallingText {
             get {
                 return ResourceManager.GetString("GUIUninstallingText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ↑ Update.
+        /// </summary>
+        public static string GUIUpdateModButton {
+            get {
+                return ResourceManager.GetString("GUIUpdateModButton", resourceCulture);
             }
         }
         
