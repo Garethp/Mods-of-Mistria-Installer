@@ -98,6 +98,11 @@ mods. A mod that fails those checks is skipped completely.
 
 For additional information, see [MMAPI](docs/MMAPI/MMAPI.md) documentation.
 
+### `momi/audio/`
+
+Replace a track's audio inside a vanilla `.bank` file with your own WAV. See
+[Audio Replacement](docs/AUDIO_REPLACEMENT.md).
+
 ## Contributing Translations
 
 If you're interested in contributing translations of MOMI into other languages, that would be super appreciated! Here's

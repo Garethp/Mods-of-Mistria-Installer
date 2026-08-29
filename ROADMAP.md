@@ -27,7 +27,7 @@
 * [ ] `farms.json` installer
 * [ ] `hyper_points.json` installer
 * [ ] `t2_input.json` installer
-* [ ] Sounds installer
+* [x] Sounds installer
 * [ ] Improve translations for validations (the prefixes are not pulled from localisations)
 * [ ] Add translations for exceptions
 * [ ] Catch all exceptions in the GUI

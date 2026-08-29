@@ -1,0 +1,8 @@
+{
+  "name": "Audio Replacement Demo",
+  "author": "desrali",
+  "version": "1.0.0",
+  "description": "Reference mod for MOMI's momi/audio feature: replaces one Fall ambience one-shot with a short original chime. See docs/AUDIO_REPLACEMENT.md.",
+  "minInstallerVersion": "0.15.2",
+  "manifestVersion": 1
+}
