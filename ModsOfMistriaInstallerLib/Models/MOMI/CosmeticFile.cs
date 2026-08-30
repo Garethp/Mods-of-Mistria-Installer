@@ -32,10 +32,11 @@ public class CosmeticFile
         { "facial_hair", 22 },
         { "beard", 22 },
         { "torso", 14 },
-        { "back", 59 },
+        { "back_gear", 59 },
         { "sleeve_left", 49 },
         { "sleeve_right", 57 },
         { "waist", 48 },
+        { "legs_top", 48 },
         { "legs", 48 },
         { "feet", 41 },
     };
