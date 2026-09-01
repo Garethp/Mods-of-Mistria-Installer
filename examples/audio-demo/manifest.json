@@ -1,0 +1,9 @@
+{
+    "name": "Audio Demo",
+    "author": "DeUlo",
+    "version": "1.0.0",
+    "description": "Reference mod for MOMI's audio feature. ADDS a new sound played by an F9 hotkey (event:/AudioDemo/HotkeyChime), and REPLACES the farmhouse day music by redirecting its name at this mod's own track. See docs/AudioMods.md.",
+    "minInstallerVersion": "0.16.0",
+    "manifestVersion": 1,
+    "requires_hooks": ["game.title_entered"]
+}
