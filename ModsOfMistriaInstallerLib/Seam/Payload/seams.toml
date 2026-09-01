@@ -47,8 +47,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 122
-seams = 133
+hooks = 123
+seams = 134
 engine_fixes = 3
 call_rewrites = 1
 
@@ -659,6 +659,11 @@ doc  = "Fires after a menu rebuilds its content from game state, at the tail of 
 name = "ui.preset_popup_layout"
 kind = "filter"
 doc  = "Fires each time the customization menu generates its preset popup body, on popup open and again after a preset is added or deleted. The filtered value is the layout struct { frame_width: 46, frame_height: 47, columns: 4, rows: 2, spacing: 4 }: frame_width and frame_height size each preset frame, columns and rows shape the grid, and spacing is the gap centered_positions puts between frames. ctx is the CustomizationMenu struct. Return the replacement struct, or undefined to keep the engine values. The seam re-reads every field defensively, so an undefined return (or a partial struct) keeps the engine value for each field it lacks. Growing columns or rows grows the preset capacity (the stock 4x2 grid holds seven presets plus the button that creates a new preset), and a grid smaller than the current preset count leaves the overflow presets unreachable in the popup without deleting them. The popup backplate is sized at popup open (230x164) and does not adapt, so frames that outgrow it draw outside its art."
+
+[[hook]]
+name = "ui.relationship_row_built"
+kind = "event"
+doc  = "Fires once per NPC row as the relationships journal page builds its scrollable list, at the end of the row build with every vanilla node in place. Each journal tab switch constructs the page fresh, so the hook fires for every listed NPC on every visit to the page and never per frame. ctx is { menu, element, npc_id, npc, portrait, hearts, bar, talk_icon, talk_check, gift_icon, gift_check }: menu is the RelationshipsMenu, element is the row's scroller element (its name label is element.text_label), npc is the Npc data struct for npc_id, portrait is the row's NPC sprite node, hearts and bar are the heart level and heart progress nodes, talk_icon and talk_check are the talked-today icon and checkbox, and gift_icon and gift_check are the gifted-today icon and checkbox. The intended use is to add custom nodes to the row, anchored to the ctx nodes the way the vanilla row chains its own (for example an extra checkbox set RightOut of gift_check). Nodes parented to the row are freed with the menu, so handlers need no cleanup. Row content is a build-time snapshot, so give a node a think callback if it must track live state. Unmet NPCs get rows too, with a '???' label, a blacked-out portrait, and no tap callback, so gate revealing decorations on ctx.npc.has_met(). NPCs the list skips never fire, meaning locked NPCs, unmet vendors, and unmet animal-tagged NPCs before greet_the_townsfolk completes. The right-page detail pane (set_to_npc_id) is separate and not covered. The test suite's menu stress builds this page too, so handlers also fire there."
 
 [[hook]]
 name = "ui.spawn_tutorial_guard"
@@ -3405,3 +3410,43 @@ hook    = "quest.complete"
 ctx     = "{ quest_name: quest_name, quest: finished_quest }"
 indent  = 8
 marker  = "mmapi_quest_complete"
+
+# The relationships journal builds one scroller row per listed NPC each time
+# the page is constructed, and each journal tab switch constructs the page
+# fresh. The emit lands at the end of the row build so every vanilla node is
+# in place. The pristine chain discards the trailing gift checkbox node, and
+# the ctx wants that node, so a text seam captures it into a local before the
+# emit. Value capture is what the text form is for.
+[[seam]]
+id      = "ui_relationship_row_built"
+file    = "gml/scripts/UI/Anchor/Menus/RelationshipsMenu.gml"
+anchor  = '''
+        ANCHOR.sprite(gift_icon)
+            .set_sprite(!npc_data.gift_flag ? spr_ui_generic_checkbox_on : spr_ui_generic_checkbox_off)
+            .set_align(Align.RightOut, Align.Middle)
+            .set_x(2)
+'''
+replace = '''
+        var gift_check = ANCHOR.sprite(gift_icon)
+            .set_sprite(!npc_data.gift_flag ? spr_ui_generic_checkbox_on : spr_ui_generic_checkbox_off)
+            .set_align(Align.RightOut, Align.Middle)
+            .set_x(2)
+
+        try {
+            mmapi_emit("ui.relationship_row_built", { // mmapi_ui_relationship_row_built
+                menu: self,
+                element: element,
+                npc_id: npc_id,
+                npc: npc_data,
+                portrait: npc,
+                hearts: hearts,
+                bar: bar,
+                talk_icon: talk_icon,
+                talk_check: talk_check,
+                gift_icon: gift_icon,
+                gift_check: gift_check,
+            });
+        } catch (__mmapi_ui_relationship_row_built) {}
+'''
+marker  = "mmapi_ui_relationship_row_built"
+provides = ["ui.relationship_row_built"]
