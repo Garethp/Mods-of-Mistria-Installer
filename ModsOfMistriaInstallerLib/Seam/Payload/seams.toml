@@ -37,8 +37,11 @@
 # lifecycle root),
 # tarball_chop_burn_flag (the tarball chop's hardcoded is_burn, which
 # burn-throttled every non-fire tarball chop against stump/fruit-tree iframes),
-# and max_crafts_zero_component (the Item-loop division missing the zero guard
-# its own Duration branch has, so a zero-cost component crashed the craft menu).
+# max_crafts_zero_component (the Item-loop division missing the zero guard
+# its own Duration branch has, so a zero-cost component crashed the craft menu),
+# and the three fish_chest fixes (fish_chest_item_use, fish_chest_table_lookup,
+# fish_chest_custom_rarity, which widen the engine's identity-keyed
+# fishing-chest sites into the fish_chest item-data contract).
 
 version = 2
 
@@ -49,7 +52,7 @@ version = 2
 [counts]
 hooks = 122
 seams = 133
-engine_fixes = 3
+engine_fixes = 6
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -2686,6 +2689,77 @@ replace = '''
             var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
 '''
 marker  = "mmapi_max_crafts_zero_component"
+
+# The three edits below carry a data contract instead of a hook. An item
+# fiddle entry may declare fish_chest = "<key>", naming an entry under
+# fishing/chest_tables. The engine's fishing-chest pipeline is data-driven
+# everywhere except three identity-keyed sites, and each edit widens one of
+# them. No vanilla data reaches any widened branch, so with no modded data
+# the staged control flow behaves exactly as pristine.
+
+# Widens the OpenChest use assignment so a fiddle item carrying fish_chest
+# opens like the five hardcoded chest items. The key is copied onto the
+# prototype for the AriFsm table lookup. Vanilla items never carry the field.
+[[engine_fix]]
+name    = "fish_chest_item_use"
+file    = "gml/scripts/GameplaySystems/Items/Items.gml"
+anchor  = '''
+        } else if matches(prototype.item_id, ItemId.TreasureBoxWood, ItemId.TreasureBoxCopper, ItemId.TreasureBoxSilver, ItemId.TreasureBoxGold, ItemId.AbyssalChest) {
+            prototype.use = ItemUse.OpenChest;
+'''
+replace = '''
+        } else if matches(prototype.item_id, ItemId.TreasureBoxWood, ItemId.TreasureBoxCopper, ItemId.TreasureBoxSilver, ItemId.TreasureBoxGold, ItemId.AbyssalChest)
+            || fiddle_data[$ "fish_chest"] != undefined { // mmapi_fish_chest_item_use
+            prototype.fish_chest = fiddle_data[$ "fish_chest"];
+            prototype.use = ItemUse.OpenChest;
+'''
+marker  = "mmapi_fish_chest_item_use"
+
+# Resolves the opened chest's loot table from the prototype's fish_chest key
+# when the item is not one of the five hardcoded cases. FISH_CHEST already
+# holds every merged chest_tables entry, so the lookup is a struct read. The
+# pristine impossible() survives for an unknown item and for a key that names
+# no table.
+[[engine_fix]]
+name    = "fish_chest_table_lookup"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                            case ItemId.AbyssalChest:
+                                table = FISH_CHEST.abyss;
+                                break;
+                            default: impossible("unexpected `OpenChest` use in `{}`", self.live_item);
+                        }
+'''
+replace = '''
+                            case ItemId.AbyssalChest:
+                                table = FISH_CHEST.abyss;
+                                break;
+                            default: // mmapi_fish_chest_table_lookup
+                                var __mmapi_fish_chest_key = self.live_item.prototype[$ "fish_chest"];
+                                if (__mmapi_fish_chest_key != undefined) {
+                                    table = FISH_CHEST[$ __mmapi_fish_chest_key];
+                                }
+                                if (table == undefined) {
+                                    impossible("unexpected `OpenChest` use in `{}`", self.live_item);
+                                }
+                        }
+'''
+marker  = "mmapi_fish_chest_table_lookup"
+
+# The chest-rarity switch in create_fish_distributions enumerates the four
+# vanilla rarities for perk adjustments and aborts Setup on anything else.
+# A modded chest rarity now takes the default and simply gets no perk vote
+# adjustments. Its base votes still come from its fishing/votes entry.
+[[engine_fix]]
+name    = "fish_chest_custom_rarity"
+file    = "gml/scripts/GameplaySystems/Fishing/Fish.gml"
+anchor  = '''
+                default: impossible("unexpected chest rarity: {}", fish_proto.rarity);
+'''
+replace = '''
+                default: break; // A modded chest rarity gets no perk vote adjustments. // mmapi_fish_chest_custom_rarity
+'''
+marker  = "mmapi_fish_chest_custom_rarity"
 
 # The remaining entries are appended after the earlier ones on purpose. Catalog
 # order is apply order, and two of them stack onto files already seamed above
