@@ -52,7 +52,7 @@ version = 2
 [counts]
 hooks = 128
 seams = 139
-engine_fixes = 5
+engine_fixes = 7
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -2762,6 +2762,110 @@ replace = '''
                 default: break; // A modded chest rarity gets no perk vote adjustments. // mmapi_fish_chest_custom_rarity
 '''
 marker  = "mmapi_fish_chest_custom_rarity"
+
+[[engine_fix]]
+name    = "customization_color_popup_scrollable"
+file    = "gml/scripts/UI/Anchor/Menus/CustomizationMenu.gml"
+anchor  = '''
+        var container_size = layout.container_size();
+        var container = ANCHOR.positional(popup.backplate)
+            .set_size(container_size)
+            .set_align(Align.Center, Align.BottomIn)
+            .set_y(-13)
+
+        popup.backplate.add_height(container_size.y);'''
+replace = '''
+        var container_size = layout.container_size();
+        var mmapi_lut_selector_scrollable = 23 * 7;
+        var container;
+        if (container_size.y > mmapi_lut_selector_scrollable) {
+            var __mmapi_lut_side = SCROLLBAR_WIDTH + 8;
+            popup.backplate.set_width(container_size.x + 1 + __mmapi_lut_side * 2);
+            popup.backplate.add_height(mmapi_lut_selector_scrollable);
+            var __mmapi_lut_body = ANCHOR.positional(popup.backplate)
+                .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_lut_selector_scrollable)
+                .set_align(Align.LeftIn, Align.BottomIn)
+                .set_x(__mmapi_lut_side)
+                .set_y(-13)
+            var __mmapi_lut_scroller = create_scroller_ext(
+                __mmapi_lut_body,
+                Vec2(0, 0),
+                Vec2(container_size.x + 1, mmapi_lut_selector_scrollable),
+                Vec2(Align.LeftIn, Align.TopIn),
+                Vec2(container_size.x + 5, -1),
+                Vec2(SCROLLBAR_WIDTH, mmapi_lut_selector_scrollable + 2),
+                Vec2(Align.LeftIn, Align.TopIn))
+                .subscribe_to_pilot(popup.pilot)
+                .alternate_colors(false)
+            var __mmapi_lut_element = __mmapi_lut_scroller.new_element(1);
+            container = ANCHOR.positional(__mmapi_lut_element)
+                .set_size(container_size)
+                .set_align(Align.LeftIn, Align.TopIn)
+                .set_y(__mmapi_lut_element.get_height())
+            __mmapi_lut_scroller.add_height_to_element(__mmapi_lut_element, container_size.y + 2);
+        } else {
+            container = ANCHOR.positional(popup.backplate)
+                .set_size(container_size)
+                .set_align(Align.Center, Align.BottomIn)
+                .set_y(-13)
+
+            popup.backplate.add_height(container_size.y);
+        }'''
+marker  = "mmapi_lut_selector_scrollable"
+
+[[engine_fix]]
+name    = "pet_appearance_popup_scrollable"
+file    = "gml/scripts/AnimalMenu.gml"
+anchor  = '''
+    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
+
+    var container_size = layout.container_size();
+    var container = ANCHOR.positional(popup.backplate)
+        .set_size(container_size)
+        .set_align(Align.Center, Align.Middle)
+        .set_y(9)
+
+    popup.backplate.add_height(container_size.y);'''
+replace = '''
+    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
+
+    var container_size = layout.container_size();
+    var mmapi_pet_appearance_scrollable = 23 * 7;
+    var container;
+    if (container_size.y > mmapi_pet_appearance_scrollable) {
+        var __mmapi_pet_side = SCROLLBAR_WIDTH + 8;
+        popup.backplate.set_width(container_size.x + 1 + __mmapi_pet_side * 2);
+        popup.backplate.add_height(mmapi_pet_appearance_scrollable);
+        var __mmapi_pet_body = ANCHOR.positional(popup.backplate)
+            .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_pet_appearance_scrollable)
+            .set_align(Align.LeftIn, Align.BottomIn)
+            .set_x(__mmapi_pet_side)
+            .set_y(-13)
+        var __mmapi_pet_scroller = create_scroller_ext(
+            __mmapi_pet_body,
+            Vec2(0, 0),
+            Vec2(container_size.x + 1, mmapi_pet_appearance_scrollable),
+            Vec2(Align.LeftIn, Align.TopIn),
+            Vec2(container_size.x + 5, -1),
+            Vec2(SCROLLBAR_WIDTH, mmapi_pet_appearance_scrollable + 2),
+            Vec2(Align.LeftIn, Align.TopIn))
+            .subscribe_to_pilot(popup.pilot)
+            .alternate_colors(false)
+        var __mmapi_pet_element = __mmapi_pet_scroller.new_element(1);
+        container = ANCHOR.positional(__mmapi_pet_element)
+            .set_size(container_size)
+            .set_align(Align.LeftIn, Align.TopIn)
+            .set_y(__mmapi_pet_element.get_height())
+        __mmapi_pet_scroller.add_height_to_element(__mmapi_pet_element, container_size.y + 2);
+    } else {
+        container = ANCHOR.positional(popup.backplate)
+            .set_size(container_size)
+            .set_align(Align.Center, Align.Middle)
+            .set_y(9)
+
+        popup.backplate.add_height(container_size.y);
+    }'''
+marker  = "mmapi_pet_appearance_scrollable"
 
 # The remaining entries are appended after the earlier ones on purpose. Catalog
 # order is apply order, and two of them stack onto files already seamed above
