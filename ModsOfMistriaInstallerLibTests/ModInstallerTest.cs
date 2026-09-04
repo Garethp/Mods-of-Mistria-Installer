@@ -101,12 +101,11 @@ public class ModInstallerTest
     }
 
     [Test]
-    public void ShouldNotStageTheLayerWithoutGmlMods()
+    public void ShouldStageTheLayerForAContentOnlyInstall()
     {
-        // A missing catalog override fails loudly on resolve: a passing
-        // install proves the layer never staged
-        Environment.SetEnvironmentVariable("MOMI_SEAM_CATALOG", Path.Combine(_fom, "missing-catalog.toml"));
-
+        // The layer stages on every install that has mods selected, so the
+        // catalog's engine fixes and the framework land even when every mod
+        // is content-only.
         var contentMod = ContentMod("contentmod");
         var result = new ModInstaller(_fom, "").InstallMods([contentMod], (_, _) => { },
             gateMode: CompileGateMode.Off);
@@ -115,7 +114,8 @@ public class ModInstallerTest
         Assert.That(result.Summary(), Is.EqualTo("1 mod(s) installed"));
 
         using var live = ZipFile.OpenRead(new AssetsStore(_fom).LivePath);
-        Assert.That(live.GetEntry("assets/gml/scripts/mmapi/mmapi.gml"), Is.Null);
+        Assert.That(live.GetEntry("assets/gml/scripts/mmapi/mmapi.gml"), Is.Not.Null,
+            "a content-only install must still stage the layer");
         Assert.That(live.GetEntry("manifest.toml"), Is.Not.Null);
     }
 

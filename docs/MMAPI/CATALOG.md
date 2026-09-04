@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **127 hooks**, fed by **138 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **128 hooks**, fed by **139 seams**, **5 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -120,6 +120,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | ---- | ---- | ----------- |
 | [items.give](hooks/items.give.md) | filter | Rewrite any item the player is about to receive. |
 | [items.use_guard](hooks/items.use_guard.md) | guard | Block an item from being used. |
+| [items.chest_opened](hooks/items.chest_opened.md) | event | Know the moment any chest item finishes opening. |
 | [items.consumed](hooks/items.consumed.md) | event | Know every item the player eats. |
 | [items.dropped](hooks/items.dropped.md) | event | Know what is about to drop into the world. |
 | [items.trashed](hooks/items.trashed.md) | event | Know the moment the player trashes an item. |
@@ -281,6 +282,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [archaeology_dig_artifact](seams/archaeology_dig_artifact.md) | Wraps the artifact roll so every dig spot's yield passes through a filter. |
 | [items_treasure_distribution_none](seams/items_treasure_distribution_none.md) | Filters the treasure roll's empty exit so mods can inject a drop where there was none. |
 | [items_treasure_distribution_result](seams/items_treasure_distribution_result.md) | Filters the treasure roll's rolled result on its way out. |
+| [fish_chest_table_lookup](seams/fish_chest_table_lookup.md) | Resolves an opened chest's loot table, and announces the open before the drops. |
 | [items_infusion_generate](seams/items_infusion_generate.md) | Puts a veto check in front of a recipe's infusion generation. |
 | [items_infusion_chance](seams/items_infusion_chance.md) | Filters the infusion roll chance in `craft_into()`, hoisted out of the roll condition before `chance_percent` consumes it. |
 | [item_display_description](seams/item_display_description.md) | Wraps the item-description getter, the string the tooltip body actually renders. |
@@ -333,6 +335,8 @@ Hook-less edits the catalog also carries:
 | [game_step_begin_installs](seams/game_step_begin_installs.md) | engine fix | Installs the MMAPI per-frame drain at the top of the game's `step_begin`, the framework's lifecycle root. |
 | [tarball_chop_burn_flag](seams/tarball_chop_burn_flag.md) | engine fix | Passes the tarball's real fire flag to its grid chop, so non-fire chops stop being burn-throttled by stump/fruit-tree iframes. |
 | [max_crafts_zero_component](seams/max_crafts_zero_component.md) | engine fix | Skips zero-cost components in the craft-ceiling loop, mirroring the zero guard the duration branch already has. |
+| [fish_chest_item_use](seams/fish_chest_item_use.md) | engine fix | Lets a fiddle item declaring `fish_chest` take `ItemUse.OpenChest`, carrying its loot-table key on the prototype. |
+| [fish_chest_custom_rarity](seams/fish_chest_custom_rarity.md) | engine fix | Makes an unknown chest rarity a no-op in the fishing distribution build instead of a Setup crash. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Growing The Catalog
