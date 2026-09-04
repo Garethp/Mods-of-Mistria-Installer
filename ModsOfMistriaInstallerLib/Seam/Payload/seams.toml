@@ -215,7 +215,7 @@ doc  = "Fires in create_furniture_renderer(node) as a furniture node's floor spr
 [[hook]]
 name = "dialogue.line"
 kind = "filter"
-doc  = "Fires in ConversationDriver.deliver_line(), before the textbox shows the line. The filtered value is the localized line text. ctx is { driver, line, conversation_name, npc_id, is_info_line }. Return the replacement string, or undefined to keep the current value."
+doc  = "Fires in ConversationDriver.deliver_line(), before the textbox shows the line. The filtered value is the localized line text. ctx is { driver, line, conversation_name, npc_id, speaker, is_info_line }. npc_id is the driver's npc_owner, the NPC the conversation belongs to. speaker is the textbox speaker the line's own Speaker action has already assigned, and it is undefined for info lines. Cutscene conversations rotate speakers independently of the owner, so read speaker for the character delivering the line. Return the replacement string, or undefined to keep the current value."
 
 [[hook]]
 name = "dialogue.npc_blip"
@@ -1645,6 +1645,7 @@ replace = '''
                 line: line,
                 conversation_name: self.conversation_name,
                 npc_id: self.npc_owner,
+                speaker: self.textbox.requested_speaker,
                 is_info_line: self.is_info_line,
             });
         } catch (__mmapi_dialogue_local) {}
