@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **124 hooks**, fed by **135 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **127 hooks**, fed by **138 seams**, **3 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -84,6 +84,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [gossip.selections](hooks/gossip.selections.md) | filter | Change which NPCs the day's gossip offers. |
 | [npc.heart_points](hooks/npc.heart_points.md) | filter | Adjust the heart points a villager gains. |
 | [npc.gift_received](hooks/npc.gift_received.md) | event | Know when the player gives an NPC a gift. |
+| [npc.created](hooks/npc.created.md) | event | Customize each villager instance as it spawns, fully initialized. |
 | [date.run](hooks/date.run.md) | override | Take over a date the moment the player commits to it. |
 | [date.begin](hooks/date.begin.md) | guard | Cancel an accepted date after its acceptance conversation, before the cutscene. |
 | [date.cutscene](hooks/date.cutscene.md) | filter | Swap which cutscene a date plays while keeping the vanilla date pipeline. |
@@ -95,6 +96,8 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [animal.breeding_result](hooks/animal.breeding_result.md) | filter | Change the offspring a breeding pair rolls. |
 | [animal.product_drops](hooks/animal.product_drops.md) | filter | Change what an animal's production drops. |
 | [animal.adoption_variant_unlocked](hooks/animal.adoption_variant_unlocked.md) | filter | Change which animal variants the adoption menu offers. |
+| [animal.created](hooks/animal.created.md) | event | Customize each barn/coop animal instance as it spawns. |
+| [pet.created](hooks/pet.created.md) | event | Customize the farm pet's instance as it spawns. |
 | [combat.damage](hooks/combat.damage.md) | filter | Change any hit before it resolves. |
 | [combat.damage_resolved](hooks/combat.damage_resolved.md) | event | Know the moment a hit lands or is blocked. |
 | [combat.damage_injected](hooks/combat.damage_injected.md) | event | Know when a mod injects a hit through the damage pipeline. |
@@ -230,6 +233,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [gossip_selections](seams/gossip_selections.md) | Wraps the gossip picker so the day's NPC selection passes through a filter. |
 | [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it applies. |
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
+| [npc_created](seams/npc_created.md) | Emits at the end of `spawn_npc()`, after `initialize` attaches the NPC data and FSM. |
 | [date_run](seams/date_run.md) | Puts a claim-scoped override in front of every player-initiated date. |
 | [date_begin](seams/date_begin.md) | Guards start_date_cutscene inside run_date, after the acceptance conversation. |
 | [date_cutscene](seams/date_cutscene.md) | Threads the date cutscene name through a filter and into the completion chain. |
@@ -244,6 +248,8 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [animal_breeding_result_gemini](seams/animal_breeding_result_gemini.md) | Filters the extra GeminiSeason offspring roll at its own push site. |
 | [animal_product_drops](seams/animal_product_drops.md) | Filters the product lists after the Eggstra roll, before stats and grid drops. |
 | [adoption_variant_unlocked](seams/adoption_variant_unlocked.md) | Filters the adoption menu's variant unlock read for each variant row. |
+| [animal_created](seams/animal_created.md) | Emits at the end of `spawn_animal()`, after the instance is written onto the Animal struct. |
+| [pet_created](seams/pet_created.md) | Rewrites `spawn_pet()` to capture the created pet instance and emit with it. |
 | [combat_damage_pre](seams/combat_damage_pre.md) | Threads every enqueued hit through a damage filter before it resolves. |
 | [combat_damage_resolved](seams/combat_damage_resolved.md) | Announces the outcome of every hit the receiver's resolution switch lands or blocks. |
 | [combat_tarball_grid](seams/combat_tarball_grid.md) | Hands every active swing's tarball to mods before the grid pick/chop/destroy blocks read it. |

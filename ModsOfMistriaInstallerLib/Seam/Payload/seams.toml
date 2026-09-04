@@ -47,8 +47,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 124
-seams = 135
+hooks = 127
+seams = 138
 engine_fixes = 3
 call_rewrites = 1
 
@@ -95,6 +95,16 @@ kind = "filter"
 doc  = "Fires in AdoptionMenu.setup_right_page(), once per acquirable variant row, as the menu reads ARI.animal_variant_unlocks for that variant. The filtered value is the unlocked boolean, and it gates the variant's name reveal, icon blackout, entry fade, and buyability together. ctx is { animal_kind, variant, has_gold, has_room }: variant is the variant data struct (read variant.key and variant.tier), and has_gold and has_room are the menu's other purchase gates, which the engine still enforces either way. Return a replacement boolean, or undefined to keep the save's unlock state. A final true offers the variant without writing anything to the save, and buying still flows through initialize_new_animal_for_ari(), which records the real unlock. A final false hides a variant the save has unlocked. Locked species never reach this page, so the filter cannot unlock a species early. Variants flagged not acquirable are filtered out earlier and never dispatch. The page rebuilds after each purchase, so the hook fires again with fresh gates."
 
 [[hook]]
+name = "animal.created"
+kind = "event"
+doc  = "Fires at the end of spawn_animal(), once per barn/coop animal instance the engine creates, after the obj_player_animal create event has run and after spawn_animal() writes the new instance onto the Animal struct. ctx is the obj_player_animal instance, not the Animal data struct: the data is ctx.me, and ctx.me.instance already points back at ctx (the create event never sets that field itself, so no earlier moment sees the pair linked). Instances are transient. The engine spawns them through spawn_animal() from Stable.on_room_start() whenever the player enters a location where a stable's animals are present, and from the held-animal summon when a carried animal rides along on a room change. A fire marks instance creation, not a new animal (an adoption fires nothing until the player next enters the new animal's location), and handlers must expect many fires per animal per day. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction taking the press, so a handler cannot shadow an active vanilla interaction on the same input. Distinct from pet.created, which covers the farm pet, and npc.created, which covers villagers."
+
+[[hook]]
+name = "pet.created"
+kind = "event"
+doc  = "Fires at the end of spawn_pet(), after the obj_pet instance's create event has run, with the pet data attached, the FSM spawned, and the vanilla pet interactions registered. ctx is the obj_pet instance, not the Animal data struct: the pet's data is ctx.me (the PET global, whose instance field already points back at ctx), and ctx.override_pet_initialization carries the PetInitialization the spawn was requested with (undefined when the pet picks its own entry). Every engine pet spawn routes through spawn_pet(): the pet management's room population, the adoption menu, the held-animal summon, and the Mist cutscene actor spawn (which requests PetInitialization.Cutscene), so handlers must expect many fires per day. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction taking the press, so a handler cannot shadow an active vanilla interaction on the same input. Distinct from animal.created, which covers barn/coop animals."
+
+[[hook]]
 name = "npc.heart_points"
 kind = "filter"
 doc  = "Fires at the top of Npc.add_heart_points(), before the delta is applied. The filtered value is the heart points delta (amount). ctx is the Npc struct. Return the replacement value, or undefined to keep the current value. Distinct from animal.heart_points, which covers barn/coop animals rather than villagers."
@@ -129,6 +139,11 @@ doc  = "Fires as get_modified_component_count(component, context, item_id) retur
 name = "npc.gift_received"
 kind = "event"
 doc  = "Fires at the top of par_NPC.receive_gift(item), when the player gives an NPC a gift, before the NPC's give_gift bookkeeping. ctx is { npc, item }: npc is the NPC instance, item is the gifted item. Observation only."
+
+[[hook]]
+name = "npc.created"
+kind = "event"
+doc  = "Fires at the end of spawn_npc(), once per NPC instance the engine creates, after the instance's create event chain (obj_caldarus's and obj_elsie's own create additions included) and its initialize(npc) call have both run. ctx is the par_NPC instance: its Npc data struct is ctx.me, its NpcId is ctx.npc_id, and its FSM is live (initialize attaches me and spawns the FSM after the create event returns, so no in-create moment sees them). NPC instances are transient. The engine destroys and recreates them whenever the player enters a room the NPC is in (npcs_on_room_start), whenever the NPC walks into the current room (npcs_on_step), and when a schedule time jump lands the NPC in the current location, so handlers must expect many fires per NPC per day. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction that takes the press winning, so a handler cannot shadow an active vanilla interaction on the same input (the button prompt label can still show the later registration). The one exception is the partner kiss, which registers with take_press = false and never consumes the press, so a later SecondaryInteract registration that takes the press replaces it. The Mist cutscene actor spawn and the test suite create NPC instances directly, bypassing spawn_npc(), and never fire this hook."
 
 [[hook]]
 name = "gossip.selections"
@@ -3485,3 +3500,52 @@ replace = '''
 '''
 marker  = "mmapi_ui_relationship_row_built"
 provides = ["ui.relationship_row_built"]
+
+# The entity-creation trio emits from the engine's three spawn functions, not
+# from the create events they wrap. Each spawn function is its object's only
+# engine creation site, and each finishes construction work after the create
+# event returns. spawn_npc()'s initialize(npc) attaches me and spawns the FSM,
+# and spawn_animal() writes animal.instance. An in-create emit would fire
+# before that work, and for NPCs also before obj_caldarus and obj_elsie
+# register their own create-event interactions. The spawn-site emits fire once
+# per spawn with the instance fully wired, and interactions a handler registers
+# land after every vanilla registration, so contested inputs keep resolving to
+# the vanilla interaction (except the take_press = false partner kiss, which
+# never consumes the press).
+[[seam]]
+id      = "npc_created"
+file    = "gml/scripts/GameplaySystems/NPCs/NpcDatabase.gml"
+target  = { fn = "spawn_npc", at = "after", anchor = "new_inst.initialize(npc);" }
+op      = "emit"
+hook    = "npc.created"
+ctx     = "new_inst"
+marker  = "mmapi_npc_created"
+
+# spawn_pet() discards the created instance, so a text seam captures it for
+# the emit. Every engine pet spawn routes through spawn_pet(), the Mist
+# cutscene actor spawn included.
+[[seam]]
+id      = "pet_created"
+file    = "gml/scripts/Pet.gml"
+anchor  = '''
+function spawn_pet(override_pet_initialization) {
+    instance_create_layer(0, 0, "Instances", obj_pet, { override_pet_initialization });
+}'''
+replace = '''
+function spawn_pet(override_pet_initialization) {
+    var __mmapi_pet_inst = instance_create_layer(0, 0, "Instances", obj_pet, { override_pet_initialization });
+    try { mmapi_emit("pet.created", __mmapi_pet_inst); } catch (__mmapi_pet_created) {} // mmapi_pet_created
+}'''
+marker  = "mmapi_pet_created"
+provides = ["pet.created"]
+
+# The token anchor is spawn_animal()'s whole assignment statement, so the emit
+# lands after animal.instance is written and ctx.me.instance is coherent.
+[[seam]]
+id      = "animal_created"
+file    = "gml/scripts/GameplaySystems/Ranching/AnimalUtils.gml"
+target  = { fn = "spawn_animal", at = "after", anchor = 'animal.instance = instance_create_layer(animal.location_position.pos.x, animal.location_position.pos.y, "Instances", obj_player_animal, { me: animal, });' }
+op      = "emit"
+hook    = "animal.created"
+ctx     = "animal.instance"
+marker  = "mmapi_animal_created"
