@@ -6,7 +6,7 @@ Reword any dialogue line before the textbox shows it.
 
 ## Contract
 
-Fires in `ConversationDriver.deliver_line()`, before the textbox shows the line. The filtered value is the localized line text. ctx is `{ driver, line, conversation_name, npc_id, is_info_line }`. Return the replacement string, or `undefined` to keep the current value.
+Fires in `ConversationDriver.deliver_line()`, before the textbox shows the line. The filtered value is the localized line text. ctx is `{ driver, line, conversation_name, npc_id, speaker, is_info_line }`. Return the replacement string, or `undefined` to keep the current value.
 
 The filtered text is what the textbox receives however the line is delivered, whether by `say()` for speech, `info()` for info lines, or `ask()` for prompt lines.
 
@@ -14,7 +14,7 @@ The filtered text is what the textbox receives however the line is delivered, wh
 | --- | --- |
 | **Fires** | In `ConversationDriver.deliver_line()`, before the textbox shows the line. |
 | **Value** | The localized line text (`line.local`). |
-| **ctx** | `{ driver, line, conversation_name, npc_id, is_info_line }` |
+| **ctx** | `{ driver, line, conversation_name, npc_id, speaker, is_info_line }` |
 | **Kind contract** | The callback receives the current value and returns a replacement, or `undefined` to keep the current value. |
 
 ### The ctx struct
@@ -22,7 +22,8 @@ The filtered text is what the textbox receives however the line is delivered, wh
 - `driver` - the `ConversationDriver` delivering the line.
 - `line` - the line struct itself. `line.local` is the unfiltered text, and `line.next_line_behavior` decides whether the line is delivered as speech, info, or a prompt.
 - `conversation_name` - the driver's conversation name.
-- `npc_id` - the driver's `npc_owner`, the NPC the conversation belongs to.
+- `npc_id` - the driver's `npc_owner`, the NPC the conversation belongs to. This is not the line's speaker.
+- `speaker` - the textbox `Speaker` struct delivering this line, already assigned by the line's own Speaker action (undefined for info lines).
 - `is_info_line` - `true` when the line is delivered as an info line (`textbox.info`) rather than speech.
 
 ## Usage
@@ -32,11 +33,12 @@ The filtered text is what the textbox receives however the line is delivered, wh
 // replacement, or undefined to keep the game's value.
 function plain_speech_dialogue_line(_value, _ctx) {
     // _value is the localized line text about to be shown.
-    // _ctx is { driver, line, conversation_name, npc_id, is_info_line }.
+    // _ctx is { driver, line, conversation_name, npc_id, speaker, is_info_line }.
     //   .driver            - the ConversationDriver delivering the line.
     //   .line              - the line struct; line.local is the unfiltered text.
     //   .conversation_name - the driver's conversation name.
-    //   .npc_id            - the driver's npc_owner, the conversation's NPC.
+    //   .npc_id            - the driver's npc_owner, the conversation's NPC (not the speaker).
+    //   .speaker           - the Speaker struct for this line (undefined for info lines).
     //   .is_info_line      - true when the line shows as an info line.
     if (_value == undefined) return undefined; // test undefined BEFORE anything else
     // if (_ctx.conversation_name == <a conversation you reword>) {
@@ -47,6 +49,10 @@ function plain_speech_dialogue_line(_value, _ctx) {
 
 mmapi_filter("dialogue.line", plain_speech_dialogue_line);
 ```
+
+## Interactions
+
+- `npc_id` and `speaker` answer different questions. Cutscene conversations rotate speakers line by line while the owner stays whatever the runtime opened the conversation with, so a handler that scopes by the character on screen must read `speaker`. Resolve it to an `NpcId` with `try_string_to_npc_id(speaker.identity)`, which yields undefined for cameo speakers instead of a colliding cameo id.
 
 ## Engine Wiring
 
