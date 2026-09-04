@@ -39,9 +39,9 @@
 # burn-throttled every non-fire tarball chop against stump/fruit-tree iframes),
 # max_crafts_zero_component (the Item-loop division missing the zero guard
 # its own Duration branch has, so a zero-cost component crashed the craft menu),
-# and the three fish_chest fixes (fish_chest_item_use, fish_chest_table_lookup,
-# fish_chest_custom_rarity, which widen the engine's identity-keyed
-# fishing-chest sites into the fish_chest item-data contract).
+# and the two fish_chest fixes (fish_chest_item_use and fish_chest_custom_rarity,
+# which widen the engine's identity-keyed fishing-chest sites into the
+# fish_chest item-data contract alongside the fish_chest_table_lookup seam).
 
 version = 2
 
@@ -50,9 +50,9 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 122
-seams = 133
-engine_fixes = 6
+hooks = 123
+seams = 134
+engine_fixes = 5
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -339,6 +339,11 @@ doc  = "Fires when the player activates a dungeon ladder to descend, before the 
 name = "item.display_description"
 kind = "filter"
 doc  = "Fires at the return of LiveItem.get_display_description(), the string the tooltip body actually renders. The filtered value is the description string. ctx is { item }. Return the replacement string, or undefined to keep the current value."
+
+[[hook]]
+name = "items.chest_opened"
+kind = "event"
+doc  = "Fires when a chest item finishes its open hold, after its loot table is resolved and before any loot or gold drops. ctx is { live_item, table }, the opening LiveItem and the resolved FISH_CHEST table, which handlers must treat as read-only shared state. Fires for vanilla and modded chests alike."
 
 [[hook]]
 name = "items.consumed"
@@ -2690,12 +2695,14 @@ replace = '''
 '''
 marker  = "mmapi_max_crafts_zero_component"
 
-# The three edits below carry a data contract instead of a hook. An item
+# The two edits below carry a data contract instead of a hook. An item
 # fiddle entry may declare fish_chest = "<key>", naming an entry under
 # fishing/chest_tables. The engine's fishing-chest pipeline is data-driven
-# everywhere except three identity-keyed sites, and each edit widens one of
-# them. No vanilla data reaches any widened branch, so with no modded data
-# the staged control flow behaves exactly as pristine.
+# everywhere except three identity-keyed sites. These two widen the item-use
+# and chest-rarity sites, and the seam fish_chest_table_lookup widens the
+# third while dispatching items.chest_opened. No vanilla data reaches any
+# widened branch, so with no modded data the staged control flow behaves
+# exactly as pristine.
 
 # Widens the OpenChest use assignment so a fiddle item carrying fish_chest
 # opens like the five hardcoded chest items. The key is copied onto the
@@ -2714,37 +2721,6 @@ replace = '''
             prototype.use = ItemUse.OpenChest;
 '''
 marker  = "mmapi_fish_chest_item_use"
-
-# Resolves the opened chest's loot table from the prototype's fish_chest key
-# when the item is not one of the five hardcoded cases. FISH_CHEST already
-# holds every merged chest_tables entry, so the lookup is a struct read. The
-# pristine impossible() survives for an unknown item and for a key that names
-# no table.
-[[engine_fix]]
-name    = "fish_chest_table_lookup"
-file    = "gml/scripts/Player/AriFsm.gml"
-anchor  = '''
-                            case ItemId.AbyssalChest:
-                                table = FISH_CHEST.abyss;
-                                break;
-                            default: impossible("unexpected `OpenChest` use in `{}`", self.live_item);
-                        }
-'''
-replace = '''
-                            case ItemId.AbyssalChest:
-                                table = FISH_CHEST.abyss;
-                                break;
-                            default: // mmapi_fish_chest_table_lookup
-                                var __mmapi_fish_chest_key = self.live_item.prototype[$ "fish_chest"];
-                                if (__mmapi_fish_chest_key != undefined) {
-                                    table = FISH_CHEST[$ __mmapi_fish_chest_key];
-                                }
-                                if (table == undefined) {
-                                    impossible("unexpected `OpenChest` use in `{}`", self.live_item);
-                                }
-                        }
-'''
-marker  = "mmapi_fish_chest_table_lookup"
 
 # The chest-rarity switch in create_fish_distributions enumerates the four
 # vanilla rarities for perk adjustments and aborts Setup on anything else.
@@ -3479,3 +3455,40 @@ hook    = "quest.complete"
 ctx     = "{ quest_name: quest_name, quest: finished_quest }"
 indent  = 8
 marker  = "mmapi_quest_complete"
+
+# Resolves the opened chest's loot table from the prototype's fish_chest key
+# when the item is not one of the five hardcoded cases, then announces the
+# open. FISH_CHEST already holds every merged chest_tables entry, so the
+# lookup is a struct read. The pristine impossible() survives for an unknown
+# item and for a key that names no table. The emit lands after the table is
+# resolved and before the loot roll, so handlers fire for vanilla and modded
+# chests alike while the drops are still pending. This entry also carries the
+# fish_chest data contract together with the fish_chest_item_use and
+# fish_chest_custom_rarity engine fixes.
+[[seam]]
+id      = "fish_chest_table_lookup"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                            case ItemId.AbyssalChest:
+                                table = FISH_CHEST.abyss;
+                                break;
+                            default: impossible("unexpected `OpenChest` use in `{}`", self.live_item);
+                        }
+'''
+replace = '''
+                            case ItemId.AbyssalChest:
+                                table = FISH_CHEST.abyss;
+                                break;
+                            default: // mmapi_fish_chest_table_lookup
+                                var __mmapi_fish_chest_key = self.live_item.prototype[$ "fish_chest"];
+                                if (__mmapi_fish_chest_key != undefined) {
+                                    table = FISH_CHEST[$ __mmapi_fish_chest_key];
+                                }
+                                if (table == undefined) {
+                                    impossible("unexpected `OpenChest` use in `{}`", self.live_item);
+                                }
+                        }
+                        try { mmapi_emit("items.chest_opened", { live_item: self.live_item, table: table }); } catch (__mmapi_items_chest_opened) {}
+'''
+marker  = "mmapi_fish_chest_table_lookup"
+provides = ["items.chest_opened"]

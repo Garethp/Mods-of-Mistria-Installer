@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-A mod can add custom treasure chests with their own loot tables using only fiddle data. No GML, no hooks, and no handlers are involved. The engine implements these as its fishing-chest pipeline, which is why the field and file names below say fish even for a chest that is never fished. That pipeline reads everything from fiddle data, and three catalog [engine fixes](seams/fish_chest_item_use.md) together provide support for custom entries.
+A mod can add custom treasure chests with their own loot tables using only fiddle data. No GML, no hooks, and no handlers are involved. The engine implements these as its fishing-chest pipeline, which is why the field and file names below say fish even for a chest that is never fished. That pipeline reads everything from fiddle data, and three catalog entries, two [engine fixes](seams/fish_chest_item_use.md) and one [seam](seams/fish_chest_table_lookup.md), together provide support for custom entries.
 
 A custom treasure chest item is three linked pieces of data. The item declares `fish_chest`, the named chest table declares the loot, and optional fish entries make the chest catchable while fishing.
 
@@ -23,7 +23,7 @@ Declare the `fish_chest` property on an item's fiddle entry. Its value names an 
 `name` and `description` are localization keys, so register the strings with the pattern in [User-Facing Text](MOD_ANATOMY.md#user-facing-text-localization). A literal string still installs but displays raw.
 
 > [!NOTE]
-> The item automatically gains the `ItemUse.OpenChest` interaction and inherits the whole vanilla chest implementation. It opens with the long hold-to-use, shows the open interaction prompt, is not giftable, and does not stack.
+> The item automatically gains the `ItemUse.OpenChest` interaction and inherits the whole vanilla chest implementation. It opens with the long hold-to-use, shows the open interaction prompt, is not giftable, and does not stack. Opening any chest also fires the [items.chest_opened](hooks/items.chest_opened.md) event for GML mods that want to react.
 
 ## The Chest Table
 
@@ -88,6 +88,7 @@ Every piece is an ordinary fiddle key, so any number of chests from any number o
 
 ## See Also
 
-- [fish_chest_item_use](seams/fish_chest_item_use.md), [fish_chest_table_lookup](seams/fish_chest_table_lookup.md), [fish_chest_custom_rarity](seams/fish_chest_custom_rarity.md) - The engine fixes carrying this contract.
+- [fish_chest_item_use](seams/fish_chest_item_use.md), [fish_chest_table_lookup](seams/fish_chest_table_lookup.md), [fish_chest_custom_rarity](seams/fish_chest_custom_rarity.md) - The catalog entries carrying this contract, two engine fixes and one seam.
+- [items.chest_opened](hooks/items.chest_opened.md) - The event that fires the moment any chest finishes opening.
 - [Mod Anatomy](MOD_ANATOMY.md) - The mod folder layout the fiddle files above live in.
 - [items.use_guard](hooks/items.use_guard.md) - A guard over item use, modded chests included.

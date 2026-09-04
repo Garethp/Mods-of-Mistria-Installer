@@ -2,7 +2,7 @@
 
 Lets a fiddle item declaring `fish_chest` take `ItemUse.OpenChest`, carrying its loot-table key on the prototype.
 
-`fish_chest_item_use` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. Together with [fish_chest_table_lookup](fish_chest_table_lookup.md) and [fish_chest_custom_rarity](fish_chest_custom_rarity.md) it carries the `fish_chest` item-data contract. See [Seams](../SEAMS.md).
+`fish_chest_item_use` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. Together with the [fish_chest_table_lookup](fish_chest_table_lookup.md) seam and the [fish_chest_custom_rarity](fish_chest_custom_rarity.md) fix it carries the `fish_chest` item-data contract. See [Seams](../SEAMS.md).
 
 ## Placement
 

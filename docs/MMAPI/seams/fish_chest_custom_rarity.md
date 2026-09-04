@@ -2,7 +2,7 @@
 
 Makes an unknown chest rarity a no-op in the fishing distribution build instead of a Setup crash.
 
-`fish_chest_custom_rarity` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. Together with [fish_chest_item_use](fish_chest_item_use.md) and [fish_chest_table_lookup](fish_chest_table_lookup.md) it carries the `fish_chest` item-data contract. See [Seams](../SEAMS.md).
+`fish_chest_custom_rarity` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. Together with the [fish_chest_item_use](fish_chest_item_use.md) fix and the [fish_chest_table_lookup](fish_chest_table_lookup.md) seam it carries the `fish_chest` item-data contract. See [Seams](../SEAMS.md).
 
 ## Placement
 
