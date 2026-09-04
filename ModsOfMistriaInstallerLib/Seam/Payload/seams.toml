@@ -3028,7 +3028,7 @@ replace = '''
                 if (!__mmapi_romance_lock) {
                     try {
                         var __mmapi_romance_menu = ANCHOR.get_menu(Menu.Textbox);
-                        var __mmapi_romance_speaker = (__mmapi_romance_menu == undefined) ? undefined : __mmapi_romance_menu.current_speaker;
+                        var __mmapi_romance_speaker = (__mmapi_romance_menu == undefined) ? undefined : (__mmapi_romance_menu.requested_speaker ?? __mmapi_romance_menu.current_speaker);
                         var __mmapi_romance_npc = (__mmapi_romance_speaker == undefined) ? undefined : try_string_to_npc_id(__mmapi_romance_speaker.identity);
                         var __mmapi_romance_path = (__mmapi_romance_menu == undefined || __mmapi_romance_menu.driver == undefined) ? undefined : __mmapi_romance_menu.driver.conversation_name;
                         if (mmapi_check_guards("dialogue.romance_prompt_guard", { npc_id: __mmapi_romance_npc, speaker: __mmapi_romance_speaker, path: __mmapi_romance_path }) == false) { __mmapi_romance_lock = true; } // mmapi_dialogue_run_romance_prompt_guards
