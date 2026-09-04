@@ -2664,24 +2664,24 @@ anchor  = '''
         popup.backplate.add_height(container_size.y);'''
 replace = '''
         var container_size = layout.container_size();
-        var __mmapi_lut_view_h = 23 * 7;
+        var mmapi_lut_selector_scrollable = 23 * 7;
         var container;
-        if (container_size.y > __mmapi_lut_view_h) {
+        if (container_size.y > mmapi_lut_selector_scrollable) {
             var __mmapi_lut_side = SCROLLBAR_WIDTH + 8;
             popup.backplate.set_width(container_size.x + 1 + __mmapi_lut_side * 2);
-            popup.backplate.add_height(__mmapi_lut_view_h);
+            popup.backplate.add_height(mmapi_lut_selector_scrollable);
             var __mmapi_lut_body = ANCHOR.positional(popup.backplate)
-                .set_size(container_size.x + SCROLLBAR_WIDTH + 8, __mmapi_lut_view_h)
+                .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_lut_selector_scrollable)
                 .set_align(Align.LeftIn, Align.BottomIn)
                 .set_x(__mmapi_lut_side)
                 .set_y(-13)
             var __mmapi_lut_scroller = create_scroller_ext(
                 __mmapi_lut_body,
                 Vec2(0, 0),
-                Vec2(container_size.x + 1, __mmapi_lut_view_h),
+                Vec2(container_size.x + 1, mmapi_lut_selector_scrollable),
                 Vec2(Align.LeftIn, Align.TopIn),
                 Vec2(container_size.x + 5, -1),
-                Vec2(SCROLLBAR_WIDTH, __mmapi_lut_view_h + 2),
+                Vec2(SCROLLBAR_WIDTH, mmapi_lut_selector_scrollable + 2),
                 Vec2(Align.LeftIn, Align.TopIn))
                 .subscribe_to_pilot(popup.pilot)
                 .alternate_colors(false)
@@ -2718,24 +2718,24 @@ replace = '''
     var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
 
     var container_size = layout.container_size();
-    var __mmapi_pet_view_h = 23 * 7;
+    var mmapi_pet_appearance_scrollable = 23 * 7;
     var container;
-    if (container_size.y > __mmapi_pet_view_h) {
+    if (container_size.y > mmapi_pet_appearance_scrollable) {
         var __mmapi_pet_side = SCROLLBAR_WIDTH + 8;
         popup.backplate.set_width(container_size.x + 1 + __mmapi_pet_side * 2);
-        popup.backplate.add_height(__mmapi_pet_view_h);
+        popup.backplate.add_height(mmapi_pet_appearance_scrollable);
         var __mmapi_pet_body = ANCHOR.positional(popup.backplate)
-            .set_size(container_size.x + SCROLLBAR_WIDTH + 8, __mmapi_pet_view_h)
+            .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_pet_appearance_scrollable)
             .set_align(Align.LeftIn, Align.BottomIn)
             .set_x(__mmapi_pet_side)
             .set_y(-13)
         var __mmapi_pet_scroller = create_scroller_ext(
             __mmapi_pet_body,
             Vec2(0, 0),
-            Vec2(container_size.x + 1, __mmapi_pet_view_h),
+            Vec2(container_size.x + 1, mmapi_pet_appearance_scrollable),
             Vec2(Align.LeftIn, Align.TopIn),
             Vec2(container_size.x + 5, -1),
-            Vec2(SCROLLBAR_WIDTH, __mmapi_pet_view_h + 2),
+            Vec2(SCROLLBAR_WIDTH, mmapi_pet_appearance_scrollable + 2),
             Vec2(Align.LeftIn, Align.TopIn))
             .subscribe_to_pilot(popup.pilot)
             .alternate_colors(false)
