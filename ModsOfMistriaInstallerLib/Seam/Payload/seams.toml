@@ -47,8 +47,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 123
-seams = 134
+hooks = 124
+seams = 135
 engine_fixes = 3
 call_rewrites = 1
 
@@ -213,6 +213,11 @@ doc  = "Fires at the top of play_conversation(), after dialogue.play_guard. The 
 name = "dialogue.play_guard"
 kind = "guard"
 doc  = "Fires at the top of play_conversation(), before dialogue.path runs. ctx is { npc_id, path, close_callback, args }. Return false to veto the conversation (play_conversation returns undefined). Undefined or true allows."
+
+[[hook]]
+name = "dialogue.romance_prompt_guard"
+kind = "guard"
+doc  = "Fires while a pink romance prompt is styled for display, after the vanilla married or engaged lock is evaluated and only when that lock leaves the prompt selectable. ctx is { npc_id, speaker, path }: npc_id is the textbox speaker's NpcId (undefined for a cameo or absent speaker), speaker is the live Speaker struct or undefined, and path is the t2 conversation name or undefined. Return false to grey and soft-lock the prompt exactly as the vanilla lock does. Undefined or true keeps it selectable. Fires once per pink prompt box per styling pass, including the post-selection reset pass, and never fires when the vanilla lock already applies."
 
 [[hook]]
 name = "dialogue.speaker"
@@ -2942,6 +2947,36 @@ function NpcSpeaker(id) : Speaker(id) constructor {
     try { self.blip_sound = mmapi_apply_filters("dialogue.npc_blip", self.blip_sound, { npc_id: self.id, speaker: self }); } catch (__mmapi_dialogue_npc_blip) {} // mmapi_dialogue_run_npc_blip_filters'''
 marker  = "mmapi_dialogue_run_npc_blip_filters"
 provides = ["dialogue.npc_blip"]
+
+[[seam]]
+id      = "dialogue_romance_prompt_guard"
+file    = "gml/scripts/UI/Anchor/Menus/TextboxMenu.gml"
+anchor  = '''
+                if !ARI.disable_break_ups && (ARI.spouse() != undefined || ARI.fiance() != undefined) {
+                    self.set_sprites_from_key("spr_ui_dialogue_box_grey");
+                    self.blackboard.insert("stay_locked", true);
+                    self.tab.set_key_sprite_target(self.tab);
+                    self.tab.lock();
+                }'''
+replace = '''
+                var __mmapi_romance_lock = !ARI.disable_break_ups && (ARI.spouse() != undefined || ARI.fiance() != undefined);
+                if (!__mmapi_romance_lock) {
+                    try {
+                        var __mmapi_romance_menu = ANCHOR.get_menu(Menu.Textbox);
+                        var __mmapi_romance_speaker = (__mmapi_romance_menu == undefined) ? undefined : __mmapi_romance_menu.current_speaker;
+                        var __mmapi_romance_npc = (__mmapi_romance_speaker == undefined) ? undefined : try_string_to_npc_id(__mmapi_romance_speaker.identity);
+                        var __mmapi_romance_path = (__mmapi_romance_menu == undefined || __mmapi_romance_menu.driver == undefined) ? undefined : __mmapi_romance_menu.driver.conversation_name;
+                        if (mmapi_check_guards("dialogue.romance_prompt_guard", { npc_id: __mmapi_romance_npc, speaker: __mmapi_romance_speaker, path: __mmapi_romance_path }) == false) { __mmapi_romance_lock = true; } // mmapi_dialogue_run_romance_prompt_guards
+                    } catch (__mmapi_dialogue_romance_prompt_guard) {}
+                }
+                if __mmapi_romance_lock {
+                    self.set_sprites_from_key("spr_ui_dialogue_box_grey");
+                    self.blackboard.insert("stay_locked", true);
+                    self.tab.set_key_sprite_target(self.tab);
+                    self.tab.lock();
+                }'''
+marker   = "mmapi_dialogue_run_romance_prompt_guards"
+provides = ["dialogue.romance_prompt_guard"]
 
 [[seam]]
 id      = "ui_menu_opened"
