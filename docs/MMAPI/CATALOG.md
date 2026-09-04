@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **123 hooks**, fed by **134 seams**, **5 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **128 hooks**, fed by **139 seams**, **5 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -84,6 +84,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [gossip.selections](hooks/gossip.selections.md) | filter | Change which NPCs the day's gossip offers. |
 | [npc.heart_points](hooks/npc.heart_points.md) | filter | Adjust the heart points a villager gains. |
 | [npc.gift_received](hooks/npc.gift_received.md) | event | Know when the player gives an NPC a gift. |
+| [npc.created](hooks/npc.created.md) | event | Customize each villager instance as it spawns, fully initialized. |
 | [date.run](hooks/date.run.md) | override | Take over a date the moment the player commits to it. |
 | [date.begin](hooks/date.begin.md) | guard | Cancel an accepted date after its acceptance conversation, before the cutscene. |
 | [date.cutscene](hooks/date.cutscene.md) | filter | Swap which cutscene a date plays while keeping the vanilla date pipeline. |
@@ -95,6 +96,8 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [animal.breeding_result](hooks/animal.breeding_result.md) | filter | Change the offspring a breeding pair rolls. |
 | [animal.product_drops](hooks/animal.product_drops.md) | filter | Change what an animal's production drops. |
 | [animal.adoption_variant_unlocked](hooks/animal.adoption_variant_unlocked.md) | filter | Change which animal variants the adoption menu offers. |
+| [animal.created](hooks/animal.created.md) | event | Customize each barn/coop animal instance as it spawns. |
+| [pet.created](hooks/pet.created.md) | event | Customize the farm pet's instance as it spawns. |
 | [combat.damage](hooks/combat.damage.md) | filter | Change any hit before it resolves. |
 | [combat.damage_resolved](hooks/combat.damage_resolved.md) | event | Know the moment a hit lands or is blocked. |
 | [combat.damage_injected](hooks/combat.damage_injected.md) | event | Know when a mod injects a hit through the damage pipeline. |
@@ -146,11 +149,13 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [ui.spawn_tutorial_guard](hooks/ui.spawn_tutorial_guard.md) | guard | Block a tutorial popup before it spawns. |
 | [ui.backplate_sprite](hooks/ui.backplate_sprite.md) | filter | Swap the backplate sprites behind the mines menu and spell cards. |
 | [ui.preset_popup_layout](hooks/ui.preset_popup_layout.md) | filter | Resize the customization menu's preset popup frames and grid. |
+| [ui.relationship_row_built](hooks/ui.relationship_row_built.md) | event | Add custom nodes to each NPC row in the relationships journal. |
 | [dialogue.play_guard](hooks/dialogue.play_guard.md) | guard | Block a conversation before it starts. |
 | [dialogue.path](hooks/dialogue.path.md) | filter | Change which conversation plays before it starts. |
 | [dialogue.line](hooks/dialogue.line.md) | filter | Reword any dialogue line before the textbox shows it. |
 | [dialogue.speaker](hooks/dialogue.speaker.md) | filter | Swap the speaker a textbox shows. |
 | [dialogue.npc_blip](hooks/dialogue.npc_blip.md) | filter | Swap the blip sound an NPC speaks with. |
+| [dialogue.romance_prompt_guard](hooks/dialogue.romance_prompt_guard.md) | guard | Grey and lock a pink romance prompt for your own reasons. |
 | [audio.play_guard](hooks/audio.play_guard.md) | guard | Block any sound effect before it plays. |
 | [audio.music_selector](hooks/audio.music_selector.md) | filter | Swap the dungeon biome music track. |
 | [local.get](hooks/local.get.md) | filter | Reword any localized text the game looks up. |
@@ -229,6 +234,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [gossip_selections](seams/gossip_selections.md) | Wraps the gossip picker so the day's NPC selection passes through a filter. |
 | [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it applies. |
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
+| [npc_created](seams/npc_created.md) | Emits at the end of `spawn_npc()`, after `initialize` attaches the NPC data and FSM. |
 | [date_run](seams/date_run.md) | Puts a claim-scoped override in front of every player-initiated date. |
 | [date_begin](seams/date_begin.md) | Guards start_date_cutscene inside run_date, after the acceptance conversation. |
 | [date_cutscene](seams/date_cutscene.md) | Threads the date cutscene name through a filter and into the completion chain. |
@@ -243,6 +249,8 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [animal_breeding_result_gemini](seams/animal_breeding_result_gemini.md) | Filters the extra GeminiSeason offspring roll at its own push site. |
 | [animal_product_drops](seams/animal_product_drops.md) | Filters the product lists after the Eggstra roll, before stats and grid drops. |
 | [adoption_variant_unlocked](seams/adoption_variant_unlocked.md) | Filters the adoption menu's variant unlock read for each variant row. |
+| [animal_created](seams/animal_created.md) | Emits at the end of `spawn_animal()`, after the instance is written onto the Animal struct. |
+| [pet_created](seams/pet_created.md) | Rewrites `spawn_pet()` to capture the created pet instance and emit with it. |
 | [combat_damage_pre](seams/combat_damage_pre.md) | Threads every enqueued hit through a damage filter before it resolves. |
 | [combat_damage_resolved](seams/combat_damage_resolved.md) | Announces the outcome of every hit the receiver's resolution switch lands or blocks. |
 | [combat_tarball_grid](seams/combat_tarball_grid.md) | Hands every active swing's tarball to mods before the grid pick/chop/destroy blocks read it. |
@@ -305,12 +313,14 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [ui_backplate_sprite_mines](seams/ui_backplate_sprite_mines.md) | Routes the mines menu backplate sprite through a filter on dungeon room start. |
 | [ui_backplate_sprite_spell_card](seams/ui_backplate_sprite_spell_card.md) | Routes each spell card's backplate sprite through a filter. |
 | [ui_preset_popup_layout](seams/ui_preset_popup_layout.md) | Rebuilds the preset popup's layout constants through a filter each time the popup body is generated. |
+| [ui_relationship_row_built](seams/ui_relationship_row_built.md) | Hands each finished NPC row to mods as the relationships journal builds its list. |
 | [dialogue_play_guard](seams/dialogue_play_guard.md) | Puts a veto check at the head of `play_conversation()`. |
 | [dialogue_path](seams/dialogue_path.md) | Rebuilds `play_conversation()`'s four arguments through the `dialogue.path` filter. |
 | [dialogue_line](seams/dialogue_line.md) | Filters each localized dialogue line before the textbox shows it. |
 | [dialogue_speaker](seams/dialogue_speaker.md) | Filters the just-built textbox speaker before it is assigned. |
 | [dialogue_speaker_ctx_arg](seams/dialogue_speaker_ctx_arg.md) | Threads the ConversationDriver into the initial Speaker action so `dialogue.speaker`'s ctx is filled from line one. |
 | [dialogue_npc_blip](seams/dialogue_npc_blip.md) | Filters an NPC speaker's blip sound right after the default lookup. |
+| [dialogue_romance_prompt_guard](seams/dialogue_romance_prompt_guard.md) | Puts a veto check beside the vanilla marriage lock as a pink prompt is styled. |
 | [audio_play_guard](seams/audio_play_guard.md) | Puts a veto check at the head of the engine's one sound-effect entry point. |
 | [audio_music_selector](seams/audio_music_selector.md) | Puts a filter on the dungeon biome music track as the scene selector picks it. |
 | [input_check_value_id](seams/input_check_value_id.md) | Puts a filter on the input id at the head of the engine's input value lookup. |
