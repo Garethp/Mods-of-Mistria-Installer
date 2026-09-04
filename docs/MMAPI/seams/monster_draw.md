@@ -17,7 +17,7 @@ Emits at the end of every monster's world-space draw.
 
 ## The Edit
 
-The generated emit lands at the end of `par_monster`'s `draw()` method, just after the block that draws the monster's status overlays (venom/frozen) resets the GPU state with `gpu_reset_extra()`. It calls `mmapi_emit("monster.draw", self)` in the uniform try/catch shape. At that point the monster sprite and its overlays are already on screen, so a handler draws on top of them, in world space, with the monster instance in hand: `x`, `y`, `z`, `health`, and everything else the instance carries. A health bar above the monster is the canonical use.
+The generated emit lands at the end of `par_monster`'s `draw()` method, just after the block that draws the monster's status overlays (venom/frozen) resets the GPU state with `gpu_reset_extra()`. It calls `mmapi_emit("monster.draw", self)` in the uniform try/catch shape. At that point the monster sprite and its overlays are already on screen, so a handler draws on top of them, in world space, with the monster instance in hand.
 
 This fires once per visible monster per frame in the world-draw pass, a hot path. Keep handlers cheap. With zero handlers the emit early-outs on an empty registry.
 
