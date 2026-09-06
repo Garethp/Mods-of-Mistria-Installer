@@ -281,7 +281,12 @@ public class ModInstaller
         reportPhase(modName, "Installing Furniture");
         new FurnitureInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, generatedInformation, reportStatus);
-        
+
+        // 8. Install audio banks and merge new event names into Master.strings
+        reportPhase(modName, "Installing Audio");
+        new AudioInstaller(fileNameUIDMapping, _fileModifier)
+            .Install(mod, generatedInformation, reportStatus);
+
         atlasUtils.SemiFlush();
     }
 }
