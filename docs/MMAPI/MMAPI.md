@@ -19,6 +19,7 @@ Mods talk to the game through **named hooks**, which are moments in game code MM
 | [The Manifest](MANIFEST.md) | The JSON and TOML manifest fields a GML mod uses, and how MOMI validates them. |
 | [API Reference](API_REFERENCE.md) | The `mmapi_*` helper areas: config, logging, per-save data, hotkeys, localization, combat, cross-mod coordination, and calling the engine directly. |
 | [Recipes](RECIPES.md) | Common tasks done with a direct engine call, no hook needed. |
+| [Treasure Chests](TREASURE_CHESTS.md) | Add custom treasure chests with unique loot tables in plain fiddle data. |
 | [Debug](DEBUG.md) | The in-game debug agent. Using and setting watches, breakpoints, pause and step, and debugger-callable functions. |
 | [Troubleshooting](TROUBLESHOOTING.md) | Why a mod was skipped, a handler did not fire, or a game update broke it. |
 | [Glossary](GLOSSARY.md) | Plain-language definitions of the terms used throughout. |

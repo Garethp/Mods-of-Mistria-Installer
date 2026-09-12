@@ -70,15 +70,17 @@ public class ModInstaller
         var store = new AssetsStore(_fomLocation);
         store.EnsureBackup();
 
-        // Stage the GML layer before the rebuild. The layer stages only when
-        // at least one mod ships gml; a mod-content failure excludes that one
-        // mod. When the game build itself moved under the catalog, every GML
-        // mod is skipped whole and the content-only install proceeds.
+        // Stage the GML layer before the rebuild. The layer stages on every
+        // install that has mods selected, so the catalog's engine fixes and
+        // the framework land even when every mod is content-only. A
+        // mod-content failure excludes only that mod. When a game build
+        // itself deviates from the catalog, every GML mod is skipped whole
+        // and the content-only install proceeds.
         var result = new InstallResult();
         GmlLayerPlan? plan = null;
         var installMods = mods;
         var gmlMods = mods.Select(GmlModCollector.Collect).OfType<GmlModCode>().ToList();
-        if (gmlMods.Count > 0)
+        if (mods.Count > 0)
         {
             phase("", "Preparing GML layer");
             try

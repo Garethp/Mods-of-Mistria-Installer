@@ -6,9 +6,9 @@ React to every monster's draw with your own world-space visuals.
 
 ## Contract
 
-Fires at the end of `par_monster`'s `draw()` method, after the monster sprite and its status overlays (venom/frozen) are drawn, once per visible monster per frame in the world-draw pass. ctx is the monster instance: read `x`, `y`, `z`, `health`, and so on, and draw in world space (e.g. a health bar on top). This hook is observation only.
+Fires at the end of `par_monster`'s `draw()` method, after the monster sprite and its status overlays (venom/frozen) are drawn, once per visible monster per frame in the world-draw pass. ctx is the monster instance. This hook is observation only.
 
-Because the emit sits after the sprite and status-overlay pass, anything you draw lands on top of the monster.
+Because the emit sits after the sprite and status-overlay pass, anything you draw from the handler lands on top of the monster, in world coordinates rather than GUI coordinates.
 
 | | |
 | --- | --- |
@@ -18,7 +18,7 @@ Because the emit sits after the sprite and status-overlay pass, anything you dra
 
 ### The ctx parameter
 
-- The monster instance (a `par_monster` child). Read `x`, `y`, `z`, `health`, and so on. Draw calls made from the handler run in the world-draw pass, so coordinates are world coordinates, not GUI coordinates.
+- The monster instance (a `par_monster` child) whose draw just finished.
 
 > [!IMPORTANT]
 > Hot path. This event fires for every visible monster, every frame. Make the callback's first check its cheapest early-exit.
@@ -28,17 +28,18 @@ Because the emit sits after the sprite and status-overlay pass, anything you dra
 ```gml
 // monster.draw is an EVENT: the return value is ignored.
 // You cannot change or stop it here; the return value is ignored.
-function health_bars_monster_draw(_ctx) {
-    // _ctx is the monster instance (a par_monster child).
-    //   .x / .y / .z - world position; draw calls here land in world space.
-    //   .health      - current hit points.
-    // HOT PATH: fires for every visible monster, every frame. Make your first
-    // check the cheapest one and get out early when your mod has nothing to do.
-    draw_text(_ctx.x, _ctx.y - _ctx.z - 24, string(_ctx.health));
+function overlay_painter_monster_draw(_ctx) {
+    // _ctx is the monster instance whose draw just finished.
+    // You are inside the world draw pass, after the monster's sprite and
+    // status overlays have drawn: draw your overlay here and it lands on
+    // top of the monster, in world coordinates.
+    // HOT PATH: fires for every visible monster, every frame. Make your
+    // first check the cheapest one and get out early when your mod has
+    // nothing to do.
 }
 
 // inside your latched register function (see Mod Anatomy):
-mmapi_on("monster.draw", health_bars_monster_draw);
+mmapi_on("monster.draw", overlay_painter_monster_draw);
 ```
 
 ## Engine Wiring

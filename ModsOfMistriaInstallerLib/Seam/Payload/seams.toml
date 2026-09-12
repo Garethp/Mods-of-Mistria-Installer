@@ -37,8 +37,11 @@
 # lifecycle root),
 # tarball_chop_burn_flag (the tarball chop's hardcoded is_burn, which
 # burn-throttled every non-fire tarball chop against stump/fruit-tree iframes),
-# and max_crafts_zero_component (the Item-loop division missing the zero guard
-# its own Duration branch has, so a zero-cost component crashed the craft menu).
+# max_crafts_zero_component (the Item-loop division missing the zero guard
+# its own Duration branch has, so a zero-cost component crashed the craft menu),
+# and the two fish_chest fixes (fish_chest_item_use and fish_chest_custom_rarity,
+# which widen the engine's identity-keyed fishing-chest sites into the
+# fish_chest item-data contract alongside the fish_chest_table_lookup seam).
 
 version = 2
 
@@ -47,9 +50,9 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 122
-seams = 133
-engine_fixes = 3
+hooks = 128
+seams = 139
+engine_fixes = 7
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -95,6 +98,16 @@ kind = "filter"
 doc  = "Fires in AdoptionMenu.setup_right_page(), once per acquirable variant row, as the menu reads ARI.animal_variant_unlocks for that variant. The filtered value is the unlocked boolean, and it gates the variant's name reveal, icon blackout, entry fade, and buyability together. ctx is { animal_kind, variant, has_gold, has_room }: variant is the variant data struct (read variant.key and variant.tier), and has_gold and has_room are the menu's other purchase gates, which the engine still enforces either way. Return a replacement boolean, or undefined to keep the save's unlock state. A final true offers the variant without writing anything to the save, and buying still flows through initialize_new_animal_for_ari(), which records the real unlock. A final false hides a variant the save has unlocked. Locked species never reach this page, so the filter cannot unlock a species early. Variants flagged not acquirable are filtered out earlier and never dispatch. The page rebuilds after each purchase, so the hook fires again with fresh gates."
 
 [[hook]]
+name = "animal.created"
+kind = "event"
+doc  = "Fires at the end of spawn_animal(), once per barn/coop animal instance the engine creates, after the obj_player_animal create event has run and after spawn_animal() writes the new instance onto the Animal struct. ctx is the obj_player_animal instance, not the Animal data struct: the data is ctx.me, and ctx.me.instance already points back at ctx (the create event never sets that field itself, so no earlier moment sees the pair linked). Instances are transient. The engine spawns them through spawn_animal() from Stable.on_room_start() whenever the player enters a location where a stable's animals are present, and from the held-animal summon when a carried animal rides along on a room change. A fire marks instance creation, not a new animal (an adoption fires nothing until the player next enters the new animal's location), and handlers must expect many fires per animal per day. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction taking the press, so a handler cannot shadow an active vanilla interaction on the same input. Distinct from pet.created, which covers the farm pet, and npc.created, which covers villagers."
+
+[[hook]]
+name = "pet.created"
+kind = "event"
+doc  = "Fires at the end of spawn_pet(), after the obj_pet instance's create event has run, with the pet data attached, the FSM spawned, and the vanilla pet interactions registered. ctx is the obj_pet instance, not the Animal data struct: the pet's data is ctx.me (the PET global, whose instance field already points back at ctx), and ctx.override_pet_initialization carries the PetInitialization the spawn was requested with (undefined when the pet picks its own entry). Every engine pet spawn routes through spawn_pet(): the pet management's room population, the adoption menu, the held-animal summon, and the Mist cutscene actor spawn (which requests PetInitialization.Cutscene), so handlers must expect many fires per day. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction taking the press, so a handler cannot shadow an active vanilla interaction on the same input. Distinct from animal.created, which covers barn/coop animals."
+
+[[hook]]
 name = "npc.heart_points"
 kind = "filter"
 doc  = "Fires at the top of Npc.add_heart_points(), before the delta is applied. The filtered value is the heart points delta (amount). ctx is the Npc struct. Return the replacement value, or undefined to keep the current value. Distinct from animal.heart_points, which covers barn/coop animals rather than villagers."
@@ -129,6 +142,11 @@ doc  = "Fires as get_modified_component_count(component, context, item_id) retur
 name = "npc.gift_received"
 kind = "event"
 doc  = "Fires at the top of par_NPC.receive_gift(item), when the player gives an NPC a gift, before the NPC's give_gift bookkeeping. ctx is { npc, item }: npc is the NPC instance, item is the gifted item. Observation only."
+
+[[hook]]
+name = "npc.created"
+kind = "event"
+doc  = "Fires at the end of spawn_npc(), once per NPC instance the engine creates, after the instance's create event chain (obj_caldarus's and obj_elsie's own create additions included) and its initialize(npc) call have both run. ctx is the par_NPC instance: its Npc data struct is ctx.me, its NpcId is ctx.npc_id, and its FSM is live (initialize attaches me and spawns the FSM after the create event returns, so no in-create moment sees them). NPC instances are transient. The engine destroys and recreates them whenever the player enters a room the NPC is in (npcs_on_room_start), whenever the NPC walks into the current room (npcs_on_step), and when a schedule time jump lands the NPC in the current location, so handlers must expect many fires per NPC per day. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction that takes the press winning, so a handler cannot shadow an active vanilla interaction on the same input (the button prompt label can still show the later registration). The one exception is the partner kiss, which registers with take_press = false and never consumes the press, so a later SecondaryInteract registration that takes the press replaces it. The Mist cutscene actor spawn and the test suite create NPC instances directly, bypassing spawn_npc(), and never fire this hook."
 
 [[hook]]
 name = "gossip.selections"
@@ -197,7 +215,7 @@ doc  = "Fires in create_furniture_renderer(node) as a furniture node's floor spr
 [[hook]]
 name = "dialogue.line"
 kind = "filter"
-doc  = "Fires in ConversationDriver.deliver_line(), before the textbox shows the line. The filtered value is the localized line text. ctx is { driver, line, conversation_name, npc_id, is_info_line }. Return the replacement string, or undefined to keep the current value."
+doc  = "Fires in ConversationDriver.deliver_line(), before the textbox shows the line. The filtered value is the localized line text. ctx is { driver, line, conversation_name, npc_id, speaker, is_info_line }. npc_id is the driver's npc_owner, the NPC the conversation belongs to. speaker is the textbox speaker the line's own Speaker action has already assigned, and it is undefined for info lines. Cutscene conversations rotate speakers independently of the owner, so read speaker for the character delivering the line. Return the replacement string, or undefined to keep the current value."
 
 [[hook]]
 name = "dialogue.npc_blip"
@@ -213,6 +231,11 @@ doc  = "Fires at the top of play_conversation(), after dialogue.play_guard. The 
 name = "dialogue.play_guard"
 kind = "guard"
 doc  = "Fires at the top of play_conversation(), before dialogue.path runs. ctx is { npc_id, path, close_callback, args }. Return false to veto the conversation (play_conversation returns undefined). Undefined or true allows."
+
+[[hook]]
+name = "dialogue.romance_prompt_guard"
+kind = "guard"
+doc  = "Fires while a pink romance prompt is styled for display, after the vanilla married or engaged lock is evaluated and only when that lock leaves the prompt selectable. ctx is { npc_id, speaker, path }: npc_id is the textbox speaker's NpcId (undefined for a cameo or absent speaker), speaker is the live Speaker struct or undefined, and path is the t2 conversation name or undefined. Return false to grey and soft-lock the prompt exactly as the vanilla lock does. Undefined or true keeps it selectable. Fires once per pink prompt box per styling pass, including the post-selection reset pass, and never fires when the vanilla lock already applies."
 
 [[hook]]
 name = "dialogue.speaker"
@@ -336,6 +359,11 @@ doc  = "Fires when the player activates a dungeon ladder to descend, before the 
 name = "item.display_description"
 kind = "filter"
 doc  = "Fires at the return of LiveItem.get_display_description(), the string the tooltip body actually renders. The filtered value is the description string. ctx is { item }. Return the replacement string, or undefined to keep the current value."
+
+[[hook]]
+name = "items.chest_opened"
+kind = "event"
+doc  = "Fires when a chest item finishes its open hold, after its loot table is resolved and before any loot or gold drops. ctx is { live_item, table }, the opening LiveItem and the resolved FISH_CHEST table, which handlers must treat as read-only shared state. Fires for vanilla and modded chests alike."
 
 [[hook]]
 name = "items.consumed"
@@ -659,6 +687,11 @@ doc  = "Fires after a menu rebuilds its content from game state, at the tail of 
 name = "ui.preset_popup_layout"
 kind = "filter"
 doc  = "Fires each time the customization menu generates its preset popup body, on popup open and again after a preset is added or deleted. The filtered value is the layout struct { frame_width: 46, frame_height: 47, columns: 4, rows: 2, spacing: 4 }: frame_width and frame_height size each preset frame, columns and rows shape the grid, and spacing is the gap centered_positions puts between frames. ctx is the CustomizationMenu struct. Return the replacement struct, or undefined to keep the engine values. The seam re-reads every field defensively, so an undefined return (or a partial struct) keeps the engine value for each field it lacks. Growing columns or rows grows the preset capacity (the stock 4x2 grid holds seven presets plus the button that creates a new preset), and a grid smaller than the current preset count leaves the overflow presets unreachable in the popup without deleting them. The popup backplate is sized at popup open (230x164) and does not adapt, so frames that outgrow it draw outside its art."
+
+[[hook]]
+name = "ui.relationship_row_built"
+kind = "event"
+doc  = "Fires once per NPC row as the relationships journal page builds its scrollable list, at the end of the row build with every vanilla node in place. Each journal tab switch constructs the page fresh, so the hook fires for every listed NPC on every visit to the page and never per frame. ctx is { menu, element, npc_id, npc, portrait, hearts, bar, talk_icon, talk_check, gift_icon, gift_check }: menu is the RelationshipsMenu, element is the row's scroller element (its name label is element.text_label), npc is the Npc data struct for npc_id, portrait is the row's NPC sprite node, hearts and bar are the heart level and heart progress nodes, talk_icon and talk_check are the talked-today icon and checkbox, and gift_icon and gift_check are the gifted-today icon and checkbox. The intended use is to add custom nodes to the row, anchored to the ctx nodes the way the vanilla row chains its own (for example an extra checkbox set RightOut of gift_check). Nodes parented to the row are freed with the menu, so handlers need no cleanup. Row content is a build-time snapshot, so give a node a think callback if it must track live state. Unmet NPCs get rows too, with a '???' label, a blacked-out portrait, and no tap callback, so gate revealing decorations on ctx.npc.has_met(). NPCs the list skips never fire, meaning locked NPCs, unmet vendors, and unmet animal-tagged NPCs before greet_the_townsfolk completes. The right-page detail pane (set_to_npc_id) is separate and not covered. The test suite's menu stress builds this page too, so handlers also fire there."
 
 [[hook]]
 name = "ui.spawn_tutorial_guard"
@@ -1612,6 +1645,7 @@ replace = '''
                 line: line,
                 conversation_name: self.conversation_name,
                 npc_id: self.npc_owner,
+                speaker: self.textbox.requested_speaker,
                 is_info_line: self.is_info_line,
             });
         } catch (__mmapi_dialogue_local) {}
@@ -2687,6 +2721,152 @@ replace = '''
 '''
 marker  = "mmapi_max_crafts_zero_component"
 
+# The two edits below carry a data contract instead of a hook. An item
+# fiddle entry may declare fish_chest = "<key>", naming an entry under
+# fishing/chest_tables. The engine's fishing-chest pipeline is data-driven
+# everywhere except three identity-keyed sites. These two widen the item-use
+# and chest-rarity sites, and the seam fish_chest_table_lookup widens the
+# third while dispatching items.chest_opened. No vanilla data reaches any
+# widened branch, so with no modded data the staged control flow behaves
+# exactly as pristine.
+
+# Widens the OpenChest use assignment so a fiddle item carrying fish_chest
+# opens like the five hardcoded chest items. The key is copied onto the
+# prototype for the AriFsm table lookup. Vanilla items never carry the field.
+[[engine_fix]]
+name    = "fish_chest_item_use"
+file    = "gml/scripts/GameplaySystems/Items/Items.gml"
+anchor  = '''
+        } else if matches(prototype.item_id, ItemId.TreasureBoxWood, ItemId.TreasureBoxCopper, ItemId.TreasureBoxSilver, ItemId.TreasureBoxGold, ItemId.AbyssalChest) {
+            prototype.use = ItemUse.OpenChest;
+'''
+replace = '''
+        } else if matches(prototype.item_id, ItemId.TreasureBoxWood, ItemId.TreasureBoxCopper, ItemId.TreasureBoxSilver, ItemId.TreasureBoxGold, ItemId.AbyssalChest)
+            || fiddle_data[$ "fish_chest"] != undefined { // mmapi_fish_chest_item_use
+            prototype.fish_chest = fiddle_data[$ "fish_chest"];
+            prototype.use = ItemUse.OpenChest;
+'''
+marker  = "mmapi_fish_chest_item_use"
+
+# The chest-rarity switch in create_fish_distributions enumerates the four
+# vanilla rarities for perk adjustments and aborts Setup on anything else.
+# A modded chest rarity now takes the default and simply gets no perk vote
+# adjustments. Its base votes still come from its fishing/votes entry.
+[[engine_fix]]
+name    = "fish_chest_custom_rarity"
+file    = "gml/scripts/GameplaySystems/Fishing/Fish.gml"
+anchor  = '''
+                default: impossible("unexpected chest rarity: {}", fish_proto.rarity);
+'''
+replace = '''
+                default: break; // A modded chest rarity gets no perk vote adjustments. // mmapi_fish_chest_custom_rarity
+'''
+marker  = "mmapi_fish_chest_custom_rarity"
+
+[[engine_fix]]
+name    = "customization_color_popup_scrollable"
+file    = "gml/scripts/UI/Anchor/Menus/CustomizationMenu.gml"
+anchor  = '''
+        var container_size = layout.container_size();
+        var container = ANCHOR.positional(popup.backplate)
+            .set_size(container_size)
+            .set_align(Align.Center, Align.BottomIn)
+            .set_y(-13)
+
+        popup.backplate.add_height(container_size.y);'''
+replace = '''
+        var container_size = layout.container_size();
+        var mmapi_lut_selector_scrollable = 23 * 7;
+        var container;
+        if (container_size.y > mmapi_lut_selector_scrollable) {
+            var __mmapi_lut_side = SCROLLBAR_WIDTH + 8;
+            popup.backplate.set_width(container_size.x + 1 + __mmapi_lut_side * 2);
+            popup.backplate.add_height(mmapi_lut_selector_scrollable);
+            var __mmapi_lut_body = ANCHOR.positional(popup.backplate)
+                .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_lut_selector_scrollable)
+                .set_align(Align.LeftIn, Align.BottomIn)
+                .set_x(__mmapi_lut_side)
+                .set_y(-13)
+            var __mmapi_lut_scroller = create_scroller_ext(
+                __mmapi_lut_body,
+                Vec2(0, 0),
+                Vec2(container_size.x + 1, mmapi_lut_selector_scrollable),
+                Vec2(Align.LeftIn, Align.TopIn),
+                Vec2(container_size.x + 5, -1),
+                Vec2(SCROLLBAR_WIDTH, mmapi_lut_selector_scrollable + 2),
+                Vec2(Align.LeftIn, Align.TopIn))
+                .subscribe_to_pilot(popup.pilot)
+                .alternate_colors(false)
+            var __mmapi_lut_element = __mmapi_lut_scroller.new_element(1);
+            container = ANCHOR.positional(__mmapi_lut_element)
+                .set_size(container_size)
+                .set_align(Align.LeftIn, Align.TopIn)
+                .set_y(__mmapi_lut_element.get_height())
+            __mmapi_lut_scroller.add_height_to_element(__mmapi_lut_element, container_size.y + 2);
+        } else {
+            container = ANCHOR.positional(popup.backplate)
+                .set_size(container_size)
+                .set_align(Align.Center, Align.BottomIn)
+                .set_y(-13)
+
+            popup.backplate.add_height(container_size.y);
+        }'''
+marker  = "mmapi_lut_selector_scrollable"
+
+[[engine_fix]]
+name    = "pet_appearance_popup_scrollable"
+file    = "gml/scripts/AnimalMenu.gml"
+anchor  = '''
+    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
+
+    var container_size = layout.container_size();
+    var container = ANCHOR.positional(popup.backplate)
+        .set_size(container_size)
+        .set_align(Align.Center, Align.Middle)
+        .set_y(9)
+
+    popup.backplate.add_height(container_size.y);'''
+replace = '''
+    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
+
+    var container_size = layout.container_size();
+    var mmapi_pet_appearance_scrollable = 23 * 7;
+    var container;
+    if (container_size.y > mmapi_pet_appearance_scrollable) {
+        var __mmapi_pet_side = SCROLLBAR_WIDTH + 8;
+        popup.backplate.set_width(container_size.x + 1 + __mmapi_pet_side * 2);
+        popup.backplate.add_height(mmapi_pet_appearance_scrollable);
+        var __mmapi_pet_body = ANCHOR.positional(popup.backplate)
+            .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_pet_appearance_scrollable)
+            .set_align(Align.LeftIn, Align.BottomIn)
+            .set_x(__mmapi_pet_side)
+            .set_y(-13)
+        var __mmapi_pet_scroller = create_scroller_ext(
+            __mmapi_pet_body,
+            Vec2(0, 0),
+            Vec2(container_size.x + 1, mmapi_pet_appearance_scrollable),
+            Vec2(Align.LeftIn, Align.TopIn),
+            Vec2(container_size.x + 5, -1),
+            Vec2(SCROLLBAR_WIDTH, mmapi_pet_appearance_scrollable + 2),
+            Vec2(Align.LeftIn, Align.TopIn))
+            .subscribe_to_pilot(popup.pilot)
+            .alternate_colors(false)
+        var __mmapi_pet_element = __mmapi_pet_scroller.new_element(1);
+        container = ANCHOR.positional(__mmapi_pet_element)
+            .set_size(container_size)
+            .set_align(Align.LeftIn, Align.TopIn)
+            .set_y(__mmapi_pet_element.get_height())
+        __mmapi_pet_scroller.add_height_to_element(__mmapi_pet_element, container_size.y + 2);
+    } else {
+        container = ANCHOR.positional(popup.backplate)
+            .set_size(container_size)
+            .set_align(Align.Center, Align.Middle)
+            .set_y(9)
+
+        popup.backplate.add_height(container_size.y);
+    }'''
+marker  = "mmapi_pet_appearance_scrollable"
+
 # The remaining entries are appended after the earlier ones on purpose. Catalog
 # order is apply order, and two of them stack onto files already seamed above
 # (dialogue_play_guard onto ConversationDriver.gml after dialogue_path, and
@@ -2937,6 +3117,36 @@ function NpcSpeaker(id) : Speaker(id) constructor {
     try { self.blip_sound = mmapi_apply_filters("dialogue.npc_blip", self.blip_sound, { npc_id: self.id, speaker: self }); } catch (__mmapi_dialogue_npc_blip) {} // mmapi_dialogue_run_npc_blip_filters'''
 marker  = "mmapi_dialogue_run_npc_blip_filters"
 provides = ["dialogue.npc_blip"]
+
+[[seam]]
+id      = "dialogue_romance_prompt_guard"
+file    = "gml/scripts/UI/Anchor/Menus/TextboxMenu.gml"
+anchor  = '''
+                if !ARI.disable_break_ups && (ARI.spouse() != undefined || ARI.fiance() != undefined) {
+                    self.set_sprites_from_key("spr_ui_dialogue_box_grey");
+                    self.blackboard.insert("stay_locked", true);
+                    self.tab.set_key_sprite_target(self.tab);
+                    self.tab.lock();
+                }'''
+replace = '''
+                var __mmapi_romance_lock = !ARI.disable_break_ups && (ARI.spouse() != undefined || ARI.fiance() != undefined);
+                if (!__mmapi_romance_lock) {
+                    try {
+                        var __mmapi_romance_menu = ANCHOR.get_menu(Menu.Textbox);
+                        var __mmapi_romance_speaker = (__mmapi_romance_menu == undefined) ? undefined : (__mmapi_romance_menu.requested_speaker ?? __mmapi_romance_menu.current_speaker);
+                        var __mmapi_romance_npc = (__mmapi_romance_speaker == undefined) ? undefined : try_string_to_npc_id(__mmapi_romance_speaker.identity);
+                        var __mmapi_romance_path = (__mmapi_romance_menu == undefined || __mmapi_romance_menu.driver == undefined) ? undefined : __mmapi_romance_menu.driver.conversation_name;
+                        if (mmapi_check_guards("dialogue.romance_prompt_guard", { npc_id: __mmapi_romance_npc, speaker: __mmapi_romance_speaker, path: __mmapi_romance_path }) == false) { __mmapi_romance_lock = true; } // mmapi_dialogue_run_romance_prompt_guards
+                    } catch (__mmapi_dialogue_romance_prompt_guard) {}
+                }
+                if __mmapi_romance_lock {
+                    self.set_sprites_from_key("spr_ui_dialogue_box_grey");
+                    self.blackboard.insert("stay_locked", true);
+                    self.tab.set_key_sprite_target(self.tab);
+                    self.tab.lock();
+                }'''
+marker   = "mmapi_dialogue_run_romance_prompt_guards"
+provides = ["dialogue.romance_prompt_guard"]
 
 [[seam]]
 id      = "ui_menu_opened"
@@ -3405,3 +3615,129 @@ hook    = "quest.complete"
 ctx     = "{ quest_name: quest_name, quest: finished_quest }"
 indent  = 8
 marker  = "mmapi_quest_complete"
+
+# The relationships journal builds one scroller row per listed NPC each time
+# the page is constructed, and each journal tab switch constructs the page
+# fresh. The emit lands at the end of the row build so every vanilla node is
+# in place. The pristine chain discards the trailing gift checkbox node, and
+# the ctx wants that node, so a text seam captures it into a local before the
+# emit. Value capture is what the text form is for.
+[[seam]]
+id      = "ui_relationship_row_built"
+file    = "gml/scripts/UI/Anchor/Menus/RelationshipsMenu.gml"
+anchor  = '''
+        ANCHOR.sprite(gift_icon)
+            .set_sprite(!npc_data.gift_flag ? spr_ui_generic_checkbox_on : spr_ui_generic_checkbox_off)
+            .set_align(Align.RightOut, Align.Middle)
+            .set_x(2)
+'''
+replace = '''
+        var gift_check = ANCHOR.sprite(gift_icon)
+            .set_sprite(!npc_data.gift_flag ? spr_ui_generic_checkbox_on : spr_ui_generic_checkbox_off)
+            .set_align(Align.RightOut, Align.Middle)
+            .set_x(2)
+
+        try {
+            mmapi_emit("ui.relationship_row_built", { // mmapi_ui_relationship_row_built
+                menu: self,
+                element: element,
+                npc_id: npc_id,
+                npc: npc_data,
+                portrait: npc,
+                hearts: hearts,
+                bar: bar,
+                talk_icon: talk_icon,
+                talk_check: talk_check,
+                gift_icon: gift_icon,
+                gift_check: gift_check,
+            });
+        } catch (__mmapi_ui_relationship_row_built) {}
+'''
+marker  = "mmapi_ui_relationship_row_built"
+provides = ["ui.relationship_row_built"]
+
+# The entity-creation trio emits from the engine's three spawn functions, not
+# from the create events they wrap. Each spawn function is its object's only
+# engine creation site, and each finishes construction work after the create
+# event returns. spawn_npc()'s initialize(npc) attaches me and spawns the FSM,
+# and spawn_animal() writes animal.instance. An in-create emit would fire
+# before that work, and for NPCs also before obj_caldarus and obj_elsie
+# register their own create-event interactions. The spawn-site emits fire once
+# per spawn with the instance fully wired, and interactions a handler registers
+# land after every vanilla registration, so contested inputs keep resolving to
+# the vanilla interaction (except the take_press = false partner kiss, which
+# never consumes the press).
+[[seam]]
+id      = "npc_created"
+file    = "gml/scripts/GameplaySystems/NPCs/NpcDatabase.gml"
+target  = { fn = "spawn_npc", at = "after", anchor = "new_inst.initialize(npc);" }
+op      = "emit"
+hook    = "npc.created"
+ctx     = "new_inst"
+marker  = "mmapi_npc_created"
+
+# spawn_pet() discards the created instance, so a text seam captures it for
+# the emit. Every engine pet spawn routes through spawn_pet(), the Mist
+# cutscene actor spawn included.
+[[seam]]
+id      = "pet_created"
+file    = "gml/scripts/Pet.gml"
+anchor  = '''
+function spawn_pet(override_pet_initialization) {
+    instance_create_layer(0, 0, "Instances", obj_pet, { override_pet_initialization });
+}'''
+replace = '''
+function spawn_pet(override_pet_initialization) {
+    var __mmapi_pet_inst = instance_create_layer(0, 0, "Instances", obj_pet, { override_pet_initialization });
+    try { mmapi_emit("pet.created", __mmapi_pet_inst); } catch (__mmapi_pet_created) {} // mmapi_pet_created
+}'''
+marker  = "mmapi_pet_created"
+provides = ["pet.created"]
+
+# The token anchor is spawn_animal()'s whole assignment statement, so the emit
+# lands after animal.instance is written and ctx.me.instance is coherent.
+[[seam]]
+id      = "animal_created"
+file    = "gml/scripts/GameplaySystems/Ranching/AnimalUtils.gml"
+target  = { fn = "spawn_animal", at = "after", anchor = 'animal.instance = instance_create_layer(animal.location_position.pos.x, animal.location_position.pos.y, "Instances", obj_player_animal, { me: animal, });' }
+op      = "emit"
+hook    = "animal.created"
+ctx     = "animal.instance"
+marker  = "mmapi_animal_created"
+
+# Resolves the opened chest's loot table from the prototype's fish_chest key
+# when the item is not one of the five hardcoded cases, then announces the
+# open. FISH_CHEST already holds every merged chest_tables entry, so the
+# lookup is a struct read. The pristine impossible() survives for an unknown
+# item and for a key that names no table. The emit lands after the table is
+# resolved and before the loot roll, so handlers fire for vanilla and modded
+# chests alike while the drops are still pending. This entry also carries the
+# fish_chest data contract together with the fish_chest_item_use and
+# fish_chest_custom_rarity engine fixes.
+[[seam]]
+id      = "fish_chest_table_lookup"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                            case ItemId.AbyssalChest:
+                                table = FISH_CHEST.abyss;
+                                break;
+                            default: impossible("unexpected `OpenChest` use in `{}`", self.live_item);
+                        }
+'''
+replace = '''
+                            case ItemId.AbyssalChest:
+                                table = FISH_CHEST.abyss;
+                                break;
+                            default: // mmapi_fish_chest_table_lookup
+                                var __mmapi_fish_chest_key = self.live_item.prototype[$ "fish_chest"];
+                                if (__mmapi_fish_chest_key != undefined) {
+                                    table = FISH_CHEST[$ __mmapi_fish_chest_key];
+                                }
+                                if (table == undefined) {
+                                    impossible("unexpected `OpenChest` use in `{}`", self.live_item);
+                                }
+                        }
+                        try { mmapi_emit("items.chest_opened", { live_item: self.live_item, table: table }); } catch (__mmapi_items_chest_opened) {}
+'''
+marker  = "mmapi_fish_chest_table_lookup"
+provides = ["items.chest_opened"]
