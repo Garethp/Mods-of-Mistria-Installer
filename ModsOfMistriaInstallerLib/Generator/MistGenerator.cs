@@ -11,10 +11,11 @@ public class MistGenerator: IGenerator
 
         var files = mod
             .GetAllFiles(".mist")
+            .Select(file => RelativePath(mod, file))
             .Select(file => FileItem.FromFile(mod, file));
-        
+
         information.Mist.AddRange(files);
-        
+
         return information;
     }
 
@@ -23,5 +24,20 @@ public class MistGenerator: IGenerator
     public Validation Validate(IMod mod)
     {
         return new Validation();
+    }
+
+    private static string RelativePath(IMod mod, string filePath)
+    {
+        var basePath = mod.GetBasePath();
+
+        if (Path.IsPathRooted(filePath))
+            return Path.GetRelativePath(basePath, filePath).Replace('\\', '/');
+
+        var normalizedBase = basePath.Replace('\\', '/').TrimEnd('/') + '/';
+        var normalizedFull = filePath.Replace('\\', '/');
+        if (normalizedBase != "/" &&
+            normalizedFull.StartsWith(normalizedBase, StringComparison.OrdinalIgnoreCase))
+            return normalizedFull[normalizedBase.Length..];
+        return normalizedFull;
     }
 }
