@@ -38,11 +38,14 @@ public static class SeamStager
     private static readonly UTF8Encoding Utf8Strict = new(false, true);
 
     // Simulate, then the call rewrites over the whole engine tree, then the
-    // generated hook catalog.
+    // generated hook catalog. Problems from both phases land in one batched
+    // report, so seam drift does not hide rewrite drift in the same build.
     public static StageResult StageAll(SeamCatalog catalog, IPristineSource pristine)
     {
-        var staged = Simulate(catalog, pristine);
-        StageCallRewrites(catalog, staged, pristine, pristine.GmlFiles());
+        List<SeamProblem> problems = [];
+        var staged = SimulateCore(catalog, pristine, problems);
+        StageCallRewritesCore(catalog, staged, pristine, pristine.GmlFiles(), problems);
+        if (problems.Count > 0) throw new SeamStagingException("seam staging failed", problems);
         return new StageResult(staged, HookCatalogRenderer.Render(catalog));
     }
 
@@ -53,8 +56,35 @@ public static class SeamStager
     // identity, not idempotency.
     public static Dictionary<string, StagedFile> Simulate(SeamCatalog catalog, IPristineSource pristine)
     {
-        Dictionary<string, StagedFile> staged = [];
         List<SeamProblem> problems = [];
+        var staged = SimulateCore(catalog, pristine, problems);
+        if (problems.Count > 0) throw new SeamStagingException("seam staging failed", problems);
+        return staged;
+    }
+
+    private static Dictionary<string, StagedFile> SimulateCore(SeamCatalog catalog,
+        IPristineSource pristine, List<SeamProblem> problems)
+    {
+        Dictionary<string, StagedFile> staged = [];
+
+        // When the source carries an asset inventory, every sprite, room, and
+        // object identifier a payload references must be in it.
+        var assetNames = pristine.AssetNames();
+
+        // The names every payload in the same file declares. A seam may read a
+        // name a sibling seam introduces, and the reader can stage before the
+        // declarer, so the scope-read checks consult the whole group.
+        Dictionary<string, List<(string Id, HashSet<string> Declared)>> declaredByFile = [];
+        foreach (var entry in catalog.Entries)
+        {
+            if (!declaredByFile.TryGetValue(entry.File, out var group))
+            {
+                group = [];
+                declaredByFile[entry.File] = group;
+            }
+
+            group.Add((entry.Id, PayloadReads.Declarations(entry.Replace)));
+        }
 
         foreach (var entry in catalog.Entries)
         {
@@ -110,9 +140,30 @@ public static class SeamStager
                 continue;
             }
 
+            if (assetNames is not null)
+            {
+                var missingAssets = PayloadReads.AssetReads(entry.Replace)
+                    .Where(name => !assetNames.Contains(name))
+                    .ToList();
+                if (missingAssets.Count > 0)
+                {
+                    var names = string.Join(", ", missingAssets.Select(name => $"'{name}'"));
+                    problems.Add(new SeamProblem(
+                        $"{entry.Kind.CatalogName()} '{entry.Id}': the payload references "
+                        + (missingAssets.Count == 1 ? "asset " : "assets ") + names
+                        + " that this build does not carry - the engine changed; "
+                        + "the seam catalog needs updating",
+                        SeamProblemKind.Asset, entry.Id, entry.File));
+                    continue;
+                }
+            }
+
             try
             {
-                current.Text = ApplySeam(entry, current.Text);
+                HashSet<string> siblingDeclared = [];
+                foreach (var (id, declared) in declaredByFile[entry.File])
+                    if (id != entry.Id) siblingDeclared.UnionWith(declared);
+                current.Text = ApplySeam(entry, current.Text, siblingDeclared);
                 current.AppliedIds.Add(entry.Id);
             }
             catch (SeamProblemException exception)
@@ -121,15 +172,17 @@ public static class SeamStager
             }
         }
 
-        if (problems.Count > 0) throw new SeamStagingException("seam staging failed", problems);
         return staged;
     }
 
     // Apply one catalog entry to \n-normalised text and return the result.
-    // Fail-closed: the anchor must match exactly once.
-    public static string ApplySeam(SeamEntry entry, string text)
+    // Fail-closed, so the anchor must match exactly once. `siblingDeclared`
+    // carries the names other entries in the same file declare, which the
+    // scope-read checks accept as bound.
+    public static string ApplySeam(SeamEntry entry, string text,
+        IReadOnlySet<string>? siblingDeclared = null)
     {
-        if (entry.TargetFn.Length > 0) return ApplyTarget(entry, text);
+        if (entry.TargetFn.Length > 0) return ApplyTarget(entry, text, siblingDeclared);
 
         var occurrences = CountOccurrences(text, entry.Anchor);
         if (occurrences != 1)
@@ -143,7 +196,44 @@ public static class SeamStager
                 SeamProblemKind.Anchor, entry.Id, entry.File, hint, line, context));
         }
 
+        CheckAnchorPayloadReads(entry, text, siblingDeclared);
+
         return text.Replace(entry.Anchor, entry.Replace, StringComparison.Ordinal);
+    }
+
+    // The text-form twin of the target-form scope-read check. The anchor proves
+    // only the lines it quotes, so the reads are held against the function
+    // enclosing the match, widened to the anchor's extent, or against the whole
+    // file when the match sits at the top level.
+    private static void CheckAnchorPayloadReads(SeamEntry entry, string text,
+        IReadOnlySet<string>? siblingDeclared)
+    {
+        var reads = PayloadReads.ScopeReads(entry.Replace);
+        if (reads.Count == 0) return;
+
+        var matchStart = text.IndexOf(entry.Anchor, StringComparison.Ordinal);
+        var matchEnd = matchStart + entry.Anchor.Length;
+        var tokens = GmlScanner.Tokenize(text);
+        var span = GmlScanner.EnclosingFunction(text, matchStart, tokens);
+        var regionStart = span is null ? 0 : Math.Min(span.Start, matchStart);
+        var regionEnd = span is null ? text.Length : Math.Max(span.BodyClose, matchEnd);
+
+        var missing = reads
+            .Where(name => !(siblingDeclared?.Contains(name) ?? false))
+            .Where(name => !Mentions(text, tokens, regionStart, regionEnd, name))
+            .ToList();
+        if (missing.Count == 0) return;
+
+        var where = span is null ? entry.File : $"'{span.Name}' in {entry.File}";
+        var names = string.Join(", ", missing.Select(name => $"'{name}'"));
+        var line = CountLines(text, matchStart);
+        throw new SeamProblemException(new SeamProblem(
+            $"{entry.Kind.CatalogName()} '{entry.Id}': the payload reads {names} but "
+            + where + " never mentions "
+            + (missing.Count == 1 ? "it" : "them")
+            + " - the engine file changed; the seam catalog needs updating",
+            SeamProblemKind.Reads, entry.Id, entry.File,
+            Line: line, Context: NumberedExcerpt(text, line)));
     }
 
     // Stage every [[call_rewrite]] across the engine tree, in place over the
@@ -154,8 +244,16 @@ public static class SeamStager
     public static void StageCallRewrites(SeamCatalog catalog, Dictionary<string, StagedFile> staged,
         IPristineSource pristine, IReadOnlyList<string> gmlFiles)
     {
-        if (catalog.CallRewrites.Count == 0) return;
         List<SeamProblem> problems = [];
+        StageCallRewritesCore(catalog, staged, pristine, gmlFiles, problems);
+        if (problems.Count > 0) throw new SeamStagingException("call-rewrite staging failed", problems);
+    }
+
+    private static void StageCallRewritesCore(SeamCatalog catalog, Dictionary<string, StagedFile> staged,
+        IPristineSource pristine, IReadOnlyList<string> gmlFiles, List<SeamProblem> problems)
+    {
+        if (catalog.CallRewrites.Count == 0) return;
+        var priorProblems = problems.Count;
         var siteCounts = catalog.CallRewrites.ToDictionary(r => r.Id, _ => 0);
         var fileCounts = catalog.CallRewrites.ToDictionary(r => r.Id, _ => 0);
 
@@ -292,7 +390,7 @@ public static class SeamStager
                 SeamProblemKind.CallRewrite, rewrite.Id));
         }
 
-        if (problems.Count > 0) throw new SeamStagingException("call-rewrite staging failed", problems);
+        if (problems.Count > priorProblems) return;
 
         foreach (var rewrite in catalog.CallRewrites)
         {
@@ -305,7 +403,8 @@ public static class SeamStager
     // payload structurally. Token matching, so indentation, blank-line and
     // comment drift in the engine file do not rot the locator. Fail-closed:
     // the function, and the anchor inside it, must each match exactly once.
-    private static string ApplyTarget(SeamEntry entry, string text)
+    private static string ApplyTarget(SeamEntry entry, string text,
+        IReadOnlySet<string>? siblingDeclared = null)
     {
         var tokens = GmlScanner.Tokenize(text);
         var spans = GmlScanner.FindFunctions(text, entry.TargetFn, tokens);
@@ -320,6 +419,24 @@ public static class SeamStager
 
         var span = spans[0];
         var fnLine = CountLines(text, span.BodyOpen);
+
+        // Every scope read must occur in the target function's span, so a name
+        // the engine renamed fails as loudly as an anchor miss.
+        var missing = PayloadReads.ScopeReads(entry.Replace)
+            .Where(name => !(siblingDeclared?.Contains(name) ?? false))
+            .Where(name => !Mentions(text, tokens, span.Start, span.BodyClose, name))
+            .ToList();
+        if (missing.Count > 0)
+        {
+            var names = string.Join(", ", missing.Select(name => $"'{name}'"));
+            throw new SeamProblemException(new SeamProblem(
+                $"{entry.Kind.CatalogName()} '{entry.Id}': the payload reads {names} but "
+                + $"'{entry.TargetFn}' in {entry.File} never mentions "
+                + (missing.Count == 1 ? "it" : "them")
+                + " - the engine file changed; the seam catalog needs updating",
+                SeamProblemKind.Reads, entry.Id, entry.File,
+                Line: fnLine, Context: NumberedExcerpt(text, fnLine)));
+        }
 
         if (entry.Op == DispatchOp.Wrap) return ApplyWrap(entry, text, span, tokens);
 
@@ -456,6 +573,20 @@ public static class SeamStager
         }
 
         return (0, "");
+    }
+
+    // True when the identifier occurs as a whole token anywhere inside the
+    // [start, end] region.
+    private static bool Mentions(string text, List<GmlToken> tokens, int start, int end, string name)
+    {
+        foreach (var token in tokens)
+        {
+            if (token.Start < start) continue;
+            if (token.Start > end) break;
+            if (text.AsSpan(token.Start, token.End - token.Start).SequenceEqual(name)) return true;
+        }
+
+        return false;
     }
 
     // True when nothing but whitespace or a line comment follows pos on its line

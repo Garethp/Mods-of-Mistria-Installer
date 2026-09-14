@@ -283,6 +283,29 @@ public static class GmlScanner
         return writes;
     }
 
+    // The innermost function definition whose span contains `pos`, or null
+    // when the position sits at the top level of the file. Nested definitions
+    // win over the definitions that hold them.
+    public static FunctionSpan? EnclosingFunction(string source, int pos, List<GmlToken>? tokens = null)
+    {
+        tokens ??= Tokenize(source);
+        FunctionSpan? innermost = null;
+        for (var i = 0; i < tokens.Count; i++)
+        {
+            if (tokens[i].Start > pos) break;
+            var match = MatchDefinition(source, tokens, i);
+            if (match is null) continue;
+            var built = BuildSpan(source, tokens, i, match.Value);
+            if (built is null) continue;
+
+            var span = built.Value.Span;
+            if (span.Start > pos || span.BodyClose < pos) continue;
+            if (innermost is null || span.Start > innermost.Start) innermost = span;
+        }
+
+        return innermost;
+    }
+
     // Every char span inside the region whose token sequence equals the
     // anchor's. Whitespace- and comment-insensitive on the source side.
     public static List<(int Start, int End)> FindAnchor(string source, int regionStart, int regionEnd,

@@ -13,22 +13,22 @@ This page explains building `my_first_mod`, which displays an in-game notificati
 ## Requirements
 
 - Fields of Mistria, the game.
-- MOMI version 0.14.1 or newer. 0.14.0 first shipped the GML layer; the example's `game.new_day` hook needs 0.14.1.
+- MOMI version 0.14.1 or newer. 0.14.0 first shipped the GML layer, and the example's `game.new_day` hook needs 0.14.1.
 - A text editor. There is no compiler or build step necessary. A mod is plain GML source.
 
 ## Naming
 
-Pick one name and use it everywhere: the folder, the `global.__my_first_mod` state struct, and the `my_first_mod_*` function prefix in code. See [One Name Everywhere](MOD_ANATOMY.md#one-name-everywhere) for why this matters.
+Pick one name and use it everywhere, meaning the folder, the `mmapi_mod_declare` name, the `global.__my_first_mod` state struct, and the `my_first_mod_*` function prefix in code. See [One Name Everywhere](MOD_ANATOMY.md#one-name-everywhere) for why this matters.
 
 ## The Folder
 
-A mod lives inside a folder. As stated above, an MMAPI mod must contain a manifest and GML file inside of it.
+A mod lives inside a folder. As stated above, an MMAPI mod must contain a manifest and a GML file.
 
 Here's a directory tree view to help you visualize:
 
 ```text
 my_first_mod/
-├─ manifest.json
+├─ manifest.toml
 ├─ gml/
 │  ├─ MyFirstMod.gml
 ```
@@ -36,24 +36,21 @@ my_first_mod/
 The full folder paths for each file should look like:
 
 ```text
-/my_first_mod/manifest.json
+/my_first_mod/manifest.toml
 /my_first_mod/gml/MyFirstMod.gml
 ```
 
 ## The Manifest
 
-`manifest.json` belongs at the root of the mod folder. The contents of it are:
+`manifest.toml` belongs at the root of the mod folder. The contents of it are:
 
-```json
-{
-    "name": "My First Mod",
-    "author": "you",
-    "version": "1.0.0",
-    "description": "Shows a notification when a new day starts.",
-    "minInstallerVersion": "0.14.1",
-    "manifestVersion": 1,
-    "requires_hooks": ["game.new_day"]
-}
+```toml
+name = "My First Mod"
+author = "you"
+version = "1.0.0"
+minInstallerVersion = "0.14.1"
+manifestVersion = 1
+requires_hooks = ["game.new_day"]
 ```
 
 Most of these manifest fields are shared across all MOMI mod types, including non-MMAPI ones. The exception is `requires_hooks`.
@@ -104,7 +101,7 @@ my_first_mod_register_callbacks();
 ```
 
 > [!TIP]
-> Every piece of this skeleton exists for an engine reason: the memory-only top level, the lazy runtime struct, the `registered_hooks` latch, and the named handler function. [Mod Anatomy](MOD_ANATOMY.md) explains each one.
+> Every piece of this skeleton exists for an engine reason, from the memory-only top level and the lazy runtime struct to the `registered_hooks` latch and the named handler function. [Mod Anatomy](MOD_ANATOMY.md) explains each one.
 
 ## Install The Mod
 
@@ -129,7 +126,7 @@ The log file is created automatically:
 The `mmapi_log_info` call in the handler proves the hook fired. The following flush makes that single line reach disk immediately:
 
 ```text
-[INFO ] day started: 24
+[INFO ] new day: 24
 ```
 
 If nothing appears, look for warnings in the same file. An unknown hook name, a wrong registration directive, and a duplicate registration each output a `WARN` log there.
@@ -138,5 +135,5 @@ If nothing appears, look for warnings in the same file. An unknown hook name, a 
 
 - Read [Hooks](HOOKS.md) for the four hook kinds and how registration and dispatch work.
 - Read [Mod Anatomy](MOD_ANATOMY.md) for why the boot file looks the way it does, and for the engine quirks that will bite you if you skip it.
-- Browse the [API Reference](API_REFERENCE.md) when you need a helper: config, hotkeys, per-save data, combat.
+- Browse the [API Reference](API_REFERENCE.md) when you need a helper for config, hotkeys, per-save data, or combat.
 - Turn on the [debug agent](DEBUG.md) when a hook doesn't seem to fire.

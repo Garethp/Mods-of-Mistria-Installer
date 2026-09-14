@@ -72,6 +72,52 @@ public class ShippedCatalogTest
     }
 
     [Test]
+    public void ShouldGroupRecordsByTypeUnderSectionBanners()
+    {
+        // File order is presentational and the parsed model erases it, so this
+        // check reads the raw text. The convention holds records grouped by
+        // type under one banner per section, ordered hook declarations, then
+        // seams, then call rewrites, then engine fixes, with new records
+        // appended to their type's section.
+        var (_, bytes) = PayloadResolver.SeamCatalog();
+        var lines = Encoding.UTF8.GetString(bytes).Replace("\r\n", "\n").Split('\n');
+
+        string[] banners =
+        [
+            "# --- hook declarations ",
+            "# --- seams ",
+            "# --- call rewrites ",
+            "# --- engine fixes ",
+        ];
+        string[] headers = ["[[hook]]", "[[seam]]", "[[call_rewrite]]", "[[engine_fix]]"];
+
+        var section = -1;
+        var perSection = new int[banners.Length];
+        foreach (var line in lines)
+        {
+            var banner = Array.FindIndex(banners, b =>
+                line.StartsWith(b, StringComparison.Ordinal)
+                && line.EndsWith("---", StringComparison.Ordinal));
+            if (banner >= 0)
+            {
+                Assert.That(banner, Is.EqualTo(section + 1), $"banner out of order: {line}");
+                section = banner;
+                continue;
+            }
+
+            var header = Array.IndexOf(headers, line);
+            if (header < 0) continue;
+            Assert.That(header, Is.EqualTo(section), $"{line} outside its section");
+            perSection[header]++;
+        }
+
+        Assert.That(section, Is.EqualTo(banners.Length - 1), "not every banner is present");
+        var counts = _catalog.DeclaredCounts!;
+        Assert.That(perSection, Is.EqualTo(new[]
+            { counts.Hooks, counts.Seams, counts.CallRewrites, counts.EngineFixes }));
+    }
+
+    [Test]
     public void ShouldKeepTheDocCountSentencesInStepWithTheCatalog()
     {
         var repoRoot = FindRepoRoot();
@@ -90,6 +136,149 @@ public class ShippedCatalogTest
             Assert.That(int.Parse(match.Groups[2].Value), Is.EqualTo(counts.Seams), $"{page} seam count");
             Assert.That(int.Parse(match.Groups[3].Value), Is.EqualTo(counts.EngineFixes), $"{page} engine fix count");
             Assert.That(int.Parse(match.Groups[4].Value), Is.EqualTo(counts.CallRewrites), $"{page} call rewrite count");
+        }
+    }
+
+    [Test]
+    public void ShouldHaveADocPageForEveryHookAndEntry()
+    {
+        // The count sentences are already gated. This holds the page set in
+        // step with the catalog in both directions, since a missing page is an
+        // undocumented hook or seam and an unmatched page is a leftover from a
+        // rename.
+        var repoRoot = FindRepoRoot();
+        if (repoRoot is null)
+            Assert.Ignore("docs/MMAPI not found - running outside the repo checkout");
+
+        var hooksDir = Path.Combine(repoRoot!, "docs", "MMAPI", "hooks");
+        var seamsDir = Path.Combine(repoRoot!, "docs", "MMAPI", "seams");
+        var hookNames = _catalog.HookDeclarations.Select(d => d.Name).ToHashSet();
+        var entryIds = _catalog.Entries.Select(e => e.Id)
+            .Concat(_catalog.CallRewrites.Select(r => r.Id))
+            .ToHashSet();
+
+        foreach (var name in hookNames)
+            Assert.That(File.Exists(Path.Combine(hooksDir, name + ".md")), Is.True,
+                $"hook '{name}' has no docs page");
+        foreach (var id in entryIds)
+            Assert.That(File.Exists(Path.Combine(seamsDir, id + ".md")), Is.True,
+                $"entry '{id}' has no docs page");
+
+        foreach (var page in Directory.GetFiles(hooksDir, "*.md"))
+            Assert.That(hookNames, Does.Contain(Path.GetFileNameWithoutExtension(page)),
+                $"hook page '{Path.GetFileName(page)}' matches no declared hook");
+        foreach (var page in Directory.GetFiles(seamsDir, "*.md"))
+            Assert.That(entryIds, Does.Contain(Path.GetFileNameWithoutExtension(page)),
+                $"seam page '{Path.GetFileName(page)}' matches no catalog entry");
+    }
+
+    [Test]
+    public void ShouldResolveEveryDocsLink()
+    {
+        // A rename anywhere under docs/MMAPI strands the links into it, and
+        // GitHub renders a stale anchor as a page that scrolls nowhere. This
+        // walks every relative link in the tree and checks that the target
+        // file exists and that a fragment names a heading the target has.
+        var repoRoot = FindRepoRoot();
+        if (repoRoot is null)
+            Assert.Ignore("docs/MMAPI not found - running outside the repo checkout");
+
+        var docsRoot = Path.Combine(repoRoot!, "docs", "MMAPI");
+        var pages = Directory.GetFiles(docsRoot, "*.md", SearchOption.AllDirectories);
+        var anchors = pages.ToDictionary(page => page, DocAnchors);
+
+        List<string> problems = [];
+        foreach (var page in pages)
+        {
+            var where = Path.GetRelativePath(repoRoot!, page);
+            foreach (var (target, fragment) in DocLinks(page))
+            {
+                var path = target.Length == 0
+                    ? page
+                    : Path.GetFullPath(Path.Combine(Path.GetDirectoryName(page)!, target));
+                if (!anchors.TryGetValue(path, out var targetAnchors))
+                {
+                    if (!File.Exists(path))
+                        problems.Add($"{where}: missing file {target}");
+                    else if (path.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+                        problems.Add($"{where}: link casing differs from the file {target}");
+                    continue;
+                }
+
+                if (fragment is not null && !targetAnchors.Contains(fragment))
+                    problems.Add($"{where}: no heading for {target}#{fragment}");
+            }
+        }
+
+        Assert.That(problems, Is.Empty, string.Join("\n", problems));
+    }
+
+    private static readonly Regex DocLinkPattern = new(@"\]\(([^)#\s]*)(?:#([^)\s]+))?\)");
+
+    private static readonly Regex DocHeadingPattern = new(@"^#{1,6}\s+(.*?)\s*$");
+
+    private static readonly Regex DocCodeSpanPattern = new("`[^`]*`");
+
+    // Lines outside fenced code blocks, fences indented under a list item
+    // included.
+    private static IEnumerable<string> DocProseLines(string page)
+    {
+        var inCode = false;
+        foreach (var line in File.ReadLines(page))
+        {
+            if (line.TrimStart().StartsWith("```", StringComparison.Ordinal))
+            {
+                inCode = !inCode;
+                continue;
+            }
+
+            if (!inCode) yield return line;
+        }
+    }
+
+    // GitHub's anchor for a heading drops code ticks, lowercases, removes
+    // everything but letters, digits, underscores, hyphens and spaces, turns
+    // spaces into hyphens, and numbers a repeat.
+    private static HashSet<string> DocAnchors(string page)
+    {
+        HashSet<string> anchors = [];
+        Dictionary<string, int> seen = [];
+        foreach (var line in DocProseLines(page))
+        {
+            var match = DocHeadingPattern.Match(line);
+            if (!match.Success) continue;
+
+            var text = match.Groups[1].Value.Replace("`", "").ToLowerInvariant();
+            var anchor = Regex.Replace(text, @"[^\w\- ]", "").Replace(' ', '-');
+            if (seen.TryGetValue(anchor, out var repeats))
+            {
+                seen[anchor] = repeats + 1;
+                anchor = $"{anchor}-{repeats + 1}";
+            }
+            else
+            {
+                seen[anchor] = 0;
+            }
+
+            anchors.Add(anchor);
+        }
+
+        return anchors;
+    }
+
+    // Relative links only, with inline code spans blanked first so a link
+    // quoted as code does not count.
+    private static IEnumerable<(string Target, string? Fragment)> DocLinks(string page)
+    {
+        foreach (var line in DocProseLines(page))
+        {
+            foreach (Match match in DocLinkPattern.Matches(DocCodeSpanPattern.Replace(line, "")))
+            {
+                var target = match.Groups[1].Value;
+                if (target.StartsWith("http", StringComparison.Ordinal)
+                    || target.StartsWith("mailto:", StringComparison.Ordinal)) continue;
+                yield return (target, match.Groups[2].Success ? match.Groups[2].Value : null);
+            }
         }
     }
 

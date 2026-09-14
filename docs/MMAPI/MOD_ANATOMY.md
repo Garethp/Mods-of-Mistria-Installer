@@ -8,7 +8,7 @@ A mod is a folder with a manifest and a `gml/` folder. This page explains the bo
 
 ```text
 my_first_mod/
-├─ manifest.json
+├─ manifest.toml
 ├─ gml/
 │  ├─ MyFirstMod.gml
 ```
@@ -19,12 +19,14 @@ my_first_mod/
 
 Pick one short snake_case name for your mod and use it for every name the mod owns:
 
-- folder: `my_mod/`
-- declaration: `mmapi_mod_declare("my_mod", ...)`
-- state: `global.__my_mod`
-- functions: `my_mod_*` and `__my_mod_*`
+| Name | Form |
+| ---- | ---- |
+| folder | `my_mod/` |
+| declaration | `mmapi_mod_declare("my_mod", ...)` |
+| state | `global.__my_mod` |
+| functions | `my_mod_*` and `__my_mod_*` |
 
-Top-level functions are global across every installed mod, so the name prefix is the only thing keeping two mods' functions apart. MOMI lints for unnamespaced top-level functions and for writes to reserved or foreign global roots. Fewer names, fewer mistakes.
+Top-level functions are global across every installed mod, so the name prefix is the only thing keeping two mods' functions apart. MOMI lints for unnamespaced top-level functions and for writes to reserved or foreign global roots. Fewer names mean fewer mistakes.
 
 MOMI derives the folder your `gml/` files land in inside the game's script tree from the manifest's `author` and `name` fields (see [The Manifest](MANIFEST.md#the-install-namespace)). Your code never references that folder, so it does not need to match your chosen name. Everything your code does reference should.
 
@@ -76,7 +78,7 @@ mmapi_mod_declare("my_mod", "1.0.0");
 my_mod_register_callbacks();
 ```
 
-### The Top Level is Memory-Only
+### The Top Level Is Memory-Only
 
 Top-level code runs while the game is still loading, before the first frame, and **file IO throws in-engine there**. So the top level only declares the mod, defines functions, and registers handlers. Config loads lazily, the first time a handler needs it.
 
@@ -96,17 +98,19 @@ Every callback (hook handlers, install functions, hotkey callbacks) is a named t
 
 ## The Lifecycle
 
-- **Game Boot**: Every installed file's top level runs (order unspecified, memory-only).
-- **Frame 1** (in `step_begin`): The first drain. IO becomes ready, buffered logs flush, and queued functions run.
-- **Every Frame After**: The drain re-runs every queued function; hooks dispatch as the game plays.
+| Phase | What happens |
+| ----- | ------------ |
+| Game boot | Every installed file's top level runs, in unspecified order and memory-only. |
+| Frame 1, in `step_begin` | The first drain. IO becomes ready, buffered logs flush, and queued functions run. |
+| Every frame after | The drain re-runs every queued function, and hooks dispatch as the game plays. |
 
 ### Top-Level Boot
 
 Engine boot runs the top level of every installed file, mods and framework alike, in unspecified order. All top-level functions are hoisted and global, so entry points are callable from any mod regardless of load order.
 
-What belongs at the top level: `mmapi_mod_declare`, function definitions, hook registrations, and one latched `mmapi_register` call when the mod needs per-frame work or a first-safe-moment callback.
+The top level holds `mmapi_mod_declare`, function definitions, hook registrations, and one latched `mmapi_register` call when the mod needs per-frame work or a first-safe-moment callback.
 
-Attribution is captured when a registration runs. In a multi-file mod, keep executable top-level registrations immediately after `mmapi_mod_declare` in one central boot file; let the other files contain definitions only. Otherwise another file's declaration can become the current mod before your registration executes.
+Attribution is captured when a registration runs. In a multi-file mod, keep executable top-level registrations immediately after `mmapi_mod_declare` in one central boot file, and let the other files contain definitions only. Otherwise another file's declaration can become the current mod before your registration executes.
 
 ### The First Drain
 
@@ -114,7 +118,7 @@ The installed framework drains the `mmapi_register` queue from the game's step b
 
 ### Every Frame
 
-The queue is never cleared. A function queued with `mmapi_register` runs again **every frame, forever**. That makes it two things at once: the first safe moment for file IO, and the per-frame tick. It must be idempotent, so guard one-time work with a state flag:
+The queue is never cleared. A function queued with `mmapi_register` runs again **every frame, forever**. That makes it two things at once, the first safe moment for file IO and the per-frame tick. It must be idempotent, so guard one-time work with a state flag:
 
 ```gml
 function my_mod_tick() {
@@ -129,15 +133,15 @@ function my_mod_tick() {
 mmapi_register(my_mod_tick);
 ```
 
-The queue registration itself is not de-duplicated. Calling `mmapi_register(my_mod_tick)` twice creates two permanent records and runs the tick twice per frame, so keep it behind the registration latch. The every-frame re-run is deliberate. The engine rebuilds some instances mid-game (the clock on a new day, for example), and the next drain re-wraps them. Guard the wrap with a marker on whatever you wrap, and the re-run costs about nothing once installed.
+The queue registration itself is not de-duplicated. Calling `mmapi_register(my_mod_tick)` twice creates two permanent records and runs the tick twice per frame, so keep it behind the registration latch. For mods that wrap engine instances, the every-frame re-run is deliberate. The engine rebuilds some instances mid-game (the clock on a new day, for example), and the next drain re-wraps them. Guard the wrap with a marker on whatever you wrap, and the re-run costs about nothing once installed.
 
 A throwing queued function warns rate-limited, attributed to its mod, and the drain continues to the next one. The framework sets the current mod around each call, so hook registrations made inside the function attribute to the mod that queued it.
 
 ## User-Facing Text (Localization)
 
-Any text the player sees, such as notification toasts and injected UI strings, should be a **localization key**, not an English literal in your GML. Keys resolve through the engine's localizer, registered strings are real localizer entries that language packs can translate, and every engine-side lookup runs inside MMAPI's [local.get](hooks/local.get.md) filter chain. The pattern shipped mods converged on has three parts:
+Any text the player sees, such as notification toasts and injected UI strings, should be a **localization key**, not an English literal in your GML. Keys resolve through the engine's localizer, registered strings are real localizer entries that language packs can translate, and every engine-side lookup runs inside MMAPI's [local.get](hooks/local.get.md) filter chain. The recommended pattern has three parts:
 
-1. **Strings live in a fiddle file**, `fiddle/mods/<mod>/notifications.toml` (any path works; this is the convention):
+1. **Strings live in a fiddle file**, `fiddle/mods/<mod>/notifications.toml` (any path works, but this is the convention):
 
    ```toml
    something_happened = "Something happened!"
@@ -151,7 +155,7 @@ Any text the player sees, such as notification toasts and injected UI strings, s
    		"mods/my_mod/notifications" = ["*"]
    ```
 
-   MOMI's TOML merge folds this into the game's `localization/l10n.meta.toml`. Registered text is extracted into engine-minted loc slots and resolved by the real localizer (live-verified by shipped mods).
+   MOMI's TOML merge folds this into the game's `localization/l10n.meta.toml`. Registered text is extracted into engine-minted loc slots and resolved by the real localizer.
 
 3. **GML passes the derived key**, the file path minus `.toml`, plus the entry key:
 
@@ -159,17 +163,17 @@ Any text the player sees, such as notification toasts and injected UI strings, s
    create_notification("mods/my_mod/notifications/something_happened");
    ```
 
-Passing the **key**, not pre-localized text, matters beyond translation. Engine call sites like `create_notification` resolve the key inside the [local_get_dispatch](seams/local_get_dispatch.md) rewrite, so [local.get](hooks/local.get.md) filters can rewrite the text at display time (dynamic token substitution). Mod files are excluded from that rewrite, so pre-localizing in your own code via `ANCHOR.wrap_for_local(local_get(key))` compositions bypasses the whole filter surface; shipped mods hit exactly that failure live before converging on key-passing.
+Passing the **key**, not pre-localized text, matters beyond translation. Engine call sites like `create_notification` resolve the key inside the [local_get_dispatch](seams/local_get_dispatch.md) rewrite, so [local.get](hooks/local.get.md) filters can rewrite the text at display time (dynamic token substitution). Mod files are excluded from that rewrite, so pre-localizing in your own code via `ANCHOR.wrap_for_local(local_get(key))` compositions bypasses the whole filter surface.
 
 `ANCHOR.wrap_for_local("raw text")` remains the quick form for prototypes and genuinely one-off dynamic strings (vanilla uses it for quest-name toasts), but it is untranslatable and filter-invisible, so keep it out of shipped mods.
 
-One boundary note: t2 conversation text is a separate system, a line's `local` field is inline source text (a fiddle loc key placed there displays raw), and `fiddle_renames` does not apply to `t2/` files.
+One boundary note is that t2 conversation text is a separate system. A line's `local` field is inline source text, so a fiddle loc key placed there displays raw, and `fiddle_renames` does not apply to `t2/` files.
 
 ## Engine Behavior
 
-The engine behavior every mod must respect.
+These are the engine behaviors every mod must respect.
 
-### `mod` is a Reserved Word
+### `mod` Is a Reserved Word
 
 `mod` is the modulo operator in this dialect.
 
@@ -178,7 +182,7 @@ var mod = "my_mod"; // wrong: does not parse
 var mod_name = "my_mod"; // right
 ```
 
-### `is_struct` is False for Live Instances
+### `is_struct` Is False for Live Instances
 
 If a value can be a game object instance, `is_struct` alone rejects it.
 
@@ -196,7 +200,7 @@ if (variable_global_exists("__my_mod")) { } // wrong: not guaranteed on this run
 if (global[$ "__my_mod"] != undefined) { } // right
 ```
 
-### `string_split` With an Absent Delimiter returns `[]`
+### `string_split` With an Absent Delimiter Returns `[]`
 
 The shipped engine returns an empty array when the delimiter never appears, not a one-element array.
 

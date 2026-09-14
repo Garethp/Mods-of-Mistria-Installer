@@ -48,5 +48,6 @@ mmapi_filter("object.node_sprite", fresh_coat_object_node_sprite);
 
 - [camera.culls_processed](camera.culls_processed.md) - Re-apply sprite state to just-reactivated renderers.
 - [ui.item_icon](ui.item_icon.md) - Swap item icon sprites in the UI and world.
+- [furniture.preview_sprite](furniture.preview_sprite.md) - Swap the furniture placement ghost's sprites, which this hook cannot reach.
 - [object.interact](object.interact.md) - Take over grid-object interactions.
 - [resource.node_modifier](resource.node_modifier.md) - Change the charged-tool modifier on picks and chops.

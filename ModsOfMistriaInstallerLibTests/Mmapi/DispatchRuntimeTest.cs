@@ -89,4 +89,14 @@ public class DispatchRuntimeTest
         // edges on top, and a contradiction falls back rather than hanging.
         AssertBodyPasses("dispatch_ordering.gml");
     }
+
+    [Test]
+    public void ShouldTallyDispatchesWhileDebugIsEnabled()
+    {
+        // The liveness tally. Every dispatcher counts the dispatch site while
+        // debug is enabled, zero-handler dispatches included, and the report
+        // names the declared hooks that never fired. A session that never
+        // enables debug counts nothing and allocates nothing.
+        AssertBodyPasses("dispatch_liveness.gml");
+    }
 }

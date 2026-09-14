@@ -35,7 +35,10 @@ public class VerifyResult(bool ok, int seamCount, int engineFixCount, int callRe
 // so it stays literal English like the problems it carries (D16).
 public static class SeamVerifier
 {
-    public static VerifyResult Verify(IPristineSource pristine, SeamCatalog? catalog = null)
+    // `frameworkSources` defaults to the embedded framework payload. Tests pass
+    // their own, and an empty list skips the framework sweep.
+    public static VerifyResult Verify(IPristineSource pristine, SeamCatalog? catalog = null,
+        IReadOnlyList<(string Name, string Text)>? frameworkSources = null)
     {
         if (catalog is null)
         {
@@ -43,14 +46,23 @@ public static class SeamVerifier
             catalog = SeamCatalogLoader.Load(bytes, name);
         }
 
-        IReadOnlyList<SeamProblem> problems = [];
+        List<SeamProblem> problems = [];
         try
         {
             SeamStager.StageAll(catalog, pristine);
         }
         catch (SeamStagingException exception)
         {
-            problems = exception.Problems;
+            problems.AddRange(exception.Problems);
+        }
+
+        foreach (var read in FrameworkReads.Unresolved(pristine, frameworkSources))
+        {
+            problems.Add(new SeamProblem(
+                $"framework: mmapi/{read.File}:{read.Line} calls '{read.Name}' but this build "
+                + "neither defines nor calls it - the engine changed; the framework payload "
+                + "needs updating",
+                SeamProblemKind.Framework, File: $"mmapi/{read.File}", Line: read.Line));
         }
 
         return new VerifyResult(problems.Count == 0, catalog.Seams.Count, catalog.EngineFixes.Count,
