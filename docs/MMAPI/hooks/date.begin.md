@@ -85,7 +85,7 @@ Three pieces must be implemented together:
    ]
 ```
 
-The example's clause matches storms too, because a storm still writes the `weather` fact as `"rainy"`. In Winter the same weather writes `"snowy"` instead, so the clause never matches there. See [Weather Conditions](../RECIPES.md#weather-conditions) for the three variants.
+The example's clause matches storms too, because a storm still writes the `weather` fact as `"rainy"`. In Winter the same weather writes `"snowy"` instead, so the clause never matches there. See [Weather Conditions](../RECIPES.md#weather-conditions-world-fact) for the three variants.
 
 ```gml
 // The guard, keyed on your own fact. The fact name carries the date, so

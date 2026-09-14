@@ -5,10 +5,13 @@ public enum SeamProblemKind
     Anchor,
     Target,
     Wrap,
+    Reads,
+    Asset,
     Marker,
     Decode,
     MissingFile,
     CallRewrite,
+    Framework,
 }
 
 public static class SeamProblemKinds
@@ -20,10 +23,13 @@ public static class SeamProblemKinds
         SeamProblemKind.Anchor => "anchor",
         SeamProblemKind.Target => "target",
         SeamProblemKind.Wrap => "wrap",
+        SeamProblemKind.Reads => "reads",
+        SeamProblemKind.Asset => "asset",
         SeamProblemKind.Marker => "marker",
         SeamProblemKind.Decode => "decode",
         SeamProblemKind.MissingFile => "missing_file",
         SeamProblemKind.CallRewrite => "call_rewrite",
+        SeamProblemKind.Framework => "framework",
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 }

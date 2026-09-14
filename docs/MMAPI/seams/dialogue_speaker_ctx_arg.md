@@ -10,6 +10,7 @@ Threads the ConversationDriver into the initial Speaker action so `dialogue.spea
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml` |
 | **Locator** | text anchor on the driver's initial-speaker call to `process_t2_action(...)` |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`dialogue.speaker`](../hooks/dialogue.speaker.md) (no dispatch of its own) |
 | **Marker** | `mmapi_dialogue_initial_speaker_ctx` |
 

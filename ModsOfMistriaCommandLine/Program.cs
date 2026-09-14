@@ -7,6 +7,7 @@ using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Operations;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
+using Garethp.ModsOfMistriaInstallerLib.Store;
 using Garethp.ModsOfMistriaInstallerLib.Tools;
 
 var currentExe = Assembly.GetEntryAssembly();
@@ -43,6 +44,12 @@ switch (FlagValue(args, "--compile-check"))
 if (args.Contains("--seam-check") || args.Contains("--seam-check-json"))
 {
     Environment.Exit(RunSeamCheck(args));
+}
+
+// The seam diff likewise keeps stdout to the triage report alone.
+if (args.Contains("--seam-diff") || args.Contains("--seam-diff-json"))
+{
+    Environment.Exit(RunSeamDiff(args));
 }
 
 // Lint likewise: the stage's own log lines stay internal and the report is
@@ -153,6 +160,77 @@ static int RunSeamCheck(string[] args)
     Console.WriteLine(args.Contains("--seam-check-json")
         ? SeamVerifier.ToJson(result, zipPath!)
         : SeamVerifier.RenderText(result, zipPath!));
+    return result.ExitCode;
+}
+
+// --seam-diff [old.zip new.zip] / --seam-diff-json [old.zip new.zip] lists
+// every catalog region an update touched. With no archives, the located
+// install's pristine backup is the old side and its live assets.zip the new
+// side. Exit 0 when no region changed, 1 when any needs review, 2 when there is
+// nothing valid to compare.
+static int RunSeamDiff(string[] args)
+{
+    var flag = args.Contains("--seam-diff") ? "--seam-diff" : "--seam-diff-json";
+    var index = Array.IndexOf(args, flag);
+    List<string> zips = [];
+    for (var i = index + 1; i < args.Length && zips.Count < 2; i++)
+    {
+        if (args[i].StartsWith("--", StringComparison.Ordinal)) break;
+        zips.Add(args[i]);
+    }
+
+    string oldPath;
+    string newPath;
+    if (zips.Count == 2)
+    {
+        oldPath = zips[0];
+        newPath = zips[1];
+    }
+    else if (zips.Count == 0)
+    {
+        var mistriaLocation = MistriaLocator.GetMistriaLocation();
+        if (mistriaLocation is null)
+        {
+            Console.WriteLine(Resources.CoreMistriaNotFound);
+            return 2;
+        }
+
+        try
+        {
+            oldPath = SeamVerifier.LocateBackup(mistriaLocation);
+        }
+        catch (FileNotFoundException exception)
+        {
+            Console.WriteLine(exception.Message);
+            return 2;
+        }
+
+        newPath = new AssetsStore(mistriaLocation).LivePath;
+    }
+    else
+    {
+        Console.WriteLine("--seam-diff takes two archives (old new), or none to compare the "
+                          + "located install's pristine backup against its live assets.zip");
+        return 2;
+    }
+
+    SeamDiffResult result;
+    try
+    {
+        using var oldPristine = new ZipPristineSource(oldPath);
+        using var newPristine = new ZipPristineSource(newPath);
+        result = SeamDiffer.Diff(oldPristine, newPristine);
+    }
+    catch (FileNotFoundException exception)
+    {
+        Console.WriteLine(exception.Message);
+        return 2;
+    }
+
+    Console.WriteLine(args.Contains("--seam-diff-json")
+        ? SeamDiffer.ToJson(result, oldPath, newPath)
+        : SeamDiffer.RenderText(result, oldPath, newPath));
+    if (result.ModdedMarkers.Count > 0) return 2;
     return result.ExitCode;
 }
 
