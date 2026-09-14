@@ -45,8 +45,8 @@ function autumn_stump_furniture_preview_sprite(_value, _ctx) {
     if (_value == undefined) return undefined; // test undefined BEFORE anything else
     // This fires every frame while a placeable is held: decide on the sprite
     // first, and only read the calendar once you know the piece is yours.
-    if (_value != spr_autumn_stump_floor_spring) return undefined;
-    if (CALENDAR.season() == Season.Fall) return spr_autumn_stump_floor_autumn;
+    // if (_value != <your piece's spring sprite>) return undefined;
+    // if (CALENDAR.season() == Season.Fall) return <your piece's autumn sprite>;
     return undefined; // undefined = keep the game's value
 }
 
