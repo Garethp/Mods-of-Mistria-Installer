@@ -2,15 +2,15 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **128 hooks**, fed by **139 seams**, **7 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **133 hooks**, fed by **146 seams**, **8 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
-| Kind | Directive | The callback |
+| Kind | Directive | The Callback |
 | ---- | --------- | ------------ |
-| event | `mmapi_on` | Reacts to a moment; return ignored. The individual contract may allow context mutation. |
-| filter | `mmapi_filter` | Receives `(value, ctx)`; normally returns a replacement or `undefined` to keep. In-place hooks say when to mutate instead. |
-| guard | `mmapi_guard` | The Boolean value `false` vetoes; every other value allows. |
+| event | `mmapi_on` | Reacts to a moment, and the return is ignored. The individual contract may allow context mutation. |
+| filter | `mmapi_filter` | Receives `(value, ctx)` and normally returns a replacement or `undefined` to keep. In-place hooks say when to mutate instead. |
+| guard | `mmapi_guard` | The Boolean value `false` vetoes, and every other value allows. |
 | override | `mmapi_override` | First non-`undefined` return replaces the engine's answer. |
 
 ## Hooks
@@ -36,7 +36,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [dungeon.room_build_begin](hooks/dungeon.room_build_begin.md) | event | Know the last moment before a dungeon room is built. |
 | [dungeon.floor_built](hooks/dungeon.floor_built.md) | event | Know the moment a dungeon floor's room is fully built. |
 | [dungeon.ladder_spawn](hooks/dungeon.ladder_spawn.md) | guard | Block the descent ladder before it spawns. |
-| [dungeon.side_room_chance](hooks/dungeon.side_room_chance.md) | filter | Adjust the odds of dungeon side rooms. |
+| [dungeon.side_room_range](hooks/dungeon.side_room_range.md) | filter | Place dungeon side rooms nearer to or deeper than the entry floor. |
 | [dungeon.treasure_chest](hooks/dungeon.treasure_chest.md) | event | Know the moment a treasure chest starts its drop chain. |
 | [interact.elevator_action](hooks/interact.elevator_action.md) | guard | Block the dungeon elevator before its menu opens. |
 | [interact.ladder_down_action](hooks/interact.ladder_down_action.md) | guard | Stop a dungeon ladder descent before it starts. |
@@ -48,6 +48,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [quest.complete](hooks/quest.complete.md) | event | Know when a quest is completed. |
 | [furniture.place_guard](hooks/furniture.place_guard.md) | guard | Veto a furniture placement before it is written. |
 | [furniture.floor_sprite](hooks/furniture.floor_sprite.md) | filter | Swap a furniture piece's floor sprite as its renderer is built. |
+| [furniture.preview_sprite](hooks/furniture.preview_sprite.md) | filter | Swap the sprites the furniture placement preview draws, so the ghost agrees with the piece. |
 | [object.interact](hooks/object.interact.md) | override | Take over any grid object's interaction. |
 | [object.node_sprite](hooks/object.node_sprite.md) | filter | Swap the sprite of any world node before it draws. |
 | [store.item_added](hooks/store.item_added.md) | event | Know when an item lands in the shopping basket. |
@@ -73,7 +74,8 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [player.heal_vfx](hooks/player.heal_vfx.md) | guard | Block the player's heal sparkle before it plays. |
 | [player.pass_out](hooks/player.pass_out.md) | event | Know when the player passes out at the end of the day. |
 | [player.died](hooks/player.died.md) | event | Know when the player dies. |
-| [player.acquire_perk](hooks/player.acquire_perk.md) | event | Know when the player acquires a perk. |
+| [player.perk_acquired](hooks/player.perk_acquired.md) | event | Know when the player has acquired a perk. |
+| [player.perk_purchased](hooks/player.perk_purchased.md) | event | Know when the player buys a perk at a shrine. |
 | [player.skill_leveled](hooks/player.skill_leveled.md) | event | Know the moment the player levels up a skill. |
 | [renown.level_gained](hooks/renown.level_gained.md) | event | Know the moment the player gains a renown level. |
 | [renown.rank_gained](hooks/renown.rank_gained.md) | event | Know the moment the player reaches a new renown rank. |
@@ -126,6 +128,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [items.trashed](hooks/items.trashed.md) | event | Know the moment the player trashes an item. |
 | [items.dig_artifact](hooks/items.dig_artifact.md) | filter | Swap the artifact an archaeology dig spot yields. |
 | [items.treasure_distribution](hooks/items.treasure_distribution.md) | filter | Change what the dungeon treasure roll drops. |
+| [factory.product_drops](hooks/factory.product_drops.md) | filter | Change what an apiary or terrarium hands over for its requested item. |
 | [items.infusion_generate](hooks/items.infusion_generate.md) | guard | Stop a recipe from rolling infusions. |
 | [items.infusion_chance](hooks/items.infusion_chance.md) | filter | Change the odds that a crafted item rolls an infusion. |
 | [item.display_description](hooks/item.display_description.md) | filter | Reword the description an item's tooltip renders. |
@@ -150,6 +153,8 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [ui.backplate_sprite](hooks/ui.backplate_sprite.md) | filter | Swap the backplate sprites behind the mines menu and spell cards. |
 | [ui.preset_popup_layout](hooks/ui.preset_popup_layout.md) | filter | Resize the customization menu's preset popup frames and grid. |
 | [ui.relationship_row_built](hooks/ui.relationship_row_built.md) | event | Add custom nodes to each NPC row in the relationships journal. |
+| [ui.eod_calendar_events](hooks/ui.eod_calendar_events.md) | filter | Add to or trim the notifications under the end-of-day calendar. |
+| [ui.shrine_entry_is_acquired](hooks/ui.shrine_entry_is_acquired.md) | filter | Change whether a shrine entry counts as already bought. |
 | [dialogue.play_guard](hooks/dialogue.play_guard.md) | guard | Block a conversation before it starts. |
 | [dialogue.path](hooks/dialogue.path.md) | filter | Change which conversation plays before it starts. |
 | [dialogue.line](hooks/dialogue.line.md) | filter | Reword any dialogue line before the textbox shows it. |
@@ -182,9 +187,9 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [setup_title_entry](seams/setup_title_entry.md) | Emits the title-screen entry from Setup's create, right after the title menu is spawned, at boot and on quit-to-title. |
 | [camera_culls_processed](seams/camera_culls_processed.md) | Emits the end-of-cull moment so mods can refresh renderers the camera just reactivated. |
 | [dungeon_runner_created](seams/dungeon_runner_created.md) | Emits the birth of a dungeon run, after `DUNGEON_RUNNER` is constructed and before the first floor loads. |
-| [dungeon_floor_bracket](seams/dungeon_floor_bracket.md) | Brackets dungeon floor entry with three emits: floor enter, room-build begin, and floor built. |
+| [dungeon_floor_bracket](seams/dungeon_floor_bracket.md) | Brackets dungeon floor entry with three emits, for floor enter, room-build begin, and floor built. |
 | [dungeon_ladder_spawn](seams/dungeon_ladder_spawn.md) | Puts a veto check at the head of `spawn_ladder()`, before a floor's exit ladder appears. |
-| [dungeon_side_room_chance](seams/dungeon_side_room_chance.md) | Routes the side-room spawn chance through the filter chain before the per-floor roll. |
+| [dungeon_side_room_range](seams/dungeon_side_room_range.md) | Routes the floor span of a side room through the filter chain before the uniform floor pick. |
 | [dungeon_treasure_chest](seams/dungeon_treasure_chest.md) | Emits the moment a dungeon treasure chest starts its drop chain. |
 | [interact_elevator_action](seams/interact_elevator_action.md) | Puts a veto check on the elevator's interaction action, the press that opens the lift menu. |
 | [interact_ladder_down_action](seams/interact_ladder_down_action.md) | Puts a veto check on the ladder's descend action, before the sound and the floor change. |
@@ -199,6 +204,8 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [quest_complete](seams/quest_complete.md) | Emits inside `QuestLog.complete()` once the completion is validated, before the bookkeeping runs. |
 | [furniture_place_guard](seams/furniture_place_guard.md) | Puts a veto check in front of every furniture placement. |
 | [furniture_floor_sprite](seams/furniture_floor_sprite.md) | Filters the floor sprite as a furniture renderer is built. |
+| [furniture_preview_sprite](seams/furniture_preview_sprite.md) | Filters the main sprite the furniture placement preview is about to draw. |
+| [furniture_preview_floor_sprite](seams/furniture_preview_floor_sprite.md) | Filters the floor sprite the furniture placement preview is about to draw. |
 | [object_interact](seams/object_interact.md) | Puts a claim-scoped override in front of every grid-object interaction. |
 | [node_renderer_set_sprite](seams/node_renderer_set_sprite.md) | Filters the sprite every world node renderer is about to wear. |
 | [store_item_added](seams/store_item_added.md) | Announces every shelf tap that puts an item in the shopping basket. |
@@ -225,7 +232,8 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [player_heal_vfx](seams/player_heal_vfx.md) | Puts a veto check at the head of `play_heal_vfx()`. |
 | [player_pass_out](seams/player_pass_out.md) | Emits inside `pass_out()`, right after `end_day()`. |
 | [player_died](seams/player_died.md) | Emits on the final death path, right after the dying scene starts. |
-| [player_acquire_perk](seams/player_acquire_perk.md) | Emits at the head of `acquire_perk()`. |
+| [player_perk_acquired](seams/player_perk_acquired.md) | Emits at the end of `acquire_perk()`, after the perk flags, side effects, stats entry, and achievements refresh. |
+| [player_perk_purchased](seams/player_perk_purchased.md) | Emits at the end of the shrine's `purchase_entry()`, after the essence is spent and the perk is acquired. |
 | [renown_gains](seams/renown_gains.md) | Emits renown level and rank gains inside `set_renown()`, past its gains-only early return. |
 | [player_status_effect_register](seams/player_status_effect_register.md) | Filters every status effect's fields at the top of `register()`. |
 | [player_status_effect_cancel](seams/player_status_effect_cancel.md) | Emits at the head of `StatusEffectManager.cancel()`, before any lookup. |
@@ -282,6 +290,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [archaeology_dig_artifact](seams/archaeology_dig_artifact.md) | Wraps the artifact roll so every dig spot's yield passes through a filter. |
 | [items_treasure_distribution_none](seams/items_treasure_distribution_none.md) | Filters the treasure roll's empty exit so mods can inject a drop where there was none. |
 | [items_treasure_distribution_result](seams/items_treasure_distribution_result.md) | Filters the treasure roll's rolled result on its way out. |
+| [factory_product_drops](seams/factory_product_drops.md) | Gathers a factory's rolled products into one array and filters it before the first drop. |
 | [fish_chest_table_lookup](seams/fish_chest_table_lookup.md) | Resolves an opened chest's loot table, and announces the open before the drops. |
 | [items_infusion_generate](seams/items_infusion_generate.md) | Puts a veto check in front of a recipe's infusion generation. |
 | [items_infusion_chance](seams/items_infusion_chance.md) | Filters the infusion roll chance in `craft_into()`, hoisted out of the roll condition before `chance_percent` consumes it. |
@@ -314,6 +323,9 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [ui_backplate_sprite_spell_card](seams/ui_backplate_sprite_spell_card.md) | Routes each spell card's backplate sprite through a filter. |
 | [ui_preset_popup_layout](seams/ui_preset_popup_layout.md) | Rebuilds the preset popup's layout constants through a filter each time the popup body is generated. |
 | [ui_relationship_row_built](seams/ui_relationship_row_built.md) | Hands each finished NPC row to mods as the relationships journal builds its list. |
+| [ui_eod_calendar_events](seams/ui_eod_calendar_events.md) | Filters the end-of-day calendar's event List between its gathering and the row build. |
+| [ui_eod_notification_custom_entry](seams/ui_eod_notification_custom_entry.md) | Adds the row builder's default branch so an entry added by a filter declares its own key, icon, and NPCs. |
+| [ui_shrine_entry_is_acquired](seams/ui_shrine_entry_is_acquired.md) | Wraps the shrine menu's `entry_is_acquired()` so mods get the last word on whether an entry counts as bought. |
 | [dialogue_play_guard](seams/dialogue_play_guard.md) | Puts a veto check at the head of `play_conversation()`. |
 | [dialogue_path](seams/dialogue_path.md) | Rebuilds `play_conversation()`'s four arguments through the `dialogue.path` filter. |
 | [dialogue_line](seams/dialogue_line.md) | Filters each localized dialogue line before the textbox shows it. |
@@ -339,6 +351,7 @@ Hook-less edits the catalog also carries:
 | [fish_chest_custom_rarity](seams/fish_chest_custom_rarity.md) | engine fix | Makes an unknown chest rarity a no-op in the fishing distribution build instead of a Setup crash. |
 | [customization_color_popup_scrollable](seams/customization_color_popup_scrollable.md) | engine fix | Wraps the customization colour popup's swatch grid in a capped-height scroller when it exceeds 7 rows, so LUTs widened past the vanilla colour count stay on-screen. |
 | [pet_appearance_popup_scrollable](seams/pet_appearance_popup_scrollable.md) | engine fix | Wraps the pet "Select an Appearance" variant grid in the same capped-height scroller when it exceeds 7 rows, so pet-skin mods that add many variants stay on-screen. |
+| [store_pet_cosmetic_entry](seams/store_pet_cosmetic_entry.md) | engine fix | Lets a store stock entry declaring `pet_cosmetic` sell a pet cosmetic set, validated against the merged set list at Setup. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Growing The Catalog

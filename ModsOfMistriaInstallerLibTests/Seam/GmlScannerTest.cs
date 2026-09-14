@@ -240,4 +240,23 @@ public class GmlScannerTest
 
         Assert.That(WriteNames(source), Is.EqualTo(new[] { ("real", true) }));
     }
+
+    [Test]
+    public void ShouldFindTheInnermostEnclosingFunction()
+    {
+        var inNested = GmlScanner.EnclosingFunction(Source, Source.IndexOf("return kind", StringComparison.Ordinal));
+        Assert.That(inNested!.Name, Is.EqualTo("describe"));
+
+        var inOuterOnly = GmlScanner.EnclosingFunction(Source, Source.IndexOf("/* block", StringComparison.Ordinal));
+        Assert.That(inOuterOnly!.Name, Is.EqualTo("outer"));
+
+        var inSibling = GmlScanner.EnclosingFunction(Source, Source.IndexOf("wrap(value)", StringComparison.Ordinal));
+        Assert.That(inSibling!.Name, Is.EqualTo("helper"));
+    }
+
+    [Test]
+    public void ShouldReturnNullAtTheTopLevel()
+    {
+        Assert.That(GmlScanner.EnclosingFunction(Source, 0), Is.Null);
+    }
 }

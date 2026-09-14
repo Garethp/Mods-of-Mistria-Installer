@@ -9,17 +9,18 @@ Mods talk to the game through **named hooks**, which are moments in game code MM
 
 ## Table of Contents
 
-| Page | What it Covers |
+| Page | What It Covers |
 | ---- | -------------- |
 | [Quick Start](QUICK_START.md) | Build and install a working mod end to end in a few minutes. |
 | [Hooks](HOOKS.md) | The named-hook engine. The four hook kinds, registration, ordering, dispatch, and error isolation. |
 | [Seams](SEAMS.md) | How hooks come to exist. The seam catalog, contributor authoring reference, application pipeline, and game-update checks. |
 | [Catalog](CATALOG.md) | Every hook and seam the catalog declares, each with its own page. |
 | [Mod Anatomy](MOD_ANATOMY.md) | The mod folder, the boot file skeleton, the lifecycle, and the engine quirks every mod must respect. |
-| [The Manifest](MANIFEST.md) | The JSON and TOML manifest fields a GML mod uses, and how MOMI validates them. |
-| [API Reference](API_REFERENCE.md) | The `mmapi_*` helper areas: config, logging, per-save data, hotkeys, localization, combat, cross-mod coordination, and calling the engine directly. |
+| [The Manifest](MANIFEST.md) | The manifest fields a GML mod uses, and how MOMI validates them. |
+| [API Reference](API_REFERENCE.md) | The `mmapi_*` helper areas, covering config, logging, per-save data, hotkeys, localization, combat, cross-mod coordination, and calling the engine directly. |
 | [Recipes](RECIPES.md) | Common tasks done with a direct engine call, no hook needed. |
 | [Treasure Chests](TREASURE_CHESTS.md) | Add custom treasure chests with unique loot tables in plain fiddle data. |
+| [Pet Cosmetics](PET_COSMETICS.md) | Sell pet cosmetic sets from any store's stock in plain fiddle data. |
 | [Debug](DEBUG.md) | The in-game debug agent. Using and setting watches, breakpoints, pause and step, and debugger-callable functions. |
 | [Troubleshooting](TROUBLESHOOTING.md) | Why a mod was skipped, a handler did not fire, or a game update broke it. |
 | [Glossary](GLOSSARY.md) | Plain-language definitions of the terms used throughout. |
@@ -32,12 +33,12 @@ Every hook has exactly one **kind**, and each kind has its own registration **di
 
 | Kind | Directive | The Callback's Contract |
 | ---- | --------- | ----------------------- |
-| event | `mmapi_on` | Reacts to a named moment. Receives `ctx`; the return value is ignored. An individual contract may allow context mutation. |
-| filter | `mmapi_filter` | Receives `(value, ctx)`. Normally returns a replacement value, or `undefined` to keep the current one; hooks declared in place require mutation instead. |
-| guard | `mmapi_guard` | Receives `ctx`. Only the Boolean value `false` vetoes; every other value allows. |
+| event | `mmapi_on` | Reacts to a named moment. Receives `ctx`, and the return value is ignored. An individual contract may allow context mutation. |
+| filter | `mmapi_filter` | Receives `(value, ctx)`. Normally returns a replacement value, or `undefined` to keep the current one. Hooks declared in place require mutation instead. |
+| guard | `mmapi_guard` | Receives `ctx`. Only the Boolean value `false` vetoes, and every other value allows. |
 | override | `mmapi_override` | Receives `ctx`. Returns a value to replace the engine's whole answer, or `undefined` to defer. The first non-`undefined` result wins. |
 
-Registering with the wrong directive is the classic mistake: the handler never runs, and the only clue is a warning in the log. See [Hooks](HOOKS.md).
+Registering with the wrong directive is the classic mistake. The handler never runs, and the only clue is a warning in the log. See [Hooks](HOOKS.md).
 
 ### The Lifecycle
 
@@ -56,7 +57,7 @@ A throwing **filter** keeps the current value, a throwing **guard** counts as al
 ### Logging
 
 > [!NOTE]
-> The Fields of Mistria runtime limits where mods are capable of writing files to. The `%LOCALAPPDATA%/FieldsOfMistria` directory used by the game is the only confirmed write-approved location. To account for this, MMAPI automatically scopes all writes to the `/mod_data` sub-directory it creates.
+> The Fields of Mistria runtime limits where mods can write files. The `%LOCALAPPDATA%/FieldsOfMistria` directory the game uses is the only confirmed write-approved location, so MMAPI scopes every write to the `mod_data` subdirectory it creates there.
 
 Each mod automatically gets its own log file at `%LOCALAPPDATA%/FieldsOfMistria/mod_data/<mod>/logs/<mod>.log` adjacent to the game's save directory, plus colored console output.
 

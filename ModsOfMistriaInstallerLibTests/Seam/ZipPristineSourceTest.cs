@@ -73,6 +73,23 @@ public class ZipPristineSourceTest
     }
 
     [Test]
+    public void ShouldInventoryAssetIdentifiers()
+    {
+        WriteZip(
+            "assets/animations/UI/spr_backplate.meta.toml",
+            "assets/animations/UI/spr_backplate.png",
+            "assets/animations/UI/readme.meta.toml",
+            "assets/tiled/rooms/Farm/rm_barn.meta.toml",
+            "assets/gml/objects/things/obj_crate.gml",
+            "assets/gml/scripts/Helper.gml");
+
+        using var pristine = new ZipPristineSource(_zipPath);
+
+        var names = pristine.AssetNames();
+        Assert.That(names, Is.EquivalentTo(new[] { "spr_backplate", "rm_barn", "obj_crate" }));
+    }
+
+    [Test]
     public void ShouldListGmlFilesSorted()
     {
         WriteZip("assets/gml/objects/B.gml", "assets/gml/objects/A.gml", "assets/sprites/x.png",

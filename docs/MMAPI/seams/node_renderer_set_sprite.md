@@ -28,4 +28,5 @@ Note that a renderer reactivated by camera culling carries its last `sprite_inde
 
 - [object.node_sprite](../hooks/object.node_sprite.md) - This is the hook this seam dispatches.
 - [camera_culls_processed](camera_culls_processed.md) - This is the post-cull event that lets sprite overrides survive scroll-in reactivation.
+- [furniture_preview_sprite](furniture_preview_sprite.md) - This is the filter on the placement ghost's main sprite, the one draw path a node renderer never sees.
 - [pick_node_modifier](pick_node_modifier.md) - This seam is the resource-node tool-modifier filter on pick.
