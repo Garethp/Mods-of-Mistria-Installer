@@ -49,8 +49,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 133
-seams = 146
+hooks = 134
+seams = 147
 engine_fixes = 8
 call_rewrites = 1
 
@@ -731,6 +731,11 @@ doc  = "Fires at the end of DragonShrineMenu.purchase_entry(entry), after the sh
 name = "ui.shrine_entry_is_acquired"
 kind = "filter"
 doc  = "Fires at the return of DragonShrineMenu.entry_is_acquired(entry). The filtered value is the boolean the shrine menus use to treat an entry as already bought, which pristine reads straight from ARI.perks[entry.perk]. ctx is { perk }, the entry's Perk enum id. Return the replacement boolean, or undefined to keep the current value. The menu asks this for every tile on the tier screen every frame, and the answer picks the tile's tint, decides whether the entry popup offers the Learn button or the Enable and Disable toggle, and shows or hides the cost. Forcing false on an owned perk lets the player buy it again, which spends the essence and runs Ari.acquire_perk() as a re-grant. Forcing true hides the Learn button without writing ARI.perks. The perk's effect is never read through this predicate."
+
+[[hook]]
+name = "dialogue.conversation_finished"
+kind = "event"
+doc  = "Fires at the end of ConversationDriver.finish_conversation(), after the conversation's end actions have run through process_t2_action(), after the driver has closed its textbox or started the textbox's closing animation, and after the driver's state is set to ConversationDriverState.Finished. ctx is { driver, conversation_name, npc_id, end_actions }: driver is the ConversationDriver that finished, conversation_name is the t2 conversation name it was built with, npc_id is its npc_owner, and end_actions is the array of T2Action structs that T2R.conversation_end() returned for the conversation. Observation only. Every entry in end_actions has already run, so the array is a record of what the end did. A conversation's end actions are the actions list on its own table in the t2 file, the [name] table that also carries kind, requires, and writes, plus the SpokeTo action the runtime adds for the owner. An actions list on a numbered line table, [name.N], runs when that line is delivered and is not repeated here. Fires once per ConversationDriver that finishes, whether play_conversation() built it, the cutscene runtime built it, or the debug CLI built it. A cutscene that swaps conversations with set_conversation finishes one driver per conversation, and a skipped cutscene still finishes its driver through this function. A driver dropped before it finishes never fires. The finished textbox is still in ANCHOR.open_menus when handlers run, so a conversation started from a handler must wait for it to leave."
 
 # --- seams -------------------------------------------------------------------------
 
@@ -3744,6 +3749,21 @@ ctx     = "{ perk: entry.perk }"
 blank_before = true
 catch_var = "__mmapi_shrine_acquired"
 marker  = "mmapi_ui_shrine_entry_is_acquired"
+
+[[seam]]
+id      = "dialogue_conversation_finished"
+file    = "gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml"
+target  = { fn = "finish_conversation", at = "after", anchor = "self.state = ConversationDriverState.Finished;" }
+op      = "emit"
+hook    = "dialogue.conversation_finished"
+ctx_fields = [
+    ["driver", "self"],
+    ["conversation_name", "self.conversation_name"],
+    ["npc_id", "self.npc_owner"],
+    ["end_actions", "end_actions"],
+]
+indent  = 8
+marker  = "mmapi_dialogue_run_conversation_finished"
 
 # --- call rewrites -----------------------------------------------------------------
 

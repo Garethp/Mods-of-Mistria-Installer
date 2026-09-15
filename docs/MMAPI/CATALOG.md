@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **133 hooks**, fed by **146 seams**, **8 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **134 hooks**, fed by **147 seams**, **8 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -161,6 +161,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [dialogue.speaker](hooks/dialogue.speaker.md) | filter | Swap the speaker a textbox shows. |
 | [dialogue.npc_blip](hooks/dialogue.npc_blip.md) | filter | Swap the blip sound an NPC speaks with. |
 | [dialogue.romance_prompt_guard](hooks/dialogue.romance_prompt_guard.md) | guard | Grey and lock a pink romance prompt for your own reasons. |
+| [dialogue.conversation_finished](hooks/dialogue.conversation_finished.md) | event | Know when a conversation has finished. |
 | [audio.play_guard](hooks/audio.play_guard.md) | guard | Block any sound effect before it plays. |
 | [audio.music_selector](hooks/audio.music_selector.md) | filter | Swap the dungeon biome music track. |
 | [local.get](hooks/local.get.md) | filter | Reword any localized text the game looks up. |
@@ -333,6 +334,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [dialogue_speaker_ctx_arg](seams/dialogue_speaker_ctx_arg.md) | Threads the ConversationDriver into the initial Speaker action so `dialogue.speaker`'s ctx is filled from line one. |
 | [dialogue_npc_blip](seams/dialogue_npc_blip.md) | Filters an NPC speaker's blip sound right after the default lookup. |
 | [dialogue_romance_prompt_guard](seams/dialogue_romance_prompt_guard.md) | Puts a veto check beside the vanilla marriage lock as a pink prompt is styled. |
+| [dialogue_conversation_finished](seams/dialogue_conversation_finished.md) | Emits at the end of `finish_conversation()`, after the end actions, the textbox close, and the state write. |
 | [audio_play_guard](seams/audio_play_guard.md) | Puts a veto check at the head of the engine's one sound-effect entry point. |
 | [audio_music_selector](seams/audio_music_selector.md) | Puts a filter on the dungeon biome music track as the scene selector picks it. |
 | [input_check_value_id](seams/input_check_value_id.md) | Puts a filter on the input id at the head of the engine's input value lookup. |
