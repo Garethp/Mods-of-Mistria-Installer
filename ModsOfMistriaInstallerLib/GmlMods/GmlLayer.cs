@@ -1,4 +1,5 @@
 using System.Text;
+using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.Lang;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
 using Garethp.ModsOfMistriaInstallerLib.Tools;
@@ -16,15 +17,17 @@ public class GmlLayerOptions
 }
 
 // Stages the whole GML layer in memory: the mmapi framework, each behavioural
-// mod's gml, the seamed engine files and the generated hook catalog. Nothing
+// mod's gml, the seamed engine files and the generated catalogs. Nothing
 // is written; a stale anchor throws before the store is touched, and every
 // mod-content failure excludes that one mod and proceeds (D12).
 public static class GmlLayer
 {
     public static GmlLayerPlan Stage(SeamCatalog catalog, IPristineSource pristine,
-        IReadOnlyList<GmlModCode> mods, ICompileGate? gate, GmlLayerOptions? options = null)
+        IReadOnlyList<GmlModCode> mods, ICompileGate? gate, GmlLayerOptions? options = null,
+        MonsterCollection? monsters = null)
     {
         options ??= new GmlLayerOptions();
+        monsters ??= MonsterCollection.Empty;
         var plan = new GmlLayerPlan();
 
         // 1. The mmapi framework, delivered verbatim (MMAPI-001..015)
@@ -91,8 +94,11 @@ public static class GmlLayer
                 [string.Format(Resources.CoreModRequiresMissingHooks, string.Join(", ", missing))]);
         }
 
-        // 6. The three lints; StrictLints escalates file-bearing findings into
-        //    exclusions, file-less cross-mod findings stay warnings (D12)
+        // 6. The four lints; StrictLints escalates file-bearing findings into
+        //    exclusions, file-less findings stay warnings (D12)
+        var survivingMonsters = monsters.WithoutMods(
+            plan.Excluded.Select(excluded => excluded.Mod.Mod).ToHashSet());
+        plan.Findings.AddRange(survivingMonsters.Findings);
         plan.Findings.AddRange(GmlModLint.LintHooks(survivors, catalog));
         plan.Findings.AddRange(GmlModLint.LintSymbols(survivors, symbols));
         plan.Findings.AddRange(GmlModLint.LintMmapiCalls(survivors, symbols, treeExports));
@@ -115,7 +121,19 @@ public static class GmlLayer
         // 7. The compile gate, against staged bytes materialised to a scratch
         //    dir. The shared set failing is a framework or catalog bug and
         //    throws; a single mod's failure excludes that mod.
-        if (gate is not null) RunGate(gate, plan, stage.Files, survivors);
+        if (gate is not null)
+        {
+            survivingMonsters = monsters.WithoutMods(
+                plan.Excluded.Select(excluded => excluded.Mod.Mod).ToHashSet());
+            AddMonsterRegistry(plan, survivingMonsters);
+            RunGate(gate, plan, stage.Files, survivors);
+        }
+
+        // Only surviving mods participate in cross-mod object conflicts.
+        ExcludeMonsterObjectConflicts(plan, survivors, monsters);
+        survivingMonsters = monsters.WithoutMods(
+            plan.Excluded.Select(excluded => excluded.Mod.Mod).ToHashSet());
+        AddMonsterRegistry(plan, survivingMonsters);
 
         if (options.FailOnSkip && plan.Excluded.Count > 0)
         {
@@ -127,6 +145,35 @@ public static class GmlLayer
 
         plan.Survivors.AddRange(survivors);
         return plan;
+    }
+
+    private static void AddMonsterRegistry(GmlLayerPlan plan, MonsterCollection monsters)
+    {
+        if (monsters.Definitions.Count == 0)
+        {
+            plan.Added.Remove(MonsterRegistryRenderer.RegistryRel);
+            return;
+        }
+
+        plan.Added[MonsterRegistryRenderer.RegistryRel] =
+            Encoding.UTF8.GetBytes(MonsterRegistryRenderer.Render(monsters));
+    }
+
+    private static void ExcludeMonsterObjectConflicts(GmlLayerPlan plan,
+        List<GmlModCode> survivors, MonsterCollection monsters)
+    {
+        var conflicts = MonsterGmlDeclarations.FindObjectConflicts(
+            survivors.Select(mod => mod.Mod).ToList(), monsters);
+        foreach (var mod in survivors.ToList())
+        {
+            var reasons = conflicts.Where(problem => problem.Mod == mod.Mod)
+                .Select(problem => $"{problem.File}: {problem.Message}")
+                .ToList();
+            if (reasons.Count == 0) continue;
+
+            survivors.Remove(mod);
+            Exclude(plan, mod, reasons);
+        }
     }
 
     private static void RunGate(ICompileGate gate, GmlLayerPlan plan,

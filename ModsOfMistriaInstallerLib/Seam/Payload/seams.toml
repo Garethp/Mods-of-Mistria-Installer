@@ -51,7 +51,7 @@ version = 2
 [counts]
 hooks = 133
 seams = 146
-engine_fixes = 8
+engine_fixes = 11
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -4009,3 +4009,43 @@ replace = '''
     assert_neq(item, undefined, "Failed to parse an item out of '{}'", entry);
 '''
 marker  = "mmapi_store_pet_cosmetic_entry"
+
+[[engine_fix]]
+name    = "monster_custom_save_filter"
+file    = "gml/scripts/Serialization/SaveGame.gml"
+anchor  = '''
+        monsters_killed: array_to_struct(ARI.monsters_killed, monster_id_to_string),'''
+replace = '''
+        monsters_killed: mmapi_monster_save_kills(ARI.monsters_killed), // mmapi_monster_save_filter'''
+marker  = "mmapi_monster_save_filter"
+
+# A save can contain a monster name that no longer exists after a mod is
+# removed. The vanilla loader indexes with that result, so let MMAPI skip it
+# and log the missing name.
+[[engine_fix]]
+name    = "monster_custom_load_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    apply_struct_to_array(
+        ARI.monsters_killed,
+        files.player[$ "monsters_killed"] ?? {},
+        try_string_to_monster_id,
+    );'''
+replace = '''
+    mmapi_monster_load_kills(ARI.monsters_killed,
+        files.player[$ "monsters_killed"] ?? {}); // mmapi_monster_load_kills_guard'''
+marker  = "mmapi_monster_load_kills_guard"
+
+# The vanilla prototype builder only visits MonsterCategory values. Let MMAPI
+# append the categories MOMI collected after the native prototypes are built.
+[[engine_fix]]
+name    = "monster_custom_category_prototypes"
+file    = "gml/scripts/Combat/Monsters.gml"
+anchor  = '''
+    return monster_prototypes;
+}'''
+replace = '''
+    monster_prototypes = __mmapi_monster_build_custom_prototypes(monster_prototypes); // mmapi_monster_custom_category_prototypes
+    return monster_prototypes;
+}'''
+marker  = "mmapi_monster_custom_category_prototypes"

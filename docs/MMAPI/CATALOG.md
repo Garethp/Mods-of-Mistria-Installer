@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **133 hooks**, fed by **146 seams**, **8 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **133 hooks**, fed by **146 seams**, **11 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -352,6 +352,9 @@ Hook-less edits the catalog also carries:
 | [customization_color_popup_scrollable](seams/customization_color_popup_scrollable.md) | engine fix | Wraps the customization colour popup's swatch grid in a capped-height scroller when it exceeds 7 rows, so LUTs widened past the vanilla colour count stay on-screen. |
 | [pet_appearance_popup_scrollable](seams/pet_appearance_popup_scrollable.md) | engine fix | Wraps the pet "Select an Appearance" variant grid in the same capped-height scroller when it exceeds 7 rows, so pet-skin mods that add many variants stay on-screen. |
 | [store_pet_cosmetic_entry](seams/store_pet_cosmetic_entry.md) | engine fix | Lets a store stock entry declaring `pet_cosmetic` sell a pet cosmetic set, validated against the merged set list at Setup. |
+| [monster_custom_category_prototypes](seams/monster_custom_category_prototypes.md) | engine fix | Builds the prototypes for custom monster categories after the game finishes its own. |
+| [monster_custom_save_filter](seams/monster_custom_save_filter.md) | engine fix | Writes only built-in `MonsterId` names into the game's kill-count save data. |
+| [monster_custom_load_tolerance](seams/monster_custom_load_tolerance.md) | engine fix | Logs and skips a saved monster name that is no longer available. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Growing The Catalog

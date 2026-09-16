@@ -70,22 +70,44 @@ public class ModInstaller
         var store = new AssetsStore(_fomLocation);
         store.EnsureBackup();
 
-        // Stage the GML layer before the rebuild. The layer stages on every
-        // install that has mods selected, so the catalog's engine fixes and
-        // the framework land even when every mod is content-only. A
-        // mod-content failure excludes only that mod. When a game build
-        // itself deviates from the catalog, every GML mod is skipped whole
-        // and the content-only install proceeds.
+        // Stage the GML layer before the rebuild. Custom monsters need its
+        // generated catalog and engine fixes even when the mod has no GML.
+        // A stale seam catalog still leaves unrelated content mods installable.
         var result = new InstallResult();
         GmlLayerPlan? plan = null;
         var installMods = mods;
-        var gmlMods = mods.Select(GmlModCollector.Collect).OfType<GmlModCode>().ToList();
-        if (mods.Count > 0)
+        var monsters = MonsterCollection.Empty;
+
+        if (mods.Any(MonsterDefinitionCollector.HasMonsterContent))
+        {
+            using var pristine = new ZipPristineSource(store.BackupPath);
+            monsters = MonsterDefinitionCollector.Collect(mods, pristine);
+
+            foreach (var rejection in monsters.Problems.GroupBy(problem => problem.Mod))
+            {
+                foreach (var problem in rejection)
+                {
+                    rejection.Key.GetValidation().AddError(
+                        rejection.Key, problem.File, problem.Message);
+                    Logger.Log($"  ! skipped mod '{rejection.Key.GetId()}' "
+                               + $"v{rejection.Key.GetVersion()}: "
+                               + $"{problem.File}: {problem.Message}");
+                }
+                result.Skipped.Add(new SkippedMod(
+                    rejection.Key.GetId(), rejection.Key.GetVersion(),
+                    rejection.Select(problem => $"{problem.File}: {problem.Message}").ToList()));
+            }
+            var rejected = monsters.Problems.Select(problem => problem.Mod).ToHashSet();
+            installMods = mods.Where(mod => !rejected.Contains(mod)).ToList();
+        }
+
+        var gmlMods = installMods.Select(GmlModCollector.Collect).OfType<GmlModCode>().ToList();
+        if (installMods.Count > 0)
         {
             phase("", "Preparing GML layer");
             try
             {
-                plan = StageGmlLayer(store, gmlMods, gmlOptions, gateMode);
+                plan = StageGmlLayer(store, gmlMods, gmlOptions, gateMode, monsters);
             }
             catch (SeamStagingException exception)
             {
@@ -95,14 +117,17 @@ public class ModInstaller
                 // The full anchor report goes to the log; the mods carry the
                 // short reason
                 Logger.Log(exception.Message);
-                foreach (var gmlMod in gmlMods)
+                var layerDependentMods = gmlMods.Select(gmlMod => gmlMod.Mod)
+                    .Concat(monsters.Definitions.Select(definition => definition.Mod))
+                    .ToHashSet();
+                foreach (var mod in installMods.Where(layerDependentMods.Contains))
                 {
-                    gmlMod.Mod.GetValidation().AddError(gmlMod.Mod, "gml", Resources.CoreGameGmlChanged);
-                    result.Skipped.Add(new SkippedMod(gmlMod.Id, gmlMod.Version, [Resources.CoreGameGmlChanged]));
+                    mod.GetValidation().AddError(mod, "gml", Resources.CoreGameGmlChanged);
+                    result.Skipped.Add(new SkippedMod(
+                        mod.GetId(), mod.GetVersion(), [Resources.CoreGameGmlChanged]));
                 }
 
-                var gmlModSet = gmlMods.Select(g => g.Mod).ToHashSet();
-                installMods = mods.Where(m => !gmlModSet.Contains(m)).ToList();
+                installMods = installMods.Where(mod => !layerDependentMods.Contains(mod)).ToList();
             }
         }
 
@@ -118,8 +143,10 @@ public class ModInstaller
             }
 
             var excludedMods = plan.Excluded.Select(e => e.Mod.Mod).ToHashSet();
-            installMods = mods.Where(m => !excludedMods.Contains(m)).ToList();
+            installMods = installMods.Where(m => !excludedMods.Contains(m)).ToList();
         }
+
+        LogMonsterDefinitions(monsters.ForMods(installMods.ToHashSet()));
 
         _fileModifier = store.BeginRebuild();
         _fileModifier.Write("manifest.toml", "");
@@ -173,13 +200,29 @@ public class ModInstaller
     }
 
     private GmlLayerPlan StageGmlLayer(AssetsStore store, List<GmlModCode> gmlMods,
-        GmlLayerOptions? gmlOptions, CompileGateMode gateMode)
+        GmlLayerOptions? gmlOptions, CompileGateMode gateMode, MonsterCollection monsters)
     {
         var (catalogName, catalogBytes) = PayloadResolver.SeamCatalog();
         var catalog = SeamCatalogLoader.Load(catalogBytes, catalogName);
 
         using var pristine = new ZipPristineSource(store.BackupPath);
-        return GmlLayer.Stage(catalog, pristine, gmlMods, GmlCompileGate.Resolve(gateMode), gmlOptions);
+        return GmlLayer.Stage(catalog, pristine, gmlMods,
+            GmlCompileGate.Resolve(gateMode), gmlOptions, monsters);
+    }
+
+    private static void LogMonsterDefinitions(MonsterCollection monsters)
+    {
+        if (monsters.VanillaPatchCount == 0 && monsters.Definitions.Count == 0) return;
+
+        Logger.Log($"  monster content: {monsters.VanillaPatchCount} vanilla patch(es), "
+                   + $"{monsters.Definitions.Count} custom monster(s), "
+                   + $"{monsters.Categories.Count} custom category declaration(s)");
+        foreach (var category in monsters.Categories)
+            Logger.Log($"    category '{category.Key}' from {category.Mod.GetId()}: "
+                       + string.Join(", ", category.States));
+        foreach (var definition in monsters.Definitions)
+            Logger.Log($"    monster '{definition.Key}' from {definition.Mod.GetId()}: "
+                       + $"{definition.Category} / {definition.ObjectName}");
     }
 
     public void Uninstall()

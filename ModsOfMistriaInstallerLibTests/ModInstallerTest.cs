@@ -102,6 +102,27 @@ public class ModInstallerTest
     }
 
     [Test]
+    public void ShouldSkipAnInvalidMonsterModWholeAndInstallTheRest()
+    {
+        var good = ContentMod("contentmod");
+        var bad = new MockMod(new Dictionary<string, object>
+        {
+            ["fiddle/monsters/unknown_category.toml"] = "[new_monster]\nhp = 10\n",
+        }) { Id = "badmonster", Name = "badmonster", Author = "tester" };
+
+        var result = new ModInstaller(_fom, "").InstallMods([good, bad], (_, _) => { },
+            gateMode: CompileGateMode.Off);
+
+        Assert.That(result.Installed, Is.EqualTo(new IMod[] { good }));
+        Assert.That(result.Skipped.Single().Id, Is.EqualTo("badmonster"));
+        Assert.That(result.Skipped.Single().Reasons,
+            Has.Some.Contains("has no matching momi/monster_categories/unknown_category.toml"));
+        Assert.That(bad.GetValidation().Errors.Any(error => error.Message.Contains("unknown_category")),
+            Is.True);
+        Assert.That(GameManifestIds(), Is.EqualTo(new[] { "contentmod" }));
+    }
+
+    [Test]
     public void ShouldStageTheLayerForAContentOnlyInstall()
     {
         // The layer stages on every install that has mods selected, so the
@@ -118,6 +139,32 @@ public class ModInstallerTest
         Assert.That(live.GetEntry("assets/gml/scripts/mmapi/mmapi.gml"), Is.Not.Null,
             "a content-only install must still stage the layer");
         Assert.That(live.GetEntry("manifest.toml"), Is.Not.Null);
+    }
+
+    [Test]
+    public void ShouldInstallAContentOnlyMonsterInABuiltInCategory()
+    {
+        var mod = new MockMod(new Dictionary<string, object>
+        {
+            ["fiddle/monsters/shroom.toml"] = """
+                [glow_shroom]
+                [glow_shroom.sprites]
+                idle = "spr_native"
+                """,
+        }) { Id = "glowshroom", Name = "glowshroom", Author = "tester" };
+
+        var result = new ModInstaller(_fom, "").InstallMods([mod], (_, _) => { },
+            gateMode: CompileGateMode.Off);
+
+        Assert.That(result.Installed, Is.EqualTo(new IMod[] { mod }));
+        Assert.That(result.Skipped, Is.Empty);
+        using var live = ZipFile.OpenRead(new AssetsStore(_fom).LivePath);
+        Assert.That(ReadEntry(live, "assets/fiddle/monsters/shroom.toml"),
+            Does.Contain("[glow_shroom]"));
+        Assert.That(ReadEntry(live, MonsterRegistryRenderer.RegistryRel),
+            Does.Contain("__mmapi_custom_monster_owners[$ \"glow_shroom\"] = \"glowshroom\";"));
+        Assert.That(live.Entries.Any(entry => entry.FullName.StartsWith("assets/gml/scripts/glowshroom/")),
+            Is.False);
     }
 
     [Test]
@@ -147,6 +194,32 @@ public class ModInstallerTest
         }
 
         Assert.That(GameManifestIds(), Is.EqualTo(new[] { "contentmod" }));
+    }
+
+    [Test]
+    public void ShouldSkipAContentOnlyCustomMonsterWhenTheGameGmlChanged()
+    {
+        WriteLiveArchive("function step_begin() {\n    NEW_ENGINE_LINE();\n}\n");
+        var mod = new MockMod(new Dictionary<string, object>
+        {
+            ["fiddle/monsters/shroom.toml"] = """
+                [glow_shroom]
+                [glow_shroom.sprites]
+                idle = "spr_native"
+                """,
+        }) { Id = "glowshroom", Name = "glowshroom", Author = "tester" };
+
+        var result = new ModInstaller(_fom, "").InstallMods([mod], (_, _) => { },
+            gateMode: CompileGateMode.Off);
+
+        Assert.That(result.Installed, Is.Empty);
+        Assert.That(result.Skipped.Single().Id, Is.EqualTo("glowshroom"));
+        Assert.That(result.Skipped.Single().Reasons,
+            Has.Some.Contains(Garethp.ModsOfMistriaInstallerLib.Lang.Resources.CoreGameGmlChanged));
+        using var live = ZipFile.OpenRead(new AssetsStore(_fom).LivePath);
+        Assert.That(ReadEntry(live, "assets/fiddle/monsters/shroom.toml"),
+            Does.Not.Contain("[glow_shroom]"));
+        Assert.That(GameManifestIds(), Is.Empty);
     }
 
     [Test]
@@ -225,6 +298,28 @@ public class ModInstallerTest
         using var archive = ZipFile.Open(livePath, ZipArchiveMode.Create);
         WriteEntry(archive, "assets/gml/objects/Game.gml", game);
         WriteEntry(archive, "assets/gml/objects/Other.gml", SyntheticLayer.PristineOther);
+        WriteEntry(archive, "assets/fiddle/monsters/shroom.toml", """
+            [default]
+            hp = 10
+            damage = 2
+            essence = 0
+            iframes = 7
+            damage_number_offset = -15
+            patience_acknowledgement_reset = -120
+            aggro_radius = 192
+            status_effect_offset = -8
+            fire_effect_offset = -4
+            starting_dir = [0, 360]
+            gm_object = "obj_monster_mushroom"
+            hurtbox = "spr_native"
+            drops = []
+            [default.tango]
+            [mushroom]
+            [mushroom.sprites]
+            idle = "spr_native"
+            """);
+        WriteEntry(archive, "assets/animations/Monsters/spr_native.meta.toml", "");
+        WriteEntry(archive, "assets/gml/objects/Combat/obj_monster_mushroom.gml", "");
         WriteEntry(archive, "assets/fiddle/locations.toml", "");
     }
 

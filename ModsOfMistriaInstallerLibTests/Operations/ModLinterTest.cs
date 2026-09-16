@@ -117,7 +117,72 @@ public class ModLinterTest
 
         Assert.That(result.Ok, Is.True);
         Assert.That(result.Symbol, Is.Null);
-        Assert.That(ModLinter.RenderText(result, "mod_a"), Does.Contain("manifest checks only"));
+        Assert.That(ModLinter.RenderText(result, "mod_a"), Does.Contain("no gml/ tree"));
+    }
+
+    [Test]
+    public void ShouldLeaveAVanillaMonsterPatchOnTheContentPath()
+    {
+        var mod = new MockMod(new Dictionary<string, object>
+        {
+            ["fiddle/monsters/shroom.toml"] = "[mushroom]\nhp = 40\n",
+        })
+        {
+            Id = "mod.a",
+            Version = "0.0.1",
+        };
+
+        var result = Lint(mod);
+
+        Assert.That(result.Ok, Is.True);
+        Assert.That(result.Symbol, Is.Null);
+        Assert.That(result.ExclusionReasons, Is.Empty);
+    }
+
+    [Test]
+    public void ShouldCheckTheSharedLayerForAContentOnlyCustomMonster()
+    {
+        var mod = new MockMod(new Dictionary<string, object>
+        {
+            ["fiddle/monsters/shroom.toml"] = """
+                [glow_shroom]
+                [glow_shroom.sprites]
+                idle = "spr_native"
+                """,
+        })
+        {
+            Id = "mod.a",
+            Version = "0.0.1",
+        };
+        var gate = new ScriptedGate();
+
+        var result = Lint(mod, gate: gate);
+
+        Assert.That(result.Ok, Is.True);
+        Assert.That(result.Symbol, Is.Null);
+        Assert.That(result.GateRan, Is.True);
+        Assert.That(gate.Calls.Select(call => call.Mode), Is.EqualTo(new[] { "files" }));
+    }
+
+    [Test]
+    public void ShouldReportCustomMonsterProblemsAsExclusions()
+    {
+        var mod = new MockMod(new Dictionary<string, object>
+        {
+            ["fiddle/monsters/new_kind.toml"] = "[new_kind]\nhp = 10\n",
+        })
+        {
+            Id = "mod.a",
+            Version = "0.0.1",
+        };
+
+        var result = Lint(mod);
+
+        Assert.That(result.Ok, Is.False);
+        Assert.That(result.Symbol, Is.Null);
+        Assert.That(result.ExclusionReasons,
+            Has.Some.Contains("has no matching momi/monster_categories/new_kind.toml"));
+        Assert.That(ModLinter.RenderText(result, "mod_a"), Does.Contain("EXCLUDED:"));
     }
 
     [Test]
