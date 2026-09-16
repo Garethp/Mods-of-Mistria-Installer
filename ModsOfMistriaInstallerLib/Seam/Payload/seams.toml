@@ -51,7 +51,7 @@ version = 2
 [counts]
 hooks = 133
 seams = 146
-engine_fixes = 8
+engine_fixes = 15
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -4009,3 +4009,303 @@ replace = '''
     assert_neq(item, undefined, "Failed to parse an item out of '{}'", entry);
 '''
 marker  = "mmapi_store_pet_cosmetic_entry"
+
+# The seven edits below carry the recipe ingredient data contract instead of
+# a hook. A recipe component may list several exact items under `items`, and
+# the engine's own `tag` component becomes usable. No vanilla recipe uses
+# `items` or `tag`, so with no modded data every staged branch behaves
+# exactly as pristine.
+
+# The component factory gains a list form beside the single-item form. The
+# struct keeps the Item type and stores the first listed id as item_id, so
+# every existing reader of a component sees that item, and the full list
+# is kept in item_ids.
+[[engine_fix]]
+name    = "recipe_items_factory"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+    static Item = function(item_id, count) {
+        return {
+            type: RecipeComponentType.Item,
+            item_id: item_id,
+            count: count,
+        }
+    }
+'''
+replace = '''
+    static Item = function(item_id, count) {
+        return {
+            type: RecipeComponentType.Item,
+            item_id: item_id,
+            count: count,
+        }
+    }
+    static Items = function(item_ids, count) { // mmapi_recipe_items_factory
+        return {
+            type: RecipeComponentType.Item,
+            item_id: item_ids[0],
+            item_ids: item_ids,
+            count: count,
+        }
+    }
+'''
+marker  = "mmapi_recipe_items_factory"
+
+# The recipe parser gains an `items` branch between `item` and `tag`. Names
+# resolve through the same lookup the `item` branch uses, and repeated ids
+# are dropped so one id cannot be counted twice at fulfillment.
+[[engine_fix]]
+name    = "recipe_items_parse"
+file    = "gml/scripts/GameplaySystems/Items/Items.gml"
+anchor  = '''
+                if component[$ "item"] != undefined {
+                    array_push(components, RecipeComponent.Item(
+                        string_to_item_id(component.item),
+                        component[$ "count"] ?? 1,
+                    ));
+                } else if component[$ "tag"] != undefined {
+'''
+replace = '''
+                if component[$ "item"] != undefined {
+                    array_push(components, RecipeComponent.Item(
+                        string_to_item_id(component.item),
+                        component[$ "count"] ?? 1,
+                    ));
+                } else if component[$ "items"] != undefined { // mmapi_recipe_items_parse
+                    var ingredient_ids = [];
+                    for (var ingredient = 0; ingredient < array_length(component.items); ingredient++) {
+                        var ingredient_id = string_to_item_id(component.items[ingredient]);
+                        if !array_contains(ingredient_ids, ingredient_id) {
+                            array_push(ingredient_ids, ingredient_id);
+                        }
+                    }
+                    array_push(components, RecipeComponent.Items(
+                        ingredient_ids,
+                        component[$ "count"] ?? 1,
+                    ));
+                } else if component[$ "tag"] != undefined {
+'''
+marker  = "mmapi_recipe_items_parse"
+
+# The Item case of the fulfillment count sums every listed id, in the
+# player's inventory and in each crafting chest. A single-item component
+# has no item_ids member and takes the one-element path.
+[[engine_fix]]
+name    = "recipe_items_fulfillment"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+        case RecipeComponentType.Item:
+            var count = ARI.inventory.item_id_quantity(component.item_id);
+            if use_chests {
+                var len = STORAGE_NODES.count();
+                for (var i = 0; i < len; i++) {
+                    var node = STORAGE_NODES.get(i);
+                    if node.use_in_crafting {
+                        count += node.inventory.item_id_quantity(component.item_id);
+                    }
+                }
+            }
+            return count;
+'''
+replace = '''
+        case RecipeComponentType.Item:
+            var item_ids = component[$ "item_ids"] ?? [component.item_id]; // mmapi_recipe_items_fulfillment
+            var count = 0;
+            for (var j = 0; j < array_length(item_ids); j++) {
+                count += ARI.inventory.item_id_quantity(item_ids[j]);
+            }
+            if use_chests {
+                var len = STORAGE_NODES.count();
+                for (var i = 0; i < len; i++) {
+                    var node = STORAGE_NODES.get(i);
+                    if node.use_in_crafting {
+                        for (var j = 0; j < array_length(item_ids); j++) {
+                            count += node.inventory.item_id_quantity(item_ids[j]);
+                        }
+                    }
+                }
+            }
+            return count;
+'''
+marker  = "mmapi_recipe_items_fulfillment"
+
+# The Item case of the payment drains the listed ids in order, first from the
+# player's inventory and then from each crafting chest, stopping as soon as
+# the scaled count is met. The closing assertion is the pristine one.
+[[engine_fix]]
+name    = "recipe_items_payment"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+            case RecipeComponentType.Item:
+                //
+                var amount_to_remove = min(count, ARI.inventory.item_id_quantity(component.item_id));
+                ARI.inventory.remove(component.item_id, amount_to_remove);
+                count -= amount_to_remove;
+
+                //
+                if count != 0 {
+                    for (var j = 0; j < STORAGE_NODES.count(); j++) {
+                        var node = STORAGE_NODES.get(j);
+                        if !node.use_in_crafting {
+                            continue;
+                        }
+                        var inventory = node.inventory;
+                        var amount_to_remove = min(count, inventory.item_id_quantity(component.item_id));
+                        inventory.remove(component.item_id, amount_to_remove);
+                        count -= amount_to_remove;
+
+                        if count == 0 {
+                            break;
+                        }
+                    }
+                }
+
+                assert_eq(count, 0, "Failed to fulfill item component costs!");
+                break;
+'''
+replace = '''
+            case RecipeComponentType.Item:
+                //
+                var item_ids = component[$ "item_ids"] ?? [component.item_id]; // mmapi_recipe_items_payment
+                for (var k = 0; k < array_length(item_ids) && count != 0; k++) {
+                    var amount_to_remove = min(count, ARI.inventory.item_id_quantity(item_ids[k]));
+                    ARI.inventory.remove(item_ids[k], amount_to_remove);
+                    count -= amount_to_remove;
+                }
+
+                //
+                if count != 0 {
+                    for (var j = 0; j < STORAGE_NODES.count(); j++) {
+                        var node = STORAGE_NODES.get(j);
+                        if !node.use_in_crafting {
+                            continue;
+                        }
+                        var inventory = node.inventory;
+                        for (var k = 0; k < array_length(item_ids) && count != 0; k++) {
+                            var amount_to_remove = min(count, inventory.item_id_quantity(item_ids[k]));
+                            inventory.remove(item_ids[k], amount_to_remove);
+                            count -= amount_to_remove;
+                        }
+
+                        if count == 0 {
+                            break;
+                        }
+                    }
+                }
+
+                assert_eq(count, 0, "Failed to fulfill item component costs!");
+                break;
+'''
+marker  = "mmapi_recipe_items_payment"
+
+# The crafting menu's ingredient renderer handles Item and Essence and stops
+# the game on anything else. A Tag label now falls through into the Item
+# body. The icon is the first prototype carrying the tag, read from the
+# prototype so no LiveItem is built, or the engine's unknown-item warning
+# sprite when no prototype carries it. The has/needs count block below is
+# shared unchanged. With no this_item the box draws no tooltip.
+[[engine_fix]]
+name    = "recipe_tag_display"
+file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
+anchor  = '''
+                case RecipeComponentType.Item:
+                    icon.set_sprite(this_item.get_ui_icon());
+'''
+replace = '''
+                case RecipeComponentType.Tag: // mmapi_recipe_tag_display
+                case RecipeComponentType.Item:
+                    if component.type == RecipeComponentType.Tag {
+                        icon.set_sprite(spr_illegal_16);
+                        for (var k = 0; k < ItemId.LEN; k++) {
+                            if ITEM_PROTOTYPES[k].tags.contains(component.tag) {
+                                icon.set_sprite(ITEM_PROTOTYPES[k].icon_sprite);
+                                break;
+                            }
+                        }
+                    } else {
+                        icon.set_sprite(this_item.get_ui_icon());
+                    }
+'''
+marker  = "mmapi_recipe_tag_display"
+
+# The pristine Tag fulfillment reads the slot count as a method, and the slot
+# holds it as a field, so the branch throws on first use. It now takes the
+# Item case's shape on the inventory's own item_tag_quantity helper, the
+# player's inventory first and then each crafting chest, and honors
+# use_chests.
+[[engine_fix]]
+name    = "recipe_tag_fulfillment"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+        case RecipeComponentType.Tag: return ARI.inventory
+            .slots_with_item_tag(component.tag)
+            .sum_with(function(x) {
+                return x.count();
+            });
+'''
+replace = '''
+        case RecipeComponentType.Tag:
+            var count = ARI.inventory.item_tag_quantity(component.tag); // mmapi_recipe_tag_fulfillment
+            if use_chests {
+                var len = STORAGE_NODES.count();
+                for (var i = 0; i < len; i++) {
+                    var node = STORAGE_NODES.get(i);
+                    if node.use_in_crafting {
+                        count += node.inventory.item_tag_quantity(component.tag);
+                    }
+                }
+            }
+            return count;
+'''
+marker  = "mmapi_recipe_tag_fulfillment"
+
+# The pristine Tag payment has the same field-as-method call, removes the
+# unscaled base count, and never reaches a chest. It now takes the Item
+# case's shape on the inventory's own remove_items_with_tag helper, starting
+# from the quantity-scaled count, the player's inventory first and then each
+# crafting chest, with the Item case's closing assertion.
+[[engine_fix]]
+name    = "recipe_tag_payment"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+            case RecipeComponentType.Tag:
+                var slots = ARI.inventory.slots_with_item_tag(component.tag);
+                var left_to_remove = component.count;
+                for (var j = 0; j < slots.count(); j++) {
+                    var slot = slots.get(j);
+                    var amount_to_remove = min(slot.count(), left_to_remove);
+                    slot.remove(amount_to_remove);
+                    left_to_remove -= amount_to_remove;
+                    if left_to_remove == 0 {
+                        break;
+                    }
+                }
+                break;
+'''
+replace = '''
+            case RecipeComponentType.Tag:
+                var amount_to_remove = min(count, ARI.inventory.item_tag_quantity(component.tag)); // mmapi_recipe_tag_payment
+                ARI.inventory.remove_items_with_tag(component.tag, amount_to_remove);
+                count -= amount_to_remove;
+
+                if count != 0 {
+                    for (var j = 0; j < STORAGE_NODES.count(); j++) {
+                        var node = STORAGE_NODES.get(j);
+                        if !node.use_in_crafting {
+                            continue;
+                        }
+                        var inventory = node.inventory;
+                        var amount_to_remove = min(count, inventory.item_tag_quantity(component.tag));
+                        inventory.remove_items_with_tag(component.tag, amount_to_remove);
+                        count -= amount_to_remove;
+
+                        if count == 0 {
+                            break;
+                        }
+                    }
+                }
+
+                assert_eq(count, 0, "Failed to fulfill tag component costs!");
+                break;
+'''
+marker  = "mmapi_recipe_tag_payment"
