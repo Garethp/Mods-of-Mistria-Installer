@@ -8,6 +8,12 @@ public class MemoryPristineSource(IReadOnlyDictionary<string, byte[]> files,
 {
     public bool Has(string entry) => files.ContainsKey(entry);
 
+    public IReadOnlyList<string> Entries(string prefix, string suffix) => files.Keys
+        .Where(name => name.StartsWith(prefix, StringComparison.Ordinal)
+                       && name.EndsWith(suffix, StringComparison.Ordinal))
+        .Order(StringComparer.Ordinal)
+        .ToList();
+
     public byte[]? Read(string entry) => files.TryGetValue(entry, out var bytes) ? bytes : null;
 
     public IReadOnlyList<string> GmlFiles() => files.Keys

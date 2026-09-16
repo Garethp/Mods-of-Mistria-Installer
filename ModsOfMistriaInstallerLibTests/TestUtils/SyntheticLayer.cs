@@ -66,6 +66,26 @@ public static class SyntheticLayer
         {
             { "assets/gml/objects/Game.gml", Encoding.UTF8.GetBytes(game) },
             { "assets/gml/objects/Other.gml", Encoding.UTF8.GetBytes(other) },
+            { "assets/fiddle/monsters/shroom.toml", Encoding.UTF8.GetBytes("""
+                [default]
+                hp = 10
+                damage = 2
+                essence = 0
+                iframes = 7
+                damage_number_offset = -15
+                patience_acknowledgement_reset = -120
+                aggro_radius = 192
+                status_effect_offset = -8
+                fire_effect_offset = -4
+                starting_dir = [0, 360]
+                gm_object = "obj_monster_mushroom"
+                hurtbox = "spr_native"
+                drops = []
+                [default.tango]
+                [mushroom]
+                [mushroom.sprites]
+                idle = "spr_native"
+                """) },
         });
 
     public static GmlModCode Mod(string id, string gml = "// state\n", string? dirName = null,

@@ -1,0 +1,8 @@
+name = "Enemy Roller"
+author = "Example"
+version = "0.1.0"
+description = "A custom monster example."
+minInstallerVersion = "0.16.0"
+manifestVersion = 1
+requires_hooks = []
+

@@ -1,0 +1,51 @@
+[example_enemy_roller]
+hp = 40
+damage = 20
+essence = 0
+drops = [
+    { item = "ore_copper", chance = 100, count_range = [1, 1] },
+]
+coin_count = [40, 40]
+iframes = 7
+gm_object = "obj_example_enemy_roller"
+hurtbox = "spr_example_enemy_roller_idle"
+starting_dir = [0, 360]
+damage_number_offset = -15
+speed = 0.45
+attack_radius = 144
+patience_acknowledgement_reset = -120
+aggro_radius = 192
+use_circle = false
+status_effect_offset = -8
+fire_effect_offset = -4
+draw_scale = 0.5
+windup_frames = 60
+charge_frames = 90
+charge_speed = 3.2
+charge_width = 24
+charge_height = 20
+charge_offset_x = -12
+charge_offset_y = -18
+bounce_speed = 2.2
+bounce_jump_velocity = -4.0
+bounce_gravity = 0.35
+stun_frames = 90
+hurt_frames = 18
+[example_enemy_roller.sprites]
+windup.north = "spr_example_enemy_roller_idle"
+windup.south = "spr_example_enemy_roller_idle"
+walk.north = "spr_example_enemy_roller_walk"
+walk.south = "spr_example_enemy_roller_walk"
+attack.north = "spr_example_enemy_roller_run_attack"
+attack.south = "spr_example_enemy_roller_run_attack"
+hurt.north = "spr_example_enemy_roller_idle"
+hurt.south = "spr_example_enemy_roller_idle"
+dying.north = "spr_example_enemy_roller_idle"
+dying.south = "spr_example_enemy_roller_idle"
+
+[example_enemy_roller.sprites.misc]
+
+[example_enemy_roller.tango]
+dying = "SoundEffects/Enemies/DieFlesh"
+misc.weak_damage = "SoundEffects/Enemies/TakeDamageFleshWeak"
+misc.strong_damage = "SoundEffects/Enemies/TakeDamageFleshStrong"

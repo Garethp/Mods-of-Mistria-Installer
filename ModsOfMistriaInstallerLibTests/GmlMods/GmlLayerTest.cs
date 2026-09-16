@@ -1,8 +1,10 @@
 using System.IO.Compression;
 using System.Text;
+using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.GmlMods;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
 using Garethp.ModsOfMistriaInstallerLib.Store;
+using ModsOfMistriaInstallerLibTests.Fixtures;
 using ModsOfMistriaInstallerLibTests.TestUtils;
 
 namespace ModsOfMistriaInstallerLibTests.GmlMods;
@@ -247,6 +249,25 @@ public class GmlLayerTest
         Assert.That(plan.Added, Contains.Key("assets/gml/scripts/mmapi/mmapi.gml"));
     }
 
+    [Test]
+    public void ShouldRemoveACompileFailedModFromTheMonsterRegistry()
+    {
+        var mod = SyntheticLayer.Mod("testmod");
+        var gate = SharedPassesModsFail();
+        var monsters = new MonsterCollection(
+            [new MonsterDefinition(mod.Mod, "roller", "roller", "obj_roller", "roller.toml",
+                new HashSet<string>())],
+            [new MonsterCategoryDefinition(mod.Mod, "roller", "roller-category.toml", ["idle"])],
+            [], [], ["mushroom"], []);
+        var plan = GmlLayer.Stage(SyntheticLayer.Catalog(), SyntheticLayer.Pristine(),
+            [mod], gate, monsters: monsters);
+
+        Assert.That(plan.Excluded.Select(e => e.Mod.Id), Is.EqualTo(new[] { "testmod" }));
+        Assert.That(gate.Calls[0].Paths.Select(path => path.Replace('\\', '/')),
+            Has.Some.EndsWith("/mmapi/mmapi_monster_catalog.gml"));
+        Assert.That(plan.Added, Does.Not.ContainKey(MonsterRegistryRenderer.RegistryRel));
+    }
+
     // ── FormatCompileError ───────────────────────────────────────────────────
     // The invariant across all of these: the transform shortens or passes a
     // message through, it never empties one.
@@ -348,11 +369,12 @@ public class GmlLayerTest
         var plan = Stage();
 
         var sources = PayloadResolver.MmapiSources();
-        Assert.That(sources, Has.Count.EqualTo(8));
+        Assert.That(sources, Has.Count.EqualTo(10));
 
         var delivered = plan.Added
             .Where(e => e.Key.StartsWith(SeamStager.MmapiTreePrefix, StringComparison.Ordinal))
             .Where(e => e.Key != SeamStager.HookCatalogRel)
+            .Where(e => e.Key != MonsterRegistryRenderer.RegistryRel)
             .ToDictionary(e => e.Key, e => e.Value);
         Assert.That(delivered.Keys,
             Is.EquivalentTo(sources.Select(s => SeamStager.MmapiTreePrefix + s.Name)));
@@ -361,6 +383,108 @@ public class GmlLayerTest
                 $"{name}: delivered bytes differ from the embedded payload");
 
         Assert.That(plan.Added, Contains.Key(SeamStager.HookCatalogRel));
+        Assert.That(plan.Added, Does.Not.ContainKey(MonsterRegistryRenderer.RegistryRel));
+    }
+
+    [Test]
+    public void ShouldLeaveExcludedModsOutOfTheMonsterCatalog()
+    {
+        var good = SyntheticLayer.Mod("good");
+        var excluded = SyntheticLayer.Mod("excluded", requiresHooks: ["missing.hook"]);
+        var collection = new MonsterCollection(
+            [
+                new MonsterDefinition(good.Mod, "good_monster", "good_category", "obj_good", "good.toml",
+                    new HashSet<string>()),
+                new MonsterDefinition(excluded.Mod, "gone_monster", "gone_category", "obj_gone", "gone.toml",
+                    new HashSet<string>()),
+            ],
+            [
+                new MonsterCategoryDefinition(good.Mod, "good_category", "good-category.toml", ["idle"]),
+                new MonsterCategoryDefinition(excluded.Mod, "gone_category", "gone-category.toml", ["idle"]),
+            ],
+            [], [], ["bat", "mushroom"], []);
+
+        var plan = GmlLayer.Stage(SyntheticLayer.Catalog(), SyntheticLayer.Pristine(),
+            [good, excluded], null, monsters: collection);
+
+        var registry = Encoding.UTF8.GetString(plan.Added[MonsterRegistryRenderer.RegistryRel]);
+        Assert.That(registry, Does.Contain("__mmapi_vanilla_monster_keys[$ \"mushroom\"] = true;"));
+        Assert.That(registry, Does.Contain("__mmapi_custom_monster_owners[$ \"good_monster\"] = \"good\";"));
+        Assert.That(registry, Does.Not.Contain("gone_monster"));
+        Assert.That(registry, Does.Contain("key: \"good_category\""));
+        Assert.That(registry, Does.Not.Contain("gone_category"));
+    }
+
+    [Test]
+    public void ShouldKeepAContentOnlyMonsterInABuiltInCategory()
+    {
+        var content = new MockMod(new List<string>()) { Id = "content" };
+        var collection = new MonsterCollection(
+            [new MonsterDefinition(content, "glow_shroom", "shroom", "obj_monster_mushroom",
+                "shroom.toml", new HashSet<string>(), DefinesObject: false)],
+            [], [], [], ["mushroom"], []);
+
+        var plan = GmlLayer.Stage(SyntheticLayer.Catalog(), SyntheticLayer.Pristine(),
+            [], null, monsters: collection);
+
+        var registry = Encoding.UTF8.GetString(plan.Added[MonsterRegistryRenderer.RegistryRel]);
+        Assert.That(registry, Does.Contain("__mmapi_custom_monster_owners[$ \"glow_shroom\"] = \"content\";"));
+        Assert.That(registry, Does.Contain("global.__mmapi_monster_category_catalog = [\n];"));
+    }
+
+    [Test]
+    public void ShouldExcludeEverySurvivingModThatClaimsAMonsterObject()
+    {
+        const string claim = "object_create(\"obj_roller\", object_reserve(\"par_monster\"), {});";
+        var owner = SyntheticLayer.Mod("owner", claim);
+        var foreign = SyntheticLayer.Mod("foreign", claim);
+        var collection = new MonsterCollection(
+            [new MonsterDefinition(owner.Mod, "roller", "roller", "obj_roller", "roller.toml",
+                new HashSet<string>())],
+            [new MonsterCategoryDefinition(owner.Mod, "roller", "roller-category.toml", ["idle"])],
+            [], [], ["mushroom"], []);
+
+        var plan = GmlLayer.Stage(SyntheticLayer.Catalog(), SyntheticLayer.Pristine(),
+            [owner, foreign], null, monsters: collection);
+
+        Assert.That(plan.Excluded.Select(excluded => excluded.Mod.Id),
+            Is.EqualTo(new[] { "owner", "foreign" }));
+        Assert.That(plan.Excluded.Single(excluded => excluded.Mod == owner).Reasons,
+            Has.Some.Contains("also created by foreign"));
+        Assert.That(plan.Excluded.Single(excluded => excluded.Mod == foreign).Reasons,
+            Has.Some.Contains("claimed by custom monster 'roller' from mod 'owner'"));
+        Assert.That(plan.Survivors, Is.Empty);
+        Assert.That(plan.Added, Does.Not.ContainKey(MonsterRegistryRenderer.RegistryRel));
+        Assert.That(plan.Added.Keys, Has.None.StartWith("assets/gml/scripts/owner/"));
+        Assert.That(plan.Added.Keys, Has.None.StartWith("assets/gml/scripts/foreign/"));
+    }
+
+    [Test]
+    public void ShouldIgnoreObjectClaimsFromExcludedMods()
+    {
+        const string claim = "object_create(\"obj_roller\", object_reserve(\"par_monster\"), {});";
+        var owner = SyntheticLayer.Mod("owner", claim);
+        var foreign = SyntheticLayer.Mod("foreign", claim);
+        var gate = new ScriptedGate
+        {
+            Fails = (mode, paths) => mode == "unit"
+                && paths.Any(path => path.Replace('\\', '/').Contains("/scripts/foreign/"))
+                    ? "bad.gml"
+                    : null,
+        };
+        var collection = new MonsterCollection(
+            [new MonsterDefinition(owner.Mod, "roller", "roller", "obj_roller", "roller.toml",
+                new HashSet<string>())],
+            [new MonsterCategoryDefinition(owner.Mod, "roller", "roller-category.toml", ["idle"])],
+            [], [], ["mushroom"], []);
+
+        var plan = GmlLayer.Stage(SyntheticLayer.Catalog(), SyntheticLayer.Pristine(),
+            [owner, foreign], gate, monsters: collection);
+
+        Assert.That(plan.Excluded.Select(excluded => excluded.Mod.Id), Is.EqualTo(new[] { "foreign" }));
+        Assert.That(plan.Survivors.Select(mod => mod.Id), Is.EqualTo(new[] { "owner" }));
+        var registry = Encoding.UTF8.GetString(plan.Added[MonsterRegistryRenderer.RegistryRel]);
+        Assert.That(registry, Does.Contain("__mmapi_custom_monster_owners[$ \"roller\"] = \"owner\";"));
     }
 
     [Test]

@@ -1,0 +1,1 @@
+states = ["windup", "walk", "attack", "hurt", "dying"]

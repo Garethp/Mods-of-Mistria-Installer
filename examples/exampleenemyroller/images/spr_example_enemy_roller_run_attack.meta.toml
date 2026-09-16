@@ -1,0 +1,13 @@
+[meta_properties]
+asset_kind = "Animation"
+
+[asset_properties]
+frame_size = [64, 64]
+frame_len = 8
+atlas = "Default"
+duration = 0.08
+filter_kind = "Nearest"
+
+[asset_properties.offset]
+horizontal = 32.0
+vertical = 52.0

@@ -20,7 +20,7 @@ The catalog is `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`, embedded int
 
 The catalog opens with a `[counts]` table stating how many records of each type follow. The loader refuses a catalog whose records do not match that table, so a truncated or mis-merged file fails at load time instead of shipping a partial hook surface.
 
-The shipped catalog currently declares **133 hooks**, fed by **146 seams**, **8 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page, under `docs/MMAPI/hooks/` for hooks and `docs/MMAPI/seams/` for the rest. The shipped-catalog test holds the count sentences on this page, the Catalog, and [Hooks](HOOKS.md) to those totals, and the page set to the catalog, so a stale count, a record without a page, or a page without a record fails the suite.
+The shipped catalog currently declares **133 hooks**, fed by **146 seams**, **11 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page, under `docs/MMAPI/hooks/` for hooks and `docs/MMAPI/seams/` for the rest. The shipped-catalog test holds the count sentences on this page, the Catalog, and [Hooks](HOOKS.md) to those totals, and the page set to the catalog, so a stale count, a record without a page, or a page without a record fails the suite.
 
 MOMI also renders the hook declarations into `mmapi_hook_catalog.gml` at install time, so the runtime can check registrations and answer introspection. See [The Installed Catalog](HOOKS.md#the-installed-catalog).
 

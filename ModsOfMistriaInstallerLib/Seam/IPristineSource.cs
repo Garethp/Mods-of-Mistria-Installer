@@ -8,6 +8,9 @@ public interface IPristineSource
 {
     bool Has(string entry);
 
+    // Matching archive-relative paths, sorted.
+    IReadOnlyList<string> Entries(string prefix, string suffix);
+
     // Null when the entry is not in the pristine source: a missing entry is a
     // batched staging problem (a stale catalog against a new build), not an
     // exception at the read site.

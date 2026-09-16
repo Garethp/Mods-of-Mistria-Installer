@@ -1,3 +1,4 @@
+using Garethp.ModsOfMistriaInstallerLib.Collector;
 using Garethp.ModsOfMistriaInstallerLib.GmlMods;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
@@ -17,7 +18,7 @@ public class ModLintResult(string modId, string version, string? symbol, int gml
 
     public string Version { get; } = version;
 
-    // Null when the mod ships no gml/ tree (manifest checks still ran)
+    // Null when the mod ships no gml/ tree (manifest and monster checks still ran)
     public string? Symbol { get; } = symbol;
 
     public int GmlFileCount { get; } = gmlFileCount;
@@ -38,7 +39,7 @@ public class ModLintResult(string modId, string version, string? symbol, int gml
 }
 
 // Would the apply install this mod? Runs the manifest validation and the same
-// GML staging as the apply - the skip pass, the three lints and the compile
+// GML staging as the apply - the skip pass, the four lints and the compile
 // gate - against a pristine zip, and writes nothing. The rendered output is
 // mod-development and bug-report material, so it stays literal English like
 // the findings it carries (D16).
@@ -60,21 +61,36 @@ public static class ModLinter
 
         // The same gate the install flow applies: a mod whose manifest is
         // invalid is skipped before its GML is ever read, but lint still runs
-        // the GML checks so the modder sees everything in one pass.
+        // the content checks so the modder sees everything in one pass.
         var validation = mod.Validate();
         var manifestErrors = validation.Errors.Select(e => e.Message).ToList();
         var manifestWarnings = validation.Warnings.Select(w => w.Message).ToList();
+        var monsters = MonsterDefinitionCollector.HasMonsterContent(mod)
+            ? MonsterDefinitionCollector.Collect([mod], pristine)
+            : MonsterCollection.Empty;
+        var monsterProblems = monsters.Problems
+            .Select(problem => $"{problem.File}: {problem.Message}")
+            .ToList();
 
         var code = GmlModCollector.Collect(mod);
         if (code is null)
-            return new ModLintResult(mod.GetId(), mod.GetVersion(), null, 0, false,
-                manifestErrors, manifestWarnings, [], []);
+        {
+            if (monsters.Definitions.Count == 0)
+                return new ModLintResult(mod.GetId(), mod.GetVersion(), null, 0, false,
+                    manifestErrors, manifestWarnings, monsters.Findings, monsterProblems);
 
-        var plan = GmlLayer.Stage(catalog, pristine, [code], gate, options);
+            var contentPlan = GmlLayer.Stage(catalog, pristine, [], gate, options, monsters);
+            return new ModLintResult(mod.GetId(), mod.GetVersion(), null, 0, gate is not null,
+                manifestErrors, manifestWarnings, contentPlan.Findings,
+                [.. monsterProblems, .. contentPlan.Excluded.SelectMany(e => e.Reasons)]);
+        }
+
+        var plan = GmlLayer.Stage(catalog, pristine, [code], gate, options, monsters);
 
         return new ModLintResult(mod.GetId(), mod.GetVersion(), code.Symbol, code.GmlFiles.Count,
-            gate is not null, manifestErrors, manifestWarnings, plan.Findings,
-            plan.Excluded.SelectMany(e => e.Reasons).ToList());
+            gate is not null, manifestErrors, manifestWarnings,
+            plan.Findings,
+            [.. monsterProblems, .. plan.Excluded.SelectMany(e => e.Reasons)]);
     }
 
     // The human-readable report. Findings print even on OK: they are the
@@ -84,7 +100,7 @@ public static class ModLinter
         List<string> lines = [$"lint {result.ModId} v{result.Version} ({source})"];
 
         if (result.Symbol is null)
-            lines.Add("  no gml/ tree: manifest checks only");
+            lines.Add("  no gml/ tree: manifest and monster checks");
         else
             lines.Add($"  gml: {result.GmlFileCount} file(s) installing under scripts/{result.Symbol}/"
                       + (result.GateRan ? "" : "; compile gate skipped (no checker backend)"));

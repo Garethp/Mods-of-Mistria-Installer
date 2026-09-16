@@ -21,6 +21,12 @@ public class ZipPristineSource : IPristineSource, IDisposable
 
     public bool Has(string entry) => _entries.ContainsKey(entry);
 
+    public IReadOnlyList<string> Entries(string prefix, string suffix) => _entries.Keys
+        .Where(name => name.StartsWith(prefix, StringComparison.Ordinal)
+                       && name.EndsWith(suffix, StringComparison.Ordinal))
+        .Order(StringComparer.Ordinal)
+        .ToList();
+
     public byte[]? Read(string entry)
     {
         if (!_entries.TryGetValue(entry, out var archiveEntry)) return null;

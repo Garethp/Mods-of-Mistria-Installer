@@ -189,6 +189,18 @@ Inject a hit through the engine's own damage pipeline, rather than writing to he
 > [!NOTE]
 > The injected hit flows through `combat.damage` and `combat.damage_resolved` like any engine hit, so a filter can still change or cancel it. The tarball carries `__mmapi_injected` with the injecting mod's name, so a `combat.damage` filter can tell synthetic hits from engine hits. See [combat.damage_injected](hooks/combat.damage_injected.md).
 
+## Monster IDs
+
+These helpers inspect the current monster roster:
+
+| Function | What it does |
+| -------- | ------------ |
+| `mmapi_monster_owner(monster_id)` | Return the ID of the mod that supplied this custom monster, or `undefined` for a built-in or unknown id. |
+| `mmapi_monster_is_custom_id(monster_id)` | Test whether the id belongs to a custom monster in the current install. |
+| `mmapi_monster_is_vanilla_id(monster_id)` | Test whether the id belongs to the game's original monster roster. |
+
+See [Custom Monsters](CUSTOM_MONSTERS.md) for the package format.
+
 ## Localization
 
 Every direct engine-GML `local_get(...)` call routes through MMAPI (a call rewrite installed by the seam layer), which makes that game-text surface filterable. Mod files are added after the rewrite, so call `mmapi_local_get(key)` explicitly when mod code should use the same hook path:
