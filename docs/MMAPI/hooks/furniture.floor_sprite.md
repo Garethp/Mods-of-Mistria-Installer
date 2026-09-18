@@ -6,11 +6,11 @@ Swap a furniture piece's floor sprite as its renderer is built.
 
 ## Contract
 
-Fires in `create_furniture_renderer(node)` as a furniture node's floor sprite is resolved, after the engine's native `winter_floor_sprite` override and before the floor renderer instance is created. The filtered value is the floor sprite. ctx is the furniture node. Return the replacement sprite, or `undefined` to keep the current value.
+Fires in `create_furniture_renderer(node)` as a furniture node's floor sprite is resolved, after the engine's native `winter_floor_sprite` override and before the floor renderer is created from it. The filtered value is the floor sprite. ctx is the furniture node. Return the replacement sprite, or `undefined` to keep the current value.
 
 | | |
 | --- | --- |
-| **Fires** | In `create_furniture_renderer(node)`, after the native `winter_floor_sprite` override, before the floor renderer instance is created. |
+| **Fires** | In `create_furniture_renderer(node)`, after the native `winter_floor_sprite` override, before the floor renderer is created from the sprite. |
 | **Value** | The floor sprite about to be assigned to the furniture's floor renderer. |
 | **ctx** | The furniture node. |
 | **Kind contract** | The callback receives the current value and returns a replacement, or `undefined` to keep the current value. |

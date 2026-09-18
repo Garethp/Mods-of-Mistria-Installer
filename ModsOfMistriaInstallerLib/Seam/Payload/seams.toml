@@ -425,11 +425,6 @@ kind = "event"
 doc  = "Fires when a monster dies, just before its instance is destroyed. ctx is { monster, monster_id, x, y }."
 
 [[hook]]
-name = "monster.draw"
-kind = "event"
-doc  = "Fires at the end of par_monster's draw() method, after the monster sprite and its status overlays (venom/frozen) are drawn, once per visible monster per frame in the world-draw pass. ctx is the monster instance: read x, y, z, health, and so on, and draw in world space (e.g. a health bar on top). Observation only. Hot path (every visible monster, every frame). Keep handlers cheap."
-
-[[hook]]
 name = "monster.shroom.should_hide"
 kind = "guard"
 doc  = "Fires at the top of the shroom monster's should_hide() check. ctx is the shroom instance. Return false to veto hiding (should_hide returns false); undefined or true falls through to the normal distance check."
@@ -448,6 +443,11 @@ doc  = "Fires each step of a spirit projectile. ctx is the projectile instance. 
 name = "monster.step_begin"
 kind = "event"
 doc  = "Fires every frame for every monster in par_monster's begin step, right after the aggro update. ctx is the monster instance. Hot path. Keep handlers cheap."
+
+[[hook]]
+name = "monster.step_end"
+kind = "event"
+doc  = "Fires every frame for every monster at the end of par_monster's end step, after the engine has written the frame's draw offsets, facing, shadow caster and status overlay renderable. ctx is the monster instance. Not a draw pass, so draw calls throw here. This is the moment to write the fields of renderables a mod owns on the monster. Hot path. Keep handlers cheap."
 
 [[hook]]
 name = "museum.donate_item"
@@ -1109,21 +1109,24 @@ replace = '''
 marker  = "mmapi_request_board_fetch_pool_ready_emit"
 provides = ["request_board.fetch_pool_ready"]
 
+# The engine draws monsters through renderables that step_end configures, so the
+# emit sits after the frame's last renderable write.
 [[seam]]
-id      = "monster_draw"
+id      = "monster_step_end"
 file    = "gml/objects/Combat/par_monster.gml"
 context_before = '''
-                    gpu_reset_extra();
-                }
+            self.status_blender.x_scale = self.image_xscale;
 '''
 context_after = '''
-            }
+        },
+        animation_end: function() {
 '''
 op      = "emit"
-hook    = "monster.draw"
+hook    = "monster.step_end"
 ctx     = "self"
-indent  = 16
-marker  = "mmapi_monster_run_draw_callbacks"
+indent  = 12
+catch_var = "__mmapi_monsters_step_end"
+marker  = "mmapi_monsters_run_step_end"
 
 [[seam]]
 id      = "combat_tarball_grid"
@@ -1307,7 +1310,7 @@ context_before = '''
 '''
 context_after = '''
 
-        node.renderer.floor_renderer = instance_create_layer(node.renderer.x, node.renderer.y, "Instances", obj_node_renderer_top);
+        node.renderer.floor_renderer = node.renderer.create_renderable(sprite_to_use);
 '''
 op      = "filter"
 hook    = "furniture.floor_sprite"
@@ -1482,12 +1485,10 @@ marker  = "mmapi_ui_run_button_sprites_filters"
 id      = "obj_item_outline_sprite"
 file    = "gml/objects/objects/obj_item.gml"
 anchor  = '''
-                item_data.prototype.icon_sprite_outline,
-                image_index,
+            self.outline.animation = item_data.prototype.icon_sprite_outline;
 '''
 replace = '''
-                outline_sprite,
-                image_index,
+            self.outline.animation = outline_sprite;
 '''
 marker  = "outline_sprite"
 provides = ["ui.item_icon"]
@@ -3568,8 +3569,8 @@ try_catch = true
 catch_var = "__mmapi_preview_sprite"
 marker  = "mmapi_furniture_preview_sprite"
 
-# The preview reads the floor sprite straight off the prototype into the previewer's
-# bottom_sprite field, with no local to filter, so this is a text seam that introduces one.
+# The preview writes the floor sprite straight off the prototype into the previewer's
+# bottom renderable, with no local to filter, so this is a text seam that introduces one.
 # It applies no winter_floor_sprite override because pristine applies none here either:
 # the seam filters exactly the value the engine would have drawn.
 [[seam]]
@@ -3577,14 +3578,14 @@ id      = "furniture_preview_floor_sprite"
 file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
 anchor  = '''
     if proto.cardinal_data[calc_rot].floor_sprite != undefined {
-        furniture_renderer.bottom_sprite = proto.cardinal_data[calc_rot].floor_sprite;
+        furniture_renderer.bottom.animation = proto.cardinal_data[calc_rot].floor_sprite;
     }
 '''
 replace = '''
     if proto.cardinal_data[calc_rot].floor_sprite != undefined {
         var __mmapi_preview_floor = proto.cardinal_data[calc_rot].floor_sprite; // mmapi_furniture_preview_floor_sprite
         try { __mmapi_preview_floor = mmapi_apply_filters("furniture.preview_sprite", __mmapi_preview_floor, { object_id: object_id, prototype: proto, cardinal_index: calc_rot, x: xx, y: yy, source: "floor_sprite" }); } catch (__mmapi_preview_floor_filter) {}
-        furniture_renderer.bottom_sprite = __mmapi_preview_floor;
+        furniture_renderer.bottom.animation = __mmapi_preview_floor;
     }
 '''
 marker  = "mmapi_furniture_preview_floor_sprite"
