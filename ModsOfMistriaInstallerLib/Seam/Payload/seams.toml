@@ -49,8 +49,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 133
-seams = 146
+hooks = 137
+seams = 153
 engine_fixes = 8
 call_rewrites = 1
 
@@ -731,6 +731,26 @@ doc  = "Fires at the end of DragonShrineMenu.purchase_entry(entry), after the sh
 name = "ui.shrine_entry_is_acquired"
 kind = "filter"
 doc  = "Fires at the return of DragonShrineMenu.entry_is_acquired(entry). The filtered value is the boolean the shrine menus use to treat an entry as already bought, which pristine reads straight from ARI.perks[entry.perk]. ctx is { perk }, the entry's Perk enum id. Return the replacement boolean, or undefined to keep the current value. The menu asks this for every tile on the tier screen every frame, and the answer picks the tile's tint, decides whether the entry popup offers the Learn button or the Enable and Disable toggle, and shows or hides the cost. Forcing false on an owned perk lets the player buy it again, which spends the essence and runs Ari.acquire_perk() as a re-grant. Forcing true hides the Learn button without writing ARI.perks. The perk's effect is never read through this predicate."
+
+[[hook]]
+name = "store.basket_cost"
+kind = "filter"
+doc  = "Fires in StoreMenu.update_prices(), after the basket total is summed and before it is displayed, on every price pass: menu init, category select, shelf tap, and basket pop or drain. The filtered value is the basket total, the sum over basket slots of item.store_value() times the store's price markup times the slot count. ctx is { menu }: menu is the StoreMenu (menu.store.id is the Store id, menu.basket is the Inventory cart, menu.price_markup is the store's markup). Return a replacement number, or undefined to keep the current value. A non-numeric return is dropped and the sum stands. The result drives the receipt total and its can't-afford colour, the remaining-gold figure the shelf colouring reads, the Buy gate, and the gold charged at Buy, which reads the last stored total without recomputing. Per-item shelf labels, the store tooltip price, and the purchase stat's cost do not pass through it. items.store_price covers those. A return of exactly 0 locks the Buy button, because the gate requires a positive total. set_gold floors and truncates the charge, but the receipt shows the returned number as is."
+
+[[hook]]
+name = "items.store_price"
+kind = "filter"
+doc  = "Fires whenever LiveItem.store_value() returns, the base buy price a store charges for an item before the store's markup. The filtered value is the number store_value() computed, which is the prototype's value.store, the star price for a recipe scroll, or a cosmetic's price override, with the DiscountTreats perk already applied. ctx is { item, menu }: item is the LiveItem being priced, and menu is the StoreMenu pricing it (menu.store.id is the Store id, menu.price_markup is the store's markup). Return a replacement number, or undefined to keep the current value. Nothing guards the type, so a non-numeric return breaks the price arithmetic at the caller. Every caller in the shipped engine is on the buy side and belongs to the store menu: the shelf price labels, the shelf can't-afford colouring, the basket sum that store.basket_cost then filters, the store tooltip price, and the cost recorded in the purchase stats. The first price pass runs inside the StoreMenu constructor, before the menu is pushed onto open_menus, so ANCHOR.get_menu(Menu.Store) is still undefined for the initial shelf labels, basket sum, and tooltip, while ctx.menu is already the menu. The store's per-ledger markup multiplies on top of the returned value at each caller, so return a base price. The sell price, bin_value(), never routes through this hook. Fires for every shelf item and basket slot on each price pass, so put the cheapest test first. Every price pass rewrites the shelf label text along with the label colour, the receipt, and the Buy lock, so a handler whose answer changes while the shop is open calls menu.update_prices() to show it. The same pass rewrites the open tooltip's price. The tooltip's title, description, and stars are built once at spawn and are not refreshed."
+
+[[hook]]
+name = "store.purchase"
+kind = "event"
+doc  = "Fires in the StoreMenu Buy callback after the basket is drained, the purchase stats recorded, the once-per-year bans written, and the purchases grouped into stacks, immediately before the engine gives the stacks and charges the total. ctx is { menu, items, total }: menu is the StoreMenu, items is the engine's List of Lists with one inner List per stack about to be given (first() is the LiveItem, count() the stack size), and total is the gold about to be charged, after store.basket_cost. Observation only. The engine gives from the same List after the emit, so mutating items changes what lands and is unsupported. Nothing can abort between this fire and the charge. The basket is already empty, and give_item drops any overflow at the player's feet. items.give fires once per stack after this hook, and player.gold_delta sees the charge as one negative delta. The menu closes after the charge, so stock shown on the next open comes from a fresh create_store_stock build."
+
+[[hook]]
+name = "store.stock"
+kind = "filter"
+doc  = "Fires whenever create_store_stock(store) returns, the one builder every store shelf reads. The filtered value is the List of categories the engine built, each { icon, items }: icon is the category's carousel sprite and items is a List of LiveItem in shelf order. ctx is { store, menu }: store is the Store id, and menu is the StoreMenu under construction for the StoreMenu init fire and undefined at the other three sites. Mutate the Lists in place, return a replacement List, or return undefined to keep the current value. Fires at four sites: StoreMenu init on every store open, the Inn's stock build at game setup and on each new day (INN_STOCK, which villagers read to pick what they eat), and the blacksmith ledger's tool display. The init fire runs inside the menu's constructor, before the menu is pushed onto open_menus, so ctx.menu names it where ANCHOR.get_menu cannot. STORES[store] is the parsed store entry, with any keys a mod's stores.toml added. The setup fire lands before the first frame, so a handler that reads a mod save must decline until mmapi_io_is_ready(). The new-day fire lands after game.new_day. The value is already past the requirements and purchasable() retain and the empty-category pruning, so entries a handler adds are not re-validated, and a handler must not return an empty List. A category needs an icon sprite asset to get a carousel tab, and the shelf shows at most 25 entries per category. The engine builds stock once per open and Buy closes the menu, so a change written from store.purchase shows on the next open. Static and requirement-gated stock belongs in a mod's stores.toml. This hook is for stock the data cannot compute."
 
 # --- seams -------------------------------------------------------------------------
 
@@ -3744,6 +3764,144 @@ ctx     = "{ perk: entry.perk }"
 blank_before = true
 catch_var = "__mmapi_shrine_acquired"
 marker  = "mmapi_ui_shrine_entry_is_acquired"
+
+# The basket total filter carries a type guard. The total is compared and
+# subtracted right after the site's catch closes, so a non-numeric handler
+# value would survive the catch and throw at the receipt's affordability
+# compare, outside any isolation. The guard only binds on handler output
+# vanilla never produces, so with zero handlers the pristine lines around
+# the added block are byte-identical and the total is untouched.
+[[seam]]
+id      = "store_basket_cost"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+anchor  = '''
+                return (slot.item.store_value() * self.price_markup) * slot.count;
+            }
+        });
+        self.total_count
+'''
+replace = '''
+                return (slot.item.store_value() * self.price_markup) * slot.count;
+            }
+        });
+        try {
+            var __mmapi_basket_cost = mmapi_apply_filters("store.basket_cost", self.basket_total, { menu: self }); // mmapi_store_run_basket_cost_filters
+            if (is_real(__mmapi_basket_cost) || is_int64(__mmapi_basket_cost)) {
+                self.basket_total = __mmapi_basket_cost;
+            }
+        } catch (__mmapi_basket_cost_err) {}
+        self.total_count
+'''
+marker   = "mmapi_store_run_basket_cost_filters"
+provides = ["store.basket_cost"]
+
+[[seam]]
+id      = "items_store_price"
+file    = "gml/scripts/GameplaySystems/Items/LiveItem.gml"
+target  = { fn = "store_value" }
+op      = "wrap"
+hook    = "items.store_price"
+ctx     = '{ item: self, menu: global[$ "__mmapi_store_menu"] ?? ANCHOR.get_menu(Menu.Store) }'
+blank_before = true
+catch_var = "__mmapi_items_store_price"
+marker  = "mmapi_items_store_price"
+
+[[seam]]
+id      = "store_purchase"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+context_before = '''
+                if idx == undefined {
+                    item_list_of_lists.push(List(item));
+                } else {
+                    item_list_of_lists.get(idx).push(item);
+                }
+            }
+
+'''
+context_after = '''
+            item_list_of_lists.for_each(function(item_data) {
+                ARI.give_item(item_data.first(), item_data.count(), true, false);
+            });
+            ARI.modify_gold(-self.basket_total);
+'''
+op      = "emit"
+hook    = "store.purchase"
+ctx     = "{ menu: self, items: item_list_of_lists, total: self.basket_total }"
+indent  = 12
+marker  = "mmapi_store_run_purchase"
+
+[[seam]]
+id      = "store_stock"
+file    = "gml/scripts/Stores.gml"
+target  = { fn = "create_store_stock" }
+op      = "wrap"
+hook    = "store.stock"
+ctx     = '{ store: store, menu: global[$ "__mmapi_store_menu"] }'
+blank_before = true
+catch_var = "__mmapi_store_stock"
+marker  = "mmapi_store_stock"
+
+# The StoreMenu prices its shelf and builds its stock inside init(), which the
+# constructor calls before ANCHOR pushes the menu onto open_menus, so
+# ANCHOR.get_menu cannot name the menu during that pass. This companion edit
+# holds the menu in a framework global for exactly the span of init(), and the
+# two wraps whose dispatch can run inside that span read it into their ctx. It
+# dispatches nothing, and with zero handlers nothing reads the global.
+[[seam]]
+id      = "store_menu_ctx_pointer"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+anchor  = '''
+    self.init();
+}'''
+replace = '''
+    global.__mmapi_store_menu = self; // mmapi_store_menu_ctx_pointer
+    self.init();
+    global.__mmapi_store_menu = undefined;
+}'''
+marker   = "mmapi_store_menu_ctx_pointer"
+provides = ["items.store_price", "store.stock"]
+
+# The StoreMenu writes a shelf label's price text only when a tab is selected.
+# Its price pass recomputes the same number for every shelf item on each basket
+# change, but uses it only to pick the label colour. This companion edit has
+# the pass write the number it already computed, so a filtered price that
+# changes while the menu is open reaches the label on the next pass. It
+# dispatches nothing. The expression is the one tab selection uses, so with
+# zero handlers the text written is the text already shown.
+[[seam]]
+id      = "store_shelf_label_refresh"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+anchor  = '''
+            var value = round(item.store_value() * self.price_markup);
+            text.set_color(value > remaining_gold ? CANNOT_AFFORD_TEXT_COLOR : c_white);'''
+replace = '''
+            var value = round(item.store_value() * self.price_markup);
+            text.set_text(value); // mmapi_store_shelf_label_refresh
+            text.set_color(value > remaining_gold ? CANNOT_AFFORD_TEXT_COLOR : c_white);'''
+marker   = "mmapi_store_shelf_label_refresh"
+provides = ["items.store_price"]
+
+# The store tooltip writes its price text once, when the tooltip spawns, and
+# the StoreMenu keeps the tooltip and its price node on hand. This companion
+# edit has the price pass rewrite that node with the price it would compute
+# now, the same expression the tooltip used at spawn. A filtered price that
+# changes while the menu is open therefore reaches the open tooltip on the
+# next pass without re-spawning it. It dispatches nothing, and with zero
+# handlers the text written is the text already shown.
+[[seam]]
+id      = "store_tooltip_price_refresh"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+anchor  = '''
+        }
+        self.buy_button.set_unlocked(remaining_gold >= 0 && self.basket_total > 0);'''
+replace = '''
+        }
+        if self.tooltip != undefined && self.tooltip.gold_text != undefined && self.tooltip.item != undefined { // mmapi_store_tooltip_price_refresh
+            self.tooltip.gold_text.set_text(round(self.tooltip.item.store_value() * self.price_markup));
+        }
+        self.buy_button.set_unlocked(remaining_gold >= 0 && self.basket_total > 0);'''
+marker   = "mmapi_store_tooltip_price_refresh"
+provides = ["items.store_price"]
 
 # --- call rewrites -----------------------------------------------------------------
 

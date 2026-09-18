@@ -27,4 +27,5 @@ With zero handlers a wrap is behaviorally (not byte-) equivalent to pristine: th
 - [ui.item_icon](../hooks/ui.item_icon.md) - This is the hook this seam dispatches.
 - [ui_item_icon_obj_item_world](ui_item_icon_obj_item_world.md) - This is the world-drop dispatch site for the same hook.
 - [obj_item_outline_sprite](obj_item_outline_sprite.md) - This is the companion edit that reroutes the world-item outline draw.
-- [item_display_description](item_display_description.md) - This is the other `LiveItem.gml` wrap.
+- [item_display_description](item_display_description.md) - This is the `LiveItem.gml` wrap for the tooltip description.
+- [items_store_price](items_store_price.md) - This is the `LiveItem.gml` wrap for the buy price.
