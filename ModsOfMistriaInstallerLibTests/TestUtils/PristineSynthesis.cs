@@ -43,6 +43,23 @@ public static class PristineSynthesis
 
             var text = survivors.Count > 0 ? string.Join("\n\n", survivors) + "\n" : "";
 
+            // the stager accepts a read any sibling payload declares, so
+            // those reads need no planting here and would collide with a
+            // marker doubling as the declared name
+            var declarations = entries
+                .Select(e => (e.Id, Declared: PayloadReads.Declarations(e.Replace)))
+                .ToList();
+
+            List<string> UnprovidedReads(SeamEntry entry)
+            {
+                HashSet<string> siblingDeclared = [];
+                foreach (var (id, declared) in declarations)
+                    if (id != entry.Id) siblingDeclared.UnionWith(declared);
+                return PayloadReads.ScopeReads(entry.Replace)
+                    .Where(name => !siblingDeclared.Contains(name))
+                    .ToList();
+            }
+
             // target and wrap seams resolve against a function body, so
             // synthesise a skeleton for any targeted function the text anchors
             // do not already carry, its body holding that function's token anchors
@@ -66,8 +83,28 @@ public static class PristineSynthesis
                 var body = string.Concat(targeted[fn]
                     .Where(e => e.TargetAnchor.Length > 0)
                     .Select(e => $"    {e.TargetAnchor}\n"));
+
+                // the stager holds every payload scope read against the target
+                // function's span, so the skeleton mentions them too
+                var reads = targeted[fn]
+                    .SelectMany(UnprovidedReads)
+                    .Distinct()
+                    .ToList();
+                body += string.Concat(reads.Select(name => $"    {name} = undefined;\n"));
                 text += (text.Length > 0 ? "\n" : "") + $"function {fn}() {{\n{body}}}\n";
             }
+
+            // text-located entries face the same scope-read check with a
+            // file-wide fallback in this flat stand-in, so their reads land
+            // as top-level lines
+            var anchorReads = entries
+                .Where(e => e.TargetFn.Length == 0)
+                .SelectMany(UnprovidedReads)
+                .Distinct()
+                .ToList();
+            if (anchorReads.Count > 0)
+                text += (text.Length > 0 ? "\n" : "")
+                        + string.Concat(anchorReads.Select(name => $"{name} = undefined;\n"));
 
             pristine[file] = text;
         }

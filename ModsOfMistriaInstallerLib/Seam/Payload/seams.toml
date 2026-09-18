@@ -33,15 +33,14 @@
 # behaviorally (not byte-) equivalent to pristine.
 # Anchors are matched after normalizing \r\n to \n.
 # Apply order is catalog order plus `depends_on` edges (topo-sorted, stable).
-# Hook-less edits live in [[engine_fix]]: game_step_begin_installs (the mmapi
-# lifecycle root),
-# tarball_chop_burn_flag (the tarball chop's hardcoded is_burn, which
-# burn-throttled every non-fire tarball chop against stump/fruit-tree iframes),
-# max_crafts_zero_component (the Item-loop division missing the zero guard
-# its own Duration branch has, so a zero-cost component crashed the craft menu),
-# and the two fish_chest fixes (fish_chest_item_use and fish_chest_custom_rarity,
-# which widen the engine's identity-keyed fishing-chest sites into the
-# fish_chest item-data contract alongside the fish_chest_table_lookup seam).
+# Hook-less edits live in [[engine_fix]] records, and each fix carries its own
+# rationale comment in the engine fixes section.
+#
+# The file groups records by type: hook declarations, then seams, then call
+# rewrites, then engine fixes, each section under its banner. New records go
+# at the end of their type's section. Within a section, file order is apply
+# order for that type, and `depends_on` is the only declared ordering
+# mechanism.
 
 version = 2
 
@@ -50,9 +49,9 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 128
-seams = 139
-engine_fixes = 7
+hooks = 133
+seams = 146
+engine_fixes = 8
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -273,9 +272,9 @@ kind = "event"
 doc  = "Fires in the dungeon breakables logic when a treasure chest starts its drop chain. ctx is { node, object_id, x, y }, with x and y read from the node renderer."
 
 [[hook]]
-name = "dungeon.side_room_chance"
+name = "dungeon.side_room_range"
 kind = "filter"
-doc  = "Filters the spawn chance passed to try_create_side_room() at the head of that function, before the per-floor roll. ctx is { impl, is_ritual, max_flr }; is_ritual is true when impl == DungeonImpl.Ritual (the pre-computed convenience flag so consumers need not reference the DungeonImpl enum). Return an adjusted chance (0-100) to raise/lower the odds of a treasure/ritual side room; return the value unchanged (or undefined) to defer. Fires for every side-room impl the runner attempts."
+doc  = "Filters the floor span passed to try_create_side_room() at the head of that function, before the uniform floor pick. ctx is { impl, is_ritual, start_floor }; is_ritual is true when impl == DungeonImpl.Ritual (the pre-computed convenience flag so consumers need not reference the DungeonImpl enum). The side room's floor is drawn from start_floor through start_floor plus the value; return a smaller span to keep the room near the entry floor, a larger one to spread it deeper, where a pick at floor 100 or past it yields no side room. Return the value unchanged (or undefined) to defer. Fires for every side-room impl the runner attempts, after the engine's own perk and once-per-day gates."
 
 [[hook]]
 name = "fishing.should_reel"
@@ -454,11 +453,6 @@ doc  = "Fires every frame for every monster in par_monster's begin step, right a
 name = "museum.donate_item"
 kind = "event"
 doc  = "Fires at the top of donate_item_to_museum(), before the item is registered to the collection and before the pending renown entry is pushed. ctx is { item_id }. Observation only - the DonationResult the function goes on to compute (progress, completed set, rewards) is decided after the emit. Fires once per donated item, from the museum donation menu and the engine's test suite; save load and the ALL_UNLOCKS new-game path write donations through register_item_to_museum() directly and never fire this hook."
-
-[[hook]]
-name = "player.acquire_perk"
-kind = "event"
-doc  = "Fires at the top of Ari.acquire_perk(perk), before the perk is flagged owned and active and before its acquisition side effects (the Guardian's Shield extra invulnerable hit, the Ancient Inspiration timer reset) run. ctx is { perk }, the Perk enum id. Observation only. Fires on every acquisition path - the Dragonshrine purchase (the essence is already spent when the emit runs), the debug CLI grant, and the ALL_UNLOCKS new-game grant-all loop - but never on save load, which restores the perk arrays directly. Toggling an owned perk on or off never fires either: the shrine menu and the debug CLI flip perks_active directly, without entering acquire_perk."
 
 [[hook]]
 name = "player.died"
@@ -707,6 +701,38 @@ doc  = "Fires at backplate sprite assignments. ctx.source names the site: mines_
 name = "ui.toolbar_tick"
 kind = "event"
 doc  = "Fires every toolbar tick, after the subscriber pull and update and before press-and-hold processing. ctx is the ToolbarMenu."
+
+[[hook]]
+name = "furniture.preview_sprite"
+kind = "filter"
+doc  = "Fires in create_test_placement_furniture_draw_info() as the furniture placement preview resolves each sprite it will draw: the translucent ghost (obj_furniture_previewer) shown under the cursor while a placeable furniture item is held. ctx.source names the dispatch site: main_sprite (the piece's main sprite, after the engine's own {Season}_sprite override) and floor_sprite (the floor sprite, which the preview reads raw; the engine applies no winter_floor_sprite override here). The filtered value is that sprite. ctx is { object_id, prototype, cardinal_index, x, y, source }: object_id and prototype describe the piece being previewed (after the house-stairs pairing swap), cardinal_index is the resolved rotation, and x and y are the centred anchor cell. There is no node, because nothing is placed yet. Return the replacement sprite, or undefined to keep the current value. Fires EVERY FRAME while a placeable is held, once per site the piece has, so handlers must be cheap: look the value up first and return undefined fast when it is not yours. A mod that swaps a placed piece's sprite through object.node_sprite or furniture.floor_sprite and wants the ghost to agree registers the same handler here."
+
+[[hook]]
+name = "ui.eod_calendar_events"
+kind = "filter"
+doc  = "Fires in EodMenu.play_calendar_sequence(), after the engine has gathered tomorrow's calendar events and before build_notifications() turns them into the notification rows under the end-of-day calendar. The filtered value is menu.events, the List of event structs (count()/get()/push()/insert(), not an array). Every vanilla entry carries a type from the CalendarEvent enum plus that type's payload, in the engine's gathering order. ctx is { menu, target_date }: menu is the EodMenu running the sequence, and target_date is the calendar timestamp of the day about to begin (CALENDAR.time + days(1)), the same value the engine passes to build_notifications(). Mutate the List in place, return a replacement List, or return undefined to keep the current one. A return that is not a List is dropped and the engine's List stands. A custom entry is a struct { type, key, icon, npcs }, where type must be a value no vanilla case matches (CalendarEvent.LEN is the convention), key is the localization key the row text resolves through set_key() (wrap literal text with ANCHOR.wrap_for_local()), icon is the sprite drawn left of the text, and npcs is optional, a boolean array with NpcId.LEN entries that adds the vanilla underline of small NPC icons. Extra fields are ignored. The companion build_notifications() edit resolves those three fields for any entry whose type matches no vanilla case, so a custom row takes the vanilla layout, spacing, fade-in, and calendar recentering. The fade-in gate reads the final List, so adding to an empty List shows the block and emptying it hides the block. Fires once per end-of-day sequence, from the Next Day button's chain after the renown sequence and rename popups, and never from the test suite's end_sequence() shortcut."
+
+[[hook]]
+name = "factory.product_drops"
+kind = "filter"
+doc  = "Fires in the factory give-item interaction, the InputId.Throw interaction create_furniture_renderer() registers on an apiary or terrarium that is waiting for its requested item, after the requested item is popped from the player's hand and the engine has rolled the tier reward and the apiary's 15 percent honeycomb bonus, and before anything drops. The filtered value is the array of products about to drop, [reward] or [reward, ItemId.Honeycomb], where each element is an item id or a LiveItem, whatever drop_item() accepts. ctx is { node, production_request, production_tier }: node is the factory's grid node (node.object_id, node.prototype.factory.rewards_map, node.inventory, node.renderer), production_request is the item id the factory asked for and the player just handed over, and production_tier is the FactoryTier the roll used, an index into rewards_map resolved from the bees or bugs inside when the request was made. Return a replacement array, mutate the array in place, or return undefined to keep the current list. A return that is not an array is dropped and the rolled list stands. Each element then drops through its own drop_item() call at the factory's renderer position, so items.dropped fires once per element, and an empty array drops nothing. The hand pop, the bounce animation, the reward sound, and the request reset run whatever the array holds. The seam rolls the honeycomb bonus before the first drop instead of between the two vanilla drops, so with zero handlers the same rolls happen in the same order and only the drop scatter draws move behind them. Fires once per collection."
+
+[[hook]]
+name = "player.perk_acquired"
+kind = "event"
+doc  = "Fires at the end of Ari.acquire_perk(perk), after the perk is flagged owned and active, after its acquisition side effects (the Guardian's Shield extra invulnerable hit, the Ancient Inspiration timer reset) have run, and after the stats entry is pushed and the achievements refresh. ctx is { perk }, the Perk enum id. Observation only, and the flags are already written when handlers run, so a handler that sets ARI.perks_active[perk] itself has the last word on whether the perk takes effect. Fires on every acquisition path (the Dragonshrine purchase, the debug CLI grant, and the ALL_UNLOCKS loop that grants every perk to a new game) but never on save load, which restores the perk arrays directly. Toggling an owned perk on or off never fires either, because the shrine menu and the debug CLI flip perks_active directly without entering acquire_perk. In vanilla play every acquisition is a first acquisition, since the shrine only offers Learn for an unowned perk."
+
+[[hook]]
+name = "player.perk_purchased"
+kind = "event"
+doc  = "Fires at the end of DragonShrineMenu.purchase_entry(entry), after the shrine has spent the entry's essence through Ari.modify_essence() (so player.essence_delta has already run) and after Ari.acquire_perk() has run for it (so player.perk_acquired has already fired). ctx is { perk }, the Perk enum id of the entry the player bought. Observation only. purchase_entry() is the one purchase path in the engine, the Learn button of the Caldarus, Seridia, and horse statue shrine menus, so it fires exactly once per confirmed purchase and never for the debug CLI grant, the ALL_UNLOCKS loop, or save load."
+
+[[hook]]
+name = "ui.shrine_entry_is_acquired"
+kind = "filter"
+doc  = "Fires at the return of DragonShrineMenu.entry_is_acquired(entry). The filtered value is the boolean the shrine menus use to treat an entry as already bought, which pristine reads straight from ARI.perks[entry.perk]. ctx is { perk }, the entry's Perk enum id. Return the replacement boolean, or undefined to keep the current value. The menu asks this for every tile on the tier screen every frame, and the answer picks the tile's tint, decides whether the entry popup offers the Learn button or the Enable and Disable toggle, and shows or hides the cost. Forcing false on an owned perk lets the player buy it again, which spends the essence and runs Ari.acquire_perk() as a re-grant. Forcing true hides the Learn button without writing ARI.perks. The perk's effect is never read through this predicate."
+
+# --- seams -------------------------------------------------------------------------
 
 [[seam]]
 id      = "animal_heart_points"
@@ -2307,15 +2333,15 @@ indent  = 8
 marker  = "mmapi_dungeon_run_ladder_spawn_guards"
 
 [[seam]]
-id      = "dungeon_side_room_chance"
+id      = "dungeon_side_room_range"
 file    = "gml/scripts/GameplaySystems/Dungeon/DungeonRunner.gml"
 target  = { fn = "try_create_side_room", at = "head" }
 op      = "filter"
-hook    = "dungeon.side_room_chance"
-ctx     = "{ impl: impl, is_ritual: impl == DungeonImpl.Ritual, max_flr: max_flr }"
-var     = "chance_val"
+hook    = "dungeon.side_room_range"
+ctx     = "{ impl: impl, is_ritual: impl == DungeonImpl.Ritual, start_floor: start_floor }"
+var     = "range"
 indent  = 4
-marker  = "mmapi_dungeon_run_side_room_chance_filters"
+marker  = "mmapi_dungeon_run_side_room_range_filters"
 
 [[seam]]
 id      = "dungeon_treasure_chest"
@@ -2678,202 +2704,10 @@ replace = '''
 marker  = "mmapi_interact_run_action_guards"
 provides = ["interact.ladder_down_action"]
 
-[[engine_fix]]
-name    = "game_step_begin_installs"
-file    = "gml/objects/Game.gml"
-anchor  = '''
-        step_begin: function() {
-            TICK++;'''
-replace = '''
-        step_begin: function() {
-            mmapi_run_installs();
-            TICK++;'''
-marker  = "mmapi_run_installs();"
-
-[[engine_fix]]
-name    = "tarball_chop_burn_flag"
-file    = "gml/objects/Combat/obj_damage_tarball.gml"
-anchor  = '''
-                                    var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, true);
-                                    if success && has_flag(self.flags, CombatFlag.Fire) {
-'''
-replace = '''
-                                    var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, has_flag(self.flags, CombatFlag.Fire)); // mmapi_tarball_chop_burn_flag
-                                    if success && has_flag(self.flags, CombatFlag.Fire) {
-'''
-marker  = "mmapi_tarball_chop_burn_flag"
-
-[[engine_fix]]
-name    = "max_crafts_zero_component"
-file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
-anchor  = '''
-        for (var i = 0; i < recipe.count(); i++) {
-            var comp = recipe.get(i);
-            var denominator = get_modified_component_count(comp, self.context, item.item_id);
-            var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
-'''
-replace = '''
-        for (var i = 0; i < recipe.count(); i++) {
-            var comp = recipe.get(i);
-            var denominator = get_modified_component_count(comp, self.context, item.item_id);
-            if denominator == 0 { continue; } // mmapi_max_crafts_zero_component
-            var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
-'''
-marker  = "mmapi_max_crafts_zero_component"
-
-# The two edits below carry a data contract instead of a hook. An item
-# fiddle entry may declare fish_chest = "<key>", naming an entry under
-# fishing/chest_tables. The engine's fishing-chest pipeline is data-driven
-# everywhere except three identity-keyed sites. These two widen the item-use
-# and chest-rarity sites, and the seam fish_chest_table_lookup widens the
-# third while dispatching items.chest_opened. No vanilla data reaches any
-# widened branch, so with no modded data the staged control flow behaves
-# exactly as pristine.
-
-# Widens the OpenChest use assignment so a fiddle item carrying fish_chest
-# opens like the five hardcoded chest items. The key is copied onto the
-# prototype for the AriFsm table lookup. Vanilla items never carry the field.
-[[engine_fix]]
-name    = "fish_chest_item_use"
-file    = "gml/scripts/GameplaySystems/Items/Items.gml"
-anchor  = '''
-        } else if matches(prototype.item_id, ItemId.TreasureBoxWood, ItemId.TreasureBoxCopper, ItemId.TreasureBoxSilver, ItemId.TreasureBoxGold, ItemId.AbyssalChest) {
-            prototype.use = ItemUse.OpenChest;
-'''
-replace = '''
-        } else if matches(prototype.item_id, ItemId.TreasureBoxWood, ItemId.TreasureBoxCopper, ItemId.TreasureBoxSilver, ItemId.TreasureBoxGold, ItemId.AbyssalChest)
-            || fiddle_data[$ "fish_chest"] != undefined { // mmapi_fish_chest_item_use
-            prototype.fish_chest = fiddle_data[$ "fish_chest"];
-            prototype.use = ItemUse.OpenChest;
-'''
-marker  = "mmapi_fish_chest_item_use"
-
-# The chest-rarity switch in create_fish_distributions enumerates the four
-# vanilla rarities for perk adjustments and aborts Setup on anything else.
-# A modded chest rarity now takes the default and simply gets no perk vote
-# adjustments. Its base votes still come from its fishing/votes entry.
-[[engine_fix]]
-name    = "fish_chest_custom_rarity"
-file    = "gml/scripts/GameplaySystems/Fishing/Fish.gml"
-anchor  = '''
-                default: impossible("unexpected chest rarity: {}", fish_proto.rarity);
-'''
-replace = '''
-                default: break; // A modded chest rarity gets no perk vote adjustments. // mmapi_fish_chest_custom_rarity
-'''
-marker  = "mmapi_fish_chest_custom_rarity"
-
-[[engine_fix]]
-name    = "customization_color_popup_scrollable"
-file    = "gml/scripts/UI/Anchor/Menus/CustomizationMenu.gml"
-anchor  = '''
-        var container_size = layout.container_size();
-        var container = ANCHOR.positional(popup.backplate)
-            .set_size(container_size)
-            .set_align(Align.Center, Align.BottomIn)
-            .set_y(-13)
-
-        popup.backplate.add_height(container_size.y);'''
-replace = '''
-        var container_size = layout.container_size();
-        var mmapi_lut_selector_scrollable = 23 * 7;
-        var container;
-        if (container_size.y > mmapi_lut_selector_scrollable) {
-            var __mmapi_lut_side = SCROLLBAR_WIDTH + 8;
-            popup.backplate.set_width(container_size.x + 1 + __mmapi_lut_side * 2);
-            popup.backplate.add_height(mmapi_lut_selector_scrollable);
-            var __mmapi_lut_body = ANCHOR.positional(popup.backplate)
-                .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_lut_selector_scrollable)
-                .set_align(Align.LeftIn, Align.BottomIn)
-                .set_x(__mmapi_lut_side)
-                .set_y(-13)
-            var __mmapi_lut_scroller = create_scroller_ext(
-                __mmapi_lut_body,
-                Vec2(0, 0),
-                Vec2(container_size.x + 1, mmapi_lut_selector_scrollable),
-                Vec2(Align.LeftIn, Align.TopIn),
-                Vec2(container_size.x + 5, -1),
-                Vec2(SCROLLBAR_WIDTH, mmapi_lut_selector_scrollable + 2),
-                Vec2(Align.LeftIn, Align.TopIn))
-                .subscribe_to_pilot(popup.pilot)
-                .alternate_colors(false)
-            var __mmapi_lut_element = __mmapi_lut_scroller.new_element(1);
-            container = ANCHOR.positional(__mmapi_lut_element)
-                .set_size(container_size)
-                .set_align(Align.LeftIn, Align.TopIn)
-                .set_y(__mmapi_lut_element.get_height())
-            __mmapi_lut_scroller.add_height_to_element(__mmapi_lut_element, container_size.y + 2);
-        } else {
-            container = ANCHOR.positional(popup.backplate)
-                .set_size(container_size)
-                .set_align(Align.Center, Align.BottomIn)
-                .set_y(-13)
-
-            popup.backplate.add_height(container_size.y);
-        }'''
-marker  = "mmapi_lut_selector_scrollable"
-
-[[engine_fix]]
-name    = "pet_appearance_popup_scrollable"
-file    = "gml/scripts/AnimalMenu.gml"
-anchor  = '''
-    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
-
-    var container_size = layout.container_size();
-    var container = ANCHOR.positional(popup.backplate)
-        .set_size(container_size)
-        .set_align(Align.Center, Align.Middle)
-        .set_y(9)
-
-    popup.backplate.add_height(container_size.y);'''
-replace = '''
-    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
-
-    var container_size = layout.container_size();
-    var mmapi_pet_appearance_scrollable = 23 * 7;
-    var container;
-    if (container_size.y > mmapi_pet_appearance_scrollable) {
-        var __mmapi_pet_side = SCROLLBAR_WIDTH + 8;
-        popup.backplate.set_width(container_size.x + 1 + __mmapi_pet_side * 2);
-        popup.backplate.add_height(mmapi_pet_appearance_scrollable);
-        var __mmapi_pet_body = ANCHOR.positional(popup.backplate)
-            .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_pet_appearance_scrollable)
-            .set_align(Align.LeftIn, Align.BottomIn)
-            .set_x(__mmapi_pet_side)
-            .set_y(-13)
-        var __mmapi_pet_scroller = create_scroller_ext(
-            __mmapi_pet_body,
-            Vec2(0, 0),
-            Vec2(container_size.x + 1, mmapi_pet_appearance_scrollable),
-            Vec2(Align.LeftIn, Align.TopIn),
-            Vec2(container_size.x + 5, -1),
-            Vec2(SCROLLBAR_WIDTH, mmapi_pet_appearance_scrollable + 2),
-            Vec2(Align.LeftIn, Align.TopIn))
-            .subscribe_to_pilot(popup.pilot)
-            .alternate_colors(false)
-        var __mmapi_pet_element = __mmapi_pet_scroller.new_element(1);
-        container = ANCHOR.positional(__mmapi_pet_element)
-            .set_size(container_size)
-            .set_align(Align.LeftIn, Align.TopIn)
-            .set_y(__mmapi_pet_element.get_height())
-        __mmapi_pet_scroller.add_height_to_element(__mmapi_pet_element, container_size.y + 2);
-    } else {
-        container = ANCHOR.positional(popup.backplate)
-            .set_size(container_size)
-            .set_align(Align.Center, Align.Middle)
-            .set_y(9)
-
-        popup.backplate.add_height(container_size.y);
-    }'''
-marker  = "mmapi_pet_appearance_scrollable"
-
-# The remaining entries are appended after the earlier ones on purpose. Catalog
-# order is apply order, and two of them stack onto files already seamed above
-# (dialogue_play_guard onto ConversationDriver.gml after dialogue_path, and
-# game_save_guard onto SaveGame.gml after save_game_saving). Their anchors are
-# pristine text that the earlier seams' replaces re-emit verbatim, so they match
-# exactly once against both the pristine file and the staged file.
-
+# This entry depends on dialogue_path, an earlier seam in the same file. Its
+# anchor is pristine text that the dialogue_path replace re-emits verbatim, so
+# the anchor matches exactly once against both the pristine and the staged
+# file.
 [[seam]]
 id      = "dialogue_play_guard"
 file    = "gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml"
@@ -2998,6 +2832,10 @@ ctx     = "{ color: color, sprite: sprite }"
 on_veto = "return;"
 marker  = "mmapi_player_run_heal_vfx_guards"
 
+# This entry depends on save_game_saving, an earlier seam in the same file.
+# Its anchor is pristine text that the save_game_saving replace re-emits
+# verbatim, so the anchor matches exactly once against both the pristine and
+# the staged file.
 [[seam]]
 id      = "game_save_guard"
 file    = "gml/scripts/Serialization/SaveGame.gml"
@@ -3251,7 +3089,7 @@ marker  = "mmapi_ui_run_vitals_refreshed"
 # call is already gone when this fires. The emit hands handlers the rebuilt menu
 # (ctx.menu carries scroller, left_pilot, and category_index) so they can put
 # the view back after the post-craft refresh. The anchor is pristine text that
-# the file's earlier entries (crafting_max_crafts, ui_item_node_crafting_menu,
+# the file's other entries (crafting_max_crafts, ui_item_node_crafting_menu,
 # and the max_crafts_zero_component engine fix) never touch, so it matches
 # exactly once against the staged file too.
 [[seam]]
@@ -3502,28 +3340,6 @@ replace = '''
 marker  = "mmapi_camera_run_culls_processed"
 provides = ["camera.culls_processed"]
 
-# local_get is a native builtin (fabricator extension): the pristine tree has no
-# GML body for it, so no template, target, text, or wrap form can reach inside
-# it and a wrap has nothing to rename. The waist is created instead by
-# redirecting every GML call site to the framework wrapper: 107 calls on 102
-# lines across 35 files at catalog time, every one a direct single-argument
-# call, none in member-access or reference position (verified against
-# pristine). Token-matched: the identifier local_get immediately applied with
-# an open paren; the distinct identifiers local_get_info, local_get_pronouns,
-# and local_get_default_pronouns can never match. Applied after all
-# [[seam]]/[[engine_fix]] edits so anchored seams keep matching pristine text;
-# call tokens inside seam-injected text are rewritten too (correct semantics).
-# scripts/mmapi/ is excluded from the rewrite so the wrapper's own native call
-# survives. Zero handlers = behavioral (not byte) equivalence, the wrap
-# tradeoff writ wide. In exchange, engine updates that add call sites are
-# covered automatically.
-[[call_rewrite]]
-id       = "local_get_dispatch"
-callee   = "local_get"
-to       = "mmapi_local_get"
-args     = 1
-provides = ["local.get", "local.missing"]
-
 [[seam]]
 id      = "ui_spawn_tutorial_guard"
 file    = "gml/scripts/UI/Anchor/anchor_utils.gml"
@@ -3533,16 +3349,6 @@ hook    = "ui.spawn_tutorial_guard"
 ctx     = "{ tutorial: tutorial }"
 on_veto = "return undefined;"
 marker  = "mmapi_ui_spawn_tutorial_guard"
-
-[[seam]]
-id      = "player_acquire_perk"
-file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
-target  = { fn = "acquire_perk", at = "head" }
-op      = "emit"
-hook    = "player.acquire_perk"
-ctx     = "{ perk: perk }"
-indent  = 8
-marker  = "mmapi_player_acquire_perk"
 
 [[seam]]
 id      = "museum_donate_item"
@@ -3741,3 +3547,465 @@ replace = '''
 '''
 marker  = "mmapi_fish_chest_table_lookup"
 provides = ["items.chest_opened"]
+
+[[seam]]
+id      = "furniture_preview_sprite"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
+context_before = '''
+    if seasonal_override != undefined {
+        spr = seasonal_override;
+    }
+'''
+context_after = '''
+    furniture_renderer.sprite_index = spr;
+'''
+op      = "filter"
+hook    = "furniture.preview_sprite"
+ctx     = '{ object_id: object_id, prototype: proto, cardinal_index: calc_rot, x: xx, y: yy, source: "main_sprite" }'
+var     = "spr"
+indent  = 4
+try_catch = true
+catch_var = "__mmapi_preview_sprite"
+marker  = "mmapi_furniture_preview_sprite"
+
+# The preview reads the floor sprite straight off the prototype into the previewer's
+# bottom_sprite field, with no local to filter, so this is a text seam that introduces one.
+# It applies no winter_floor_sprite override because pristine applies none here either:
+# the seam filters exactly the value the engine would have drawn.
+[[seam]]
+id      = "furniture_preview_floor_sprite"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
+anchor  = '''
+    if proto.cardinal_data[calc_rot].floor_sprite != undefined {
+        furniture_renderer.bottom_sprite = proto.cardinal_data[calc_rot].floor_sprite;
+    }
+'''
+replace = '''
+    if proto.cardinal_data[calc_rot].floor_sprite != undefined {
+        var __mmapi_preview_floor = proto.cardinal_data[calc_rot].floor_sprite; // mmapi_furniture_preview_floor_sprite
+        try { __mmapi_preview_floor = mmapi_apply_filters("furniture.preview_sprite", __mmapi_preview_floor, { object_id: object_id, prototype: proto, cardinal_index: calc_rot, x: xx, y: yy, source: "floor_sprite" }); } catch (__mmapi_preview_floor_filter) {}
+        furniture_renderer.bottom_sprite = __mmapi_preview_floor;
+    }
+'''
+marker  = "mmapi_furniture_preview_floor_sprite"
+provides = ["furniture.preview_sprite"]
+
+# The end-of-day calendar gathers tomorrow's events into menu.events and hands
+# the List to build_notifications() for the rows under the calendar. The filter
+# sits between the two, at the one point the List is complete and nothing has
+# read it yet. build_notifications() draws the rows from it, and the fade-in
+# gate below tests its is_empty() afterwards, so a handler's edit reaches both.
+# The value is the List itself, re-read defensively in the
+# request_board_fetch_pool style. A result that is not a struct, or whose
+# count() cannot be probed, keeps the engine's List.
+[[seam]]
+id      = "ui_eod_calendar_events"
+file    = "gml/scripts/UI/Anchor/Menus/EodMenu.gml"
+anchor  = '''
+        self.set_calendar_time(CALENDAR.time);
+
+        self.build_notifications(target_date);
+'''
+replace = '''
+        self.set_calendar_time(CALENDAR.time);
+
+        var __mmapi_eod_events = self.events;
+        try {
+            __mmapi_eod_events = mmapi_apply_filters("ui.eod_calendar_events", __mmapi_eod_events, { menu: self, target_date: target_date }); // mmapi_ui_eod_calendar_events_filter
+        } catch (__mmapi_ui_eod_calendar_events) {}
+        var __mmapi_eod_events_ok = false;
+        try {
+            __mmapi_eod_events_ok = is_struct(__mmapi_eod_events) && is_numeric(__mmapi_eod_events.count());
+        } catch (__mmapi_ui_eod_calendar_events_count) {}
+        if (__mmapi_eod_events_ok) {
+            self.events = __mmapi_eod_events;
+        }
+        self.build_notifications(target_date);
+'''
+marker  = "mmapi_ui_eod_calendar_events_filter"
+provides = ["ui.eod_calendar_events"]
+
+# The companion edit for ui.eod_calendar_events. build_notifications() resolves
+# each entry's icon, key, and npcs through a switch over the CalendarEvent enum
+# with no default, so an entry the filter added would reach the row build with
+# all three undefined. The default branch reads them off the entry struct
+# instead, which is how a custom entry declares its row. Vanilla entries always
+# match a case, so the branch never runs with zero handlers.
+[[seam]]
+id      = "ui_eod_notification_custom_entry"
+file    = "gml/scripts/UI/Anchor/Menus/EodMenu.gml"
+anchor  = '''
+                    break;
+            }
+
+
+            var text = ANCHOR.text(self.notification_root)
+'''
+replace = '''
+                    break;
+                default: // mmapi_ui_eod_notification_custom_entry
+                    icon = event[$ "icon"];
+                    key = event[$ "key"];
+                    npcs = event[$ "npcs"];
+                    break;
+            }
+
+
+            var text = ANCHOR.text(self.notification_root)
+'''
+marker  = "mmapi_ui_eod_notification_custom_entry"
+provides = ["ui.eod_calendar_events"]
+
+# The factory give-item interaction pops the requested item, rolls the tier
+# reward, drops it, rolls the apiary honeycomb bonus, and drops that. The filter
+# needs the complete list before the first drop, so the replace gathers both
+# rolls into one array first, in their pristine order, filters it, and then
+# drops each element through its own drop_item() call, which keeps the per-drop
+# sound and the items.dropped emit matched call by call with vanilla. The hoist moves
+# the drop scatter draws behind the honeycomb roll, which is the one
+# zero-handler difference and changes no outcome distribution. A result that is
+# not an array keeps the rolled list.
+[[seam]]
+id      = "factory_product_drops"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
+anchor  = '''
+                    var arr = self.prototype.factory.rewards_map[self.production_tier];
+                    ARI.inventory.slot(ARI.held_item_index).pop();
+                    drop_item(
+                        arr[irandom(array_length(arr) - 1)],
+                        self.renderer.x,
+                        self.renderer.y
+                    );
+
+                    if self.prototype.object_id == ObjectId.Apiary && chance_percent(15) {
+                        drop_item(
+                            ItemId.Honeycomb,
+                            self.renderer.x,
+                            self.renderer.y
+                        );
+                    }
+
+                    TANGO.play("SoundEffects/Inventory/RewardDropAddition");
+'''
+replace = '''
+                    var arr = self.prototype.factory.rewards_map[self.production_tier];
+                    ARI.inventory.slot(ARI.held_item_index).pop();
+                    var __mmapi_factory_rolled = [arr[irandom(array_length(arr) - 1)]];
+                    if self.prototype.object_id == ObjectId.Apiary && chance_percent(15) {
+                        array_push(__mmapi_factory_rolled, ItemId.Honeycomb);
+                    }
+                    var __mmapi_factory_products = __mmapi_factory_rolled;
+                    try {
+                        __mmapi_factory_products = mmapi_apply_filters("factory.product_drops", __mmapi_factory_products, { node: self, production_request: self.production_request, production_tier: self.production_tier }); // mmapi_factory_run_product_drops_filters
+                    } catch (__mmapi_factory_product_drops) {}
+                    if (!is_array(__mmapi_factory_products)) {
+                        __mmapi_factory_products = __mmapi_factory_rolled;
+                    }
+                    for (var __mmapi_factory_i = 0; __mmapi_factory_i < array_length(__mmapi_factory_products); __mmapi_factory_i++) {
+                        drop_item(
+                            __mmapi_factory_products[__mmapi_factory_i],
+                            self.renderer.x,
+                            self.renderer.y
+                        );
+                    }
+
+                    TANGO.play("SoundEffects/Inventory/RewardDropAddition");
+'''
+marker  = "mmapi_factory_run_product_drops_filters"
+provides = ["factory.product_drops"]
+
+[[seam]]
+id      = "player_perk_acquired"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+target  = { fn = "acquire_perk", at = "after", anchor = "refresh_achievements([Requirement.HasAtLeastOneTierFivePerkPerCategory]);" }
+op      = "emit"
+hook    = "player.perk_acquired"
+ctx     = "{ perk: perk }"
+indent  = 8
+marker  = "mmapi_player_perk_acquired"
+
+[[seam]]
+id      = "player_perk_purchased"
+file    = "gml/scripts/UI/Anchor/Menus/DragonshrineMenu.gml"
+target  = { fn = "purchase_entry", at = "after", anchor = "ARI.acquire_perk(entry.perk);" }
+op      = "emit"
+hook    = "player.perk_purchased"
+ctx     = "{ perk: entry.perk }"
+indent  = 8
+marker  = "mmapi_player_perk_purchased"
+
+[[seam]]
+id      = "ui_shrine_entry_is_acquired"
+file    = "gml/scripts/UI/Anchor/Menus/DragonshrineMenu.gml"
+target  = { fn = "entry_is_acquired" }
+op      = "wrap"
+hook    = "ui.shrine_entry_is_acquired"
+ctx     = "{ perk: entry.perk }"
+blank_before = true
+catch_var = "__mmapi_shrine_acquired"
+marker  = "mmapi_ui_shrine_entry_is_acquired"
+
+# --- call rewrites -----------------------------------------------------------------
+
+# local_get is a native builtin (fabricator extension): the pristine tree has no
+# GML body for it, so no template, target, text, or wrap form can reach inside
+# it and a wrap has nothing to rename. The waist is created instead by
+# redirecting every GML call site to the framework wrapper: 107 calls on 102
+# lines across 35 files at catalog time, every one a direct single-argument
+# call, none in member-access or reference position (verified against
+# pristine). Token-matched: the identifier local_get immediately applied with
+# an open paren; the distinct identifiers local_get_info, local_get_pronouns,
+# and local_get_default_pronouns can never match. Applied after all
+# [[seam]]/[[engine_fix]] edits so anchored seams keep matching pristine text;
+# call tokens inside seam-injected text are rewritten too (correct semantics).
+# scripts/mmapi/ is excluded from the rewrite so the wrapper's own native call
+# survives. Zero handlers = behavioral (not byte) equivalence, the wrap
+# tradeoff writ wide. In exchange, engine updates that add call sites are
+# covered automatically.
+[[call_rewrite]]
+id       = "local_get_dispatch"
+callee   = "local_get"
+to       = "mmapi_local_get"
+args     = 1
+provides = ["local.get", "local.missing"]
+
+# --- engine fixes ------------------------------------------------------------------
+
+# The mmapi lifecycle root. The injected mmapi_run_installs() call is the
+# framework's per-frame tick, and queued install drains run from it.
+[[engine_fix]]
+name    = "game_step_begin_installs"
+file    = "gml/objects/Game.gml"
+anchor  = '''
+        step_begin: function() {
+            TICK++;'''
+replace = '''
+        step_begin: function() {
+            mmapi_run_installs();
+            TICK++;'''
+marker  = "mmapi_run_installs();"
+
+# The tarball chop passed a hardcoded is_burn of true, which burn-throttled
+# every non-fire tarball chop against stump and fruit tree iframes. The fix
+# passes the tarball's real fire flag through.
+[[engine_fix]]
+name    = "tarball_chop_burn_flag"
+file    = "gml/objects/Combat/obj_damage_tarball.gml"
+anchor  = '''
+                                    var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, true);
+                                    if success && has_flag(self.flags, CombatFlag.Fire) {
+'''
+replace = '''
+                                    var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, has_flag(self.flags, CombatFlag.Fire)); // mmapi_tarball_chop_burn_flag
+                                    if success && has_flag(self.flags, CombatFlag.Fire) {
+'''
+marker  = "mmapi_tarball_chop_burn_flag"
+
+# The max-crafts Item loop divides by a modified component count and misses
+# the zero guard its own Duration branch has, so a zero-cost component
+# crashed the craft menu. The fix skips such a component instead.
+[[engine_fix]]
+name    = "max_crafts_zero_component"
+file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
+anchor  = '''
+        for (var i = 0; i < recipe.count(); i++) {
+            var comp = recipe.get(i);
+            var denominator = get_modified_component_count(comp, self.context, item.item_id);
+            var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
+'''
+replace = '''
+        for (var i = 0; i < recipe.count(); i++) {
+            var comp = recipe.get(i);
+            var denominator = get_modified_component_count(comp, self.context, item.item_id);
+            if denominator == 0 { continue; } // mmapi_max_crafts_zero_component
+            var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
+'''
+marker  = "mmapi_max_crafts_zero_component"
+
+# The two edits below carry a data contract instead of a hook. An item
+# fiddle entry may declare fish_chest = "<key>", naming an entry under
+# fishing/chest_tables. The engine's fishing-chest pipeline is data-driven
+# everywhere except three identity-keyed sites. These two widen the item-use
+# and chest-rarity sites, and the seam fish_chest_table_lookup widens the
+# third while dispatching items.chest_opened. No vanilla data reaches any
+# widened branch, so with no modded data the staged control flow behaves
+# exactly as pristine.
+
+# Widens the OpenChest use assignment so a fiddle item carrying fish_chest
+# opens like the five hardcoded chest items. The key is copied onto the
+# prototype for the AriFsm table lookup. Vanilla items never carry the field.
+[[engine_fix]]
+name    = "fish_chest_item_use"
+file    = "gml/scripts/GameplaySystems/Items/Items.gml"
+anchor  = '''
+        } else if matches(prototype.item_id, ItemId.TreasureBoxWood, ItemId.TreasureBoxCopper, ItemId.TreasureBoxSilver, ItemId.TreasureBoxGold, ItemId.AbyssalChest) {
+            prototype.use = ItemUse.OpenChest;
+'''
+replace = '''
+        } else if matches(prototype.item_id, ItemId.TreasureBoxWood, ItemId.TreasureBoxCopper, ItemId.TreasureBoxSilver, ItemId.TreasureBoxGold, ItemId.AbyssalChest)
+            || fiddle_data[$ "fish_chest"] != undefined { // mmapi_fish_chest_item_use
+            prototype.fish_chest = fiddle_data[$ "fish_chest"];
+            prototype.use = ItemUse.OpenChest;
+'''
+marker  = "mmapi_fish_chest_item_use"
+
+# The chest-rarity switch in create_fish_distributions enumerates the four
+# vanilla rarities for perk adjustments and aborts Setup on anything else.
+# A modded chest rarity now takes the default and simply gets no perk vote
+# adjustments. Its base votes still come from its fishing/votes entry.
+[[engine_fix]]
+name    = "fish_chest_custom_rarity"
+file    = "gml/scripts/GameplaySystems/Fishing/Fish.gml"
+anchor  = '''
+                default: impossible("unexpected chest rarity: {}", fish_proto.rarity);
+'''
+replace = '''
+                default: break; // A modded chest rarity gets no perk vote adjustments. // mmapi_fish_chest_custom_rarity
+'''
+marker  = "mmapi_fish_chest_custom_rarity"
+
+# The color customization popup grows with its entry grid, and a modded LUT
+# list can outgrow the screen. Past seven rows the grid moves into a
+# scroller and the popup keeps a fixed height.
+[[engine_fix]]
+name    = "customization_color_popup_scrollable"
+file    = "gml/scripts/UI/Anchor/Menus/CustomizationMenu.gml"
+anchor  = '''
+        var container_size = layout.container_size();
+        var container = ANCHOR.positional(popup.backplate)
+            .set_size(container_size)
+            .set_align(Align.Center, Align.BottomIn)
+            .set_y(-13)
+
+        popup.backplate.add_height(container_size.y);'''
+replace = '''
+        var container_size = layout.container_size();
+        var mmapi_lut_selector_scrollable = 23 * 7;
+        var container;
+        if (container_size.y > mmapi_lut_selector_scrollable) {
+            var __mmapi_lut_side = SCROLLBAR_WIDTH + 8;
+            popup.backplate.set_width(container_size.x + 1 + __mmapi_lut_side * 2);
+            popup.backplate.add_height(mmapi_lut_selector_scrollable);
+            var __mmapi_lut_body = ANCHOR.positional(popup.backplate)
+                .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_lut_selector_scrollable)
+                .set_align(Align.LeftIn, Align.BottomIn)
+                .set_x(__mmapi_lut_side)
+                .set_y(-13)
+            var __mmapi_lut_scroller = create_scroller_ext(
+                __mmapi_lut_body,
+                Vec2(0, 0),
+                Vec2(container_size.x + 1, mmapi_lut_selector_scrollable),
+                Vec2(Align.LeftIn, Align.TopIn),
+                Vec2(container_size.x + 5, -1),
+                Vec2(SCROLLBAR_WIDTH, mmapi_lut_selector_scrollable + 2),
+                Vec2(Align.LeftIn, Align.TopIn))
+                .subscribe_to_pilot(popup.pilot)
+                .alternate_colors(false)
+            var __mmapi_lut_element = __mmapi_lut_scroller.new_element(1);
+            container = ANCHOR.positional(__mmapi_lut_element)
+                .set_size(container_size)
+                .set_align(Align.LeftIn, Align.TopIn)
+                .set_y(__mmapi_lut_element.get_height())
+            __mmapi_lut_scroller.add_height_to_element(__mmapi_lut_element, container_size.y + 2);
+        } else {
+            container = ANCHOR.positional(popup.backplate)
+                .set_size(container_size)
+                .set_align(Align.Center, Align.BottomIn)
+                .set_y(-13)
+
+            popup.backplate.add_height(container_size.y);
+        }'''
+marker  = "mmapi_lut_selector_scrollable"
+
+# The pet appearance popup grows the same way when modded variants extend
+# its grid, and it gets the same treatment. Past seven rows the grid moves
+# into a scroller and the popup keeps a fixed height.
+[[engine_fix]]
+name    = "pet_appearance_popup_scrollable"
+file    = "gml/scripts/AnimalMenu.gml"
+anchor  = '''
+    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
+
+    var container_size = layout.container_size();
+    var container = ANCHOR.positional(popup.backplate)
+        .set_size(container_size)
+        .set_align(Align.Center, Align.Middle)
+        .set_y(9)
+
+    popup.backplate.add_height(container_size.y);'''
+replace = '''
+    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
+
+    var container_size = layout.container_size();
+    var mmapi_pet_appearance_scrollable = 23 * 7;
+    var container;
+    if (container_size.y > mmapi_pet_appearance_scrollable) {
+        var __mmapi_pet_side = SCROLLBAR_WIDTH + 8;
+        popup.backplate.set_width(container_size.x + 1 + __mmapi_pet_side * 2);
+        popup.backplate.add_height(mmapi_pet_appearance_scrollable);
+        var __mmapi_pet_body = ANCHOR.positional(popup.backplate)
+            .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_pet_appearance_scrollable)
+            .set_align(Align.LeftIn, Align.BottomIn)
+            .set_x(__mmapi_pet_side)
+            .set_y(-13)
+        var __mmapi_pet_scroller = create_scroller_ext(
+            __mmapi_pet_body,
+            Vec2(0, 0),
+            Vec2(container_size.x + 1, mmapi_pet_appearance_scrollable),
+            Vec2(Align.LeftIn, Align.TopIn),
+            Vec2(container_size.x + 5, -1),
+            Vec2(SCROLLBAR_WIDTH, mmapi_pet_appearance_scrollable + 2),
+            Vec2(Align.LeftIn, Align.TopIn))
+            .subscribe_to_pilot(popup.pilot)
+            .alternate_colors(false)
+        var __mmapi_pet_element = __mmapi_pet_scroller.new_element(1);
+        container = ANCHOR.positional(__mmapi_pet_element)
+            .set_size(container_size)
+            .set_align(Align.LeftIn, Align.TopIn)
+            .set_y(__mmapi_pet_element.get_height())
+        __mmapi_pet_scroller.add_height_to_element(__mmapi_pet_element, container_size.y + 2);
+    } else {
+        container = ANCHOR.positional(popup.backplate)
+            .set_size(container_size)
+            .set_align(Align.Center, Align.Middle)
+            .set_y(9)
+
+        popup.backplate.add_height(container_size.y);
+    }'''
+marker  = "mmapi_pet_appearance_scrollable"
+
+# The store stock parser builds a LiveItem from one of five entry keys and
+# has no branch for pet cosmetics, although the reward parser already
+# accepts the same key for the chicken statue. This adds the missing branch
+# in the reward parser's shape. The value names a merged pets/cosmetic_sets
+# key, and an unknown name fails at Setup with the name in the message, as
+# the sibling cosmetic branches do. No vanilla stock entry carries the key,
+# so with no modded data the staged parser behaves exactly as pristine.
+[[engine_fix]]
+name    = "store_pet_cosmetic_entry"
+file    = "gml/scripts/Stores.gml"
+anchor  = '''
+        item = new LiveItem(ItemId.AnimalCosmetic);
+        item.animal_cosmetic = { animal: animal, cosmetic: entry.animal_cosmetic };
+    }
+
+    assert_neq(item, undefined, "Failed to parse an item out of '{}'", entry);
+'''
+replace = '''
+        item = new LiveItem(ItemId.AnimalCosmetic);
+        item.animal_cosmetic = { animal: animal, cosmetic: entry.animal_cosmetic };
+    }
+
+    if entry[$ "pet_cosmetic"] != undefined { // mmapi_store_pet_cosmetic_entry
+        assert(
+            PET_PROTOTYPE.cosmetic_sets.contains_key(entry.pet_cosmetic),
+            "Pet cosmetic '{}' does not exist", entry.pet_cosmetic
+        );
+
+        item = new LiveItem(ItemId.PetCosmetic);
+        item.pet_cosmetic_set_name = entry.pet_cosmetic;
+    }
+
+    assert_neq(item, undefined, "Failed to parse an item out of '{}'", entry);
+'''
+marker  = "mmapi_store_pet_cosmetic_entry"

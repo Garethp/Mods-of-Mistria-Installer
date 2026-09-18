@@ -2,13 +2,13 @@
 
 [← MMAPI](MMAPI.md)
 
-Most mod needs are direct engine calls, not hooks. Hooks change what the engine does on its own; to make the engine do something, call it. Each recipe below is a plain engine call you run from a hook handler or a registered tick.
+Most mod needs are direct engine calls, not hooks. Hooks change what the engine does on its own. To make the engine do something, call it. Each recipe below is a plain engine call you run from a hook handler or a registered tick. Some may depend on fiddle data as well.
 
 > [!CAUTION]
-> Never run these at top-level boot. Boot runs while the game is still loading: no player, no room, and file IO throws. Call them from a handler or a `mmapi_register` tick. See [Mod Anatomy](MOD_ANATOMY.md#the-lifecycle).
+> Never run these at top-level boot. Boot runs while the game is still loading, when there is no player, no room, and file IO throws. Call them from a handler or a `mmapi_register` tick. See [Mod Anatomy](MOD_ANATOMY.md#the-lifecycle).
 
 > [!WARNING]
-> These call the engine directly, so where the path is seamed another mod can legitimately veto or reshape what you asked for. Write defensive code. 
+> These call the engine directly, so where the path is seamed another mod can legitimately veto or reshape what you asked for. Write defensive code.
 
 For the helper functions (config, logging, hotkeys, per-save data), see the [API Reference](API_REFERENCE.md). When you need to change or observe what the engine does on its own instead, register a [hook](HOOKS.md). For the full list of hooks, see the [Catalog](CATALOG.md).
 
@@ -29,7 +29,7 @@ ARI.modify_gold(500);   // a negative amount takes gold
 
 ## Show a Notification
 
-`create_notification` takes a **localization key**, resolved engine-side through `local_get`. The shipped-mod pattern registers your string and passes the derived key. See the full mechanism in [User-Facing Text](MOD_ANATOMY.md#user-facing-text-localization):
+`create_notification` takes a **localization key**, resolved engine-side through `local_get`. The recommended pattern registers your string and passes the derived key. See the full mechanism in [User-Facing Text](MOD_ANATOMY.md#user-facing-text-localization):
 
 ```toml
 # fiddle/mods/my_mod/notifications.toml
@@ -48,11 +48,11 @@ something_happened = "Something happened!"
 create_notification("mods/my_mod/notifications/something_happened", 60 * 5);
 ```
 
-The optional second argument suppresses repeats of the same key for that many frames (`60 * 5` ≈ five seconds). Once per real event, not every frame.
+The optional second argument suppresses repeats of the same key for that many frames (`60 * 5` ≈ five seconds). Call it once per real event, not every frame.
 
 Because the key resolves inside the [local_get_dispatch](seams/local_get_dispatch.md) rewrite, [local.get](hooks/local.get.md) filters can substitute dynamic tokens into the text at display time. Pass the key, never pre-localized text, or the filters never see it.
 
-For throwaway prototypes only: `create_notification(ANCHOR.wrap_for_local("raw text"))` shows unregistered text, it is untranslatable and invisible to filters.
+For throwaway prototypes only, `create_notification(ANCHOR.wrap_for_local("raw text"))` shows unregistered text, which is untranslatable and invisible to filters.
 
 ## Teleport the Player
 
@@ -77,9 +77,10 @@ Load lazily and validate. See [The House Pattern](API_REFERENCE.md#the-house-pat
 
 ## Weather Conditions (World Fact)
 
-The `weather` world fact holds one of three values, written at day start: `"pleasant"`, `"rainy"`, or `"snowy"`. Severity is a separate fact, `weather_is_strong`. A storm is `"rainy"` plus strong, and a blizzard is `"snowy"` plus strong.
+The `weather` world fact is written at day start and holds `"pleasant"`, `"rainy"`, or `"snowy"`. Severity is a separate fact, `weather_is_strong`. A storm is `"rainy"` plus strong, and a blizzard is `"snowy"` plus strong.
 
 ### Matching Any Bad Weather
+
 `Inclement` weather writes `"rainy"` in Spring, Summer, and Fall and `"snowy"` in Winter. As a result, a rain-only condition won't match in Winter. Match on both `"rainy"` and `"snowy"`:
 
 ```toml
@@ -90,7 +91,7 @@ requires = [
 
 ### Matching Severe Weather Only
 
-For severe weather, which are storms and blizzards, add an additional condition on `weather_is_strong`:
+For severe weather, meaning storms and blizzards, add an additional condition on `weather_is_strong`:
 
 ```toml
 requires = [

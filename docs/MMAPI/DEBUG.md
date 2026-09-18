@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-MMAPI ships an in-game **debug agent**. It stages watches, breakpoints, and callable functions, can pause and single-step the game, and speaks a two-file JSON protocol to an external debugger client. It is off by default: the protocol stays dormant and inline break probes no-op until enabled.
+MMAPI ships an in-game **debug agent**. It stages watches, breakpoints, and callable functions, can pause and single-step the game, and speaks a two-file JSON protocol to an external debugger client. It is off by default, so the protocol stays dormant and inline break probes no-op until enabled.
 
 ## Enabling
 
@@ -12,7 +12,7 @@ The agent is gated by one config key. To enable it, set `debug_enabled` in the f
 { "debug_enabled": true }
 ```
 
-There is no exposed installer toggle in this repository. Make the one-key hand edit directly; the agent reads it through the normal config store.
+MOMI exposes no installer toggle for it. Make the one-key hand edit directly. The agent reads it through the normal config store.
 
 The flag is checked lazily on the first frame, never at top-level boot, and the verdict is cached for the session. Restart the game to toggle, or call `mmapi_debug_set_enabled(true)` from mod code as the runtime escape hatch.
 
@@ -30,18 +30,20 @@ The agent registers these through the hotkey registry the first time it is enabl
 
 The pause is cooperative. It sets the engine's own pause flag, so all pause-gated game logic freezes while draw events still run and audio keeps playing.
 
-Begin-step work still runs while paused, including every `mmapi_register` tick and hotkey polling. MMAPI shares `PauseStatus.WINDOW` with the engine's focus-loss pause; resuming an actually unfocused window may briefly unpause it until the next focus event restores the bit.
+Begin-step work still runs while paused, including every `mmapi_register` tick and hotkey polling. MMAPI shares `PauseStatus.WINDOW` with the engine's focus-loss pause, so resuming an actually unfocused window may briefly unpause it until the next focus event restores the bit.
 
 ## The Two-File Protocol
 
 The agent exchanges JSON with the debugger client under the framework's mod-data directory (`mod_data/mmapi/`):
 
-- **`control.json`** (client → agent): watch paths, breakpoints, and commands (`pause`, `resume`, `step`, `set`, `call`, `keys`).
-- **`state.json`** (agent → client): the watched values, pause state, break reports, and the catalog of callable functions.
+| File | Direction | Carries |
+| ---- | --------- | ------- |
+| `control.json` | client → agent | Watch paths, breakpoints, and commands (`pause`, `resume`, `step`, `set`, `call`, `keys`). |
+| `state.json` | agent → client | The watched values, pause state, break reports, and the catalog of callable functions. |
 
 While running, the agent polls `control.json` at most every 10th frame and writes `state.json` about 10 times a second. While paused, both run every frame. Any tool that can read and write JSON files can be a client.
 
-Commands run only when `control.json.rev` is greater than `state.json.applied_rev`; the client increments `rev` for each batch. The applied revision is force-written and restored on the next launch, so a batch runs at most once even across restarts. Watches and breakpoints are adopted on every poll and are not revision-gated. F8 suppresses cadence snapshots, but a newly applied command still writes its revision. The `keys` command publishes path-introspection results in `state.json.last_keys`.
+Commands run only when `control.json.rev` is greater than `state.json.applied_rev`, and the client increments `rev` for each batch. The applied revision is force-written and restored on the next launch, so a batch runs at most once even across restarts. Watches and breakpoints are adopted on every poll and are not revision-gated. F8 suppresses cadence snapshots, but a newly applied command still writes its revision. The `keys` command publishes path-introspection results in `state.json.last_keys`.
 
 ## Watches and Paths
 
@@ -53,27 +55,31 @@ Watches, breakpoints, and `set` address live game state through **dotted paths**
 
 Anything the resolver can reach is watchable from the client with no registration. This is why the house pattern keeps all mod state in one `global.__<name>` struct.
 
-Ordinary `call` arguments are JSON values and are passed through unchanged. To resolve a live path for one argument, send `{ "$ref": "global.__my_mod.target" }`; a reference the agent cannot resolve becomes `undefined`.
+Ordinary `call` arguments are JSON values and are passed through unchanged. To resolve a live path for one argument, send `{ "$ref": "global.__my_mod.target" }`. A reference the agent cannot resolve becomes `undefined`.
 
 Snapshot serialization is intentionally defensive. It caps recursive depth and writes `<unserializable>` for methods, instances, pointers, and similar values instead of letting one watch break the whole state file.
 
-### Watching hook wiring
+### Watching Hook Wiring
 
-`global.__mmapi_debug_stats` carries a fresh `mmapi_hook_stats()` snapshot, republished on every control poll. Watch it (or its `.hooks`, `.errors`, and `.wiring` children) to observe hook wiring live. Hook names contain dots, so the `wiring` table swaps dots for underscores: `.wiring.spells_cost` lists every handler on `spells.cost` in dispatch order, with its mod, kind, and priority. This is the fastest way to answer "did my handler actually register, and in what order?"
+`global.__mmapi_debug_stats` carries a fresh `mmapi_hook_stats()` snapshot, republished on every control poll. Watch it (or its `.hooks`, `.errors`, and `.wiring` children) to observe hook wiring live. Hook names contain dots, so the `wiring` table swaps dots for underscores, so `.wiring.spells_cost` lists every handler on `spells.cost` in dispatch order, with its mod, kind, and priority. This is the fastest way to answer "did my handler actually register, and in what order?"
+
+### Watching Hook Liveness
+
+While debug is enabled, every dispatcher tallies its dispatches per hook, whether or not any handler is registered. Watch `global.__mmapi_debug.hook_counts` to see the tallies live, or call `mmapi_hook_liveness()` for the full report, which also lists the installed catalog's hooks that never dispatched. A session that never enables debug tallies nothing. Wiring answers "did my handler register?" and liveness answers the other half, "does the engine side ever dispatch this hook at all?" Many hooks fire only in specific game contexts, so a silent hook is a lead to probe, not an alarm. See [The Installed Catalog](HOOKS.md#the-installed-catalog) for the report's shape.
 
 ### Conditional Breakpoints
 
-A control-file breakpoint is `{ path, op, value, enabled, mode }`. Operators are `==`, `!=`, `<`, `<=`, `>`, and `>=`. It is enabled when `enabled` is absent; Boolean `false` or numeric zero disables it under the runtime's comparison rules.
+A control-file breakpoint is `{ path, op, value, enabled, mode }`. Operators are `==`, `!=`, `<`, `<=`, `>`, and `>=`. It is enabled when `enabled` is absent, and Boolean `false` or numeric zero disables it under the runtime's comparison rules.
 
-Only `mode: "edge"` selects edge behavior; missing or any other mode is level-triggered. A new edge breakpoint records the current condition as its baseline, so adding one while the condition is already true does not pause immediately. It fires after the condition becomes false and then true. A level breakpoint pauses whenever its condition holds, with one resumed or stepped frame of grace before it can pause again.
+Only `mode: "edge"` selects edge behavior, and a missing or any other mode is level-triggered. A new edge breakpoint records the current condition as its baseline, so adding one while the condition is already true does not pause immediately. It fires after the condition becomes false and then true. A level breakpoint pauses whenever its condition holds, with one resumed or stepped frame of grace before it can pause again.
 
 ## The Mod-Facing API
 
-`mmapi_debug_break` and `mmapi_debug_break_each` are inert while the agent is disabled. The registry, resolver, and runtime enable switch still operate on in-memory state; their individual contracts below say when files or the live agent become involved.
+`mmapi_debug_break` and `mmapi_debug_break_each` are inert while the agent is disabled. The registry, resolver, and runtime enable switch still operate on in-memory state, and their individual contracts below say when files or the live agent become involved.
 
-### mmapi_debug_break(label, cond)
+### `mmapi_debug_break(label, cond)`
 
-Pauses the game when `cond` becomes true, **edge-triggered per label**: after firing, the label must be observed with `cond` false before it can fire again. Place it somewhere that runs every frame (or at least on both sides of the edge).
+Pauses the game when `cond` becomes true, **edge-triggered per label**. After firing, the label must be observed with `cond` false before it can fire again. Place it somewhere that runs every frame (or at least on both sides of the edge).
 
 ```gml
 // Pause on the frame the wave counter first reaches 3.
@@ -84,7 +90,7 @@ function arena_mod_tick() {
 
 Firing pauses the game the same way F9 does, records the break as `{ kind, label, game_frame }` in the state snapshot, and logs an Info line. Resume with F9 or from the client.
 
-### mmapi_debug_break_each(label)
+### `mmapi_debug_break_each(label)`
 
 Pauses every time the call is reached, with no edge and no condition. It means "stop each time this event happens".
 
@@ -114,10 +120,10 @@ mmapi_debug_register_fn("warp_kit.warp", warp_kit_debug_warp, {
 });
 ```
 
-The call is guarded. A throwing function is reported back to the client as an error and cannot take the agent down. An argument written as `{"$ref": "path"}` is resolved through the path resolver to the live value first. Registration works while the agent is disabled, but the catalog is only published once it is enabled. Callable names share one registry: a later identical name replaces the earlier entry without a warning, so prefix every name with your mod's name.
+The call is guarded. A throwing function is reported back to the client as an error and cannot take the agent down. An argument written as `{"$ref": "path"}` is resolved through the path resolver to the live value first. Registration works while the agent is disabled, but the catalog is only published once it is enabled. Callable names share one registry, so a later identical name replaces the earlier entry without a warning. Prefix every name with your mod's name.
 
 > [!TIP]
-> A common pattern in real mods: register `*_debug_*` driver functions **only when the agent is enabled**. Check `mmapi_config_get(mmapi_config_load("mmapi"), "debug_enabled", false)` in your installer. A normal build then registers nothing and claims no keys, while a debug session can drive the mod's real code paths on demand.
+> A common pattern is to register `*_debug_*` driver functions **only when the agent is enabled**. Check `mmapi_config_get(mmapi_config_load("mmapi"), "debug_enabled", false)` in your installer. A normal build then registers nothing and claims no keys, while a debug session can drive the mod's real code paths on demand.
 
 ### `mmapi_debug_resolve(path)` / `mmapi_debug_is_unresolved(value)`
 
@@ -132,7 +138,7 @@ if (!mmapi_debug_is_unresolved(_wave)) {
 
 ### `mmapi_debug_set_enabled(on)`
 
-Enables or disables the agent at runtime, bypassing (and thereafter shadowing) the config gate for this session. Enabling takes effect next frame: the hotkeys install and the file protocol comes alive.
+Enables or disables the agent at runtime, bypassing (and thereafter shadowing) the config gate for this session. Enabling takes effect next frame, when the hotkeys install and the file protocol comes alive.
 
 > [!CAUTION]
-> Resume before disabling. A disabled agent no longer drives the engine's pause flag, so a pause left set stays set. Once enabling has installed F8 through F10, disabling cannot unregister them; those hotkeys remain for the rest of the session.
+> Resume before disabling. A disabled agent no longer drives the engine's pause flag, so a pause left set stays set. Once enabling has installed F8 through F10, disabling cannot unregister them, so those hotkeys remain for the rest of the session.

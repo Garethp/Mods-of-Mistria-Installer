@@ -1,4 +1,5 @@
 using System.Text;
+using Garethp.ModsOfMistriaInstallerLib.Operations;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
 
 namespace ModsOfMistriaInstallerLibTests.Seam;
@@ -41,6 +42,17 @@ public class ShippedCatalogLocalTest
             .Select(e => e.Id)
             .Order(StringComparer.Ordinal)
             .ToList()));
+    }
+
+    [Test]
+    public void ShouldResolveEveryFrameworkCallInTheRealTree()
+    {
+        using var pristine = new ZipPristineSource(PristineZipPath());
+
+        var unresolved = FrameworkReads.Unresolved(pristine);
+
+        Assert.That(unresolved, Is.Empty, string.Join(", ",
+            unresolved.Select(read => $"{read.Name} ({read.File}:{read.Line})")));
     }
 
     [Test]

@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="using:Garethp.ModsOfMistriaGUI.Models"
+             xmlns:controls="clr-namespace:Garethp.ModsOfMistriaGUI.Controls"
+             xmlns:lang="clr-namespace:Garethp.ModsOfMistriaInstallerLib.Lang;assembly=ModsOfMistriaInstallerLib"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Garethp.ModsOfMistriaGUI.Controls.ModListView"
+             x:Name="Root">
+    <Panel>
+        <!-- The transparent background here allows the drag over events to still register when the mouse moves between rows -->
+        <ItemsControl
+            ItemsSource="{Binding ItemsSource, ElementName=Root}"
+            x:Name="ModRepeater"
+            Background="Transparent"
+            DragDrop.AllowDrop="True"
+            DragDrop.DragOver="OnModsDragOver"
+            DragDrop.DragLeave="OnModsDragLeave"
+            DragDrop.Drop="OnModsDrop">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:ModModel">
+                    <StackPanel Orientation="Horizontal" Margin="0 2 0 2">
+                        <!-- Position number, doubles as the drag handle. -->
+                        <!-- The transparent background here allows the whole area to be used as a handle, otherwise just the text would be dragable -->
+                        <Border Background="Transparent"
+                                Cursor="Hand"
+                                Padding="2 0 6 0"
+                                PointerPressed="OnModHandlePressed"
+                                ToolTip.Tip="{x:Static lang:Resources.GUIDragAndDropTooltip}">
+                            <TextBlock MinWidth="30"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding Position, StringFormat='≡ {0}'}">
+                            </TextBlock>
+                        </Border>
+                        
+                        <!-- Mod checkbox + warnings -->
+                        <controls:ModlistCheckbox DataContext="{Binding}" />
+                        
+                        <!-- Update available badge -->
+                        <Button IsVisible="{Binding UpdateAvailable}"
+                                Command="{Binding OpenUpdateUrlCommand}"
+                                Margin="6 0 0 0"
+                                Padding="5 1"
+                                Background="#2e7d32"
+                                Foreground="White"
+                                CornerRadius="4"
+                                VerticalAlignment="Center"
+                                ToolTip.Tip="{Binding UpdateTooltip}"
+                                Content="{x:Static lang:Resources.GUIUpdateModButton}" />
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Overlaid on the list, shouldn't change the row layout/spacing when moved around. -->
+        <!-- Positioned by Margin from the top of the Panel. -->
+        <Border x:Name="InsertionLine"
+                Width="300" Height="2"
+                HorizontalAlignment="Left" VerticalAlignment="Top"
+                Background="#3d8bfd"
+                CornerRadius="1"
+                IsVisible="False"
+                IsHitTestVisible="False" />
+    </Panel>
+</UserControl>

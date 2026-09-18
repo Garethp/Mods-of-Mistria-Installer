@@ -9,6 +9,7 @@ using Garethp.ModsOfMistriaInstallerLib.Tools;
 using ModsOfMistriaInstallerLibTests.Fixtures;
 using ModsOfMistriaInstallerLibTests.TestUtils;
 using Newtonsoft.Json.Linq;
+using PeNet.Header.Resource;
 
 namespace ModsOfMistriaInstallerLibTests;
 
@@ -134,8 +135,8 @@ public class ModInstallerTest
         Assert.That(result.Installed, Is.EqualTo(new IMod[] { contentMod }));
         Assert.That(result.Skipped, Has.Count.EqualTo(1));
         Assert.That(result.Skipped[0].Id, Is.EqualTo("testmod"));
-        Assert.That(result.Skipped[0].Reasons, Has.Some.Contains("Game GML changed"));
-        Assert.That(gmlMod.GetValidation().Errors.Any(e => e.Message.Contains("Game GML changed")), Is.True);
+        Assert.That(result.Skipped[0].Reasons, Has.Some.Contains(Garethp.ModsOfMistriaInstallerLib.Lang.Resources.CoreGameGmlChanged));
+        Assert.That(gmlMod.GetValidation().Errors.Any(e => e.Message.Contains(Garethp.ModsOfMistriaInstallerLib.Lang.Resources.CoreGameGmlChanged)), Is.True);
 
         using (var live = ZipFile.OpenRead(new AssetsStore(_fom).LivePath))
         {

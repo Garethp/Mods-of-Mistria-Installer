@@ -50,4 +50,4 @@ mmapi_on("player.skill_leveled", milestone_bells_player_skill_leveled);
 
 - [player.xp_delta](player.xp_delta.md) - Change every skill XP gain before it applies, the filter that decides whether this event fires.
 - [renown.level_gained](renown.level_gained.md) - This event is the renown counterpart of this moment.
-- [player.acquire_perk](player.acquire_perk.md) - Know when the player acquires a perk.
+- [player.perk_acquired](player.perk_acquired.md) - Know when the player has acquired a perk.

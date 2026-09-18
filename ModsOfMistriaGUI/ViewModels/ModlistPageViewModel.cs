@@ -144,23 +144,17 @@ public partial class ModlistPageViewModel : PageViewBase
     }
 
     // ── Load order ────────────────────────────────────────────────────────────────
-
     [RelayCommand]
-    private void MoveModUp(ModModel mod)
+    private void MoveMod((ModModel Mod, int Slot) move)
     {
-        var index = Mods.IndexOf(mod);
-        if (index <= 0) return;
-        Mods.Move(index, index - 1);
-        RefreshPositions();
-        _isDirty = true;
-    }
+        var origin = Mods.IndexOf(move.Mod);
+        if (origin < 0) return;
 
-    [RelayCommand]
-    private void MoveModDown(ModModel mod)
-    {
-        var index = Mods.IndexOf(mod);
-        if (index < 0 || index >= Mods.Count - 1) return;
-        Mods.Move(index, index + 1);
+        // Pulling the mod out shifts every gap after it down one.
+        var index = move.Slot > origin ? move.Slot - 1 : move.Slot;
+        if (index == origin) return;
+
+        Mods.Move(origin, index);
         RefreshPositions();
         _isDirty = true;
     }

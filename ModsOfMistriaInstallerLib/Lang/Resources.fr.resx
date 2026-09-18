@@ -471,9 +471,6 @@
   <data name="CoreInstallSummaryWithSkipped" xml:space="preserve">
     <value>{0} mod(s) installé(s), {1} ignoré(s)</value>
   </data>
-  <data name="CoreGameGmlChanged" xml:space="preserve">
-    <value>Le GML du jeu a changé. Impossible d'installer.</value>
-  </data>
   <data name="CoreModRequiresMissingHooks" xml:space="preserve">
     <value>Ce mod requiert des hooks que cette version de MOMI ne peut pas fournir: {0}. Mettez MOMI à jour, ou utilisez une version antérieure de ce mod.</value>
   </data>

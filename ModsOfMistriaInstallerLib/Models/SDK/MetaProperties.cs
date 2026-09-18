@@ -1,9 +1,17 @@
-﻿using Tomlyn.Serialization;
+﻿using Garethp.ModsOfMistriaInstallerLib.Utils;
+using Tomlyn.Serialization;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Models.SDK;
 
 public class MetaProperties
 {
+    public MetaProperties() {}
+    public MetaProperties(string kind)
+    {
+        AssetKind = kind;
+        Id = IDManager.GenerateUniqueId();
+    }
+    
     [TomlPropertyName("id")] public string Id { get; set; }
     
     [TomlPropertyName("asset_kind")] public string AssetKind { get; set; }

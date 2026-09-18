@@ -13,14 +13,14 @@ Declare the `fish_chest` property on an item's fiddle entry. Its value names an 
 ```toml
 # fiddle/items/my_chests.toml
 [my_mod_custom_chest]
-	name = "mods/my_mod/items/custom_chest_name"
-	description = "mods/my_mod/items/custom_chest_description"
+	name = "Custom Chest"
+	description = "A chest with a loot table of its own."
 	icon_sprite = "spr_ui_item_wooden_chest"
 	value = { store = 1000 }
 	fish_chest = "my_mod_custom_chest"
 ```
 
-`name` and `description` are localization keys, so register the strings with the pattern in [User-Facing Text](MOD_ANATOMY.md#user-facing-text-localization). A literal string still installs but displays raw.
+`name` and `description` are the display text, written inline as the vanilla items do. The game's built-in localization rule for item names and descriptions covers merged items too, so they need no registration of their own.
 
 > [!NOTE]
 > The item automatically gains the `ItemUse.OpenChest` interaction and inherits the whole vanilla chest implementation. It opens with the long hold-to-use, shows the open interaction prompt, is not giftable, and does not stack. Opening any chest also fires the [items.chest_opened](hooks/items.chest_opened.md) event for GML mods that want to react.
@@ -38,7 +38,7 @@ Declare the `fish_chest` property on an item's fiddle entry. Its value names an 
 	]
 ```
 
-- `gold` is **mandatory** and is a two-element range rolled on open. `gold = [0, 0]` is the no-payout idiom, use it to award zero gold.
+- `gold` is **mandatory** and is a two-element range rolled on open. `gold = [0, 0]` is the no-payout idiom, so use it to award zero gold.
 - `items` is **mandatory**. One entry is rolled per open, so an entry's chance is its share of the list. Weight individual items by repeating entries, exactly as the vanilla tables do.
 - `count` is a per-drop quantity, not a weight. It defaults to 1.
 - `kind = "item"` drops the item with no duplicate protection. `kind = "recipe"` drops the recipe scroll for `value` and rerolls while the player already knows it, and `kind = "cosmetic"` behaves the same for obtained cosmetics.
@@ -75,11 +75,11 @@ Add fish entries and a votes entry. The runtime derives fish ids from the merged
 
 ## Multiple Chests And Multiple Mods
 
-Every piece is an ordinary fiddle key, so any number of chests from any number of mods coexist. Prefix your keys with a mod identifier (`my_mod_custom_chest`, not `custom_chest`), because fiddle merging is a silent last mod wins behavior on a collision. Several items may share one chest table, and one mod may ship many tables.
+Every piece is an ordinary fiddle key, so any number of chests from any number of mods coexist. Prefix your keys with a mod identifier (`my_mod_custom_chest`, not `custom_chest`), because fiddle merging is silent and the last mod wins on a collision. Several items may share one chest table, and one mod may ship many tables.
 
 ## Failure Modes
 
-- A `fish_chest` key that names no merged chest table crashes when opened with the engine's own unexpected chest message. Check the spelling against your `chest_tables` entry.
+- A `fish_chest` key that names no merged chest table crashes on open with the engine's own unexpected-chest message. Check the spelling against your `chest_tables` entry.
 - A table without `gold` or `items` fails during setup, before the title screen.
 - A fishable rarity without a `fishing/votes` entry also fails during setup.
 

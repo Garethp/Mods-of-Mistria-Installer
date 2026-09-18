@@ -22,11 +22,7 @@ public class JsonGenerator: IGenerator
         var infomation = new GeneratedInformation();
         
         var jsonFiles = GetFiles(mod)
-            .Select(file => new JsonItem
-            {
-                FilePath = file,
-                ReadFilePath = file
-            });
+            .Select(file => new JsonItem(mod, file));
         
         infomation.Json.AddRange(jsonFiles);
 

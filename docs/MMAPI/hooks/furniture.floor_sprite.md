@@ -20,10 +20,10 @@ Fires in `create_furniture_renderer(node)` as a furniture node's floor sprite is
 ctx is the furniture node whose renderer is being built. Read `ctx.object_id` (which furniture), `ctx.prototype`, and `ctx.cardinal_index` (rotation) to decide whether this piece is one you skin.
 
 > [!IMPORTANT]
-> This hook fires once per furniture render **build** - at placement and on every room/grid load - not per frame. A changed decision (a new season, different weather) applies the next time the node's renderer is rebuilt (re-enter the room, or pick the piece up and place it again), not instantly on a live world.
+> This hook fires once per furniture render **build**, at placement and on every room/grid load, and not per frame. A changed decision (a new season, different weather) applies the next time the node's renderer is rebuilt (re-enter the room, or pick the piece up and place it again), not instantly on a live world.
 
 > [!NOTE]
-> Furniture floor sprites never route through `obj_node_renderer.set_sprite`, so [object.node_sprite](object.node_sprite.md) cannot reach them - that hook covers world nodes (crops, forage, resource nodes). A sprite-swapping mod that wants both must register on both hooks. The placement previewer's ghost is out of scope on purpose: the engine's own `winter_floor_sprite` override does not apply there either, so the preview always shows the base floor sprite.
+> Furniture floor sprites never route through `obj_node_renderer.set_sprite`, so [object.node_sprite](object.node_sprite.md) cannot reach them. That hook covers world nodes (crops, forage, resource nodes). A mod that swaps sprites and wants both must register on both hooks. The placement preview's ghost is a third path, written straight from the prototype every frame, and [furniture.preview_sprite](furniture.preview_sprite.md) covers it. Register the same handler there so the ghost agrees with the piece.
 
 ## Usage
 
@@ -47,6 +47,7 @@ mmapi_filter("furniture.floor_sprite", fresh_coat_furniture_floor_sprite);
 
 ## See Also
 
-- [object.node_sprite](object.node_sprite.md) - The world-node complement: crops, forage, and resource nodes.
+- [object.node_sprite](object.node_sprite.md) - Swap the sprite of a world node instead, such as crops, forage, and resource nodes.
+- [furniture.preview_sprite](furniture.preview_sprite.md) - Swap the same sprites on the placement ghost, which resolves every frame while the item is held.
 - [furniture.place_guard](furniture.place_guard.md) - Veto a furniture placement before it is written.
 - [object.interact](object.interact.md) - Take over grid-object interactions.

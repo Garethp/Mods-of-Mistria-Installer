@@ -5,6 +5,7 @@ using Garethp.ModsOfMistriaGUI.Views;
 
 namespace ModsOfMistriaGUITests;
 
+[TestFixture]
 public class Tests
 {
     [AvaloniaTest]

@@ -312,11 +312,7 @@ public class OutfitGenerator
     {
         var shape = new ShapeMeta
         {
-            Meta = new MetaProperties
-            {
-                Id = IDManager.GenerateUniqueId(),
-                AssetKind = "Shape"
-            },
+            Meta = new MetaProperties("Shape"),
             Asset = new ShapeMetaAsset
             {
                 Kind = "box",
