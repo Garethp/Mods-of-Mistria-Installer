@@ -21,6 +21,7 @@ Mods talk to the game through **named hooks**, which are moments in game code MM
 | [Recipes](RECIPES.md) | Common tasks done with a direct engine call, no hook needed. |
 | [Treasure Chests](TREASURE_CHESTS.md) | Add custom treasure chests with unique loot tables in plain fiddle data. |
 | [Pet Cosmetics](PET_COSMETICS.md) | Sell pet cosmetic sets from any store's stock in plain fiddle data. |
+| [Renderables](RENDERABLES.md) | Attach a visual to an instance the way the engine does, with no draw code. |
 | [Debug](DEBUG.md) | The in-game debug agent. Using and setting watches, breakpoints, pause and step, and debugger-callable functions. |
 | [Troubleshooting](TROUBLESHOOTING.md) | Why a mod was skipped, a handler did not fire, or a game update broke it. |
 | [Glossary](GLOSSARY.md) | Plain-language definitions of the terms used throughout. |

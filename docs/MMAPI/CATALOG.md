@@ -107,7 +107,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [monster.spawn](hooks/monster.spawn.md) | filter | Change, move, or cancel any monster spawn. |
 | [monster.death](hooks/monster.death.md) | event | Know the moment a monster dies. |
 | [monster.step_begin](hooks/monster.step_begin.md) | event | React to every monster, every frame, right after its aggro update. |
-| [monster.draw](hooks/monster.draw.md) | event | React to every monster's draw with your own world-space visuals. |
+| [monster.step_end](hooks/monster.step_end.md) | event | React to every monster, every frame, after the engine has settled its frame state. |
 | [monster.shroom.should_hide](hooks/monster.shroom.should_hide.md) | guard | Stop shroom monsters from hiding. |
 | [monster.spirit_projectile.step](hooks/monster.spirit_projectile.step.md) | guard | Stop a spirit projectile mid-flight. |
 | [spells.can_cast](hooks/spells.can_cast.md) | override | Take over whether a spell can be cast. |
@@ -265,7 +265,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [monster_spawn](seams/monster_spawn.md) | Intercepts `spawn_monster()` so mods can move, replace, or cancel every monster spawn. |
 | [monster_death](seams/monster_death.md) | Emits the moment a monster dies, one line before its instance is destroyed. |
 | [monster_step_begin](seams/monster_step_begin.md) | Emits once per monster per frame, right after the aggro update. |
-| [monster_draw](seams/monster_draw.md) | Emits at the end of every monster's world-space draw. |
+| [monster_step_end](seams/monster_step_end.md) | Emits once per monster per frame, after the engine's last renderable write of the end step. |
 | [monster_shroom_should_hide](seams/monster_shroom_should_hide.md) | Puts a veto check at the head of the shroom's hide decision. |
 | [monster_spirit_projectile_step](seams/monster_spirit_projectile_step.md) | Puts a destroy-on-veto check into the spirit projectile's step. |
 | [spells_can_cast](seams/spells_can_cast.md) | Puts an override at the head of `can_cast_spell()`. |

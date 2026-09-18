@@ -205,7 +205,7 @@ Each failure increments the owning mod's error count, visible through `mmapi_hoo
 
 ### Hot Hooks
 
-Some hooks fire per instance per frame. `monster.step_begin` and `monster.draw` are among them. Put the cheapest test first and return before allocating structs, scanning collections, logging, or doing other work when the mod has nothing to do:
+Some hooks fire per instance per frame. `monster.step_begin` and `monster.step_end` are among them. Put the cheapest test first and return before allocating structs, scanning collections, logging, or doing other work when the mod has nothing to do:
 
 ```gml
 function my_mod_monster_step(_ctx) {
