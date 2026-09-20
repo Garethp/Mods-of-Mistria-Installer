@@ -51,7 +51,7 @@ version = 2
 [counts]
 hooks = 133
 seams = 146
-engine_fixes = 8
+engine_fixes = 9
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -4010,3 +4010,27 @@ replace = '''
     assert_neq(item, undefined, "Failed to parse an item out of '{}'", entry);
 '''
 marker  = "mmapi_store_pet_cosmetic_entry"
+
+# par_monster builds its status overlay renderable without a draw kind, so
+# the frozen and venomous tints draw in the Normal kind, the sprite multiplied
+# by the tint over itself, which is invisible in practice. It also seeds
+# status_particles false and only the mite ever writes it, so no other monster
+# spawns the venom damage numbers, the venom puff, or the ice puff. The hit
+# flash built the same way in setup_white_vfx sets the flat kind. This sets it
+# on the overlay too and defaults the particle flag on. The mite keeps
+# overriding the flag per state.
+[[engine_fix]]
+name    = "monster_status_overlay"
+file    = "gml/objects/Combat/par_monster.gml"
+anchor  = '''
+            self.status_blender = self.create_renderable();
+            self.status_cap = infinity;
+            self.status_particles = false;
+'''
+replace = '''
+            self.status_blender = self.create_renderable();
+            self.status_blender.draw_kind = DrawKind.Flat; // mmapi_monster_status_overlay
+            self.status_cap = infinity;
+            self.status_particles = true; // mmapi_monster_status_overlay
+'''
+marker  = "mmapi_monster_status_overlay"
