@@ -37,13 +37,4 @@ public class MISTInstaller(
 
         reportStatus($"Installed: {file.FilePath}", "");
     }
-
-    private static string RelativePath(IMod mod, string absolutePath)
-    {
-        var normalizedBase = mod.GetBasePath().Replace('\\', '/').TrimEnd('/') + '/';
-        var normalizedFull = absolutePath.Replace('\\', '/');
-        if (normalizedFull.StartsWith(normalizedBase, StringComparison.OrdinalIgnoreCase))
-            return normalizedFull[normalizedBase.Length..];
-        return normalizedFull;
-    }
 }

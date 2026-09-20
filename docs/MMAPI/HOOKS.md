@@ -11,7 +11,7 @@ Most shipped hooks are dispatched from engine seams. A few are [emitted directly
 > [!NOTE]
 > A mod uses the game hooks MOMI already ships. It never packages its own seams. Mods can also publish custom hooks for other mods to handle, covered in [Publishing Custom Hooks](#publishing-custom-hooks).
 
-The shipped catalog currently declares **134 hooks**, fed by **147 seams**, **8 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
+The shipped catalog currently declares **138 hooks**, fed by **154 seams**, **16 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
 
 ## Using A Shipped Hook
 
@@ -205,7 +205,7 @@ Each failure increments the owning mod's error count, visible through `mmapi_hoo
 
 ### Hot Hooks
 
-Some hooks fire per instance per frame. `monster.step_begin` and `monster.draw` are among them. Put the cheapest test first and return before allocating structs, scanning collections, logging, or doing other work when the mod has nothing to do:
+Some hooks fire per instance per frame. `monster.step_begin` and `monster.step_end` are among them. Put the cheapest test first and return before allocating structs, scanning collections, logging, or doing other work when the mod has nothing to do:
 
 ```gml
 function my_mod_monster_step(_ctx) {

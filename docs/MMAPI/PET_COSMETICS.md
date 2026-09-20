@@ -64,5 +64,6 @@ Declare `pet_cosmetic` on a stock entry. Its value names an entry under `pets/co
 
 - [store_pet_cosmetic_entry](seams/store_pet_cosmetic_entry.md) - The catalog entry carrying this contract.
 - [store.item_added](hooks/store.item_added.md) - The event that fires when any item lands in the basket.
+- [store.stock](hooks/store.stock.md) - The filter for stock the data cannot compute.
 - [Treasure Chests](TREASURE_CHESTS.md) - Another contract the catalog carries in data alone.
 - [Mod Anatomy](MOD_ANATOMY.md) - The mod folder layout the fiddle files above live in.

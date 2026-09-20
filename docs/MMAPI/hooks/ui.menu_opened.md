@@ -44,3 +44,4 @@ mmapi_on("ui.menu_opened", menu_greeter_ui_menu_opened);
 - [ui.menu_closed](ui.menu_closed.md) - Know when a menu closes.
 - [ui.menu_refreshed](ui.menu_refreshed.md) - React when a menu rebuilds its content.
 - [ui.spawn_tutorial_guard](ui.spawn_tutorial_guard.md) - Block a tutorial popup before it spawns.
+- [store.stock](store.stock.md) - Change what a store's shelves hold, before the store menu reaches this hook.

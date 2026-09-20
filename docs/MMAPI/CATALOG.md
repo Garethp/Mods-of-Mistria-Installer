@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **134 hooks**, fed by **147 seams**, **8 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **138 hooks**, fed by **154 seams**, **16 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -52,6 +52,9 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [object.interact](hooks/object.interact.md) | override | Take over any grid object's interaction. |
 | [object.node_sprite](hooks/object.node_sprite.md) | filter | Swap the sprite of any world node before it draws. |
 | [store.item_added](hooks/store.item_added.md) | event | Know when an item lands in the shopping basket. |
+| [store.basket_cost](hooks/store.basket_cost.md) | filter | Change the gold total a shop charges for the basket. |
+| [store.purchase](hooks/store.purchase.md) | event | Know the moment a Buy press commits. |
+| [store.stock](hooks/store.stock.md) | filter | Change what a store's shelves hold. |
 | [museum.donate_item](hooks/museum.donate_item.md) | event | Know when an item is donated to the museum. |
 
 ### Player, Actors, And Progression
@@ -107,7 +110,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [monster.spawn](hooks/monster.spawn.md) | filter | Change, move, or cancel any monster spawn. |
 | [monster.death](hooks/monster.death.md) | event | Know the moment a monster dies. |
 | [monster.step_begin](hooks/monster.step_begin.md) | event | React to every monster, every frame, right after its aggro update. |
-| [monster.draw](hooks/monster.draw.md) | event | React to every monster's draw with your own world-space visuals. |
+| [monster.step_end](hooks/monster.step_end.md) | event | React to every monster, every frame, after the engine has settled its frame state. |
 | [monster.shroom.should_hide](hooks/monster.shroom.should_hide.md) | guard | Stop shroom monsters from hiding. |
 | [monster.spirit_projectile.step](hooks/monster.spirit_projectile.step.md) | guard | Stop a spirit projectile mid-flight. |
 | [spells.can_cast](hooks/spells.can_cast.md) | override | Take over whether a spell can be cast. |
@@ -121,6 +124,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | Name | Kind | Description |
 | ---- | ---- | ----------- |
 | [items.give](hooks/items.give.md) | filter | Rewrite any item the player is about to receive. |
+| [items.store_price](hooks/items.store_price.md) | filter | Change the base price a store charges for an item. |
 | [items.use_guard](hooks/items.use_guard.md) | guard | Block an item from being used. |
 | [items.chest_opened](hooks/items.chest_opened.md) | event | Know the moment any chest item finishes opening. |
 | [items.consumed](hooks/items.consumed.md) | event | Know every item the player eats. |
@@ -210,6 +214,12 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [object_interact](seams/object_interact.md) | Puts a claim-scoped override in front of every grid-object interaction. |
 | [node_renderer_set_sprite](seams/node_renderer_set_sprite.md) | Filters the sprite every world node renderer is about to wear. |
 | [store_item_added](seams/store_item_added.md) | Announces every shelf tap that puts an item in the shopping basket. |
+| [store_basket_cost](seams/store_basket_cost.md) | Filters the basket total inside the store's price pass, guarded so only a number replaces it. |
+| [store_purchase](seams/store_purchase.md) | Emits the moment a Buy press commits, after the stacks are grouped and before they are given and charged. |
+| [store_stock](seams/store_stock.md) | Wraps `create_store_stock()`, the one builder every store shelf reads. |
+| [store_menu_ctx_pointer](seams/store_menu_ctx_pointer.md) | Holds the StoreMenu in a framework global for the span of its constructor's `init()` call, so store hooks that fire inside it can name the menu. |
+| [store_shelf_label_refresh](seams/store_shelf_label_refresh.md) | Has the StoreMenu's price pass rewrite each shelf label's price text, so a filtered price that changes while the shop is open reaches the shelf. |
+| [store_tooltip_price_refresh](seams/store_tooltip_price_refresh.md) | Has the StoreMenu's price pass rewrite the open tooltip's price, so a filtered price that changes while the shop is open reaches the tooltip without a re-spawn. |
 | [museum_donate_item](seams/museum_donate_item.md) | Emits the moment an item is donated to the museum. |
 
 ### Player, Actors, And Progression
@@ -266,7 +276,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [monster_spawn](seams/monster_spawn.md) | Intercepts `spawn_monster()` so mods can move, replace, or cancel every monster spawn. |
 | [monster_death](seams/monster_death.md) | Emits the moment a monster dies, one line before its instance is destroyed. |
 | [monster_step_begin](seams/monster_step_begin.md) | Emits once per monster per frame, right after the aggro update. |
-| [monster_draw](seams/monster_draw.md) | Emits at the end of every monster's world-space draw. |
+| [monster_step_end](seams/monster_step_end.md) | Emits once per monster per frame, after the engine's last renderable write of the end step. |
 | [monster_shroom_should_hide](seams/monster_shroom_should_hide.md) | Puts a veto check at the head of the shroom's hide decision. |
 | [monster_spirit_projectile_step](seams/monster_spirit_projectile_step.md) | Puts a destroy-on-veto check into the spirit projectile's step. |
 | [spells_can_cast](seams/spells_can_cast.md) | Puts an override at the head of `can_cast_spell()`. |
@@ -296,6 +306,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [items_infusion_generate](seams/items_infusion_generate.md) | Puts a veto check in front of a recipe's infusion generation. |
 | [items_infusion_chance](seams/items_infusion_chance.md) | Filters the infusion roll chance in `craft_into()`, hoisted out of the roll condition before `chance_percent` consumes it. |
 | [item_display_description](seams/item_display_description.md) | Wraps the item-description getter, the string the tooltip body actually renders. |
+| [items_store_price](seams/items_store_price.md) | Wraps `LiveItem.store_value()` so every buy-side price lookup is filterable. |
 | [crafting_max_crafts](seams/crafting_max_crafts.md) | Puts an override in front of the craft-count ceiling before the engine computes it. |
 | [crafting_pay_component_costs](seams/crafting_pay_component_costs.md) | Puts a veto check in front of a recipe's material payment. |
 | [crafting_component_count](seams/crafting_component_count.md) | Filters every crafting cost read by wrapping the component-count resolver. |
@@ -354,6 +365,14 @@ Hook-less edits the catalog also carries:
 | [customization_color_popup_scrollable](seams/customization_color_popup_scrollable.md) | engine fix | Wraps the customization colour popup's swatch grid in a capped-height scroller when it exceeds 7 rows, so LUTs widened past the vanilla colour count stay on-screen. |
 | [pet_appearance_popup_scrollable](seams/pet_appearance_popup_scrollable.md) | engine fix | Wraps the pet "Select an Appearance" variant grid in the same capped-height scroller when it exceeds 7 rows, so pet-skin mods that add many variants stay on-screen. |
 | [store_pet_cosmetic_entry](seams/store_pet_cosmetic_entry.md) | engine fix | Lets a store stock entry declaring `pet_cosmetic` sell a pet cosmetic set, validated against the merged set list at Setup. |
+| [recipe_items_factory](seams/recipe_items_factory.md) | engine fix | Adds a list form to the recipe component factory, an Item component that stores the first id as `item_id` and the full list as `item_ids`. |
+| [recipe_items_parse](seams/recipe_items_parse.md) | engine fix | Parses a recipe component's `items` list into the factory's list form, resolving names through the same lookup as `item`. |
+| [recipe_items_fulfillment](seams/recipe_items_fulfillment.md) | engine fix | Sums a list component's stock across every listed id, in the player's inventory and in each crafting chest. |
+| [recipe_items_payment](seams/recipe_items_payment.md) | engine fix | Drains a list component's cost across the listed ids in order, the player's inventory first and then each crafting chest. |
+| [recipe_tag_display](seams/recipe_tag_display.md) | engine fix | Lets the crafting menu draw a `tag` component with the first tagged prototype's icon and the shared has/needs count block. |
+| [recipe_tag_fulfillment](seams/recipe_tag_fulfillment.md) | engine fix | Counts a `tag` component's stock through the inventory's own tag helper, in the player's inventory and in each crafting chest, replacing a branch that threw. |
+| [recipe_tag_payment](seams/recipe_tag_payment.md) | engine fix | Pays a `tag` component's quantity-scaled cost through the inventory's own tag helper, the player's inventory first and then each crafting chest. |
+| [monster_status_overlay](seams/monster_status_overlay.md) | engine fix | Sets the flat draw kind on the monster status overlay and defaults status particles on, matching the hit flash `setup_white_vfx` builds the same way. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Growing The Catalog
