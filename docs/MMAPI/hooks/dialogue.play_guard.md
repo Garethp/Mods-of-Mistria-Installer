@@ -53,3 +53,4 @@ mmapi_guard("dialogue.play_guard", quiet_town_dialogue_play_guard);
 - [dialogue.npc_blip](dialogue.npc_blip.md) - Swap the blip sound an NPC speaks with.
 - [dialogue.romance_prompt_guard](dialogue.romance_prompt_guard.md) - Grey and lock a pink romance prompt inside a playing cutscene.
 - [ui.spawn_tutorial_guard](ui.spawn_tutorial_guard.md) - Block a tutorial popup before it spawns.
+- [dialogue.conversation_finished](dialogue.conversation_finished.md) - Know when a conversation this guard let through has finished.
