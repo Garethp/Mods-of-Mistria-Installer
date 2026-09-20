@@ -2,7 +2,7 @@ using ModsOfMistriaInstallerLibTests.TestUtils;
 
 namespace ModsOfMistriaInstallerLibTests.Mmapi;
 
-// mmapi's hook engine, tested by running it. The whole framework (all 8 .gml
+// mmapi's hook engine, tested by running it. The whole framework (all 9 .gml
 // files, one namespace, the way the boot's global-script compile sees them) is
 // concatenated with a prelude of assertion helpers and one test body, then
 // executed on the pinned fabricator VM.
@@ -98,5 +98,15 @@ public class DispatchRuntimeTest
         // names the declared hooks that never fired. A session that never
         // enables debug counts nothing and allocates nothing.
         AssertBodyPasses("dispatch_liveness.gml");
+    }
+
+    [Test]
+    public void ShouldScopeInstanceCreatedRegistrations()
+    {
+        // The instance poll's registrations carry the watched object and a
+        // marker of their own. An unscoped registration is refused, one handler
+        // can watch two objects, the same handler on the same object lands
+        // once, and other hooks carry no scope.
+        AssertBodyPasses("dispatch_instance_scope.gml");
     }
 }

@@ -80,16 +80,30 @@ function __mmapi_hook_register(kind, hook_name, handler, opts) {
     var mod_name = mmapi_current_mod();
     var before = undefined;
     var after = undefined;
+    var watched = undefined;
     if (opts != undefined) {
         if (opts[$ "priority"] != undefined) { priority = opts.priority; }
         if (opts[$ "mod_name"] != undefined) { mod_name = opts.mod_name; }
         if (opts[$ "before"] != undefined) { before = __mmapi_hook_mod_list(opts.before); }
         if (opts[$ "after"] != undefined) { after = __mmapi_hook_mod_list(opts.after); }
+        if (opts[$ "object"] != undefined) { watched = opts.object; }
     }
 
     hook_name = __mmapi_hook_resolve_alias(hook_name, mod_name);
     __mmapi_hook_warn_if_uncataloged(hook_name, mod_name);
     __mmapi_hook_warn_if_kind_mismatch(kind, hook_name, mod_name);
+
+    // The instance poll scans one object per registration. An unscoped
+    // registration would walk every live instance every frame, so it is
+    // refused rather than defaulted.
+    if (hook_name == "instance.created" && watched == undefined) {
+        mmapi_warn_rate_limited(
+            "hook_unscoped:" + string(mod_name),
+            mod_name,
+            "mmapi hook instance.created: registration from " + string(mod_name)
+            + " names no object and is skipped. Pass { object: obj_x }");
+        return;
+    }
 
     var handlers = registry[$ hook_name];
     if (handlers == undefined) {
@@ -97,12 +111,15 @@ function __mmapi_hook_register(kind, hook_name, handler, opts) {
         registry[$ hook_name] = handlers;
     }
 
-    // A duplicate (same fn, kind and mod) does not land twice: installers rerun
-    // every frame, so an unguarded registration would compound. This check runs
-    // first, so the per-frame duplicate path reaches no other warning below.
+    // A duplicate (same fn, kind, mod and watched object) does not land twice:
+    // installers rerun every frame, so an unguarded registration would
+    // compound. The object is part of the identity so one handler can watch
+    // two objects. This check runs first, so the per-frame duplicate path
+    // reaches no other warning below.
     for (var i = 0; i < array_length(handlers); i++) {
         var existing = handlers[i];
-        if (existing.fn == handler && existing.mod_name == mod_name && existing.kind == kind) {
+        if (existing.fn == handler && existing.mod_name == mod_name && existing.kind == kind
+            && existing[$ "object"] == watched) {
             mmapi_warn_rate_limited(
                 "hook_dup:" + string(hook_name) + ":" + string(mod_name),
                 mod_name,
@@ -147,6 +164,9 @@ function __mmapi_hook_register(kind, hook_name, handler, opts) {
 
     if (global[$ "__mmapi_hook_seq"] == undefined) { global.__mmapi_hook_seq = 0; }
     global.__mmapi_hook_seq += 1;
+    // object and marker serve the instance poll. The poll scans the object and
+    // stamps the marker on each instance it has dispatched. Every other hook's
+    // record carries object undefined and an unused marker.
     array_push(handlers, {
         fn: handler,
         priority: priority,
@@ -155,6 +175,8 @@ function __mmapi_hook_register(kind, hook_name, handler, opts) {
         seq: global.__mmapi_hook_seq,
         before: before,
         after: after,
+        object: watched,
+        marker: "__mmapi_seen_" + string(global.__mmapi_hook_seq),
     });
     __mmapi_hook_resort(hook_name, handlers);
 }

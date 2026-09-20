@@ -48,14 +48,15 @@ The `local_key` argument labels the button prompt through the localizer, so ship
 
 ### Available Inputs
 
-The table below describes each input's availability for mod registration given the vanilla interactions already defined.
+The table below describes each usable input's availability for a mod interaction given the vanilla interactions already defined.
 
-| Input | Availability for a mod interaction |
-| --- | --- |
-| Interact | Contested. `feed`, `pick_up`, and `check_pet` sit earlier, and `pick_up` is active in nearly every ordinary state, so a mod interaction fires only in narrow windows (the pet using a toy, or Ari carrying an animal). |
-| SecondaryInteract | Contested. The vanilla pet registration is active in nearly every ordinary state. |
-| Throw | Open. The pet registers nothing on Throw, so a mod interaction here is always reachable. |
-| Ride, Jump, PickUpOne, the tool inputs | Unregistered on the pet. A take_press registration still consumes that input's global action while the prompt is active, so Jump eats jumps beside the pet. |
+| Input | Availability | Info |
+| --- | --- | --- |
+| Interact | Contested | `feed`, `pick_up`, and `check_pet` sit earlier, and `pick_up` is active in nearly every ordinary state, so a mod interaction fires only in narrow windows (the pet using a toy, or Ari carrying an animal). |
+| SecondaryInteract | Contested | The vanilla pet registration is active in nearly every ordinary state. |
+| Throw | Open | The pet registers nothing here, so a mod interaction is always reachable. |
+
+Every other input is unsuitable. The jump, the mount summon, the pinned spell, and the menus read their inputs before the interactable scan, PickUpOne shares its default keys with Interact and the tool button, and a registration on the tool input takes the press away from the held tool.
 
 ## Interactions
 
@@ -70,4 +71,5 @@ The table below describes each input's availability for mod registration given t
 
 - [npc.created](npc.created.md) - The same moment for villagers.
 - [animal.created](animal.created.md) - The same moment for barn/coop animals.
+- [instance.created](instance.created.md) - The per-frame poll for any other object's instances, a frame later than this spawn-site hook.
 - [input.take_press](input.take_press.md) - Veto a registered interaction's press.

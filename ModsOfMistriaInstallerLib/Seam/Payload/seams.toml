@@ -49,7 +49,7 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 138
+hooks = 139
 seams = 154
 engine_fixes = 16
 call_rewrites = 1
@@ -756,6 +756,12 @@ doc  = "Fires whenever create_store_stock(store) returns, the one builder every 
 name = "dialogue.conversation_finished"
 kind = "event"
 doc  = "Fires at the end of ConversationDriver.finish_conversation(), after the conversation's end actions have run through process_t2_action(), after the driver has closed its textbox or started the textbox's closing animation, and after the driver's state is set to ConversationDriverState.Finished. ctx is { driver, conversation_name, npc_id, end_actions }: driver is the ConversationDriver that finished, conversation_name is the t2 conversation name it was built with, npc_id is its npc_owner, and end_actions is the array of T2Action structs that T2R.conversation_end() returned for the conversation. Observation only. Every entry in end_actions has already run, so the array is a record of what the end did. A conversation's end actions are the actions list on its own table in the t2 file, the [name] table that also carries kind, requires, and writes, plus the SpokeTo action the runtime adds for the owner. An actions list on a numbered line table, [name.N], runs when that line is delivered and is not repeated here. Fires once per ConversationDriver that finishes, whether play_conversation() built it, the cutscene runtime built it, or the debug CLI built it. A cutscene that swaps conversations with set_conversation finishes one driver per conversation, and a skipped cutscene still finishes its driver through this function. A driver dropped before it finishes never fires. The finished textbox is still in ANCHOR.open_menus when handlers run, so a conversation started from a handler must wait for it to leave."
+
+[[hook]]
+name = "instance.created"
+kind = "event"
+provider = "runtime"
+doc  = "Fires from the framework's per-frame instance poll for every live instance of the object a registration names in opts.object, once per instance per handler, on the first begin step at which that instance is active. ctx is the instance. The poll runs after the instance's whole create chain, so the instance is complete and every vanilla register_interaction call has already landed, and an instance that destroyed itself during its create event never fires. It covers every creation path, including room placement, instances built inside room_start, mid-room spawns, the first room of a session, and a room that reloads onto itself. It is not synchronous with creation, and an instance that is inactive when first polled fires when it is next active. Passing a parent object watches every descendant. A registration without opts.object is refused with a warning, and obj_node_renderer and par_interactable are refused as watch targets on the first poll. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction taking the press, so a handler cannot shadow an active vanilla interaction on the same input. Villagers, the farm pet, and barn and coop animals have spawn-site hooks (npc.created, pet.created, animal.created) that fire synchronously and a frame earlier than this poll."
 
 # --- seams -------------------------------------------------------------------------
 

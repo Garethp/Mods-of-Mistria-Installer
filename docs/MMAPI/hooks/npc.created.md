@@ -57,14 +57,15 @@ The `local_key` argument labels the button prompt through the localizer, so ship
 
 ### Available Inputs
 
-The table below describes each input's availability for mod registration given the vanilla interactions already defined.
+The table below describes each usable input's availability for a mod interaction given the vanilla interactions already defined.
 
-| Input | Availability for a mod interaction |
-| --- | --- |
-| Interact | Contested. `talk` sits earlier and is active whenever the NPC can talk, with quest turn-ins ahead of it, so a mod interaction reaches the press only when the NPC cannot talk. Dozy, Henrietta, and sleeping Caldarus carry extra Interact registrations of their own. |
-| SecondaryInteract | Open on villagers who are not partners, except Elsie, whose gossip registration is active once her quest completes. For partners the kiss contention applies (see Interactions). |
-| Throw | Open with an empty hand on villagers who are not date-eligible partners. The engagement, family-planning, gift, and child registrations all require a held item or a specific family or festival state, but a partner's `invite_on_date` needs no held item, and festival days add their own asks. |
-| Ride, Jump, PickUpOne, the tool inputs | Unregistered on NPCs. A take_press registration still consumes that input's global action while the prompt is active, so Jump eats jumps and the tool inputs eat swings beside the NPC. |
+| Input | Availability | Info |
+| --- | --- | --- |
+| Interact | Contested | `talk` sits earlier and is active whenever the NPC can talk, with quest turn-ins ahead of it, so a mod interaction reaches the press only when the NPC cannot talk. Dozy, Henrietta, and sleeping Caldarus carry extra Interact registrations of their own. |
+| SecondaryInteract | Contested | The kiss registration is active only for partners (see Interactions), and Elsie's gossip registration is active once her quest completes, so the input is open on every other villager. |
+| Throw | Contested | The engagement, family-planning, gift, and child registrations all require a held item or a specific family or festival state, and a partner's `invite_on_date` needs no held item, so the input is open with an empty hand on villagers who are not date-eligible partners. Festival days add their own asks. |
+
+Every other input is unsuitable. The jump, the mount summon, the pinned spell, and the menus read their inputs before the interactable scan, PickUpOne shares its default keys with Interact and the tool button, and a registration on the tool input takes the press away from the held tool.
 
 ## Interactions
 
@@ -80,5 +81,6 @@ The table below describes each input's availability for mod registration given t
 
 - [pet.created](pet.created.md) - The same moment for the farm pet.
 - [animal.created](animal.created.md) - The same moment for barn/coop animals.
+- [instance.created](instance.created.md) - The per-frame poll for any other object's instances, a frame later than this spawn-site hook.
 - [npc.gift_received](npc.gift_received.md) - An NPC receives a gift.
 - [input.take_press](input.take_press.md) - Veto a registered interaction's press.

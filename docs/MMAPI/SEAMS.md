@@ -20,19 +20,20 @@ The catalog is `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`, embedded int
 
 The catalog opens with a `[counts]` table stating how many records of each type follow. The loader refuses a catalog whose records do not match that table, so a truncated or mis-merged file fails at load time instead of shipping a partial hook surface.
 
-The shipped catalog currently declares **138 hooks**, fed by **154 seams**, **16 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page, under `docs/MMAPI/hooks/` for hooks and `docs/MMAPI/seams/` for the rest. The shipped-catalog test holds the count sentences on this page, the Catalog, and [Hooks](HOOKS.md) to those totals, and the page set to the catalog, so a stale count, a record without a page, or a page without a record fails the suite.
+The shipped catalog currently declares **139 hooks**, fed by **154 seams**, **16 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page, under `docs/MMAPI/hooks/` for hooks and `docs/MMAPI/seams/` for the rest. The shipped-catalog test holds the count sentences on this page, the Catalog, and [Hooks](HOOKS.md) to those totals, and the page set to the catalog, so a stale count, a record without a page, or a page without a record fails the suite.
 
 MOMI also renders the hook declarations into `mmapi_hook_catalog.gml` at install time, so the runtime can check registrations and answer introspection. See [The Installed Catalog](HOOKS.md#the-installed-catalog).
 
 ### Runtime Hooks
 
-Some hooks use `provider = "runtime"`. The framework emits those itself, with no engine edit behind them. Three hooks are runtime-provided today:
+Some hooks use `provider = "runtime"`. The framework emits those itself, with no engine edit behind them. These hooks are runtime-provided today:
 
 - [combat.damage_injected](hooks/combat.damage_injected.md) fires from the framework's own `mmapi_deal_damage()`.
 - [game.room_changed](hooks/game.room_changed.md) is derived by polling `room()`.
 - [game.day_changed](hooks/game.day_changed.md) is derived by polling `total_days()`.
+- [instance.created](hooks/instance.created.md) is derived by scanning each registration's object for unmarked live instances.
 
-The two polled hooks lag the change they report, and the first poll of a session only records the baseline, so no event fires for the state a session starts in. Treat them as edge triggers. React to the change, but read the live state at any later decision point rather than caching their ctx (see the warning on [game.room_changed](hooks/game.room_changed.md)).
+The two polled hooks lag the change they report, and the first poll of a session only records the baseline, so no event fires for the state a session starts in. Treat them as edge triggers. React to the change, but read the live state at any later decision point rather than caching their ctx (see the warning on [game.room_changed](hooks/game.room_changed.md)). The instance poll marks each instance it dispatches, so it fires once per instance rather than on every change.
 
 For the day boundary specifically, the in-engine [game.new_day](hooks/game.new_day.md) fires from `new_day()` itself, before the end-of-day autosave and never on a load. The derived `game.day_changed` lags both.
 
