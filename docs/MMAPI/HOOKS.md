@@ -11,7 +11,7 @@ Most shipped hooks are dispatched from engine seams. A few are [emitted directly
 > [!NOTE]
 > A mod uses the game hooks MOMI already ships. It never packages its own seams. Mods can also publish custom hooks for other mods to handle, covered in [Publishing Custom Hooks](#publishing-custom-hooks).
 
-The shipped catalog currently declares **138 hooks**, fed by **154 seams**, **16 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
+The shipped catalog currently declares **139 hooks**, fed by **154 seams**, **16 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page.
 
 ## Using A Shipped Hook
 
@@ -143,6 +143,7 @@ mmapi_override(hook_name, handler, opts);
 | `priority` | `0` | Lower values run first. Equal priorities keep registration order. |
 | `before` | absent | One mod name or an array of mod names whose handlers should run after this one. |
 | `after` | absent | One mod name or an array of mod names whose handlers should run before this one. |
+| `object` | absent | Only read by [instance.created](hooks/instance.created.md). The object asset, or a parent, whose live instances the handler receives. |
 | `mod_name` | current mod | Legacy attribution override. Normal mod code should rely on MMAPI's captured current-mod attribution instead. |
 
 Priority establishes the base order. `before` and `after` then add relationships between **mods**, not individual functions. They may move a handler across priority groups, and naming a mod that is absent is safe. Handler lists are re-sorted after every registration, so an edge still takes effect when the named mod registers later.
@@ -171,6 +172,7 @@ The installed catalog lets MMAPI catch mistakes when a handler is registered:
 | Kind mismatch | Warns once per hook and mod, naming the correct directive, but keeps the record under the requested kind. | No. Each shipped dispatcher invokes only records of its own kind. |
 | Mixed kinds under one custom name | Warns rate-limited but keeps both kinds of record. | A custom dispatcher invokes only records matching its own kind. |
 | Exact duplicate | Skips the new record with a rate-limited warning. The existing registration remains. | The existing record still runs. |
+| `instance.created` without `object` | Refuses the registration with a rate-limited warning. | No. Nothing is registered until the object is named. |
 
 An exact duplicate means the same canonical hook, handler function, kind, and mod. Changing `priority`, `before`, or `after` does not make a second registration distinct. Duplicate suppression matters because queued install functions can rerun every frame, but a registration latch is still preferable, because it avoids warning noise and also protects APIs that do not de-duplicate.
 

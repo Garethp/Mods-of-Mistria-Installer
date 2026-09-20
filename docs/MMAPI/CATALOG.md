@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **138 hooks**, fed by **154 seams**, **16 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **139 hooks**, fed by **154 seams**, **16 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -51,6 +51,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [furniture.preview_sprite](hooks/furniture.preview_sprite.md) | filter | Swap the sprites the furniture placement preview draws, so the ghost agrees with the piece. |
 | [object.interact](hooks/object.interact.md) | override | Take over any grid object's interaction. |
 | [object.node_sprite](hooks/object.node_sprite.md) | filter | Swap the sprite of any world node before it draws. |
+| [instance.created](hooks/instance.created.md) | event | Customize any object's instances as they appear, with the object named at registration. |
 | [store.item_added](hooks/store.item_added.md) | event | Know when an item lands in the shopping basket. |
 | [store.basket_cost](hooks/store.basket_cost.md) | filter | Change the gold total a shop charges for the basket. |
 | [store.purchase](hooks/store.purchase.md) | event | Know the moment a Buy press commits. |

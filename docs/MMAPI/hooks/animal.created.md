@@ -48,14 +48,15 @@ The `local_key` argument labels the button prompt through the localizer, so ship
 
 ### Available Inputs
 
-The table below describes each input's availability for mod registration given the vanilla interactions already defined.
+The table below describes each usable input's availability for a mod interaction given the vanilla interactions already defined.
 
-| Input | Availability for a mod interaction |
-| --- | --- |
-| Interact | Contested. `feed` and the per-species `pet` or `pick_up` sit earlier, and the petting registration is active in nearly every ordinary state. |
-| SecondaryInteract | Contested. The `inspect` registration (the animal journal) is active in nearly every ordinary state. |
-| Throw | Open. Barn/coop animals register nothing on Throw, so a mod interaction here is always reachable. |
-| Ride, Jump, PickUpOne, the tool inputs | Unregistered on animals. A take_press registration still consumes that input's global action while the prompt is active, and Ride additionally fights mounting beside rideable species. |
+| Input | Availability | Info |
+| --- | --- | --- |
+| Interact | Contested | `feed` and the per-species `pet` or `pick_up` sit earlier, and the petting registration is active in nearly every ordinary state. |
+| SecondaryInteract | Contested | The `inspect` registration (the animal journal) is active in nearly every ordinary state. |
+| Throw | Open | Barn and coop animals register nothing here, so a mod interaction is always reachable. |
+
+Every other input is unsuitable. The jump, the mount summon, the pinned spell, and the menus read their inputs before the interactable scan, PickUpOne shares its default keys with Interact and the tool button, and a registration on the tool input takes the press away from the held tool.
 
 ## Interactions
 
@@ -70,5 +71,6 @@ The table below describes each input's availability for mod registration given t
 
 - [npc.created](npc.created.md) - The same moment for villagers.
 - [pet.created](pet.created.md) - The same moment for the farm pet.
+- [instance.created](instance.created.md) - The per-frame poll for any other object's instances, a frame later than this spawn-site hook.
 - [animal.pet](animal.pet.md) - The player pets or puts down an animal.
 - [animal.heart_points](animal.heart_points.md) - Adjust the heart points an animal gains.
