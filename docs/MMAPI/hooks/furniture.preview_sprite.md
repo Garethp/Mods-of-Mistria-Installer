@@ -59,7 +59,7 @@ mmapi_filter("furniture.floor_sprite", autumn_stump_furniture_preview_sprite);
 ## Engine Wiring
 
 - Seam [`furniture_preview_sprite`](../seams/furniture_preview_sprite.md) dispatches from `gml/scripts/GameplaySystems/Data/Grid/Furniture.gml`, in `create_test_placement_furniture_draw_info()`, after the engine's seasonal override of the main sprite and before the sprite is written to the previewer (`source: "main_sprite"`).
-- Seam [`furniture_preview_floor_sprite`](../seams/furniture_preview_floor_sprite.md) dispatches from the same function, where the floor sprite is written to the previewer's `bottom_sprite` (`source: "floor_sprite"`).
+- Seam [`furniture_preview_floor_sprite`](../seams/furniture_preview_floor_sprite.md) dispatches from the same function, where the floor sprite is written to the previewer's bottom renderable (`source: "floor_sprite"`).
 
 ## See Also
 
