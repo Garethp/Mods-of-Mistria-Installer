@@ -9,7 +9,7 @@ Filters the floor sprite the furniture placement preview is about to draw.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Data/Grid/Furniture.gml` |
-| **Locator** | text anchor in `create_test_placement_furniture_draw_info()`, on the `if` of three lines that writes the prototype's `floor_sprite` to `furniture_renderer.bottom_sprite` |
+| **Locator** | text anchor in `create_test_placement_furniture_draw_info()`, on the `if` of three lines that writes the prototype's `floor_sprite` to `furniture_renderer.bottom.animation` |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`furniture.preview_sprite`](../hooks/furniture.preview_sprite.md) |
 | **Value filtered** | the floor sprite, starting as `proto.cardinal_data[calc_rot].floor_sprite` |
@@ -18,7 +18,7 @@ Filters the floor sprite the furniture placement preview is about to draw.
 
 ## The Edit
 
-Pristine writes the prototype's floor sprite straight into the previewer's `bottom_sprite` field, with no local in between, so there is nothing for a template filter to reassign. The replace keeps the enclosing `if` and introduces a local. It reads the prototype's `floor_sprite` into `__mmapi_preview_floor`, threads that through `mmapi_apply_filters("furniture.preview_sprite", ...)` under its own try/catch, and writes the result to `bottom_sprite`. A throwing handler leaves the engine's sprite in place. With zero handlers the dispatch returns early and the write is the pristine one.
+Pristine writes the prototype's floor sprite straight into the `animation` of the previewer's bottom renderable, with no local in between, so there is nothing for a template filter to reassign. The replace keeps the enclosing `if` and introduces a local. It reads the prototype's `floor_sprite` into `__mmapi_preview_floor`, threads that through `mmapi_apply_filters("furniture.preview_sprite", ...)` under its own try/catch, and writes the result to `bottom.animation`. A throwing handler leaves the engine's sprite in place. With zero handlers the dispatch returns early and the write is the pristine one.
 
 The ctx literal is the same shape as the [main sprite site](furniture_preview_sprite.md) builds, with `source: "floor_sprite"` so a handler can tell the two apart. The seam deliberately applies no `winter_floor_sprite` override of its own. Pristine applies none at this site either, unlike `create_furniture_renderer()`, so the value handed to handlers is exactly the sprite the engine would have drawn, and a handler that wants the ghost's winter floor to match the placed piece's must return it itself.
 

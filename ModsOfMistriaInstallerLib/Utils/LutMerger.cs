@@ -17,8 +17,14 @@ public static class LutMerger
         var seen    = new HashSet<string>();
 
         if (existing is not null)
-            AppendUniqueColumns(existing, height, columns, seen);
-        AppendUniqueColumns(incoming, height, columns, seen);
+        {
+            AppendColumns(existing, height, columns, seen, dedupe: false);
+            AppendColumns(incoming, height, columns, seen, dedupe: true);
+        }
+        else
+        {
+            AppendColumns(incoming, height, columns, seen, dedupe: false);
+        }
 
         var result = new Image<Rgba32>(columns.Count, height);
         for (int x = 0; x < columns.Count; x++)
@@ -31,8 +37,8 @@ public static class LutMerger
         return result;
     }
 
-    private static void AppendUniqueColumns(
-        Image<Rgba32> image, int height, List<Rgba32[]> columns, HashSet<string> seen)
+    private static void AppendColumns(
+        Image<Rgba32> image, int height, List<Rgba32[]> columns, HashSet<string> seen, bool dedupe)
     {
         for (int x = 0; x < image.Width; x++)
         {
@@ -40,8 +46,12 @@ public static class LutMerger
             for (int y = 0; y < height; y++)
                 col[y] = image[x, y];
 
-            if (seen.Add(ColumnKey(col)))
-                columns.Add(col);
+            var key = ColumnKey(col);
+            if (dedupe && seen.Contains(key))
+                continue;
+
+            seen.Add(key);
+            columns.Add(col);
         }
     }
 

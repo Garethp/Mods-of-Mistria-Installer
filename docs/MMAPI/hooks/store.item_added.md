@@ -52,6 +52,9 @@ mmapi_on("store.item_added", basket_bundler_store_item_added);
 
 ## See Also
 
+- [store.basket_cost](store.basket_cost.md) - Change the gold total a shop charges for the basket.
+- [store.purchase](store.purchase.md) - Know the moment a Buy press commits.
+- [store.stock](store.stock.md) - Change what a store's shelves hold.
 - [items.give](items.give.md) - Rewrite any item the player is about to receive.
 - [ui.menu_opened](ui.menu_opened.md) - Know when a menu (the store included) opens.
 - [museum.donate_item](museum.donate_item.md) - Know when an item is donated to the museum.
