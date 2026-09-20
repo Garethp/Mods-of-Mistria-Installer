@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **133 hooks**, fed by **146 seams**, **9 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **137 hooks**, fed by **153 seams**, **9 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -52,6 +52,9 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [object.interact](hooks/object.interact.md) | override | Take over any grid object's interaction. |
 | [object.node_sprite](hooks/object.node_sprite.md) | filter | Swap the sprite of any world node before it draws. |
 | [store.item_added](hooks/store.item_added.md) | event | Know when an item lands in the shopping basket. |
+| [store.basket_cost](hooks/store.basket_cost.md) | filter | Change the gold total a shop charges for the basket. |
+| [store.purchase](hooks/store.purchase.md) | event | Know the moment a Buy press commits. |
+| [store.stock](hooks/store.stock.md) | filter | Change what a store's shelves hold. |
 | [museum.donate_item](hooks/museum.donate_item.md) | event | Know when an item is donated to the museum. |
 
 ### Player, Actors, And Progression
@@ -121,6 +124,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | Name | Kind | Description |
 | ---- | ---- | ----------- |
 | [items.give](hooks/items.give.md) | filter | Rewrite any item the player is about to receive. |
+| [items.store_price](hooks/items.store_price.md) | filter | Change the base price a store charges for an item. |
 | [items.use_guard](hooks/items.use_guard.md) | guard | Block an item from being used. |
 | [items.chest_opened](hooks/items.chest_opened.md) | event | Know the moment any chest item finishes opening. |
 | [items.consumed](hooks/items.consumed.md) | event | Know every item the player eats. |
@@ -209,6 +213,12 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [object_interact](seams/object_interact.md) | Puts a claim-scoped override in front of every grid-object interaction. |
 | [node_renderer_set_sprite](seams/node_renderer_set_sprite.md) | Filters the sprite every world node renderer is about to wear. |
 | [store_item_added](seams/store_item_added.md) | Announces every shelf tap that puts an item in the shopping basket. |
+| [store_basket_cost](seams/store_basket_cost.md) | Filters the basket total inside the store's price pass, guarded so only a number replaces it. |
+| [store_purchase](seams/store_purchase.md) | Emits the moment a Buy press commits, after the stacks are grouped and before they are given and charged. |
+| [store_stock](seams/store_stock.md) | Wraps `create_store_stock()`, the one builder every store shelf reads. |
+| [store_menu_ctx_pointer](seams/store_menu_ctx_pointer.md) | Holds the StoreMenu in a framework global for the span of its constructor's `init()` call, so store hooks that fire inside it can name the menu. |
+| [store_shelf_label_refresh](seams/store_shelf_label_refresh.md) | Has the StoreMenu's price pass rewrite each shelf label's price text, so a filtered price that changes while the shop is open reaches the shelf. |
+| [store_tooltip_price_refresh](seams/store_tooltip_price_refresh.md) | Has the StoreMenu's price pass rewrite the open tooltip's price, so a filtered price that changes while the shop is open reaches the tooltip without a re-spawn. |
 | [museum_donate_item](seams/museum_donate_item.md) | Emits the moment an item is donated to the museum. |
 
 ### Player, Actors, And Progression
@@ -295,6 +305,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [items_infusion_generate](seams/items_infusion_generate.md) | Puts a veto check in front of a recipe's infusion generation. |
 | [items_infusion_chance](seams/items_infusion_chance.md) | Filters the infusion roll chance in `craft_into()`, hoisted out of the roll condition before `chance_percent` consumes it. |
 | [item_display_description](seams/item_display_description.md) | Wraps the item-description getter, the string the tooltip body actually renders. |
+| [items_store_price](seams/items_store_price.md) | Wraps `LiveItem.store_value()` so every buy-side price lookup is filterable. |
 | [crafting_max_crafts](seams/crafting_max_crafts.md) | Puts an override in front of the craft-count ceiling before the engine computes it. |
 | [crafting_pay_component_costs](seams/crafting_pay_component_costs.md) | Puts a veto check in front of a recipe's material payment. |
 | [crafting_component_count](seams/crafting_component_count.md) | Filters every crafting cost read by wrapping the component-count resolver. |
