@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **137 hooks**, fed by **153 seams**, **9 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **137 hooks**, fed by **153 seams**, **16 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -363,6 +363,13 @@ Hook-less edits the catalog also carries:
 | [customization_color_popup_scrollable](seams/customization_color_popup_scrollable.md) | engine fix | Wraps the customization colour popup's swatch grid in a capped-height scroller when it exceeds 7 rows, so LUTs widened past the vanilla colour count stay on-screen. |
 | [pet_appearance_popup_scrollable](seams/pet_appearance_popup_scrollable.md) | engine fix | Wraps the pet "Select an Appearance" variant grid in the same capped-height scroller when it exceeds 7 rows, so pet-skin mods that add many variants stay on-screen. |
 | [store_pet_cosmetic_entry](seams/store_pet_cosmetic_entry.md) | engine fix | Lets a store stock entry declaring `pet_cosmetic` sell a pet cosmetic set, validated against the merged set list at Setup. |
+| [recipe_items_factory](seams/recipe_items_factory.md) | engine fix | Adds a list form to the recipe component factory, an Item component that stores the first id as `item_id` and the full list as `item_ids`. |
+| [recipe_items_parse](seams/recipe_items_parse.md) | engine fix | Parses a recipe component's `items` list into the factory's list form, resolving names through the same lookup as `item`. |
+| [recipe_items_fulfillment](seams/recipe_items_fulfillment.md) | engine fix | Sums a list component's stock across every listed id, in the player's inventory and in each crafting chest. |
+| [recipe_items_payment](seams/recipe_items_payment.md) | engine fix | Drains a list component's cost across the listed ids in order, the player's inventory first and then each crafting chest. |
+| [recipe_tag_display](seams/recipe_tag_display.md) | engine fix | Lets the crafting menu draw a `tag` component with the first tagged prototype's icon and the shared has/needs count block. |
+| [recipe_tag_fulfillment](seams/recipe_tag_fulfillment.md) | engine fix | Counts a `tag` component's stock through the inventory's own tag helper, in the player's inventory and in each crafting chest, replacing a branch that threw. |
+| [recipe_tag_payment](seams/recipe_tag_payment.md) | engine fix | Pays a `tag` component's quantity-scaled cost through the inventory's own tag helper, the player's inventory first and then each crafting chest. |
 | [monster_status_overlay](seams/monster_status_overlay.md) | engine fix | Sets the flat draw kind on the monster status overlay and defaults status particles on, matching the hit flash `setup_white_vfx` builds the same way. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 

@@ -47,6 +47,10 @@ function my_mod_component_count(_value, _ctx) {
 mmapi_filter("crafting.component_count", my_mod_component_count);
 ```
 
+## Interactions
+
+- A component parsed from an `items` list keeps `RecipeComponentType.Item`. Its `ctx.component.item_id` is the first listed id, and `ctx.component.item_ids` holds the full list. A `tag` component reaches handlers on every cost read once the [Recipe Ingredients](../RECIPE_INGREDIENTS.md) contract makes it craftable.
+
 ## Engine Wiring
 
 - Seam [`crafting_component_count`](../seams/crafting_component_count.md) wraps `get_modified_component_count` in `gml/scripts/GameplaySystems/Recipe.gml`, filtering its return value.
