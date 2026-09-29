@@ -49,3 +49,4 @@ mmapi_filter("player.stamina_delta", tireless_player_stamina_delta);
 - [player.mana_delta](player.mana_delta.md) - The similar filter point for mana.
 - [player.move_speed](player.move_speed.md) - Change the player's move speed after every engine modifier.
 - [player.pass_out](player.pass_out.md) - Know when the player passes out at the end of the day.
+- [tool.targets](tool.targets.md) - Change which cells a tool use covers.
