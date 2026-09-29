@@ -49,8 +49,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 139
-seams = 154
+hooks = 140
+seams = 156
 engine_fixes = 16
 call_rewrites = 1
 
@@ -762,6 +762,11 @@ name = "instance.created"
 kind = "event"
 provider = "runtime"
 doc  = "Fires from the framework's per-frame instance poll for every live instance of the object a registration names in opts.object, once per instance per handler, on the first begin step at which that instance is active. ctx is the instance. The poll runs after the instance's whole create chain, so the instance is complete and every vanilla register_interaction call has already landed, and an instance that destroyed itself during its create event never fires. It covers every creation path, including room placement, instances built inside room_start, mid-room spawns, the first room of a session, and a room that reloads onto itself. It is not synchronous with creation, and an instance that is inactive when first polled fires when it is next active. Passing a parent object watches every descendant. A registration without opts.object is refused with a warning, and obj_node_renderer and par_interactable are refused as watch targets on the first poll. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction taking the press, so a handler cannot shadow an active vanilla interaction on the same input. Villagers, the farm pet, and barn and coop animals have spawn-site hooks (npc.created, pet.created, animal.created) that fire synchronously and a frame earlier than this poll."
+
+[[hook]]
+name = "tool.targets"
+kind = "filter"
+doc  = "Fires in the player's Tool FSM state wherever the engine resolves the cells a tool use covers. The filtered value is the List of Vec2 cells that range_pattern_to_targets() built for the use (a List with count()/get()/push(), not an array). ctx is { x, y, range_pattern, cardinal, item }: x and y are the origin cell the use targets, range_pattern is the RangePattern value of the current charge level (RangePattern.One for an uncharged use), cardinal is the player's facing Cardinal, and item is the LiveItem in use. Return a replacement List, or mutate the List in place and return undefined, or return undefined to keep the current value. The hook fires at two sites, and both hand the handler the same ctx. The step site fires every step of the Tool state up to and including the step on which the use acts, and its final value is the one List the charging preview draws and the action loop works through. The stamina site fires once each time the charge advances to the next range pattern, and the engine reads only the count() of its final value, times the item's stamina cost per cell, against current stamina before it allows the pattern. A handler that answers from ctx alone returns the same cells at both sites, so the stamina the engine checks is the stamina the cells cost. Cells are grid cells of 8 pixels, a tile spans 2 cells, and the engine's own patterns step by 2. Every use that enters the Tool state passes through, which covers the axe, pickaxe, hoe, shovel, watering can, and net, seeds, and sapling and grass planting. The Earthbreaker perk's chained picks read range_pattern_to_targets() directly and never pass through this hook. A final value without a working count() is discarded and the engine's List is kept. Hot while a tool is in use."
 
 # --- seams -------------------------------------------------------------------------
 
@@ -3929,6 +3934,62 @@ ctx_fields = [
 ]
 indent  = 8
 marker  = "mmapi_dialogue_run_conversation_finished"
+
+# The Tool state resolves the cells a use covers once per step and feeds that
+# one List to both the charging preview and the action loop, so filtering it
+# at this call site keeps the two in agreement. The dispatch does not sit
+# inside range_pattern_to_targets(), because that function has a second caller
+# that reads its result by position. The dispatch is skipped once the use has
+# acted, since the engine never reads the List after that step. A final value
+# without a working count() is discarded, so an array or any other return that
+# is not a List cannot fail the player's step at the first loop read.
+[[seam]]
+id      = "tool_targets"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+            var targets = range_pattern_to_targets(self.target_pos.x, self.target_pos.y, self.range_pattern, self.owner.cardinal);
+
+            //
+            if self.tool_charge_released == false || self.has_done || self.owner.par.is_broadcasting(BroadcastMessage.START_ACTION) == false {'''
+replace = '''
+            var targets = range_pattern_to_targets(self.target_pos.x, self.target_pos.y, self.range_pattern, self.owner.cardinal);
+            if (self.has_done == false) { // mmapi_tool_run_targets_filters
+                try {
+                    var __mmapi_tool_targets = mmapi_apply_filters("tool.targets", targets, { x: self.target_pos.x, y: self.target_pos.y, range_pattern: self.range_pattern, cardinal: self.owner.cardinal, item: self.live_item });
+                    if (__mmapi_tool_targets.count() >= 0) { targets = __mmapi_tool_targets; }
+                } catch (__mmapi_tool_targets_error) {}
+            }
+
+            //
+            if self.tool_charge_released == false || self.has_done || self.owner.par.is_broadcasting(BroadcastMessage.START_ACTION) == false {'''
+marker   = "mmapi_tool_run_targets_filters"
+provides = ["tool.targets"]
+
+# The charge loop decides whether the player can afford the next range pattern
+# from range_pattern_to_count(), a table that knows only the engine's own cell
+# counts. This second dispatch site builds the pattern's List, filters it
+# through the same hook with the same ctx shape, and has the affordability
+# test read the count of the result. The stamina test therefore prices the
+# cells the use will cover. The table's counts equal the lengths of the Lists
+# range_pattern_to_targets() builds, so with zero handlers the test compares
+# the same number as before. The table's count stays in place when the
+# dispatch or the count() read fails.
+[[seam]]
+id      = "tool_targets_stamina_gate"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                        var stamina = abs(live_item.prototype.stamina_cost);
+                        var can_afford = range_pattern_to_count(self.range_pattern) * stamina <= ARI.get_stamina();'''
+replace = '''
+                        var stamina = abs(live_item.prototype.stamina_cost);
+                        var __mmapi_tool_target_count = range_pattern_to_count(self.range_pattern);
+                        try { // mmapi_tool_run_targets_stamina_gate
+                            var __mmapi_tool_gate_targets = mmapi_apply_filters("tool.targets", range_pattern_to_targets(self.target_pos.x, self.target_pos.y, self.range_pattern, self.owner.cardinal), { x: self.target_pos.x, y: self.target_pos.y, range_pattern: self.range_pattern, cardinal: self.owner.cardinal, item: self.live_item });
+                            __mmapi_tool_target_count = __mmapi_tool_gate_targets.count();
+                        } catch (__mmapi_tool_gate_error) {}
+                        var can_afford = __mmapi_tool_target_count * stamina <= ARI.get_stamina();'''
+marker   = "mmapi_tool_run_targets_stamina_gate"
+provides = ["tool.targets"]
 
 # --- call rewrites -----------------------------------------------------------------
 

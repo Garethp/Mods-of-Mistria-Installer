@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **139 hooks**, fed by **154 seams**, **16 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **140 hooks**, fed by **156 seams**, **16 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -87,6 +87,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [player.status_effect_cancel](hooks/player.status_effect_cancel.md) | event | Know when the game cancels a status effect. |
 | [player.status_effect_expired](hooks/player.status_effect_expired.md) | event | Know the moment a status effect runs out. |
 | [fishing.should_reel](hooks/fishing.should_reel.md) | filter | Change whether the player reels from the fishing Wait state this frame. |
+| [tool.targets](hooks/tool.targets.md) | filter | Change which cells a tool use covers. |
 | [gossip.selections](hooks/gossip.selections.md) | filter | Change which NPCs the day's gossip offers. |
 | [npc.heart_points](hooks/npc.heart_points.md) | filter | Adjust the heart points a villager gains. |
 | [npc.gift_received](hooks/npc.gift_received.md) | event | Know when the player gives an NPC a gift. |
@@ -251,6 +252,8 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [player_status_effect_cancel](seams/player_status_effect_cancel.md) | Emits at the head of `StatusEffectManager.cancel()`, before any lookup. |
 | [player_status_effect_expired](seams/player_status_effect_expired.md) | Emits inside `update()`'s expiry branch, right after the effect is removed. |
 | [fishing_should_reel](seams/fishing_should_reel.md) | Filters the Wait state's reel decision before the complete vanilla reel block. |
+| [tool_targets](seams/tool_targets.md) | Filters the cells a tool use covers where the Tool state resolves them each step. |
+| [tool_targets_stamina_gate](seams/tool_targets_stamina_gate.md) | Filters the cells again in the charge loop, so the stamina test counts the cells the use will cover. |
 | [gossip_selections](seams/gossip_selections.md) | Wraps the gossip picker so the day's NPC selection passes through a filter. |
 | [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it applies. |
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
