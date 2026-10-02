@@ -49,8 +49,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 140
-seams = 156
+hooks = 141
+seams = 158
 engine_fixes = 16
 call_rewrites = 1
 
@@ -767,6 +767,11 @@ doc  = "Fires from the framework's per-frame instance poll for every live instan
 name = "tool.targets"
 kind = "filter"
 doc  = "Fires in the player's Tool FSM state wherever the engine resolves the cells a tool use covers. The filtered value is the List of Vec2 cells that range_pattern_to_targets() built for the use (a List with count()/get()/push(), not an array). ctx is { x, y, range_pattern, cardinal, item }: x and y are the origin cell the use targets, range_pattern is the RangePattern value of the current charge level (RangePattern.One for an uncharged use), cardinal is the player's facing Cardinal, and item is the LiveItem in use. Return a replacement List, or mutate the List in place and return undefined, or return undefined to keep the current value. The hook fires at two sites, and both hand the handler the same ctx. The step site fires every step of the Tool state up to and including the step on which the use acts, and its final value is the one List the charging preview draws and the action loop works through. The stamina site fires once each time the charge advances to the next range pattern, and the engine reads only the count() of its final value, times the item's stamina cost per cell, against current stamina before it allows the pattern. A handler that answers from ctx alone returns the same cells at both sites, so the stamina the engine checks is the stamina the cells cost. Cells are grid cells of 8 pixels, a tile spans 2 cells, and the engine's own patterns step by 2. Every use that enters the Tool state passes through, which covers the axe, pickaxe, hoe, shovel, watering can, and net, seeds, and sapling and grass planting. The Earthbreaker perk's chained picks read range_pattern_to_targets() directly and never pass through this hook. A final value without a working count() is discarded and the engine's List is kept. Hot while a tool is in use."
+
+[[hook]]
+name = "player.jump_attack_landing"
+kind = "filter"
+doc  = "Fires inside the Jump Attack perk's landing test, once per corner of the player's bounding box, on the frames after a jump's peak while the attack input is buffered, a weapon is held, and no animal is carried. The filtered value is whether that corner's grid node lets the jump attack land, true for a node that is neither collideable nor water. ctx is { x, y, node, collideable, water }: x and y are the corner's room position, node is its grid node index, collideable is the node's collision flag, and water is true when the node's terrain is water. Return a replacement boolean, or undefined to keep the current value. The engine enters the jump attack only when every corner's final value is true, and a corner outside the grid fails before dispatch. A monster or NPC under the player fails that frame's test before any corner is tested, so the hook does not fire on that frame. The attack enters on the first frame every corner passes, so an allowed landing happens where the player is at that moment along the jump's arc, not at the jump's destination. A landing whose node under the player's position is water sends the attack's exit to the Swim state instead of Default. The test runs on every frame from the jump's peak until the attack lands or the jump ends, and the engine tests no further corners on that frame, so a refused landing dispatches about once per frame for the rest of the jump."
 
 # --- seams -------------------------------------------------------------------------
 
@@ -3990,6 +3995,70 @@ replace = '''
                         var can_afford = __mmapi_tool_target_count * stamina <= ARI.get_stamina();'''
 marker   = "mmapi_tool_run_targets_stamina_gate"
 provides = ["tool.targets"]
+
+# The Jump Attack perk's landing test, can_down_smash_on_pos() in the Jump
+# state's create, refuses a landing when any corner of the player's bounding
+# box sits on a collideable node or on water. The corner predicate is the one
+# place the water rule lives, so this seam filters each corner's verdict
+# there. The monster and NPC refusal runs before the corner pass and stays
+# engine-owned. ctx carries the node's collision flag and a water boolean
+# rather than the terrain kind value, since TerrainKind is a native enum with
+# no GML declaration. With zero handlers the predicate returns the pristine
+# expression, and a failed dispatch keeps it.
+[[seam]]
+id      = "player_jump_attack_landing"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                return owner.check_bbox_at_point(xx, yy, function(xx, yy) {
+                    var ni = GRID.node_index_for_room_position(xx, yy);
+                    if ni == undefined {
+                        return false;
+                    }
+
+                    return GRID.node_collideable[ni] == false && GRID.node_terrain_kind[ni] != TerrainKind.Water;
+                });'''
+replace = '''
+                return owner.check_bbox_at_point(xx, yy, function(xx, yy) {
+                    var ni = GRID.node_index_for_room_position(xx, yy);
+                    if ni == undefined {
+                        return false;
+                    }
+
+                    var __mmapi_landing_ok = GRID.node_collideable[ni] == false && GRID.node_terrain_kind[ni] != TerrainKind.Water;
+                    try { __mmapi_landing_ok = mmapi_apply_filters("player.jump_attack_landing", __mmapi_landing_ok, { x: xx, y: yy, node: ni, collideable: GRID.node_collideable[ni], water: GRID.node_terrain_kind[ni] == TerrainKind.Water }); } catch (__mmapi_jump_attack_landing_error) {} // mmapi_player_run_jump_attack_landing_filters
+                    return __mmapi_landing_ok;
+                });'''
+marker   = "mmapi_player_run_jump_attack_landing_filters"
+provides = ["player.jump_attack_landing"]
+
+# The DownSmash state exits to Default when its animation completes, which
+# vanilla can rely on because the landing test above refuses water. Once a
+# handler allows a water landing, that exit would stand the player on the
+# water, where the Default state walks the surface until the next jump,
+# because player collision tests only a node's collision flag. This companion
+# sends the exit to Swim when the node under the player's position is water,
+# the same test the Jump state's own landing branch makes when a plain jump
+# ends over water, and keeps Default otherwise. The position never changes
+# during the DownSmash state, so the terrain at start is the terrain at exit.
+# Vanilla never enters the state over water, so with zero handlers the water
+# branch is never taken.
+[[seam]]
+id      = "player_jump_attack_water_exit"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+            self.owner.set_animation(AnimationName.DownAttack);
+            self.owner.par.tool_effect = owner.current_tool_effect(false);
+            self.owner.on_animation_complete = PlayerState.Default;'''
+replace = '''
+            self.owner.set_animation(AnimationName.DownAttack);
+            self.owner.par.tool_effect = owner.current_tool_effect(false);
+            self.owner.on_animation_complete = PlayerState.Default;
+            var __mmapi_landing_node = GRID.try_node_index_for_room_position(self.owner.x, self.owner.y); // mmapi_player_jump_attack_water_exit
+            if (__mmapi_landing_node != undefined && GRID.node_terrain_kind[__mmapi_landing_node] == TerrainKind.Water) {
+                self.owner.on_animation_complete = PlayerState.Swim;
+            }'''
+marker   = "mmapi_player_jump_attack_water_exit"
+provides = ["player.jump_attack_landing"]
 
 # --- call rewrites -----------------------------------------------------------------
 
