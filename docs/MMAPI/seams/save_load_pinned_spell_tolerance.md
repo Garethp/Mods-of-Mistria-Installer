@@ -16,7 +16,7 @@ An unknown pinned spell unpins instead of aborting the load.
 ## The Edit
 
 ```gml
-    ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, try_string_to_spell)); // mmapi_save_pinned_tolerance
+    ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, function(__mmapi_s) { return try_string_to_spell(__mmapi_s); })); // mmapi_save_pinned_tolerance
 ```
 
 ## Why

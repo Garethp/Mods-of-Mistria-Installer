@@ -26,4 +26,4 @@ This is an event dispatch: handlers observe the moment (a chest is opening here,
 - [dungeon.treasure_chest](../hooks/dungeon.treasure_chest.md) - This is the hook this seam dispatches.
 - [items_treasure_distribution_none](items_treasure_distribution_none.md) - This seam lives in the same file. It filters the treasure distribution when the engine found no candidate.
 - [items_treasure_distribution_result](items_treasure_distribution_result.md) - This seam lives in the same file. It filters the distribution the engine did pick.
-- [dungeon_side_room_chance](dungeon_side_room_chance.md) - This seam tunes how often the rooms holding these chests spawn.
+- [dungeon_side_room_range](dungeon_side_room_range.md) - This seam shapes where the rooms holding these chests land.

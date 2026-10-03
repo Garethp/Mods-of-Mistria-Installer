@@ -26,3 +26,4 @@ The engine's debug and test-suite `new_day()` callers route through the same fun
 - [game.new_day](../hooks/game.new_day.md) - This is the hook this seam dispatches.
 - [save_game_saving](save_game_saving.md) - This seam's emit is the next mod-visible moment on the end-of-day path, when the autosave commits.
 - [game_step_begin_installs](game_step_begin_installs.md) - This engine fix drives the poll that derives [game.day_changed](../hooks/game.day_changed.md), the observation-side counterpart.
+- [player_pass_out](player_pass_out.md) - This is the emit inside `pass_out()`, right after `end_day()`.

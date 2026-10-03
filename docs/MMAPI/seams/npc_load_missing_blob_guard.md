@@ -23,8 +23,8 @@ if (mmapi_ext_is_vacant("npc_roster", i)) {
         npc.talk_flag = __mmapi_npc_blob.talk_flag;
         npc.gift_flag = __mmapi_npc_blob.gift_flag;
         npc.times_spoken_today = __mmapi_npc_blob.times_spoken_today;
-        npc.known_gift_preferences = HashSetFromArray(array_map(__mmapi_npc_blob.known_gift_preferences, string_to_item_id_or_unknown));
-        npc.gifts_given = HashSetFromArray(array_map(__mmapi_npc_blob.gifts_given, string_to_item_id_or_unknown));
+        npc.known_gift_preferences = HashSetFromArray(array_map(__mmapi_npc_blob.known_gift_preferences, function(__mmapi_s) { return string_to_item_id_or_unknown(__mmapi_s); }));
+        npc.gifts_given = HashSetFromArray(array_map(__mmapi_npc_blob.gifts_given, function(__mmapi_s) { return string_to_item_id_or_unknown(__mmapi_s); }));
     }
     npc.location_position = new LocationPosition(LocationId.Aldaria, Vec2(0, 0));
     npc.brain_dead = true;

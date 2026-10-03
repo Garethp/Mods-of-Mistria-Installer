@@ -11,7 +11,7 @@ Fires in `VitalsMenu.refresh_statuses()` for a status effect the base game canno
 ```gml
 function my_mod_status_icon(_value, _type) {
     if (_type != mmapi_ext_id("status_effect", "my_mod_shroud")) { return undefined; }
-    return { icon_sprite: spr_my_mod_shroud_icon };
+    return { icon_sprite: spr_ui_statuseffect_icon_quickfooted };   // a vanilla status icon, or one the mod ships
 }
 
 mmapi_filter("status_effect.hud_icon", my_mod_status_icon);

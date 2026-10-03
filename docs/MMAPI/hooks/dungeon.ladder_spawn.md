@@ -48,4 +48,4 @@ mmapi_guard("dungeon.ladder_spawn", no_easy_exit_dungeon_ladder_spawn);
 
 - [interact.ladder_down_action](interact.ladder_down_action.md) - Veto the descent press on a spawned ladder.
 - [dungeon.floor_built](dungeon.floor_built.md) - This event fires once the floor's room is fully built.
-- [dungeon.side_room_chance](dungeon.side_room_chance.md) - Adjust side-room odds.
+- [dungeon.side_room_range](dungeon.side_room_range.md) - Place side rooms nearer or deeper.

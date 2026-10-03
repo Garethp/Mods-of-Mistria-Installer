@@ -49,3 +49,4 @@ mmapi_on("game.new_day", daily_reset_game_new_day);
 - [game.day_changed](game.day_changed.md) - This is the poll-side observation of the day changing: it fires one frame later (after the end-of-day autosave), also fires after a cross-day save load, and never fires for the day a session starts in. Prefer `game.new_day` for daily resets and grants.
 - [save.game_saving](save.game_saving.md) - This fires next on the end-of-day path, when the autosave commits.
 - [game.clock_tick](game.clock_tick.md) - This is the every-frame clock event, for when a day is too coarse.
+- [player.pass_out](player.pass_out.md) - This event fires inside `pass_out()`, right after the `end_day()` call that starts this rollover.

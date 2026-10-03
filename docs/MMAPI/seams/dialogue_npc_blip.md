@@ -26,3 +26,4 @@ Cameo speakers construct through the separate `CameoSpeaker` and do not pass thr
 - [dialogue.npc_blip](../hooks/dialogue.npc_blip.md) - This is the hook this seam dispatches.
 - [dialogue_speaker](dialogue_speaker.md) - Replace the speaker itself, blip and all.
 - [dialogue_line](dialogue_line.md) - Filter the text the blips play under.
+- [dialogue_romance_prompt_guard](dialogue_romance_prompt_guard.md) - Puts a veto check beside the vanilla marriage lock in this same file.

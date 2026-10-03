@@ -75,7 +75,7 @@ public class TOMLInstaller(
         }
 
         MergeOrWriteToml(toml, dest);
-        reportStatus($"Installed animation meta: {group.AnimationMetaRelPath.ReadFilePath}", "");
+        reportStatus($"Installed animation meta: {group.AnimationMetaRelPath.FilePath}", "");
     }
 
     // Poly .meta.toml

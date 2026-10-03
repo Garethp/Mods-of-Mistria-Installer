@@ -1,7 +1,10 @@
 namespace Garethp.ModsOfMistriaInstallerLib.Seam;
 
 // An in-memory pristine tree (entry name → bytes) for every unit fixture.
-public class MemoryPristineSource(IReadOnlyDictionary<string, byte[]> files) : IPristineSource
+// Fixtures carry no asset inventory unless a test hands one in, so the asset
+// checks stand down for them by default.
+public class MemoryPristineSource(IReadOnlyDictionary<string, byte[]> files,
+    IReadOnlySet<string>? assetNames = null) : IPristineSource
 {
     public bool Has(string entry) => files.ContainsKey(entry);
 
@@ -12,4 +15,6 @@ public class MemoryPristineSource(IReadOnlyDictionary<string, byte[]> files) : I
                     && n.EndsWith(".gml", StringComparison.Ordinal))
         .Order(StringComparer.Ordinal)
         .ToList();
+
+    public IReadOnlySet<string>? AssetNames() => assetNames;
 }

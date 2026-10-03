@@ -87,4 +87,4 @@ jobs:
         shell: bash
         run: |
           ls -l Release
-          gh release upload ${{ github.ref_name }} Release/*
+          gh release upload ${{ github.ref_name }} Release/ModsOfMistria*

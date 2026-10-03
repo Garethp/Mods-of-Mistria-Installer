@@ -24,5 +24,5 @@ Because `par_monster` is the parent of every monster, this one edit fires for ev
 ## See Also
 
 - [monster.step_begin](../hooks/monster.step_begin.md) - This is the hook that this seam dispatches.
-- [monster_draw](monster_draw.md) - This is the same file's per-frame draw emit.
+- [monster_step_end](monster_step_end.md) - This is the same file's end-step emit.
 - [monster_death](monster_death.md) - This is the emit when the monster's last frame comes.

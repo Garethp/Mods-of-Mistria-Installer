@@ -51,7 +51,7 @@ push) and in local test runs.
 ## Fabricator Pin
 
 The `rev` on each Fabricator dependency in this crate's `Cargo.toml`
-(`f2483a61d53c730020f2357c790603dd6362476b`) is the authoritative Fabricator
+(`ec52bafeb840df9f76b5108af2c9ac34d316e26d`) is the authoritative Fabricator
 pin.
 
 `src/rev.rs` holds the string both binaries report via `--version`. Keep it in step with the dependency revs. `GmlCompileGateTest` asserts all five

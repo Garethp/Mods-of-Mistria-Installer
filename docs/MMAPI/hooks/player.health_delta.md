@@ -50,3 +50,4 @@ mmapi_filter("player.health_delta", iron_constitution_player_health_delta);
 - [player.stamina_delta](player.stamina_delta.md) - This is the same filter point for stamina.
 - [player.essence_delta](player.essence_delta.md) - The same filter family: essence, gold, mana, and skill XP each have theirs.
 - [player.heal_vfx](player.heal_vfx.md) - Veto the heal sparkle without touching the heal.
+- [player.died](player.died.md) - Know when the player dies.

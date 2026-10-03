@@ -48,3 +48,5 @@ mmapi_filter("player.gold_delta", hard_times_player_gold_delta);
 - [player.essence_delta](player.essence_delta.md) - The filter point for essence.
 - [player.mana_delta](player.mana_delta.md) - The filter point for mana.
 - [store.item_added](store.item_added.md) - Know each item as it lands in the basket this checkout total comes from.
+- [store.basket_cost](store.basket_cost.md) - Change the checkout total before it reaches this hook as one delta.
+- [store.purchase](store.purchase.md) - Know the moment a Buy press commits, before this hook sees the charge.

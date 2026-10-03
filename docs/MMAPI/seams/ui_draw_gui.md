@@ -12,7 +12,7 @@ Emits on every GUI draw, right after the anchor draws the UI.
 | **Locator** | pristine context after the `ANCHOR.on_draw_gui(self.asset_resize())` block in the display's GUI draw |
 | **Op** | `emit` |
 | **Feeds** | [`ui.draw_gui`](../hooks/ui.draw_gui.md) |
-| **ctx built** | `self.asset_resize()` - the same argument `on_draw_gui` received |
+| **ctx built** | `self.asset_resize()` - the same argument `ANCHOR.on_draw_gui()` received |
 | **Marker** | `mmapi_ui_run_draw_gui_callbacks` |
 
 ## The Edit

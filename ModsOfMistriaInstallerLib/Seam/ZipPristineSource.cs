@@ -37,5 +37,38 @@ public class ZipPristineSource : IPristineSource, IDisposable
         .Order(StringComparer.Ordinal)
         .ToList();
 
+    // Sprite and room identifiers are .meta.toml basenames under their asset
+    // trees, and object identifiers are the object GML file basenames. The
+    // central directory is already in memory, so the inventory is one pass
+    // over it, cached on first use.
+    public IReadOnlySet<string>? AssetNames()
+    {
+        if (_assetNames is not null) return _assetNames;
+
+        HashSet<string> names = [];
+        foreach (var entry in _entries.Keys)
+        {
+            var slash = entry.LastIndexOf('/');
+            var basename = slash == -1 ? entry : entry[(slash + 1)..];
+            if (entry.StartsWith("assets/animations/", StringComparison.Ordinal)
+                && basename.StartsWith("spr_", StringComparison.Ordinal)
+                && basename.EndsWith(".meta.toml", StringComparison.Ordinal))
+                names.Add(basename[..^".meta.toml".Length]);
+            else if (entry.StartsWith("assets/tiled/rooms/", StringComparison.Ordinal)
+                     && basename.StartsWith("rm_", StringComparison.Ordinal)
+                     && basename.EndsWith(".meta.toml", StringComparison.Ordinal))
+                names.Add(basename[..^".meta.toml".Length]);
+            else if (entry.StartsWith("assets/gml/objects/", StringComparison.Ordinal)
+                     && basename.StartsWith("obj_", StringComparison.Ordinal)
+                     && basename.EndsWith(".gml", StringComparison.Ordinal))
+                names.Add(basename[..^".gml".Length]);
+        }
+
+        _assetNames = names;
+        return _assetNames;
+    }
+
+    private IReadOnlySet<string>? _assetNames;
+
     public void Dispose() => _archive.Dispose();
 }

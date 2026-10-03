@@ -23,5 +23,5 @@ The generated guard lands at the head of `DungeonRunner.spawn_ladder()`. It call
 ## See Also
 
 - [dungeon.ladder_spawn](../hooks/dungeon.ladder_spawn.md) - This is the hook this seam dispatches.
-- [dungeon_side_room_chance](dungeon_side_room_chance.md) - This is the other seam in `DungeonRunner.gml`.
+- [dungeon_side_room_range](dungeon_side_room_range.md) - This is the other seam in `DungeonRunner.gml`.
 - [interact_ladder_down_action](interact_ladder_down_action.md) - This seam guards using a ladder rather than spawning one.

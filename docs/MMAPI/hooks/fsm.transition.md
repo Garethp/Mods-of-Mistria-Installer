@@ -69,3 +69,4 @@ mmapi_filter("fsm.transition", puppet_master_fsm_transition);
 
 - [monster.spawn](monster.spawn.md) - This is the other cancel-switch filter. Use it to move, replace, or cancel a spawn.
 - [monster.step_begin](monster.step_begin.md) - This hook provides per-frame monster observation, for when you need every tick rather than transition edges.
+- [player.jump_attack_landing](player.jump_attack_landing.md) - Change where the jump attack may land.

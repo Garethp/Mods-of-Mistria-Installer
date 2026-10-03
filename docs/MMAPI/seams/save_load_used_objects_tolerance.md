@@ -17,7 +17,7 @@ Lets a save whose daily used-objects flags name a since-removed object load anyw
 
 ```gml
     ARI.used_object_today = files.player["used_object_today"] != undefined
-        ? deserialize_array_bool(files.player.used_object_today, try_string_to_object_id, ObjectId.LEN) // mmapi_save_used_objects_tolerance
+        ? deserialize_array_bool(files.player.used_object_today, function(__mmapi_s) { return try_string_to_object_id(__mmapi_s); }, ObjectId.LEN) // mmapi_save_used_objects_tolerance
         : array_bool(ObjectId.LEN);
 ```
 

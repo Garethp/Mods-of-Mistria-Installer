@@ -1,6 +1,6 @@
 # Seam: animal_heart_points
 
-Reroutes every barn-animal heart-point delta through a filter before it lands.
+Reroutes every animal heart-point delta through a filter before it lands.
 
 `animal_heart_points` is a **text seam** (filter-shaped: it dispatches `mmapi_apply_filters`). It feeds [animal.heart_points](../hooks/animal.heart_points.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 

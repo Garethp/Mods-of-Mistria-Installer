@@ -61,3 +61,4 @@ mmapi_filter("items.give", double_harvest_items_give);
 - [items.dropped](items.dropped.md) - Know what is about to drop into the world.
 - [items.consumed](items.consumed.md) - Know every item the player eats.
 - [store.item_added](store.item_added.md) - Know when an item lands in the shopping basket.
+- [store.purchase](store.purchase.md) - Know the moment a Buy press commits, before each stack passes through this filter.

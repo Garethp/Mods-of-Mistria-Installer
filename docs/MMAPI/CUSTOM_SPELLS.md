@@ -20,7 +20,7 @@ Merge a key into `fiddle/spells.toml`, modeled on a vanilla entry. Sprite keys m
 	name = "Mirror Image"
 	description = "Reflect on your choices."
 	cost = 20
-	icon_key = "spr_ui_spell_icon_summon_rain"
+	icon_key = "spr_ui_journal_magic_rain_spell_icon"
 ```
 
 Copy a vanilla entry and keep every field it carries. The engine reads optional fields wherever they are present, so the copy is the contract.

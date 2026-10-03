@@ -16,4 +16,9 @@ public interface IPristineSource
     // Every assets/gml/**/*.gml entry, ordinal-sorted. The call-rewrite pass
     // considers the whole engine tree, not just the files anchored entries name.
     IReadOnlyList<string> GmlFiles();
+
+    // Every asset identifier this source can enumerate, meaning sprite, room,
+    // and object names. Null when the source carries no asset inventory, so the
+    // asset checks stand down rather than guess.
+    IReadOnlySet<string>? AssetNames();
 }

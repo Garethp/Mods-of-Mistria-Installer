@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Garethp.ModsOfMistriaInstallerLib.ModTypes;
 using SixLabors.ImageSharp;
 using Tomlyn.Model;
@@ -45,6 +46,7 @@ public class CompactFurnitureGenerator
     private const string ObjectsShapeTarget = "shapes/Placeables/Furniture/Modded Furniture";
     private const string UiAnimTarget       = "animations/Item Icons/Placeables/Furniture/Modded Furniture";
     private const string UiShapeTarget      = "shapes/Item Icons/Placeables/Furniture/Modded Furniture";
+    private const string ShadowManifestTarget = "data_files/animation/shadow_manifest.json";
 
     // Adds generated meta files to virtualFiles and PNG relocations to redirects
     // (virtual install path -> real path inside the mod).
@@ -54,15 +56,20 @@ public class CompactFurnitureGenerator
         Dictionary<string, string> redirects)
     {
         var settings = CollectSpriteSettings(mod);
+        var shadowManifest = new Dictionary<string, string>();
 
         // Recursive: modders may organise PNGs into any subfolder structure they
         // like inside images/objects and images/ui — everything is flattened
         // into the one target folder, so filenames must be unique.
         foreach (var relPath in FindPngsRecursive(mod, ObjectsImageFolder))
-            GenerateObjectSprite(mod, relPath, settings, virtualFiles, redirects);
+            GenerateObjectSprite(mod, relPath, settings, virtualFiles, redirects, shadowManifest);
 
         foreach (var relPath in FindPngsRecursive(mod, UiImageFolder))
             GenerateUiSprite(mod, relPath, settings, virtualFiles, redirects);
+
+        if (shadowManifest.Count > 0)
+            virtualFiles.TryAdd(ShadowManifestTarget,
+                JsonSerializer.Serialize(shadowManifest, new JsonSerializerOptions { WriteIndented = true }));
     }
 
     // Enumerates all PNGs under folder (any depth) as forward-slash relative paths.
@@ -80,7 +87,8 @@ public class CompactFurnitureGenerator
         IMod mod, string pngRelPath,
         Dictionary<string, TomlTable> settings,
         Dictionary<string, string> virtualFiles,
-        Dictionary<string, string> redirects)
+        Dictionary<string, string> redirects,
+        Dictionary<string, string> shadowManifest)
     {
         var stem = Path.GetFileNameWithoutExtension(pngRelPath);   // "spr_x"
         var key  = StripSprPrefix(stem);                            // "x"
@@ -100,6 +108,14 @@ public class CompactFurnitureGenerator
             defaultAnchorH: isPreview ? "Left" : "Middle",
             defaultAnchorV: isPreview ? "Top"  : isUiSprite ? "Middle" : "Bottom");
         if (geo is null) return;
+
+        if (isShadow)
+        {
+            var baseName = stem.EndsWith("_shadow", StringComparison.OrdinalIgnoreCase)
+                ? stem[..^"_shadow".Length]
+                : stem;
+            shadowManifest[baseName] = stem;
+        }
 
         // Every sprite gets a poly (vanilla ships one for every sprite, including
         // shadows, tops and previews — a missing preview poly is what triggers

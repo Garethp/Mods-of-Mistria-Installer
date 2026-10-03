@@ -1,0 +1,8 @@
+# REPLACE (redirect): repoint a vanilla event name at one of this mod's events.
+# Key   = the vanilla event name (Tango name, no "event:/").
+# Value = this mod's event name (must exist in AudioDemo.strings.bank).
+#
+# The installer repoints the vanilla name in the game's Master.strings.bank at
+# AudioDemo/HouseMusic's GUID, so the farmhouse day music now plays this mod's
+# track.
+"Music/Location Tracks/Player Home Day" = "AudioDemo/HouseMusic"

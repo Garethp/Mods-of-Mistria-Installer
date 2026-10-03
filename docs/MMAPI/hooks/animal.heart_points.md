@@ -1,6 +1,6 @@
 # Hook: animal.heart_points
 
-Adjust the heart points a barn animal gains.
+Adjust the heart points an animal gains.
 
 `animal.heart_points` is a **filter** hook. Register a callback with `mmapi_filter`. See [Hooks](../HOOKS.md) for how registration and dispatch work.
 
@@ -8,7 +8,7 @@ Adjust the heart points a barn animal gains.
 
 Fires at the top of `Animal.add_heart_points()`, before the delta is applied. The filtered value is the heart points delta. ctx is the `Animal` struct. Return the replacement value, or `undefined` to keep the current value.
 
-This filter is distinct from [npc.heart_points](npc.heart_points.md), which covers villagers rather than barn animals. The two are parallel filters on the same kind of delta.
+This filter is distinct from [npc.heart_points](npc.heart_points.md), which covers villagers rather than barn/coop animals. The two are parallel filters on the same kind of delta.
 
 | | |
 | --- | --- |
@@ -46,3 +46,4 @@ mmapi_filter("animal.heart_points", beloved_barn_animal_heart_points);
 
 - [npc.heart_points](npc.heart_points.md) - This hook is the villager counterpart. It adjusts the heart points a villager gains.
 - [animal.pet](animal.pet.md) - This hook lets you know when the player pets or puts down an animal.
+- [animal.product_ready](animal.product_ready.md) - Heart level sets the production tier, so hearts decide how many products a delivery yields.

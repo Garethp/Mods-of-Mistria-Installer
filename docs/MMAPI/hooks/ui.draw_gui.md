@@ -6,7 +6,7 @@ React to every GUI draw with your own overlay.
 
 ## Contract
 
-Fires on every GUI draw, right after `ANCHOR.on_draw_gui()`. ctx is the display's `asset_resize()` value, the same argument `on_draw_gui` received.
+Fires on every GUI draw, right after `ANCHOR.on_draw_gui()`. ctx is the display's `asset_resize()` value, the same argument `ANCHOR.on_draw_gui()` received.
 
 The callback runs inside the same GUI draw pass, after the anchor has drawn the game's UI, so anything you draw lands on top of it.
 

@@ -20,11 +20,7 @@ public class TOMLCollector
                         .Where(p => !p.EndsWith(".meta.toml", StringComparison.OrdinalIgnoreCase))
                         .Select(p => GetRelativePath(mod, p))
                         .Where(p => !IsUnderMomiFolder(p) && p != "manifest.toml")
-                        .Select(path => new GeneratedTomlItem
-                        {
-                            FilePath = path,
-                            ReadFilePath = path
-                        })
+                        .Select(path => new GeneratedTomlItem(mod, path))
                         .ToList();
         
         // Map: baseName (lower) → mutable group builder
@@ -48,11 +44,7 @@ public class TOMLCollector
 
             if (prefix is null)
             {
-                ungroupedItems.Add(new GeneratedTomlItem
-                {
-                    FilePath = relPath,
-                    ReadFilePath = relPath
-                });
+                ungroupedItems.Add(new GeneratedTomlItem(mod, relPath));
                 continue;
             }
 
@@ -67,11 +59,7 @@ public class TOMLCollector
 
             if (prefix == SprPrefix)
             {
-                animationGroup.AnimationMetaRelPath = new GeneratedTomlItem
-                {
-                    FilePath = relPath,
-                    ReadFilePath = relPath
-                };
+                animationGroup.AnimationMetaRelPath = new GeneratedTomlItem(mod, relPath);
 
                 // Look for a paired PNG next to the .meta.toml
                 var pngAbsolute = absolutePath[..^".meta.toml".Length] + ".png";
@@ -80,7 +68,7 @@ public class TOMLCollector
             }
             else
             {
-                animationGroup.ShapeMetaRelPath = new GeneratedTomlItem
+                animationGroup.ShapeMetaRelPath = new GeneratedTomlItem(mod, relPath)
                 {
                     FilePath = relPath,
                     ReadFilePath = relPath

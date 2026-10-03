@@ -76,10 +76,12 @@ public class ModInstaller
         var store = new AssetsStore(_fomLocation);
         store.EnsureBackup();
 
-        // Stage the GML layer before the rebuild. The layer stages only when
-        // at least one mod ships gml; a mod-content failure excludes that one
-        // mod. When the game build itself moved under the catalog, every GML
-        // mod is skipped whole and the content-only install proceeds.
+        // Stage the GML layer before the rebuild. The layer stages on every
+        // install that has mods selected, so the catalog's engine fixes and
+        // the framework land even when every mod is content-only. A
+        // mod-content failure excludes only that mod. When a game build
+        // itself deviates from the catalog, every GML mod is skipped whole
+        // and the content-only install proceeds.
         var result = new InstallResult();
         GmlLayerPlan? plan = null;
         var installMods = mods;
@@ -110,7 +112,7 @@ public class ModInstaller
         // A non-empty ledger enters the GML layer even with zero mods, because the
         // tombstone's enum member is what keeps a save's name references
         // resolving, so uninstalling every mod must still render vacancies.
-        if (gmlMods.Count > 0 || ledger.HasAssignments)
+        if (mods.Count > 0 || ledger.HasAssignments)
         {
             var (catalogName, catalogBytes) = PayloadResolver.SeamCatalog();
             var catalog = SeamCatalogLoader.Load(catalogBytes, catalogName);
@@ -559,7 +561,7 @@ public class ModInstaller
         
         foreach (var generator in GetGenerators())
         {
-            generatedInformation.Merge(generator.Generate(mod));
+            generatedInformation.Merge(generator.Generate(effectiveMod));
         }
         
         generatedInformation.Merge(new TOMLCollector().Collect(effectiveMod));
@@ -597,7 +599,12 @@ public class ModInstaller
         reportPhase(modName, "Installing Furniture");
         new FurnitureInstaller(fileNameUIDMapping, _fileModifier)
             .Install(mod, generatedInformation, reportStatus);
-        
+
+        // 8. Install audio banks and merge new event names into Master.strings
+        reportPhase(modName, "Installing Audio");
+        new AudioInstaller(fileNameUIDMapping, _fileModifier)
+            .Install(mod, generatedInformation, reportStatus);
+
         atlasUtils.SemiFlush();
     }
 }

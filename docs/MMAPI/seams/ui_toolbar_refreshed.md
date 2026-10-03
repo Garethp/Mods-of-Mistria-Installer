@@ -24,5 +24,6 @@ The constructor's rebuild emits before `ui.menu_opened` fires for the same menu 
 ## See Also
 
 - [ui.menu_refreshed](../hooks/ui.menu_refreshed.md) - This is the hook this seam dispatches.
-- [ui_vitals_refreshed](ui_vitals_refreshed.md) - This seam is the twin emit at the tail of `VitalsMenu.refresh_statuses()`.
+- [ui_vitals_refreshed](ui_vitals_refreshed.md) - This seam is the sibling emit at the tail of `VitalsMenu.refresh_statuses()`.
+- [ui_crafting_refreshed](ui_crafting_refreshed.md) - This seam is the sibling emit at the tail of `CraftingMenu.select_category()`.
 - [ui_toolbar_tick](ui_toolbar_tick.md) - This seam is the same file's per-tick emit, and it fires every tick, rebuild or not.

@@ -98,7 +98,26 @@ public class SeamVerifierTest
         _pristine = new MemoryPristineSource(files);
     }
 
-    private VerifyResult Verify() => SeamVerifier.Verify(_pristine, _catalog);
+    // The framework sweep runs against its own tiny synthetic sources here,
+    // never the real embedded payload, whose call surface no fixture tree
+    // could satisfy.
+    private VerifyResult Verify() => SeamVerifier.Verify(_pristine, _catalog, []);
+
+    [Test]
+    public void ShouldReportAnUnresolvedFrameworkCall()
+    {
+        SetPristine(PristineGame, PristineOther);
+
+        var result = SeamVerifier.Verify(_pristine, _catalog,
+            [("mmapi_probe.gml", "function mmapi_probe() {\n    return vanished_native(1);\n}\n")]);
+
+        Assert.That(result.Ok, Is.False);
+        var problem = result.Problems.Single();
+        Assert.That(problem.Kind, Is.EqualTo(SeamProblemKind.Framework));
+        Assert.That(problem.Message, Does.Contain("'vanished_native'"));
+        Assert.That(problem.Message, Does.Contain("mmapi_probe.gml:2"));
+        Assert.That(SeamVerifier.RenderText(result, _zipPath), Does.Contain("FAIL"));
+    }
 
     [Test]
     public void ShouldPassOnACleanBuild()

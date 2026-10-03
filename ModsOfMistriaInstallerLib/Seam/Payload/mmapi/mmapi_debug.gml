@@ -1,3 +1,16 @@
+// MMAPI - A GML modding framework for Fields of Mistria
+// Copyright (C) 2026 Anna Nomoly
+//
+// This file is part of MMAPI, distributed with the Mods of Mistria Installer.
+// Licensed under the GNU General Public License v3.0 or later, WITH
+// ADDITIONAL TERMS under GPLv3 section 7 (attribution preservation, no
+// misrepresentation of origin, no trademark grant).
+//
+// See the LICENSE file in this directory for those additional terms.
+// See LICENCE.txt at the repository root for the full GPL text.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // mmapi_debug.gml. The MmapiDebugger in-game agent: it stages probes and speaks
 // the two-file JSON protocol the MmapiDebugger web client reads and writes,
 // under <CONFIG_DIRECTORY>/mod_data/mmapi/.
@@ -120,6 +133,7 @@ function __mmapi_debug_state() {
             last_call: undefined,
             last_keys: undefined,      // {path, keys} from the `keys` op, used for path-autocomplete introspection
             fns: {},               // mmapi_debug_register_fn registry: maps name to {fn, mod_name, description, args}
+            hook_counts: {},       // liveness tallies: maps hook name to dispatches made while enabled
             probed: false,
             hotkeys_installed: false,
             caps: {},
@@ -919,7 +933,7 @@ function __mmapi_debug_probe() {
         split_no_delim_empty: false,
     };
     try { caps.global_accessor = (global[$ "__mmapi_debug"] == state); } catch (err) {}
-    try { caps.struct_get = is_real(struct_get(state, "engine_frame")); } catch (err) {}
+    try { caps.struct_get = is_real(struct_get(state, "engine_frame")); } catch (err) {}  // framework-reads-exempt: the probe measures whether the callee exists
     try {
         var split_result = string_split("abc", ".");
         caps.split_no_delim_empty = (array_length(split_result) == 0);

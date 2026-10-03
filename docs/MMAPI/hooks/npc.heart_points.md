@@ -8,7 +8,7 @@ Adjust the heart points a villager gains.
 
 Fires at the top of `Npc.add_heart_points()`, before the delta is applied. The filtered value is the heart points delta (`amount`). ctx is the `Npc` struct. Return the replacement value, or `undefined` to keep the current value.
 
-This filter is distinct from [animal.heart_points](animal.heart_points.md), which covers barn animals rather than villagers. The two are parallel filters on the same kind of delta.
+This filter is distinct from [animal.heart_points](animal.heart_points.md), which covers barn/coop animals rather than villagers. The two are parallel filters on the same kind of delta.
 
 | | |
 | --- | --- |
@@ -44,6 +44,6 @@ mmapi_filter("npc.heart_points", fast_friends_npc_heart_points);
 
 ## See Also
 
-- [animal.heart_points](animal.heart_points.md) - This barn-animal counterpart adjusts the heart points a barn animal gains.
+- [animal.heart_points](animal.heart_points.md) - This hook is the barn/coop counterpart. It adjusts the heart points an animal gains.
 - [npc.gift_received](npc.gift_received.md) - Know when the player gives an NPC a gift.
 - [gossip.selections](gossip.selections.md) - Change which NPCs the day's gossip offers.

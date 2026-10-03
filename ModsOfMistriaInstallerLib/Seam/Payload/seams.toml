@@ -1,3 +1,14 @@
+# MMAPI seam catalog
+#
+# THIRD-PARTY CONTENT NOTICE
+#
+# Seam definitions reference code and identifiers from Fields of Mistria,
+# which are (C) NPC Studio. No ownership is claimed over that content.
+#
+# The catalog format, the seam and hook names, and the selection and
+# arrangement of entries are Copyright (C) 2026 Anna Nomoly, licensed under
+# the terms in ModsOfMistriaInstallerLib/Seam/Payload/mmapi/LICENSE.
+
 # The mmapi v2 seam catalog: the hook declarations and the anchored engine edits
 # that wire the named-hook API into the game. Each [[hook]] declares one named
 # hook once: its kind, its contract, and (provider = "runtime") whether the
@@ -22,12 +33,14 @@
 # behaviorally (not byte-) equivalent to pristine.
 # Anchors are matched after normalizing \r\n to \n.
 # Apply order is catalog order plus `depends_on` edges (topo-sorted, stable).
-# Hook-less edits live in [[engine_fix]]: game_step_begin_installs (the mmapi
-# lifecycle root),
-# tarball_chop_burn_flag (the tarball chop's hardcoded is_burn, which
-# burn-throttled every non-fire tarball chop against stump/fruit-tree iframes),
-# and max_crafts_zero_component (the Item-loop division missing the zero guard
-# its own Duration branch has, so a zero-cost component crashed the craft menu).
+# Hook-less edits live in [[engine_fix]] records, and each fix carries its own
+# rationale comment in the engine fixes section.
+#
+# The file groups records by type: hook declarations, then seams, then call
+# rewrites, then engine fixes, each section under its banner. New records go
+# at the end of their type's section. Within a section, file order is apply
+# order for that type, and `depends_on` is the only declared ordering
+# mechanism.
 
 version = 2
 
@@ -36,9 +49,9 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 106
-seams = 116
-engine_fixes = 24
+hooks = 143
+seams = 160
+engine_fixes = 37
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -59,9 +72,44 @@ kind = "event"
 doc  = "Fires when the player pets a barn/coop animal (top of obj_player_animal on_pet()) or puts a held animal down (end of put_down()). ctx is the obj_player_animal instance, not the Animal data struct: its Animal data is ctx.me, and ctx.create_animal_currency_dance(count, face_ari) plays the celebration that drops count AnimalCurrency 'beads' at this animal (itself a no-op unless Perk.CurrencyOfCare is active). Observation only. The two call sites share one hook, so a handler that wants once-per-day (or once-per-animal) behavior must latch itself. The on_pet site fires before the animal's own can_pet() gate, so it can fire even when the pet turns out to be a no-op."
 
 [[hook]]
+name = "animal.production_gate"
+kind = "filter"
+doc  = "Fires in Stable.on_new_day(), once per barn/coop animal in the stall list, babies and unhappy animals included, after the day's happiness result is settled and the CloseBond heart bonuses have applied. The filtered value is the vanilla production gate boolean, !animal.is_baby() && is_happy. ctx is { animal, stable, production, is_happy }: animal is the Animal struct, stable is the Stable processing its new day, production is the production struct for the animal's sex from its prototype, and is_happy is the vanilla happiness result (not left outside, fed, and petted). Return a replacement boolean, or undefined to keep the current value. A final true runs the vanilla production step, where production_days increments and the animal.product_ready decision follows. A final false skips the step entirely, so no production progress accrues that day. The CloseBond bonuses read the raw is_happy above the seam, so forcing the gate open does not fake happiness for hearts."
+
+[[hook]]
+name = "animal.product_ready"
+kind = "filter"
+doc  = "Fires inside Stable.on_new_day()'s production step, after production_days increments, for every barn/coop animal the animal.production_gate decision let through. The filtered value is the readiness comparison animal.production_days >= production.days_to_produce, computed with the incremented counter. ctx is { animal, stable, production, is_happy }: is_happy is the vanilla happiness result, and it is only false here when an animal.production_gate handler forced the gate open. Return a replacement boolean, or undefined to keep the current value. A final true runs the complete vanilla drop block. The counter resets to 0, the production tier and perk bonuses compute, and the product drops land in the stable grid. A final false skips the drop block and leaves the incremented counter in place, so the counter keeps climbing until a later day passes the threshold or a handler releases it."
+
+[[hook]]
+name = "animal.breeding_result"
+kind = "filter"
+doc  = "Fires in Stable.on_new_day() for each breeding pair, after the engine rolls the offspring and before the fetus is stored in incubating_fetuses. The filtered value is the rolled offspring struct { kind, variant, sex, name }. ctx is { female, male, stable, is_gemini }: female and male are the parent Animal structs, stable is the Stable processing its new day, and is_gemini is true for the extra fetus the GeminiSeason perk adds. Two seams share this hook, one per push site, and is_gemini tells them apart. Return a replacement struct, mutate the given struct in place, or return undefined to keep the roll. A non-struct return is dropped and the roll stands. The name field is only a starting value, because the player renames the newborn at the hatching popup. Changing kind bypasses checks the engine ran before the roll. Incubator space was tested against the mother's species, and on_room_start() pairs egg fetuses to incubator instances by count, so a kind swap into an egg species can exceed the room's incubators."
+
+[[hook]]
+name = "animal.product_drops"
+kind = "filter"
+doc  = "Fires in Stable.on_new_day()'s drop block, after the normal and golden product lists are rolled and the Eggstra perk may add its extra product, and before the production stats record and the drops land in the stable grid. The filtered value is the struct { normal_products, golden_products }, and both fields are Lists of LiveItem (count()/get()), not arrays. Mutate the Lists in place, return a replacement struct, or return undefined to keep the current lists. The seam re-reads both fields defensively, so a non-struct return or a partial struct keeps the engine lists. ctx is { animal, stable, production, production_tier }: production is the production struct for the animal's sex from its prototype, and production_tier is the tier entry the animal's heart level resolved. Emptying both lists suppresses the drops and their stats records, because the engine's push blocks test is_empty(). The CurrencyOfCareTwo bead roll and the bonus gather item roll sit outside this value and still run."
+
+[[hook]]
+name = "animal.adoption_variant_unlocked"
+kind = "filter"
+doc  = "Fires in AdoptionMenu.setup_right_page(), once per acquirable variant row, as the menu reads ARI.animal_variant_unlocks for that variant. The filtered value is the unlocked boolean, and it gates the variant's name reveal, icon blackout, entry fade, and buyability together. ctx is { animal_kind, variant, has_gold, has_room }: variant is the variant data struct (read variant.key and variant.tier), and has_gold and has_room are the menu's other purchase gates, which the engine still enforces either way. Return a replacement boolean, or undefined to keep the save's unlock state. A final true offers the variant without writing anything to the save, and buying still flows through initialize_new_animal_for_ari(), which records the real unlock. A final false hides a variant the save has unlocked. Locked species never reach this page, so the filter cannot unlock a species early. Variants flagged not acquirable are filtered out earlier and never dispatch. The page rebuilds after each purchase, so the hook fires again with fresh gates."
+
+[[hook]]
+name = "animal.created"
+kind = "event"
+doc  = "Fires at the end of spawn_animal(), once per barn/coop animal instance the engine creates, after the obj_player_animal create event has run and after spawn_animal() writes the new instance onto the Animal struct. ctx is the obj_player_animal instance, not the Animal data struct: the data is ctx.me, and ctx.me.instance already points back at ctx (the create event never sets that field itself, so no earlier moment sees the pair linked). Instances are transient. The engine spawns them through spawn_animal() from Stable.on_room_start() whenever the player enters a location where a stable's animals are present, and from the held-animal summon when a carried animal rides along on a room change. A fire marks instance creation, not a new animal (an adoption fires nothing until the player next enters the new animal's location), and handlers must expect many fires per animal per day. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction taking the press, so a handler cannot shadow an active vanilla interaction on the same input. Distinct from pet.created, which covers the farm pet, and npc.created, which covers villagers."
+
+[[hook]]
+name = "pet.created"
+kind = "event"
+doc  = "Fires at the end of spawn_pet(), after the obj_pet instance's create event has run, with the pet data attached, the FSM spawned, and the vanilla pet interactions registered. ctx is the obj_pet instance, not the Animal data struct: the pet's data is ctx.me (the PET global, whose instance field already points back at ctx), and ctx.override_pet_initialization carries the PetInitialization the spawn was requested with (undefined when the pet picks its own entry). Every engine pet spawn routes through spawn_pet(): the pet management's room population, the adoption menu, the held-animal summon, and the Mist cutscene actor spawn (which requests PetInitialization.Cutscene), so handlers must expect many fires per day. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction taking the press, so a handler cannot shadow an active vanilla interaction on the same input. Distinct from animal.created, which covers barn/coop animals."
+
+[[hook]]
 name = "npc.heart_points"
 kind = "filter"
-doc  = "Fires at the top of Npc.add_heart_points(), before the delta is applied. The filtered value is the heart points delta (amount). ctx is the Npc struct. Return the replacement value, or undefined to keep the current value. Distinct from animal.heart_points, which covers barn animals rather than villagers."
+doc  = "Fires at the top of Npc.add_heart_points(), before the delta is applied. The filtered value is the heart points delta (amount). ctx is the Npc struct. Return the replacement value, or undefined to keep the current value. Distinct from animal.heart_points, which covers barn/coop animals rather than villagers."
 
 [[hook]]
 name = "audio.music_selector"
@@ -93,6 +141,11 @@ doc  = "Fires as get_modified_component_count(component, context, item_id) retur
 name = "npc.gift_received"
 kind = "event"
 doc  = "Fires at the top of par_NPC.receive_gift(item), when the player gives an NPC a gift, before the NPC's give_gift bookkeeping. ctx is { npc, item }: npc is the NPC instance, item is the gifted item. Observation only."
+
+[[hook]]
+name = "npc.created"
+kind = "event"
+doc  = "Fires at the end of spawn_npc(), once per NPC instance the engine creates, after the instance's create event chain (obj_caldarus's and obj_elsie's own create additions included) and its initialize(npc) call have both run. ctx is the par_NPC instance: its Npc data struct is ctx.me, its NpcId is ctx.npc_id, and its FSM is live (initialize attaches me and spawns the FSM after the create event returns, so no in-create moment sees them). NPC instances are transient. The engine destroys and recreates them whenever the player enters a room the NPC is in (npcs_on_room_start), whenever the NPC walks into the current room (npcs_on_step), and when a schedule time jump lands the NPC in the current location, so handlers must expect many fires per NPC per day. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction that takes the press winning, so a handler cannot shadow an active vanilla interaction on the same input (the button prompt label can still show the later registration). The one exception is the partner kiss, which registers with take_press = false and never consumes the press, so a later SecondaryInteract registration that takes the press replaces it. The Mist cutscene actor spawn and the test suite create NPC instances directly, bypassing spawn_npc(), and never fire this hook."
 
 [[hook]]
 name = "gossip.selections"
@@ -131,7 +184,22 @@ doc  = "Fires at the top of interact(node) (Interact.gml, the shared grid-object
 name = "date.run"
 kind = "override"
 contention = "claim-scoped"
-doc  = "Fires at the top of run_date(date, npc) (Dates.gml), before the DateAcceptance conversation is requested and played and before the NPC is posed. ctx is { date, npc }: date is the Date enum id, npc is the NpcId. Return a non-undefined value to replace run_date entirely (the acceptance conversation and NPC posing are skipped and your value becomes run_date's return; return true for a handled date). Return undefined to defer to the engine's normal handling: request the DateAcceptance conversation, pose the NPC, then start_date_cutscene(npc, date) once it is accepted. run_date is the single entry point the date-selection UI routes every date through (await_popup(run_date, [date, npc])), so this hook sees every player-initiated date. Claim-scoped: many mods may register, but return undefined for the dates/partners you do not own; the first non-undefined return claims the date. A handler that wants to start the cutscene directly can call the engine's start_date_cutscene(npc, date)."
+doc  = "Fires at the top of run_date(date, npc) (Dates.gml), before the DateAcceptance conversation is requested and played and before the NPC is posed. ctx is { date, npc }: date is the Date enum id, npc is the NpcId. Return a non-undefined value to replace run_date entirely: the acceptance conversation and NPC posing are skipped, and your value becomes run_date's return (return true for a handled date). Return undefined to defer to the engine's normal handling: request the DateAcceptance conversation, pose the NPC, then start_date_cutscene(npc, date) once it is accepted. run_date is the single entry point the date-selection UI routes every date through (await_popup(run_date, [date, npc])), so this hook sees every player-initiated date. Claim-scoped: many mods may register, but return undefined for the dates/partners you do not own. The first non-undefined return claims the date. A handler that wants to start the cutscene directly can call the engine's start_date_cutscene(npc, date)."
+
+[[hook]]
+name = "date.begin"
+kind = "guard"
+doc  = "Fires inside run_date(date, npc) (Dates.gml), in the DateAcceptance conversation's completion callback. The conversation has already played and its writes have applied by then, and start_date_cutscene(npc, date) is what runs next. ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return false to cancel the accepted date, which skips start_date_cutscene so no date cutscene plays. Any other return lets the date begin."
+
+[[hook]]
+name = "date.cutscene"
+kind = "filter"
+doc  = "Fires in start_date_cutscene(npc, date) (Dates.gml), after the date blackboard writes and the prop selection and immediately before MIST.run_scene starts the date cutscene. The filtered value is the cutscene name about to run, defaulting to DATES[date].cutscene. ctx is { npc, date }: npc is the NpcId, date is the Date enum id. Return a replacement cutscene name to swap which scene plays, or undefined to keep the current value. A replacement must name a loaded cutscene, meaning a fiddle cutscenes entry backed by a mist script. An unknown name is dropped with a rate-limited warning and the vanilla scene runs. The chosen name is threaded through the date's completion chain, so the reward gate honours the replacement scene's own ends_day flag and the replacement's cutscenes.toml entry governs whether the date ends the day. The rest of the completion pipeline (heart points, the date photo, the reward popup, date_history) is keyed by npc and date and runs unchanged. Because the dispatch lives inside start_date_cutscene, a date.run override that calls start_date_cutscene directly still flows through this filter."
+
+[[hook]]
+name = "date.cooldown"
+kind = "filter"
+doc  = "Fires in ari_eligible_for_date(npc, time_to_check) (Dates.gml), once per eligibility check, before the date history is scanned. The filtered value is the date cooldown in game seconds, defaulting to days(6), the cooldown the engine enforces between listed dates with the same NPC. ctx is { npc, time_to_check }: npc is the NpcId being checked, time_to_check is the calendar time the check is for (usually now). Return a replacement duration, or undefined to keep the current value. Return 0 to remove the per NPC cooldown. This does not allow a second date on the same day: a separate engine clause rejects any date whose timestamp matches an existing history entry, CALENDAR.time advances a whole day at a time, and that clause is not scoped to an NPC, so once any date is taken no further date is possible that day whatever this hook returns. A non-numeric return is dropped with a rate-limited warning and the vanilla cooldown applies. Eligibility gates whether the Date option appears at all, so this hook runs upstream of date.run and fires from the talk menu and the date eligibility UI. Keep handlers cheap."
 
 [[hook]]
 name = "furniture.place_guard"
@@ -146,7 +214,7 @@ doc  = "Fires in create_furniture_renderer(node) as a furniture node's floor spr
 [[hook]]
 name = "dialogue.line"
 kind = "filter"
-doc  = "Fires in ConversationDriver.deliver_line(), before the textbox shows the line. The filtered value is the localized line text. ctx is { driver, line, conversation_name, npc_id, is_info_line }. Return the replacement string, or undefined to keep the current value."
+doc  = "Fires in ConversationDriver.deliver_line(), before the textbox shows the line. The filtered value is the localized line text. ctx is { driver, line, conversation_name, npc_id, speaker, is_info_line }. npc_id is the driver's npc_owner, the NPC the conversation belongs to. speaker is the textbox speaker the line's own Speaker action has already assigned, and it is undefined for info lines. Cutscene conversations rotate speakers independently of the owner, so read speaker for the character delivering the line. Return the replacement string, or undefined to keep the current value."
 
 [[hook]]
 name = "dialogue.npc_blip"
@@ -162,6 +230,11 @@ doc  = "Fires at the top of play_conversation(), after dialogue.play_guard. The 
 name = "dialogue.play_guard"
 kind = "guard"
 doc  = "Fires at the top of play_conversation(), before dialogue.path runs. ctx is { npc_id, path, close_callback, args }. Return false to veto the conversation (play_conversation returns undefined). Undefined or true allows."
+
+[[hook]]
+name = "dialogue.romance_prompt_guard"
+kind = "guard"
+doc  = "Fires while a pink romance prompt is styled for display, after the vanilla married or engaged lock is evaluated and only when that lock leaves the prompt selectable. ctx is { npc_id, speaker, path }: npc_id is the textbox speaker's NpcId (undefined for a cameo or absent speaker), speaker is the live Speaker struct or undefined, and path is the t2 conversation name or undefined. Return false to grey and soft-lock the prompt exactly as the vanilla lock does. Undefined or true keeps it selectable. Fires once per pink prompt box per styling pass, including the post-selection reset pass, and never fires when the vanilla lock already applies."
 
 [[hook]]
 name = "dialogue.speaker"
@@ -199,9 +272,9 @@ kind = "event"
 doc  = "Fires in the dungeon breakables logic when a treasure chest starts its drop chain. ctx is { node, object_id, x, y }, with x and y read from the node renderer."
 
 [[hook]]
-name = "dungeon.side_room_chance"
+name = "dungeon.side_room_range"
 kind = "filter"
-doc  = "Filters the spawn chance passed to try_create_side_room() at the head of that function, before the per-floor roll. ctx is { impl, is_ritual, max_flr }; is_ritual is true when impl == DungeonImpl.Ritual (the pre-computed convenience flag so consumers need not reference the DungeonImpl enum). Return an adjusted chance (0-100) to raise/lower the odds of a treasure/ritual side room; return the value unchanged (or undefined) to defer. Fires for every side-room impl the runner attempts."
+doc  = "Filters the floor span passed to try_create_side_room() at the head of that function, before the uniform floor pick. ctx is { impl, is_ritual, start_floor }; is_ritual is true when impl == DungeonImpl.Ritual (the pre-computed convenience flag so consumers need not reference the DungeonImpl enum). The side room's floor is drawn from start_floor through start_floor plus the value; return a smaller span to keep the room near the entry floor, a larger one to spread it deeper, where a pick at floor 100 or past it yields no side room. Return the value unchanged (or undefined) to defer. Fires for every side-room impl the runner attempts, after the engine's own perk and once-per-day gates."
 
 [[hook]]
 name = "fishing.should_reel"
@@ -287,6 +360,11 @@ kind = "filter"
 doc  = "Fires at the return of LiveItem.get_display_description(), the string the tooltip body actually renders. The filtered value is the description string. ctx is { item }. Return the replacement string, or undefined to keep the current value."
 
 [[hook]]
+name = "items.chest_opened"
+kind = "event"
+doc  = "Fires when a chest item finishes its open hold, after its loot table is resolved and before any loot or gold drops. ctx is { live_item, table }, the opening LiveItem and the resolved FISH_CHEST table, which handlers must treat as read-only shared state. Fires for vanilla and modded chests alike."
+
+[[hook]]
 name = "items.consumed"
 kind = "event"
 doc  = "Fires after the player eats an item, right after the items_eaten stat is recorded. ctx is the consumed LiveItem."
@@ -347,11 +425,6 @@ kind = "event"
 doc  = "Fires when a monster dies, just before its instance is destroyed. ctx is { monster, monster_id, x, y }."
 
 [[hook]]
-name = "monster.draw"
-kind = "event"
-doc  = "Fires at the end of par_monster's draw() method, after the monster sprite and its status overlays (venom/frozen) are drawn, once per visible monster per frame in the world-draw pass. ctx is the monster instance: read x, y, z, health, and so on, and draw in world space (e.g. a health bar on top). Observation only. Hot path (every visible monster, every frame). Keep handlers cheap."
-
-[[hook]]
 name = "monster.shroom.should_hide"
 kind = "guard"
 doc  = "Fires at the top of the shroom monster's should_hide() check. ctx is the shroom instance. Return false to veto hiding (should_hide returns false); undefined or true falls through to the normal distance check."
@@ -370,6 +443,21 @@ doc  = "Fires each step of a spirit projectile. ctx is the projectile instance. 
 name = "monster.step_begin"
 kind = "event"
 doc  = "Fires every frame for every monster in par_monster's begin step, right after the aggro update. ctx is the monster instance. Hot path. Keep handlers cheap."
+
+[[hook]]
+name = "monster.step_end"
+kind = "event"
+doc  = "Fires every frame for every monster at the end of par_monster's end step, after the engine has written the frame's draw offsets, facing, shadow caster and status overlay renderable. ctx is the monster instance. Not a draw pass, so draw calls throw here. This is the moment to write the fields of renderables a mod owns on the monster. Hot path. Keep handlers cheap."
+
+[[hook]]
+name = "museum.donate_item"
+kind = "event"
+doc  = "Fires at the top of donate_item_to_museum(), before the item is registered to the collection and before the pending renown entry is pushed. ctx is { item_id }. Observation only - the DonationResult the function goes on to compute (progress, completed set, rewards) is decided after the emit. Fires once per donated item, from the museum donation menu and the engine's test suite; save load and the ALL_UNLOCKS new-game path write donations through register_item_to_museum() directly and never fire this hook."
+
+[[hook]]
+name = "player.died"
+kind = "event"
+doc  = "Fires when the player actually dies: on should_die()'s final death path, after the screen fade completes and right after MIST.run_scene(\"dying\") starts the dying scene. ctx is the obj_ari instance. Observation only - ARI.end_of_day_status is already EndOfDayStatus.Died and the scene is under way when handlers run. A revive by the Fairy status effect never gets here, and neither does an averted death, which routes through pass_out() instead (see player.pass_out)."
 
 [[hook]]
 name = "player.equipment_bonus"
@@ -422,9 +510,19 @@ kind = "filter"
 doc  = "Fires at the end of the player's move speed computation, after the status effect multipliers. The filtered value is the speed. ctx is { player, on_mount }. Return the replacement speed, or undefined to keep the current value. Mounted movement routes through this computation too (ctx.on_mount is true); the mounted base speed is separately filterable earlier in the computation via player.mount_speed. Swimming does not route through here - that is player.swim_speed."
 
 [[hook]]
+name = "player.pass_out"
+kind = "event"
+doc  = "Fires in pass_out(), immediately after end_day() - the day rollover is already under way, stamina is zeroed, and the player is flagged invulnerable when handlers run. ctx is { faint }: true for the 2 AM collapse, false when the player went down to a killing blow but the death was averted (ARI.end_of_day_status tells the cases apart: Fainted for the plain collapse, Protected otherwise). Observation only. A normal bed sleep ends the day without pass_out(), and a death that is not averted runs the dying scene instead - see player.died."
+
+[[hook]]
 name = "player.renown_delta"
 kind = "filter"
 doc  = "Fires at the top of Ari.modify_renown(), before the delta is applied. The filtered value is the renown delta. The engine's one gameplay caller is the on_new_day drain of pending_renown_entries, so this fires at day rollover, once per pending entry (quest completions, museum donations, the prior day's shipping gold). ctx is { player }. Return the replacement delta (0 makes the call a no-op), or undefined to keep the current value. set_renown clamps the resulting total to [0, max renown], so any replacement is safe: a negative delta lowers renown and the computed level, plays no celebration, and never revokes already-granted level rewards, while a gain that crosses several levels grants each crossed level's reward. The end-of-day menu tallies the raw pending entries before the drain, so its renown-earned figure shows unfiltered values. Absolute sets (debug, test suite, new game) do not route through modify_renown and never fire this hook."
+
+[[hook]]
+name = "player.skill_leveled"
+kind = "event"
+doc  = "Fires in gain_xp() when the applied XP raises the skill's level, right after the new total is written and before the level-up celebration. ctx is { skill, old_level, new_level, silent }: skill is the Skill enum id and silent is gain_xp's own flag, so silent engine gains (crafting XP, stable breeding) fire too, celebration or not. Gains only - a level lowered through a negative player.xp_delta replacement never fires. A single large gain can cross several levels and still fires once; compare old_level and new_level. Save load and the debug menu write skill_xp directly and never fire."
 
 [[hook]]
 name = "player.stamina_delta"
@@ -460,6 +558,21 @@ doc  = "Fires at the end of Ari.get_swim_speed(), after the fast/slow stroke bra
 name = "player.xp_delta"
 kind = "filter"
 doc  = "Fires at the top of Ari.gain_xp(skill, xp, silent), before the XP is applied. The filtered value is the XP delta; ctx is { player, skill, silent }, skill being the Skill.* enum id. Return the replacement delta, or undefined to keep the current value. A negative delta genuinely deducts XP and can lower the skill's level: the seam floors the filtered result at -skill_xp[skill] so the total never goes negative (levels 0 and 1 cost 0 XP, so the computed level bottoms out at 1, never the -1 a negative total would read as), and the seam narrows the level celebration to genuine gains, so a level DOWN does not play the LevelUp chime and dingaling (vanilla celebrates any level change; the narrowed condition is unreachable without a negative delta). The floor never binds on engine values (vanilla deltas are all non-negative). The engine's own cap at MAX_SKILL_LEVEL_COSTS still applies after the filter, and already-granted level rewards are not revoked by leveling down."
+
+[[hook]]
+name = "quest.complete"
+kind = "event"
+doc  = "Fires inside QuestLog.complete(quest_name), after the completion is validated (the quest is active and its final task is done) and before any completion bookkeeping - the T2R quest facts, the active-to-completed move, the request-board cleanup, the pending renown entry, and the achievements refresh all land after the emit. Calls that fail validation return early and never fire. ctx is { quest_name, quest }: quest is the ActiveQuest being completed (its prototype is quest.quest, its rewards quest.quest.reward_list). Observation only."
+
+[[hook]]
+name = "renown.level_gained"
+kind = "event"
+doc  = "Fires inside Ari.set_renown() when the write raises the renown level, past the gains-only early return and before the crossed levels' rewards are granted. ctx is { old_level, new_level }; a single write can cross several levels and still fires once. The engine's gameplay path here is the day-rollover drain of pending entries (each already filtered through player.renown_delta), and debug sets route through set_renown too; save load restores the renown field directly and never fires. Losses and level-neutral writes never fire - set_renown bails before the emit unless the level rose."
+
+[[hook]]
+name = "renown.rank_gained"
+kind = "event"
+doc  = "Fires inside Ari.set_renown() when a renown level gain crosses a rank boundary, immediately after renown.level_gained. ctx is { old_rank, new_rank }: integer indexes into RENOWN.ranks, clamped to the last rank (RENOWN.ranks.get(new_rank) is the rank struct). A gain within one rank fires renown.level_gained alone, and once the final rank is reached further level gains never fire this hook again."
 
 [[hook]]
 name = "resource.node_modifier"
@@ -567,10 +680,25 @@ doc  = "Fires in StoreMenu right after a shelf tap adds an item to the shopping 
 [[hook]]
 name = "ui.menu_refreshed"
 kind = "event"
-doc  = "Fires after a menu rebuilds its content from game state, at the tail of the rebuild function. Emitting menus today: ToolbarMenu.update() (slot items re-resolved from the inventory: subscriber pull, page flips, tab taps, forced rebuilds, constructor) and VitalsMenu.refresh_statuses() (status icon strip rebuilt: register, cancel, and the expiry poll). ctx is { menu, kind }, with kind read from menu.type. Emits only on rebuild edges, never per idle frame, including during the menu's constructor before ui.menu_opened fires for it (ctx.menu is not yet in ANCHOR.open_menus then). Handlers must be idempotent and must not unconditionally force another rebuild from inside the handler."
+doc  = "Fires after a menu rebuilds its content from game state, at the tail of the rebuild function. Emitting menus today: ToolbarMenu.update() (slot items re-resolved from the inventory: subscriber pull, page flips, tab taps, forced rebuilds, constructor), VitalsMenu.refresh_statuses() (status icon strip rebuilt: register, cancel, and the expiry poll), and CraftingMenu.select_category() (recipe grid rebuilt onto a fresh scroller: the initialize pass after spawn, category tab taps, and the post-craft refresh). ctx is { menu, kind }, with kind read from menu.type. Emits only on rebuild edges, never per idle frame. The toolbar and vitals constructors run their rebuild, so those two menus can emit before ui.menu_opened fires for them (ctx.menu is not yet in ANCHOR.open_menus then). The crafting menu's first rebuild is the initialize pass spawn_crafting_menu runs after spawn, so its emits always come with the menu already open. Handlers must be idempotent and must not unconditionally force another rebuild from inside the handler."
 
 [[hook]]
-name = "ui.sprite"
+name = "ui.preset_popup_layout"
+kind = "filter"
+doc  = "Fires each time the customization menu generates its preset popup body, on popup open and again after a preset is added or deleted. The filtered value is the layout struct { frame_width: 46, frame_height: 47, columns: 4, rows: 2, spacing: 4 }: frame_width and frame_height size each preset frame, columns and rows shape the grid, and spacing is the gap centered_positions puts between frames. ctx is the CustomizationMenu struct. Return the replacement struct, or undefined to keep the engine values. The seam re-reads every field defensively, so an undefined return (or a partial struct) keeps the engine value for each field it lacks. Growing columns or rows grows the preset capacity (the stock 4x2 grid holds seven presets plus the button that creates a new preset), and a grid smaller than the current preset count leaves the overflow presets unreachable in the popup without deleting them. The popup backplate is sized at popup open (230x164) and does not adapt, so frames that outgrow it draw outside its art."
+
+[[hook]]
+name = "ui.relationship_row_built"
+kind = "event"
+doc  = "Fires once per NPC row as the relationships journal page builds its scrollable list, at the end of the row build with every vanilla node in place. Each journal tab switch constructs the page fresh, so the hook fires for every listed NPC on every visit to the page and never per frame. ctx is { menu, element, npc_id, npc, portrait, hearts, bar, talk_icon, talk_check, gift_icon, gift_check }: menu is the RelationshipsMenu, element is the row's scroller element (its name label is element.text_label), npc is the Npc data struct for npc_id, portrait is the row's NPC sprite node, hearts and bar are the heart level and heart progress nodes, talk_icon and talk_check are the talked-today icon and checkbox, and gift_icon and gift_check are the gifted-today icon and checkbox. The intended use is to add custom nodes to the row, anchored to the ctx nodes the way the vanilla row chains its own (for example an extra checkbox set RightOut of gift_check). Nodes parented to the row are freed with the menu, so handlers need no cleanup. Row content is a build-time snapshot, so give a node a think callback if it must track live state. Unmet NPCs get rows too, with a '???' label, a blacked-out portrait, and no tap callback, so gate revealing decorations on ctx.npc.has_met(). NPCs the list skips never fire, meaning locked NPCs, unmet vendors, and unmet animal-tagged NPCs before greet_the_townsfolk completes. The right-page detail pane (set_to_npc_id) is separate and not covered. The test suite's menu stress builds this page too, so handlers also fire there."
+
+[[hook]]
+name = "ui.spawn_tutorial_guard"
+kind = "guard"
+doc  = "Fires at the top of spawn_tutorial(tutorial), before the tutorial is marked seen and before its popup is built. ctx is { tutorial }, the Tutorial enum id. Return false to veto the popup (spawn_tutorial returns undefined, and the tutorial stays unmarked in ARI.tutorials_seen, so the game offers it again on its next trigger); undefined or true allows. The guard sits above the function's own test-suite early return, so it also fires - vacuously - in test-suite runs."
+
+[[hook]]
+name = "ui.backplate_sprite"
 kind = "filter"
 doc  = "Fires at backplate sprite assignments. ctx.source names the site: mines_menu_backplate (the mines menu backplate on dungeon room start, ctx { source }) and spellcasting_card_backplate (the spell card backplate, ctx { source, spell }). The filtered value is the default backplate sprite. Return the replacement sprite, or undefined to keep the current value."
 
@@ -578,6 +706,84 @@ doc  = "Fires at backplate sprite assignments. ctx.source names the site: mines_
 name = "ui.toolbar_tick"
 kind = "event"
 doc  = "Fires every toolbar tick, after the subscriber pull and update and before press-and-hold processing. ctx is the ToolbarMenu."
+
+[[hook]]
+name = "furniture.preview_sprite"
+kind = "filter"
+doc  = "Fires in create_test_placement_furniture_draw_info() as the furniture placement preview resolves each sprite it will draw: the translucent ghost (obj_furniture_previewer) shown under the cursor while a placeable furniture item is held. ctx.source names the dispatch site: main_sprite (the piece's main sprite, after the engine's own {Season}_sprite override) and floor_sprite (the floor sprite, which the preview reads raw; the engine applies no winter_floor_sprite override here). The filtered value is that sprite. ctx is { object_id, prototype, cardinal_index, x, y, source }: object_id and prototype describe the piece being previewed (after the house-stairs pairing swap), cardinal_index is the resolved rotation, and x and y are the centred anchor cell. There is no node, because nothing is placed yet. Return the replacement sprite, or undefined to keep the current value. Fires EVERY FRAME while a placeable is held, once per site the piece has, so handlers must be cheap: look the value up first and return undefined fast when it is not yours. A mod that swaps a placed piece's sprite through object.node_sprite or furniture.floor_sprite and wants the ghost to agree registers the same handler here."
+
+[[hook]]
+name = "ui.eod_calendar_events"
+kind = "filter"
+doc  = "Fires in EodMenu.play_calendar_sequence(), after the engine has gathered tomorrow's calendar events and before build_notifications() turns them into the notification rows under the end-of-day calendar. The filtered value is menu.events, the List of event structs (count()/get()/push()/insert(), not an array). Every vanilla entry carries a type from the CalendarEvent enum plus that type's payload, in the engine's gathering order. ctx is { menu, target_date }: menu is the EodMenu running the sequence, and target_date is the calendar timestamp of the day about to begin (CALENDAR.time + days(1)), the same value the engine passes to build_notifications(). Mutate the List in place, return a replacement List, or return undefined to keep the current one. A return that is not a List is dropped and the engine's List stands. A custom entry is a struct { type, key, icon, npcs }, where type must be a value no vanilla case matches (CalendarEvent.LEN is the convention), key is the localization key the row text resolves through set_key() (wrap literal text with ANCHOR.wrap_for_local()), icon is the sprite drawn left of the text, and npcs is optional, a boolean array with NpcId.LEN entries that adds the vanilla underline of small NPC icons. Extra fields are ignored. The companion build_notifications() edit resolves those three fields for any entry whose type matches no vanilla case, so a custom row takes the vanilla layout, spacing, fade-in, and calendar recentering. The fade-in gate reads the final List, so adding to an empty List shows the block and emptying it hides the block. Fires once per end-of-day sequence, from the Next Day button's chain after the renown sequence and rename popups, and never from the test suite's end_sequence() shortcut."
+
+[[hook]]
+name = "factory.product_drops"
+kind = "filter"
+doc  = "Fires in the factory give-item interaction, the InputId.Throw interaction create_furniture_renderer() registers on an apiary or terrarium that is waiting for its requested item, after the requested item is popped from the player's hand and the engine has rolled the tier reward and the apiary's 15 percent honeycomb bonus, and before anything drops. The filtered value is the array of products about to drop, [reward] or [reward, ItemId.Honeycomb], where each element is an item id or a LiveItem, whatever drop_item() accepts. ctx is { node, production_request, production_tier }: node is the factory's grid node (node.object_id, node.prototype.factory.rewards_map, node.inventory, node.renderer), production_request is the item id the factory asked for and the player just handed over, and production_tier is the FactoryTier the roll used, an index into rewards_map resolved from the bees or bugs inside when the request was made. Return a replacement array, mutate the array in place, or return undefined to keep the current list. A return that is not an array is dropped and the rolled list stands. Each element then drops through its own drop_item() call at the factory's renderer position, so items.dropped fires once per element, and an empty array drops nothing. The hand pop, the bounce animation, the reward sound, and the request reset run whatever the array holds. The seam rolls the honeycomb bonus before the first drop instead of between the two vanilla drops, so with zero handlers the same rolls happen in the same order and only the drop scatter draws move behind them. Fires once per collection."
+
+[[hook]]
+name = "player.perk_acquired"
+kind = "event"
+doc  = "Fires at the end of Ari.acquire_perk(perk), after the perk is flagged owned and active, after its acquisition side effects (the Guardian's Shield extra invulnerable hit, the Ancient Inspiration timer reset) have run, and after the stats entry is pushed and the achievements refresh. ctx is { perk }, the Perk enum id. Observation only, and the flags are already written when handlers run, so a handler that sets ARI.perks_active[perk] itself has the last word on whether the perk takes effect. Fires on every acquisition path (the Dragonshrine purchase, the debug CLI grant, and the ALL_UNLOCKS loop that grants every perk to a new game) but never on save load, which restores the perk arrays directly. Toggling an owned perk on or off never fires either, because the shrine menu and the debug CLI flip perks_active directly without entering acquire_perk. In vanilla play every acquisition is a first acquisition, since the shrine only offers Learn for an unowned perk."
+
+[[hook]]
+name = "player.perk_purchased"
+kind = "event"
+doc  = "Fires at the end of DragonShrineMenu.purchase_entry(entry), after the shrine has spent the entry's essence through Ari.modify_essence() (so player.essence_delta has already run) and after Ari.acquire_perk() has run for it (so player.perk_acquired has already fired). ctx is { perk }, the Perk enum id of the entry the player bought. Observation only. purchase_entry() is the one purchase path in the engine, the Learn button of the Caldarus, Seridia, and horse statue shrine menus, so it fires exactly once per confirmed purchase and never for the debug CLI grant, the ALL_UNLOCKS loop, or save load."
+
+[[hook]]
+name = "ui.shrine_entry_is_acquired"
+kind = "filter"
+doc  = "Fires at the return of DragonShrineMenu.entry_is_acquired(entry). The filtered value is the boolean the shrine menus use to treat an entry as already bought, which pristine reads straight from ARI.perks[entry.perk]. ctx is { perk }, the entry's Perk enum id. Return the replacement boolean, or undefined to keep the current value. The menu asks this for every tile on the tier screen every frame, and the answer picks the tile's tint, decides whether the entry popup offers the Learn button or the Enable and Disable toggle, and shows or hides the cost. Forcing false on an owned perk lets the player buy it again, which spends the essence and runs Ari.acquire_perk() as a re-grant. Forcing true hides the Learn button without writing ARI.perks. The perk's effect is never read through this predicate."
+
+[[hook]]
+name = "store.basket_cost"
+kind = "filter"
+doc  = "Fires in StoreMenu.update_prices(), after the basket total is summed and before it is displayed, on every price pass: menu init, category select, shelf tap, and basket pop or drain. The filtered value is the basket total, the sum over basket slots of item.store_value() times the store's price markup times the slot count. ctx is { menu }: menu is the StoreMenu (menu.store.id is the Store id, menu.basket is the Inventory cart, menu.price_markup is the store's markup). Return a replacement number, or undefined to keep the current value. A non-numeric return is dropped and the sum stands. The result drives the receipt total and its can't-afford colour, the remaining-gold figure the shelf colouring reads, the Buy gate, and the gold charged at Buy, which reads the last stored total without recomputing. Per-item shelf labels, the store tooltip price, and the purchase stat's cost do not pass through it. items.store_price covers those. A return of exactly 0 locks the Buy button, because the gate requires a positive total. set_gold floors and truncates the charge, but the receipt shows the returned number as is."
+
+[[hook]]
+name = "items.store_price"
+kind = "filter"
+doc  = "Fires whenever LiveItem.store_value() returns, the base buy price a store charges for an item before the store's markup. The filtered value is the number store_value() computed, which is the prototype's value.store, the star price for a recipe scroll, or a cosmetic's price override, with the DiscountTreats perk already applied. ctx is { item, menu }: item is the LiveItem being priced, and menu is the StoreMenu pricing it (menu.store.id is the Store id, menu.price_markup is the store's markup). Return a replacement number, or undefined to keep the current value. Nothing guards the type, so a non-numeric return breaks the price arithmetic at the caller. Every caller in the shipped engine is on the buy side and belongs to the store menu: the shelf price labels, the shelf can't-afford colouring, the basket sum that store.basket_cost then filters, the store tooltip price, and the cost recorded in the purchase stats. The first price pass runs inside the StoreMenu constructor, before the menu is pushed onto open_menus, so ANCHOR.get_menu(Menu.Store) is still undefined for the initial shelf labels, basket sum, and tooltip, while ctx.menu is already the menu. The store's per-ledger markup multiplies on top of the returned value at each caller, so return a base price. The sell price, bin_value(), never routes through this hook. Fires for every shelf item and basket slot on each price pass, so put the cheapest test first. Every price pass rewrites the shelf label text along with the label colour, the receipt, and the Buy lock, so a handler whose answer changes while the shop is open calls menu.update_prices() to show it. The same pass rewrites the open tooltip's price. The tooltip's title, description, and stars are built once at spawn and are not refreshed."
+
+[[hook]]
+name = "store.purchase"
+kind = "event"
+doc  = "Fires in the StoreMenu Buy callback after the basket is drained, the purchase stats recorded, the once-per-year bans written, and the purchases grouped into stacks, immediately before the engine gives the stacks and charges the total. ctx is { menu, items, total }: menu is the StoreMenu, items is the engine's List of Lists with one inner List per stack about to be given (first() is the LiveItem, count() the stack size), and total is the gold about to be charged, after store.basket_cost. Observation only. The engine gives from the same List after the emit, so mutating items changes what lands and is unsupported. Nothing can abort between this fire and the charge. The basket is already empty, and give_item drops any overflow at the player's feet. items.give fires once per stack after this hook, and player.gold_delta sees the charge as one negative delta. The menu closes after the charge, so stock shown on the next open comes from a fresh create_store_stock build."
+
+[[hook]]
+name = "store.stock"
+kind = "filter"
+doc  = "Fires whenever create_store_stock(store) returns, the one builder every store shelf reads. The filtered value is the List of categories the engine built, each { icon, items }: icon is the category's carousel sprite and items is a List of LiveItem in shelf order. ctx is { store, menu }: store is the Store id, and menu is the StoreMenu under construction for the StoreMenu init fire and undefined at the other three sites. Mutate the Lists in place, return a replacement List, or return undefined to keep the current value. Fires at four sites: StoreMenu init on every store open, the Inn's stock build at game setup and on each new day (INN_STOCK, which villagers read to pick what they eat), and the blacksmith ledger's tool display. The init fire runs inside the menu's constructor, before the menu is pushed onto open_menus, so ctx.menu names it where ANCHOR.get_menu cannot. STORES[store] is the parsed store entry, with any keys a mod's stores.toml added. The setup fire lands before the first frame, so a handler that reads a mod save must decline until mmapi_io_is_ready(). The new-day fire lands after game.new_day. The value is already past the requirements and purchasable() retain and the empty-category pruning, so entries a handler adds are not re-validated, and a handler must not return an empty List. A category needs an icon sprite asset to get a carousel tab, and the shelf shows at most 25 entries per category. The engine builds stock once per open and Buy closes the menu, so a change written from store.purchase shows on the next open. Static and requirement-gated stock belongs in a mod's stores.toml. This hook is for stock the data cannot compute."
+
+[[hook]]
+name = "dialogue.conversation_finished"
+kind = "event"
+doc  = "Fires at the end of ConversationDriver.finish_conversation(), after the conversation's end actions have run through process_t2_action(), after the driver has closed its textbox or started the textbox's closing animation, and after the driver's state is set to ConversationDriverState.Finished. ctx is { driver, conversation_name, npc_id, end_actions }: driver is the ConversationDriver that finished, conversation_name is the t2 conversation name it was built with, npc_id is its npc_owner, and end_actions is the array of T2Action structs that T2R.conversation_end() returned for the conversation. Observation only. Every entry in end_actions has already run, so the array is a record of what the end did. A conversation's end actions are the actions list on its own table in the t2 file, the [name] table that also carries kind, requires, and writes, plus the SpokeTo action the runtime adds for the owner. An actions list on a numbered line table, [name.N], runs when that line is delivered and is not repeated here. Fires once per ConversationDriver that finishes, whether play_conversation() built it, the cutscene runtime built it, or the debug CLI built it. A cutscene that swaps conversations with set_conversation finishes one driver per conversation, and a skipped cutscene still finishes its driver through this function. A driver dropped before it finishes never fires. The finished textbox is still in ANCHOR.open_menus when handlers run, so a conversation started from a handler must wait for it to leave."
+
+[[hook]]
+name = "instance.created"
+kind = "event"
+provider = "runtime"
+doc  = "Fires from the framework's per-frame instance poll for every live instance of the object a registration names in opts.object, once per instance per handler, on the first begin step at which that instance is active. ctx is the instance. The poll runs after the instance's whole create chain, so the instance is complete and every vanilla register_interaction call has already landed, and an instance that destroyed itself during its create event never fires. It covers every creation path, including room placement, instances built inside room_start, mid-room spawns, the first room of a session, and a room that reloads onto itself. It is not synchronous with creation, and an instance that is inactive when first polled fires when it is next active. Passing a parent object watches every descendant. A registration without opts.object is refused with a warning, and obj_node_renderer and par_interactable are refused as watch targets on the first poll. The intended use is to adjust instance properties or register extra interactions. Interactions registered here land after every vanilla registration, and attempt_interact() scans in registration order with the first active interaction taking the press, so a handler cannot shadow an active vanilla interaction on the same input. Villagers, the farm pet, and barn and coop animals have spawn-site hooks (npc.created, pet.created, animal.created) that fire synchronously and a frame earlier than this poll."
+
+[[hook]]
+name = "tool.targets"
+kind = "filter"
+doc  = "Fires in the player's Tool FSM state wherever the engine resolves the cells a tool use covers. The filtered value is the List of Vec2 cells that range_pattern_to_targets() built for the use (a List with count()/get()/push(), not an array). ctx is { x, y, range_pattern, cardinal, item }: x and y are the origin cell the use targets, range_pattern is the RangePattern value of the current charge level (RangePattern.One for an uncharged use), cardinal is the player's facing Cardinal, and item is the LiveItem in use. Return a replacement List, or mutate the List in place and return undefined, or return undefined to keep the current value. The hook fires at two sites, and both hand the handler the same ctx. The step site fires every step of the Tool state up to and including the step on which the use acts, and its final value is the one List the charging preview draws and the action loop works through. The stamina site fires once each time the charge advances to the next range pattern, and the engine reads only the count() of its final value, times the item's stamina cost per cell, against current stamina before it allows the pattern. A handler that answers from ctx alone returns the same cells at both sites, so the stamina the engine checks is the stamina the cells cost. Cells are grid cells of 8 pixels, a tile spans 2 cells, and the engine's own patterns step by 2. Every use that enters the Tool state passes through, which covers the axe, pickaxe, hoe, shovel, watering can, and net, seeds, and sapling and grass planting. The Earthbreaker perk's chained picks read range_pattern_to_targets() directly and never pass through this hook. A final value without a working count() is discarded and the engine's List is kept. Hot while a tool is in use."
+
+[[hook]]
+name = "player.jump_attack_landing"
+kind = "filter"
+doc  = "Fires inside the Jump Attack perk's landing test, once per corner of the player's bounding box, on the frames after a jump's peak while the attack input is buffered, a weapon is held, and no animal is carried. The filtered value is whether that corner's grid node lets the jump attack land, true for a node that is neither collideable nor water. ctx is { x, y, node, collideable, water }: x and y are the corner's room position, node is its grid node index, collideable is the node's collision flag, and water is true when the node's terrain is water. Return a replacement boolean, or undefined to keep the current value. The engine enters the jump attack only when every corner's final value is true, and a corner outside the grid fails before dispatch. A monster or NPC under the player fails that frame's test before any corner is tested, so the hook does not fire on that frame. The attack enters on the first frame every corner passes, so an allowed landing happens where the player is at that moment along the jump's arc, not at the jump's destination. A landing whose node under the player's position is water sends the attack's exit to the Swim state instead of Default. The test runs on every frame from the jump's peak until the attack lands or the jump ends, and the engine tests no further corners on that frame, so a refused landing dispatches about once per frame for the rest of the jump."
+
+[[hook]]
+name = "npc.is_unlocked"
+kind = "filter"
+doc  = "Fires in npc_is_unlocked()'s default arm - every NPC the base game does not explicitly gate, which is every extension NPC and any future vanilla NPC without a case. The filtered value is the unlocked boolean, already false for ledger vacancies; ctx is the npc_id ordinal. Return the replacement value, or undefined to keep the current value. Vanilla NPCs with explicit cases (market vendors, story NPCs) never reach this hook."
+
+# --- seams -------------------------------------------------------------------------
 
 [[seam]]
 id      = "animal_heart_points"
@@ -954,21 +1160,24 @@ replace = '''
 marker  = "mmapi_request_board_fetch_pool_ready_emit"
 provides = ["request_board.fetch_pool_ready"]
 
+# The engine draws monsters through renderables that step_end configures, so the
+# emit sits after the frame's last renderable write.
 [[seam]]
-id      = "monster_draw"
+id      = "monster_step_end"
 file    = "gml/objects/Combat/par_monster.gml"
 context_before = '''
-                    gpu_reset_extra();
-                }
+            self.status_blender.x_scale = self.image_xscale;
 '''
 context_after = '''
-            }
+        },
+        animation_end: function() {
 '''
 op      = "emit"
-hook    = "monster.draw"
+hook    = "monster.step_end"
 ctx     = "self"
-indent  = 16
-marker  = "mmapi_monster_run_draw_callbacks"
+indent  = 12
+catch_var = "__mmapi_monsters_step_end"
+marker  = "mmapi_monsters_run_step_end"
 
 [[seam]]
 id      = "combat_tarball_grid"
@@ -1013,6 +1222,121 @@ marker  = "mmapi_date_run_override"
 provides = ["date.run"]
 
 [[seam]]
+id      = "date_begin"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+    play_conversation(npc, date_convo, function(_, npc, date) {
+        start_date_cutscene(npc, date);
+    }, [npc, date]);
+'''
+replace = '''
+    play_conversation(npc, date_convo, function(_, npc, date) {
+        if (mmapi_check_guards("date.begin", { npc: npc, date: date }) == false) { return; } // mmapi_date_begin_guards
+        start_date_cutscene(npc, date);
+    }, [npc, date]);
+'''
+marker  = "mmapi_date_begin_guards"
+provides = ["date.begin"]
+
+[[seam]]
+id      = "date_cutscene"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+    MIST.blackboard.insert("prop_sprite", prop_sprite);
+    MIST.run_scene(data.cutscene);
+
+    new_chain().append(LinkId.Await, function(npc, date, item) {
+        if MIST.is_running() {
+            return false;
+        }
+
+        //
+        //
+        //
+        if CUTSCENES.get(DATES[date].cutscene).ends_day && ANCHOR.get_menu(Menu.Eod) == undefined {
+'''
+replace = '''
+    MIST.blackboard.insert("prop_sprite", prop_sprite);
+    var __mmapi_date_scene = data.cutscene;
+    try { __mmapi_date_scene = mmapi_apply_filters("date.cutscene", __mmapi_date_scene, { npc: npc, date: date }); } catch (__mmapi_date_cutscene) {} // mmapi_date_cutscene_filter
+    try {
+        if (__mmapi_date_scene != data.cutscene && CUTSCENES.get(__mmapi_date_scene) == undefined) {
+            mmapi_warn_rate_limited("date.cutscene:" + string(__mmapi_date_scene), "mmapi", "date.cutscene returned unknown cutscene `" + string(__mmapi_date_scene) + "`, keeping the vanilla date cutscene");
+            __mmapi_date_scene = data.cutscene;
+        }
+    } catch (__mmapi_date_cutscene_probe) {
+        mmapi_warn_rate_limited("date.cutscene:probe", "mmapi", "date.cutscene probe failed error=`" + string(__mmapi_date_cutscene_probe) + "`, keeping the vanilla date cutscene");
+        __mmapi_date_scene = data.cutscene;
+    }
+    MIST.run_scene(__mmapi_date_scene);
+
+    new_chain().append(LinkId.Await, function(npc, date, item, __mmapi_date_scene) {
+        if MIST.is_running() {
+            return false;
+        }
+
+        //
+        //
+        //
+        if CUTSCENES.get(__mmapi_date_scene).ends_day && ANCHOR.get_menu(Menu.Eod) == undefined {
+'''
+marker  = "mmapi_date_cutscene_filter"
+provides = ["date.cutscene"]
+
+[[seam]]
+id      = "date_cutscene_chain_args"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+        return true;
+    }, [npc, date, item]);
+'''
+replace = '''
+        return true;
+    }, [npc, date, item, __mmapi_date_scene]); // mmapi_date_cutscene_chain_args
+'''
+marker  = "mmapi_date_cutscene_chain_args"
+provides = ["date.cutscene"]
+depends_on = ["date_cutscene"]
+
+[[seam]]
+id      = "date_cooldown"
+file    = "gml/scripts/Dates.gml"
+anchor  = '''
+function ari_eligible_for_date(npc, time_to_check) {
+    time_to_check = time_to_check == undefined ? CALENDAR.time : time_to_check;
+
+    for (var i = 0; i < array_length(ARI.date_history); i++) {
+        var v = ARI.date_history[i];
+        if DATES[v.date].unlisted {
+            continue;
+        }
+        if time_to_check == v.timestamp
+            || (v.npc == npc && time_to_check - v.timestamp < days(6))
+        {
+'''
+replace = '''
+function ari_eligible_for_date(npc, time_to_check) {
+    time_to_check = time_to_check == undefined ? CALENDAR.time : time_to_check;
+
+    var __mmapi_date_cooldown = days(6);
+    try { __mmapi_date_cooldown = mmapi_apply_filters("date.cooldown", __mmapi_date_cooldown, { npc: npc, time_to_check: time_to_check }); } catch (__mmapi_date_cooldown_err) {} // mmapi_date_cooldown_filter
+    if (is_numeric(__mmapi_date_cooldown) == false) {
+        mmapi_warn_rate_limited("date.cooldown:type", "mmapi", "date.cooldown returned a non-numeric value, keeping the vanilla cooldown");
+        __mmapi_date_cooldown = days(6);
+    }
+    for (var i = 0; i < array_length(ARI.date_history); i++) {
+        var v = ARI.date_history[i];
+        if DATES[v.date].unlisted {
+            continue;
+        }
+        if time_to_check == v.timestamp
+            || (v.npc == npc && time_to_check - v.timestamp < __mmapi_date_cooldown)
+        {
+'''
+marker  = "mmapi_date_cooldown_filter"
+provides = ["date.cooldown"]
+
+[[seam]]
 id      = "furniture_place_guard"
 file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
 context_before = '''
@@ -1037,7 +1361,7 @@ context_before = '''
 '''
 context_after = '''
 
-        node.renderer.floor_renderer = instance_create_layer(node.renderer.x, node.renderer.y, "Instances", obj_node_renderer_top);
+        node.renderer.floor_renderer = node.renderer.create_renderable(sprite_to_use);
 '''
 op      = "filter"
 hook    = "furniture.floor_sprite"
@@ -1212,12 +1536,10 @@ marker  = "mmapi_ui_run_button_sprites_filters"
 id      = "obj_item_outline_sprite"
 file    = "gml/objects/objects/obj_item.gml"
 anchor  = '''
-                item_data.prototype.icon_sprite_outline,
-                image_index,
+            self.outline.animation = item_data.prototype.icon_sprite_outline;
 '''
 replace = '''
-                outline_sprite,
-                image_index,
+            self.outline.animation = outline_sprite;
 '''
 marker  = "outline_sprite"
 provides = ["ui.item_icon"]
@@ -1300,7 +1622,7 @@ blank_after = true
 marker  = "mmapi_ui_run_draw_gui_callbacks"
 
 [[seam]]
-id      = "ui_sprite_mines_backplate"
+id      = "ui_backplate_sprite_mines"
 file    = "gml/scripts/UI/Anchor/Menus/MinesMenu.gml"
 anchor  = '''
         .set_room_start_callback(function() {
@@ -1310,11 +1632,39 @@ replace = '''
         .set_room_start_callback(function() {
             if is_dungeon_room(room()) {
                 try {
-                    self.backplate.set_sprite(mmapi_apply_filters("ui.sprite", spr_ui_dungeon_backplate, { source: "mines_menu_backplate" }));
+                    self.backplate.set_sprite(mmapi_apply_filters("ui.backplate_sprite", spr_ui_dungeon_backplate, { source: "mines_menu_backplate" }));
                 } catch (__mmapi_mines_backplate_sprite) {}
                 self.backplate.enable();'''
 marker  = "mmapi_mines_backplate_sprite"
-provides = ["ui.sprite"]
+provides = ["ui.backplate_sprite"]
+
+[[seam]]
+id      = "ui_preset_popup_layout"
+file    = "gml/scripts/UI/Anchor/Menus/CustomizationMenu.gml"
+anchor  = '''
+        static FRAME_WIDTH = 46;
+        static FRAME_HEIGHT = 47; //
+        static HORZ_LAYOUT = centered_positions(4, FRAME_WIDTH, 4);
+        static VERT_LAYOUT = centered_positions(2, FRAME_HEIGHT, 4);'''
+replace = '''
+        var __mmapi_preset_layout = { frame_width: 46, frame_height: 47, columns: 4, rows: 2, spacing: 4 };
+        try { __mmapi_preset_layout = mmapi_apply_filters("ui.preset_popup_layout", __mmapi_preset_layout, self); } catch (__mmapi_preset_layout_err) {} // mmapi_ui_run_preset_popup_layout_filters
+        var FRAME_WIDTH = 46;
+        var FRAME_HEIGHT = 47;
+        var COLUMNS = 4;
+        var ROWS = 2;
+        var SPACING = 4;
+        if (__mmapi_preset_layout != undefined) {
+            try { FRAME_WIDTH = __mmapi_preset_layout.frame_width; } catch (__mmapi_preset_layout_width) {}
+            try { FRAME_HEIGHT = __mmapi_preset_layout.frame_height; } catch (__mmapi_preset_layout_height) {}
+            try { COLUMNS = __mmapi_preset_layout.columns; } catch (__mmapi_preset_layout_columns) {}
+            try { ROWS = __mmapi_preset_layout.rows; } catch (__mmapi_preset_layout_rows) {}
+            try { SPACING = __mmapi_preset_layout.spacing; } catch (__mmapi_preset_layout_spacing) {}
+        }
+        var HORZ_LAYOUT = centered_positions(COLUMNS, FRAME_WIDTH, SPACING);
+        var VERT_LAYOUT = centered_positions(ROWS, FRAME_HEIGHT, SPACING);'''
+marker  = "mmapi_ui_run_preset_popup_layout_filters"
+provides = ["ui.preset_popup_layout"]
 
 [[seam]]
 id      = "dialogue_path"
@@ -1373,6 +1723,7 @@ replace = '''
                 line: line,
                 conversation_name: self.conversation_name,
                 npc_id: self.npc_owner,
+                speaker: self.textbox.requested_speaker,
                 is_info_line: self.is_info_line,
             });
         } catch (__mmapi_dialogue_local) {}
@@ -1577,25 +1928,60 @@ catch_var = "__mmapi_spell_cast_callback"
 marker  = "mmapi_spell_cast_callback"
 
 [[seam]]
-id      = "ui_sprite_spell_card_backplate"
+id      = "ui_backplate_sprite_spell_card"
 file    = "gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml"
 anchor  = '''
         self.card.set_sprite(spr_ui_journal_magic_card_backplate);
 '''
 replace = '''
-        self.card.set_sprite(mmapi_apply_filters("ui.sprite", spr_ui_journal_magic_card_backplate, { source: "spellcasting_card_backplate", spell: spell })); // mmapi_spell_card_backplate
+        self.card.set_sprite(mmapi_apply_filters("ui.backplate_sprite", spr_ui_journal_magic_card_backplate, { source: "spellcasting_card_backplate", spell: spell })); // mmapi_spell_card_backplate
 '''
 marker  = "mmapi_spell_card_backplate"
-provides = ["ui.sprite"]
+provides = ["ui.backplate_sprite"]
 
+# The replace widens the pristine one-line cost read into a quarter-granularity
+# render so fractional filtered costs draw a partial orb instead of truncating.
+# The partial ladder mirrors VitalsMenu's set_mana ladder, where the sprite
+# names describe the drained portion of the orb.
 [[seam]]
 id      = "spells_cost_menu"
 file    = "gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml"
 anchor  = '''
         var cost = self.spell_data.cost div 4;
+        var cost_icon = spr_ui_hud_health_mana_ball_on;
+        var positions = centered_positions(cost, sprite_get_width(cost_icon), 2);
+        for (var i = 0; i < array_length(positions); i++) {
+            var pos = positions[i];
+            ANCHOR.sprite(self.cost_zone)
+                .set_sprite(cost_icon)
+                .set_x(pos)
+                .set_align(Align.Center, Align.Middle)
+        }
 '''
 replace = '''
-        var cost = mmapi_apply_filters("spells.cost", self.spell_data.cost, spell) div 4; // mmapi_spell_menu_cost
+        var cost = mmapi_apply_filters("spells.cost", self.spell_data.cost, spell); // mmapi_spell_menu_cost
+        var full_orbs = cost div 4;
+        var partial = cost - full_orbs * 4;
+        var cost_icon = spr_ui_hud_health_mana_ball_on;
+        var icon_count = full_orbs + (partial > 0 ? 1 : 0);
+        var positions = centered_positions(icon_count, sprite_get_width(cost_icon), 2);
+        for (var i = 0; i < array_length(positions); i++) {
+            var pos = positions[i];
+            var sprite = cost_icon;
+            if i >= full_orbs {
+                if partial <= 1 {
+                    sprite = spr_ui_hud_health_mana_ball_threethirds;
+                } else if partial <= 2 {
+                    sprite = spr_ui_hud_health_mana_ball_half;
+                } else if partial <= 3 {
+                    sprite = spr_ui_hud_health_mana_ball_onequarter;
+                }
+            }
+            ANCHOR.sprite(self.cost_zone)
+                .set_sprite(sprite)
+                .set_x(pos)
+                .set_align(Align.Center, Align.Middle)
+        }
 '''
 marker  = "mmapi_spell_menu_cost"
 provides = ["spells.cost"]
@@ -1845,9 +2231,16 @@ replace = '''
             MAX_SKILL_LEVEL_COSTS[skill],
         );
 
+        try {
+            var __mmapi_new_skill_level = ARI.level(skill);
+            if (old_skill_level < __mmapi_new_skill_level) {
+                mmapi_emit("player.skill_leveled", { skill: skill, old_level: old_skill_level, new_level: __mmapi_new_skill_level, silent: silent });
+            }
+        } catch (__mmapi_player_skill_leveled) {} // mmapi_player_run_skill_leveled
+
         if !silent && old_skill_level < ARI.level(skill) {'''
 marker  = "mmapi_player_run_xp_delta_filters"
-provides = ["player.xp_delta"]
+provides = ["player.xp_delta", "player.skill_leveled"]
 
 [[seam]]
 id      = "player_renown_delta"
@@ -1956,14 +2349,10 @@ id      = "dungeon_floor_bracket"
 file    = "gml/scripts/GameplaySystems/Dungeon/enter_dungeon.gml"
 anchor  = '''
     //
-    GS_MINES_FLOOR = game_stats_current_mines_floor();
-    GL_MINES_FLOOR_WRITTEN = false;
     build_dungeon_room(GRID);
     DUNGEON_RUNNER.on_room_start();'''
 replace = '''
     //
-    GS_MINES_FLOOR = game_stats_current_mines_floor();
-    GL_MINES_FLOOR_WRITTEN = false;
     var __mmapi_dungeon_ctx = {}; // mmapi_dungeon_run_floor_enter
     try { __mmapi_dungeon_ctx.runner = DUNGEON_RUNNER; } catch (__mmapi_dctx_b0) {}
     try { __mmapi_dungeon_ctx.floor = DUNGEON_FLOOR; } catch (__mmapi_dctx_b1) {}
@@ -1996,15 +2385,15 @@ indent  = 8
 marker  = "mmapi_dungeon_run_ladder_spawn_guards"
 
 [[seam]]
-id      = "dungeon_side_room_chance"
+id      = "dungeon_side_room_range"
 file    = "gml/scripts/GameplaySystems/Dungeon/DungeonRunner.gml"
 target  = { fn = "try_create_side_room", at = "head" }
 op      = "filter"
-hook    = "dungeon.side_room_chance"
-ctx     = "{ impl: impl, is_ritual: impl == DungeonImpl.Ritual, max_flr: max_flr }"
-var     = "chance_val"
+hook    = "dungeon.side_room_range"
+ctx     = "{ impl: impl, is_ritual: impl == DungeonImpl.Ritual, start_floor: start_floor }"
+var     = "range"
 indent  = 4
-marker  = "mmapi_dungeon_run_side_room_chance_filters"
+marker  = "mmapi_dungeon_run_side_room_range_filters"
 
 [[seam]]
 id      = "dungeon_treasure_chest"
@@ -2367,56 +2756,10 @@ replace = '''
 marker  = "mmapi_interact_run_action_guards"
 provides = ["interact.ladder_down_action"]
 
-[[engine_fix]]
-name    = "game_step_begin_installs"
-file    = "gml/objects/Game.gml"
-anchor  = '''
-        step_begin: function() {
-            TICK++;'''
-replace = '''
-        step_begin: function() {
-            mmapi_run_installs();
-            TICK++;'''
-marker  = "mmapi_run_installs();"
-
-[[engine_fix]]
-name    = "tarball_chop_burn_flag"
-file    = "gml/objects/Combat/obj_damage_tarball.gml"
-anchor  = '''
-                                    var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, true);
-                                    if success && has_flag(self.flags, CombatFlag.Fire) {
-'''
-replace = '''
-                                    var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, has_flag(self.flags, CombatFlag.Fire)); // mmapi_tarball_chop_burn_flag
-                                    if success && has_flag(self.flags, CombatFlag.Fire) {
-'''
-marker  = "mmapi_tarball_chop_burn_flag"
-
-[[engine_fix]]
-name    = "max_crafts_zero_component"
-file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
-anchor  = '''
-        for (var i = 0; i < recipe.count(); i++) {
-            var comp = recipe.get(i);
-            var denominator = get_modified_component_count(comp, self.context, item.item_id);
-            var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
-'''
-replace = '''
-        for (var i = 0; i < recipe.count(); i++) {
-            var comp = recipe.get(i);
-            var denominator = get_modified_component_count(comp, self.context, item.item_id);
-            if denominator == 0 { continue; } // mmapi_max_crafts_zero_component
-            var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
-'''
-marker  = "mmapi_max_crafts_zero_component"
-
-# The remaining entries are appended after the earlier ones on purpose. Catalog
-# order is apply order, and two of them stack onto files already seamed above
-# (dialogue_play_guard onto ConversationDriver.gml after dialogue_path, and
-# game_save_guard onto SaveGame.gml after save_game_saving). Their anchors are
-# pristine text that the earlier seams' replaces re-emit verbatim, so they match
-# exactly once against both the pristine file and the staged file.
-
+# This entry depends on dialogue_path, an earlier seam in the same file. Its
+# anchor is pristine text that the dialogue_path replace re-emits verbatim, so
+# the anchor matches exactly once against both the pristine and the staged
+# file.
 [[seam]]
 id      = "dialogue_play_guard"
 file    = "gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml"
@@ -2541,6 +2884,10 @@ ctx     = "{ color: color, sprite: sprite }"
 on_veto = "return;"
 marker  = "mmapi_player_run_heal_vfx_guards"
 
+# This entry depends on save_game_saving, an earlier seam in the same file.
+# Its anchor is pristine text that the save_game_saving replace re-emits
+# verbatim, so the anchor matches exactly once against both the pristine and
+# the staged file.
 [[seam]]
 id      = "game_save_guard"
 file    = "gml/scripts/Serialization/SaveGame.gml"
@@ -2662,6 +3009,36 @@ marker  = "mmapi_dialogue_run_npc_blip_filters"
 provides = ["dialogue.npc_blip"]
 
 [[seam]]
+id      = "dialogue_romance_prompt_guard"
+file    = "gml/scripts/UI/Anchor/Menus/TextboxMenu.gml"
+anchor  = '''
+                if !ARI.disable_break_ups && (ARI.spouse() != undefined || ARI.fiance() != undefined) {
+                    self.set_sprites_from_key("spr_ui_dialogue_box_grey");
+                    self.blackboard.insert("stay_locked", true);
+                    self.tab.set_key_sprite_target(self.tab);
+                    self.tab.lock();
+                }'''
+replace = '''
+                var __mmapi_romance_lock = !ARI.disable_break_ups && (ARI.spouse() != undefined || ARI.fiance() != undefined);
+                if (!__mmapi_romance_lock) {
+                    try {
+                        var __mmapi_romance_menu = ANCHOR.get_menu(Menu.Textbox);
+                        var __mmapi_romance_speaker = (__mmapi_romance_menu == undefined) ? undefined : (__mmapi_romance_menu.requested_speaker ?? __mmapi_romance_menu.current_speaker);
+                        var __mmapi_romance_npc = (__mmapi_romance_speaker == undefined) ? undefined : try_string_to_npc_id(__mmapi_romance_speaker.identity);
+                        var __mmapi_romance_path = (__mmapi_romance_menu == undefined || __mmapi_romance_menu.driver == undefined) ? undefined : __mmapi_romance_menu.driver.conversation_name;
+                        if (mmapi_check_guards("dialogue.romance_prompt_guard", { npc_id: __mmapi_romance_npc, speaker: __mmapi_romance_speaker, path: __mmapi_romance_path }) == false) { __mmapi_romance_lock = true; } // mmapi_dialogue_run_romance_prompt_guards
+                    } catch (__mmapi_dialogue_romance_prompt_guard) {}
+                }
+                if __mmapi_romance_lock {
+                    self.set_sprites_from_key("spr_ui_dialogue_box_grey");
+                    self.blackboard.insert("stay_locked", true);
+                    self.tab.set_key_sprite_target(self.tab);
+                    self.tab.lock();
+                }'''
+marker   = "mmapi_dialogue_run_romance_prompt_guards"
+provides = ["dialogue.romance_prompt_guard"]
+
+[[seam]]
 id      = "ui_menu_opened"
 file    = "gml/scripts/UI/Anchor/Anchor.gml"
 context_before = '''
@@ -2758,6 +3135,38 @@ indent  = 8
 catch_var = "__mmapi_ui_vitals_refreshed"
 marker  = "mmapi_ui_run_vitals_refreshed"
 
+# The crafting menu's rebuild tail. select_category() resets left_pilot, frees
+# the old scroller, creates a new one, and refills it with the category's
+# recipe grid, so any scroll position or left_pilot selection from before the
+# call is already gone when this fires. The emit hands handlers the rebuilt menu
+# (ctx.menu carries scroller, left_pilot, and category_index) so they can put
+# the view back after the post-craft refresh. The anchor is pristine text that
+# the file's other entries (crafting_max_crafts, ui_item_node_crafting_menu,
+# and the max_crafts_zero_component engine fix) never touch, so it matches
+# exactly once against the staged file too.
+[[seam]]
+id      = "ui_crafting_refreshed"
+file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
+context_before = '''
+                        if !self.check_item_craftable(item, 1) {
+                            icon.set_alpha(0.5);
+                        }
+                    }
+                }
+            }
+        }
+'''
+context_after = '''
+    }
+
+    function reset_right_page() {'''
+op      = "emit"
+hook    = "ui.menu_refreshed"
+ctx     = "{ menu: self, kind: self.type }"
+indent  = 8
+catch_var = "__mmapi_ui_crafting_refreshed"
+marker  = "mmapi_ui_run_crafting_refreshed"
+
 [[seam]]
 id      = "input_take_press"
 file    = "gml/objects/system/parents/par_interactable.gml"
@@ -2805,6 +3214,155 @@ ctx     = "self"
 indent  = 16
 marker  = "mmapi_animal_run_pet_put_down"
 
+# The animal production pair hoists the two decisions of Stable.on_new_day()'s
+# daily production step into filtered locals, in the style of
+# fishing_should_reel. animal_production_gate filters the outer accrual gate
+# (!animal.is_baby() && is_happy), so a mod can let unhappy animals or babies
+# accrue progress and reach the ready check. The CloseBond heart bonuses read
+# the raw is_happy above the seam and are unaffected. animal_product_ready
+# filters the counter comparison after the increment. A final true releases the
+# untouched vanilla drop block, reset included. A final false leaves the
+# incremented counter climbing. The anchors are disjoint and each replace
+# preserves the other's anchor text, so the pair needs no depends_on edge.
+[[seam]]
+id      = "animal_production_gate"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+            if !animal.is_baby() && is_happy {
+                //
+                animal.production_days += 1;'''
+replace = '''
+            var __mmapi_animal_production_gate = !animal.is_baby() && is_happy;
+            try { __mmapi_animal_production_gate = mmapi_apply_filters("animal.production_gate", __mmapi_animal_production_gate, { animal: animal, stable: self, production: production, is_happy: is_happy }); } catch (__mmapi_animal_production_gate_error) {} // mmapi_stable_run_production_gate_filters
+            if (__mmapi_animal_production_gate) {
+                //
+                animal.production_days += 1;'''
+marker  = "mmapi_stable_run_production_gate_filters"
+provides = ["animal.production_gate"]
+
+[[seam]]
+id      = "animal_product_ready"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+                if animal.production_days >= production.days_to_produce {
+                    animal.production_days = 0;'''
+replace = '''
+                var __mmapi_animal_product_ready = animal.production_days >= production.days_to_produce;
+                try { __mmapi_animal_product_ready = mmapi_apply_filters("animal.product_ready", __mmapi_animal_product_ready, { animal: animal, stable: self, production: production, is_happy: is_happy }); } catch (__mmapi_animal_product_ready_error) {} // mmapi_stable_run_product_ready_filters
+                if (__mmapi_animal_product_ready) {
+                    animal.production_days = 0;'''
+marker  = "mmapi_stable_run_product_ready_filters"
+provides = ["animal.product_ready"]
+
+# animal.breeding_result dispatches from both fetus push sites in
+# Stable.on_new_day(), one seam per site, as animal.pet does. Each replace
+# hoists the roll into a local, filters it, and pushes the accepted result. A
+# non-struct return is dropped, following the
+# request_board_fetch_pool defensive style. The base site passes is_gemini
+# false and the GeminiSeason extra push passes is_gemini true. The deserialize
+# path pushes saved fetuses with a different body, so the anchors stay unique.
+[[seam]]
+id      = "animal_breeding_result"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+            self.incubating_fetuses.push({
+                male_parent: male_idx,
+                female_parent: female_idx,
+                days: -1,
+                animal: roll_animal_breeding(female.kind, female, male),
+            });'''
+replace = '''
+            var __mmapi_animal_breeding_roll = roll_animal_breeding(female.kind, female, male);
+            try {
+                var __mmapi_animal_breeding_filtered = mmapi_apply_filters("animal.breeding_result", __mmapi_animal_breeding_roll, { female: female, male: male, stable: self, is_gemini: false }); // mmapi_stable_run_breeding_result_filters
+                if (is_struct(__mmapi_animal_breeding_filtered)) {
+                    __mmapi_animal_breeding_roll = __mmapi_animal_breeding_filtered;
+                }
+            } catch (__mmapi_animal_breeding_error) {}
+            self.incubating_fetuses.push({
+                male_parent: male_idx,
+                female_parent: female_idx,
+                days: -1,
+                animal: __mmapi_animal_breeding_roll,
+            });'''
+marker  = "mmapi_stable_run_breeding_result_filters"
+provides = ["animal.breeding_result"]
+
+[[seam]]
+id      = "animal_breeding_result_gemini"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+                self.incubating_fetuses.push({
+                    male_parent: male_idx,
+                    female_parent: female_idx,
+                    days: -1,
+                    animal: roll_animal_breeding(female.kind, female, male),
+                });
+                GAME_STATS.perks[$ perk_to_string(Perk.GeminiSeason)] += 1;'''
+replace = '''
+                var __mmapi_animal_breeding_roll_gem = roll_animal_breeding(female.kind, female, male);
+                try {
+                    var __mmapi_animal_breeding_filtered_gem = mmapi_apply_filters("animal.breeding_result", __mmapi_animal_breeding_roll_gem, { female: female, male: male, stable: self, is_gemini: true }); // mmapi_stable_run_breeding_result_gemini_filters
+                    if (is_struct(__mmapi_animal_breeding_filtered_gem)) {
+                        __mmapi_animal_breeding_roll_gem = __mmapi_animal_breeding_filtered_gem;
+                    }
+                } catch (__mmapi_animal_breeding_gem_error) {}
+                self.incubating_fetuses.push({
+                    male_parent: male_idx,
+                    female_parent: female_idx,
+                    days: -1,
+                    animal: __mmapi_animal_breeding_roll_gem,
+                });
+                GAME_STATS.perks[$ perk_to_string(Perk.GeminiSeason)] += 1;'''
+marker  = "mmapi_stable_run_breeding_result_gemini_filters"
+provides = ["animal.breeding_result"]
+
+# animal.product_drops filters both product lists in one struct value, in the
+# defensive re-read style of request_board_fetch_pool. The dispatch sits after
+# the Eggstra roll and before the stats records and grid pushes, so the stats
+# see the final lists. Handlers may mutate the live Lists in place, and a
+# partial or non-struct return keeps the engine lists per field.
+[[seam]]
+id      = "animal_product_drops"
+file    = "gml/scripts/GameplaySystems/Ranching/Stable.gml"
+anchor  = '''
+                    //
+                    var pos = trellis_point(self.building.prototype.stall_points.get(i));'''
+replace = '''
+                    var __mmapi_animal_product_drops = { normal_products: normal_products, golden_products: golden_products };
+                    try {
+                        __mmapi_animal_product_drops = mmapi_apply_filters("animal.product_drops", __mmapi_animal_product_drops, { animal: animal, stable: self, production: production, production_tier: my_tier }); // mmapi_stable_run_product_drops_filters
+                    } catch (__mmapi_animal_product_drops_error) {}
+                    if (!is_struct(__mmapi_animal_product_drops)) {
+                        __mmapi_animal_product_drops = {};
+                    }
+                    if (__mmapi_animal_product_drops[$ "normal_products"] != undefined) {
+                        normal_products = __mmapi_animal_product_drops.normal_products;
+                    }
+                    if (__mmapi_animal_product_drops[$ "golden_products"] != undefined) {
+                        golden_products = __mmapi_animal_product_drops.golden_products;
+                    }
+                    //
+                    var pos = trellis_point(self.building.prototype.stall_points.get(i));'''
+marker  = "mmapi_stable_run_product_drops_filters"
+provides = ["animal.product_drops"]
+
+# animal.adoption_variant_unlocked filters the adoption menu's unlock read at
+# the one line every gate derives from, so the name reveal, icon blackout,
+# entry fade, and buyability stay coherent. has_gold and has_room are already
+# computed at the site and ride along in ctx. The purchase path is untouched
+# and still writes real unlocks through initialize_new_animal_for_ari().
+[[seam]]
+id      = "adoption_variant_unlocked"
+file    = "gml/scripts/UI/Anchor/Menus/AdoptionMenu.gml"
+anchor  = '''
+            var unlocked = ARI.animal_variant_unlocks[animal_kind].contains(variant.key);'''
+replace = '''
+            var unlocked = ARI.animal_variant_unlocks[animal_kind].contains(variant.key);
+            try { unlocked = mmapi_apply_filters("animal.adoption_variant_unlocked", unlocked, { animal_kind: animal_kind, variant: variant, has_gold: has_gold, has_room: has_room }); } catch (__mmapi_adoption_variant_error) {} // mmapi_adoption_run_variant_unlocked_filters'''
+marker  = "mmapi_adoption_run_variant_unlocked_filters"
+provides = ["animal.adoption_variant_unlocked"]
+
 # camera.culls_processed emits at the end of Camera.process_culls, right after instance_activate_region
 # reactivates the in-view node renderers. A text seam (not target/at=after) because the anchor is the
 # multi-line instance_activate_region(...) call: instance_activate_region is unique to this function,
@@ -2834,6 +3392,750 @@ replace = '''
 marker  = "mmapi_camera_run_culls_processed"
 provides = ["camera.culls_processed"]
 
+[[seam]]
+id      = "ui_spawn_tutorial_guard"
+file    = "gml/scripts/UI/Anchor/anchor_utils.gml"
+target  = { fn = "spawn_tutorial", at = "head" }
+op      = "guard"
+hook    = "ui.spawn_tutorial_guard"
+ctx     = "{ tutorial: tutorial }"
+on_veto = "return undefined;"
+marker  = "mmapi_ui_spawn_tutorial_guard"
+
+[[seam]]
+id      = "museum_donate_item"
+file    = "gml/scripts/Museum.gml"
+target  = { fn = "donate_item_to_museum", at = "head" }
+op      = "emit"
+hook    = "museum.donate_item"
+ctx     = "{ item_id: item_id }"
+marker  = "mmapi_museum_donate_item"
+
+[[seam]]
+id      = "player_pass_out"
+file    = "gml/scripts/Player/pass_out.gml"
+target  = { fn = "pass_out", at = "after", anchor = "end_day();" }
+op      = "emit"
+hook    = "player.pass_out"
+ctx     = "{ faint: faint }"
+marker  = "mmapi_player_pass_out"
+
+[[seam]]
+id      = "player_died"
+file    = "gml/objects/characters/obj_ari.gml"
+target  = { fn = "should_die", at = "after", anchor = '''MIST.run_scene("dying");''' }
+op      = "emit"
+hook    = "player.died"
+ctx     = "self"
+indent  = 28
+marker  = "mmapi_player_died"
+
+# renown.level_gained and renown.rank_gained emit from one text seam inside
+# set_renown(), below its gains-only early return: only writes that raise the
+# level reach the emits, matching the hooks' names. A text seam because the
+# rank emit needs the boundary comparison, which the template ops cannot express.
+[[seam]]
+id      = "renown_gains"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+anchor  = '''
+        if sign(new_levels) != 1 {
+            return;
+        }
+
+        var rewards_len = RENOWN.rewards.count();'''
+replace = '''
+        if sign(new_levels) != 1 {
+            return;
+        }
+
+        try { mmapi_emit("renown.level_gained", { old_level: level, new_level: new_level }); } catch (__mmapi_renown_level_gained) {} // mmapi_renown_run_gains
+        try {
+            var __mmapi_old_rank = min(level div RENOWN.levels_per_rank, RENOWN.ranks.count() - 1);
+            var __mmapi_new_rank = min(new_level div RENOWN.levels_per_rank, RENOWN.ranks.count() - 1);
+            if (__mmapi_old_rank != __mmapi_new_rank) {
+                mmapi_emit("renown.rank_gained", { old_rank: __mmapi_old_rank, new_rank: __mmapi_new_rank });
+            }
+        } catch (__mmapi_renown_rank_gained) {}
+
+        var rewards_len = RENOWN.rewards.count();'''
+marker  = "mmapi_renown_run_gains"
+provides = ["renown.level_gained", "renown.rank_gained"]
+
+# quest.complete emits below QuestLog.complete()'s validation early-return (anchored
+# on the first T2R fact write) rather than at head, so a call for a quest that is not
+# active or not finished never fires. finished_quest is in scope and non-undefined there.
+[[seam]]
+id      = "quest_complete"
+file    = "gml/scripts/GameplaySystems/Quests/QuestLog.gml"
+target  = { fn = "complete", at = "before", anchor = 'T2R.write(format("quest_{}_in_progress", quest_name), false);' }
+op      = "emit"
+hook    = "quest.complete"
+ctx     = "{ quest_name: quest_name, quest: finished_quest }"
+indent  = 8
+marker  = "mmapi_quest_complete"
+
+# The relationships journal builds one scroller row per listed NPC each time
+# the page is constructed, and each journal tab switch constructs the page
+# fresh. The emit lands at the end of the row build so every vanilla node is
+# in place. The pristine chain discards the trailing gift checkbox node, and
+# the ctx wants that node, so a text seam captures it into a local before the
+# emit. Value capture is what the text form is for.
+[[seam]]
+id      = "ui_relationship_row_built"
+file    = "gml/scripts/UI/Anchor/Menus/RelationshipsMenu.gml"
+anchor  = '''
+        ANCHOR.sprite(gift_icon)
+            .set_sprite(!npc_data.gift_flag ? spr_ui_generic_checkbox_on : spr_ui_generic_checkbox_off)
+            .set_align(Align.RightOut, Align.Middle)
+            .set_x(2)
+'''
+replace = '''
+        var gift_check = ANCHOR.sprite(gift_icon)
+            .set_sprite(!npc_data.gift_flag ? spr_ui_generic_checkbox_on : spr_ui_generic_checkbox_off)
+            .set_align(Align.RightOut, Align.Middle)
+            .set_x(2)
+
+        try {
+            mmapi_emit("ui.relationship_row_built", { // mmapi_ui_relationship_row_built
+                menu: self,
+                element: element,
+                npc_id: npc_id,
+                npc: npc_data,
+                portrait: npc,
+                hearts: hearts,
+                bar: bar,
+                talk_icon: talk_icon,
+                talk_check: talk_check,
+                gift_icon: gift_icon,
+                gift_check: gift_check,
+            });
+        } catch (__mmapi_ui_relationship_row_built) {}
+'''
+marker  = "mmapi_ui_relationship_row_built"
+provides = ["ui.relationship_row_built"]
+
+# The entity-creation trio emits from the engine's three spawn functions, not
+# from the create events they wrap. Each spawn function is its object's only
+# engine creation site, and each finishes construction work after the create
+# event returns. spawn_npc()'s initialize(npc) attaches me and spawns the FSM,
+# and spawn_animal() writes animal.instance. An in-create emit would fire
+# before that work, and for NPCs also before obj_caldarus and obj_elsie
+# register their own create-event interactions. The spawn-site emits fire once
+# per spawn with the instance fully wired, and interactions a handler registers
+# land after every vanilla registration, so contested inputs keep resolving to
+# the vanilla interaction (except the take_press = false partner kiss, which
+# never consumes the press).
+[[seam]]
+id      = "npc_created"
+file    = "gml/scripts/GameplaySystems/NPCs/NpcDatabase.gml"
+target  = { fn = "spawn_npc", at = "after", anchor = "new_inst.initialize(npc);" }
+op      = "emit"
+hook    = "npc.created"
+ctx     = "new_inst"
+marker  = "mmapi_npc_created"
+
+# spawn_pet() discards the created instance, so a text seam captures it for
+# the emit. Every engine pet spawn routes through spawn_pet(), the Mist
+# cutscene actor spawn included.
+[[seam]]
+id      = "pet_created"
+file    = "gml/scripts/Pet.gml"
+anchor  = '''
+function spawn_pet(override_pet_initialization) {
+    instance_create_layer(0, 0, "Instances", obj_pet, { override_pet_initialization });
+}'''
+replace = '''
+function spawn_pet(override_pet_initialization) {
+    var __mmapi_pet_inst = instance_create_layer(0, 0, "Instances", obj_pet, { override_pet_initialization });
+    try { mmapi_emit("pet.created", __mmapi_pet_inst); } catch (__mmapi_pet_created) {} // mmapi_pet_created
+}'''
+marker  = "mmapi_pet_created"
+provides = ["pet.created"]
+
+# The token anchor is spawn_animal()'s whole assignment statement, so the emit
+# lands after animal.instance is written and ctx.me.instance is coherent.
+[[seam]]
+id      = "animal_created"
+file    = "gml/scripts/GameplaySystems/Ranching/AnimalUtils.gml"
+target  = { fn = "spawn_animal", at = "after", anchor = 'animal.instance = instance_create_layer(animal.location_position.pos.x, animal.location_position.pos.y, "Instances", obj_player_animal, { me: animal, });' }
+op      = "emit"
+hook    = "animal.created"
+ctx     = "animal.instance"
+marker  = "mmapi_animal_created"
+
+# Resolves the opened chest's loot table from the prototype's fish_chest key
+# when the item is not one of the five hardcoded cases, then announces the
+# open. FISH_CHEST already holds every merged chest_tables entry, so the
+# lookup is a struct read. The pristine impossible() survives for an unknown
+# item and for a key that names no table. The emit lands after the table is
+# resolved and before the loot roll, so handlers fire for vanilla and modded
+# chests alike while the drops are still pending. This entry also carries the
+# fish_chest data contract together with the fish_chest_item_use and
+# fish_chest_custom_rarity engine fixes.
+[[seam]]
+id      = "fish_chest_table_lookup"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                            case ItemId.AbyssalChest:
+                                table = FISH_CHEST.abyss;
+                                break;
+                            default: impossible("unexpected `OpenChest` use in `{}`", self.live_item);
+                        }
+'''
+replace = '''
+                            case ItemId.AbyssalChest:
+                                table = FISH_CHEST.abyss;
+                                break;
+                            default: // mmapi_fish_chest_table_lookup
+                                var __mmapi_fish_chest_key = self.live_item.prototype[$ "fish_chest"];
+                                if (__mmapi_fish_chest_key != undefined) {
+                                    table = FISH_CHEST[$ __mmapi_fish_chest_key];
+                                }
+                                if (table == undefined) {
+                                    impossible("unexpected `OpenChest` use in `{}`", self.live_item);
+                                }
+                        }
+                        try { mmapi_emit("items.chest_opened", { live_item: self.live_item, table: table }); } catch (__mmapi_items_chest_opened) {}
+'''
+marker  = "mmapi_fish_chest_table_lookup"
+provides = ["items.chest_opened"]
+
+[[seam]]
+id      = "furniture_preview_sprite"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
+context_before = '''
+    if seasonal_override != undefined {
+        spr = seasonal_override;
+    }
+'''
+context_after = '''
+    furniture_renderer.sprite_index = spr;
+'''
+op      = "filter"
+hook    = "furniture.preview_sprite"
+ctx     = '{ object_id: object_id, prototype: proto, cardinal_index: calc_rot, x: xx, y: yy, source: "main_sprite" }'
+var     = "spr"
+indent  = 4
+try_catch = true
+catch_var = "__mmapi_preview_sprite"
+marker  = "mmapi_furniture_preview_sprite"
+
+# The preview writes the floor sprite straight off the prototype into the previewer's
+# bottom renderable, with no local to filter, so this is a text seam that introduces one.
+# It applies no winter_floor_sprite override because pristine applies none here either:
+# the seam filters exactly the value the engine would have drawn.
+[[seam]]
+id      = "furniture_preview_floor_sprite"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
+anchor  = '''
+    if proto.cardinal_data[calc_rot].floor_sprite != undefined {
+        furniture_renderer.bottom.animation = proto.cardinal_data[calc_rot].floor_sprite;
+    }
+'''
+replace = '''
+    if proto.cardinal_data[calc_rot].floor_sprite != undefined {
+        var __mmapi_preview_floor = proto.cardinal_data[calc_rot].floor_sprite; // mmapi_furniture_preview_floor_sprite
+        try { __mmapi_preview_floor = mmapi_apply_filters("furniture.preview_sprite", __mmapi_preview_floor, { object_id: object_id, prototype: proto, cardinal_index: calc_rot, x: xx, y: yy, source: "floor_sprite" }); } catch (__mmapi_preview_floor_filter) {}
+        furniture_renderer.bottom.animation = __mmapi_preview_floor;
+    }
+'''
+marker  = "mmapi_furniture_preview_floor_sprite"
+provides = ["furniture.preview_sprite"]
+
+# The end-of-day calendar gathers tomorrow's events into menu.events and hands
+# the List to build_notifications() for the rows under the calendar. The filter
+# sits between the two, at the one point the List is complete and nothing has
+# read it yet. build_notifications() draws the rows from it, and the fade-in
+# gate below tests its is_empty() afterwards, so a handler's edit reaches both.
+# The value is the List itself, re-read defensively in the
+# request_board_fetch_pool style. A result that is not a struct, or whose
+# count() cannot be probed, keeps the engine's List.
+[[seam]]
+id      = "ui_eod_calendar_events"
+file    = "gml/scripts/UI/Anchor/Menus/EodMenu.gml"
+anchor  = '''
+        self.set_calendar_time(CALENDAR.time);
+
+        self.build_notifications(target_date);
+'''
+replace = '''
+        self.set_calendar_time(CALENDAR.time);
+
+        var __mmapi_eod_events = self.events;
+        try {
+            __mmapi_eod_events = mmapi_apply_filters("ui.eod_calendar_events", __mmapi_eod_events, { menu: self, target_date: target_date }); // mmapi_ui_eod_calendar_events_filter
+        } catch (__mmapi_ui_eod_calendar_events) {}
+        var __mmapi_eod_events_ok = false;
+        try {
+            __mmapi_eod_events_ok = is_struct(__mmapi_eod_events) && is_numeric(__mmapi_eod_events.count());
+        } catch (__mmapi_ui_eod_calendar_events_count) {}
+        if (__mmapi_eod_events_ok) {
+            self.events = __mmapi_eod_events;
+        }
+        self.build_notifications(target_date);
+'''
+marker  = "mmapi_ui_eod_calendar_events_filter"
+provides = ["ui.eod_calendar_events"]
+
+# The companion edit for ui.eod_calendar_events. build_notifications() resolves
+# each entry's icon, key, and npcs through a switch over the CalendarEvent enum
+# with no default, so an entry the filter added would reach the row build with
+# all three undefined. The default branch reads them off the entry struct
+# instead, which is how a custom entry declares its row. Vanilla entries always
+# match a case, so the branch never runs with zero handlers.
+[[seam]]
+id      = "ui_eod_notification_custom_entry"
+file    = "gml/scripts/UI/Anchor/Menus/EodMenu.gml"
+anchor  = '''
+                    break;
+            }
+
+
+            var text = ANCHOR.text(self.notification_root)
+'''
+replace = '''
+                    break;
+                default: // mmapi_ui_eod_notification_custom_entry
+                    icon = event[$ "icon"];
+                    key = event[$ "key"];
+                    npcs = event[$ "npcs"];
+                    break;
+            }
+
+
+            var text = ANCHOR.text(self.notification_root)
+'''
+marker  = "mmapi_ui_eod_notification_custom_entry"
+provides = ["ui.eod_calendar_events"]
+
+# The factory give-item interaction pops the requested item, rolls the tier
+# reward, drops it, rolls the apiary honeycomb bonus, and drops that. The filter
+# needs the complete list before the first drop, so the replace gathers both
+# rolls into one array first, in their pristine order, filters it, and then
+# drops each element through its own drop_item() call, which keeps the per-drop
+# sound and the items.dropped emit matched call by call with vanilla. The hoist moves
+# the drop scatter draws behind the honeycomb roll, which is the one
+# zero-handler difference and changes no outcome distribution. A result that is
+# not an array keeps the rolled list.
+[[seam]]
+id      = "factory_product_drops"
+file    = "gml/scripts/GameplaySystems/Data/Grid/Furniture.gml"
+anchor  = '''
+                    var arr = self.prototype.factory.rewards_map[self.production_tier];
+                    ARI.inventory.slot(ARI.held_item_index).pop();
+                    drop_item(
+                        arr[irandom(array_length(arr) - 1)],
+                        self.renderer.x,
+                        self.renderer.y
+                    );
+
+                    if self.prototype.object_id == ObjectId.Apiary && chance_percent(15) {
+                        drop_item(
+                            ItemId.Honeycomb,
+                            self.renderer.x,
+                            self.renderer.y
+                        );
+                    }
+
+                    TANGO.play("SoundEffects/Inventory/RewardDropAddition");
+'''
+replace = '''
+                    var arr = self.prototype.factory.rewards_map[self.production_tier];
+                    ARI.inventory.slot(ARI.held_item_index).pop();
+                    var __mmapi_factory_rolled = [arr[irandom(array_length(arr) - 1)]];
+                    if self.prototype.object_id == ObjectId.Apiary && chance_percent(15) {
+                        array_push(__mmapi_factory_rolled, ItemId.Honeycomb);
+                    }
+                    var __mmapi_factory_products = __mmapi_factory_rolled;
+                    try {
+                        __mmapi_factory_products = mmapi_apply_filters("factory.product_drops", __mmapi_factory_products, { node: self, production_request: self.production_request, production_tier: self.production_tier }); // mmapi_factory_run_product_drops_filters
+                    } catch (__mmapi_factory_product_drops) {}
+                    if (!is_array(__mmapi_factory_products)) {
+                        __mmapi_factory_products = __mmapi_factory_rolled;
+                    }
+                    for (var __mmapi_factory_i = 0; __mmapi_factory_i < array_length(__mmapi_factory_products); __mmapi_factory_i++) {
+                        drop_item(
+                            __mmapi_factory_products[__mmapi_factory_i],
+                            self.renderer.x,
+                            self.renderer.y
+                        );
+                    }
+
+                    TANGO.play("SoundEffects/Inventory/RewardDropAddition");
+'''
+marker  = "mmapi_factory_run_product_drops_filters"
+provides = ["factory.product_drops"]
+
+[[seam]]
+id      = "player_perk_acquired"
+file    = "gml/scripts/GameplaySystems/Player/Ari.gml"
+target  = { fn = "acquire_perk", at = "after", anchor = "refresh_achievements([Requirement.HasAtLeastOneTierFivePerkPerCategory]);" }
+op      = "emit"
+hook    = "player.perk_acquired"
+ctx     = "{ perk: perk }"
+indent  = 8
+marker  = "mmapi_player_perk_acquired"
+
+[[seam]]
+id      = "player_perk_purchased"
+file    = "gml/scripts/UI/Anchor/Menus/DragonshrineMenu.gml"
+target  = { fn = "purchase_entry", at = "after", anchor = "ARI.acquire_perk(entry.perk);" }
+op      = "emit"
+hook    = "player.perk_purchased"
+ctx     = "{ perk: entry.perk }"
+indent  = 8
+marker  = "mmapi_player_perk_purchased"
+
+[[seam]]
+id      = "ui_shrine_entry_is_acquired"
+file    = "gml/scripts/UI/Anchor/Menus/DragonshrineMenu.gml"
+target  = { fn = "entry_is_acquired" }
+op      = "wrap"
+hook    = "ui.shrine_entry_is_acquired"
+ctx     = "{ perk: entry.perk }"
+blank_before = true
+catch_var = "__mmapi_shrine_acquired"
+marker  = "mmapi_ui_shrine_entry_is_acquired"
+
+# The basket total filter carries a type guard. The total is compared and
+# subtracted right after the site's catch closes, so a non-numeric handler
+# value would survive the catch and throw at the receipt's affordability
+# compare, outside any isolation. The guard only binds on handler output
+# vanilla never produces, so with zero handlers the pristine lines around
+# the added block are byte-identical and the total is untouched.
+[[seam]]
+id      = "store_basket_cost"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+anchor  = '''
+                return (slot.item.store_value() * self.price_markup) * slot.count;
+            }
+        });
+        self.total_count
+'''
+replace = '''
+                return (slot.item.store_value() * self.price_markup) * slot.count;
+            }
+        });
+        try {
+            var __mmapi_basket_cost = mmapi_apply_filters("store.basket_cost", self.basket_total, { menu: self }); // mmapi_store_run_basket_cost_filters
+            if (is_real(__mmapi_basket_cost) || is_int64(__mmapi_basket_cost)) {
+                self.basket_total = __mmapi_basket_cost;
+            }
+        } catch (__mmapi_basket_cost_err) {}
+        self.total_count
+'''
+marker   = "mmapi_store_run_basket_cost_filters"
+provides = ["store.basket_cost"]
+
+[[seam]]
+id      = "items_store_price"
+file    = "gml/scripts/GameplaySystems/Items/LiveItem.gml"
+target  = { fn = "store_value" }
+op      = "wrap"
+hook    = "items.store_price"
+ctx     = '{ item: self, menu: global[$ "__mmapi_store_menu"] ?? ANCHOR.get_menu(Menu.Store) }'
+blank_before = true
+catch_var = "__mmapi_items_store_price"
+marker  = "mmapi_items_store_price"
+
+[[seam]]
+id      = "store_purchase"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+context_before = '''
+                if idx == undefined {
+                    item_list_of_lists.push(List(item));
+                } else {
+                    item_list_of_lists.get(idx).push(item);
+                }
+            }
+
+'''
+context_after = '''
+            item_list_of_lists.for_each(function(item_data) {
+                ARI.give_item(item_data.first(), item_data.count(), true, false);
+            });
+            ARI.modify_gold(-self.basket_total);
+'''
+op      = "emit"
+hook    = "store.purchase"
+ctx     = "{ menu: self, items: item_list_of_lists, total: self.basket_total }"
+indent  = 12
+marker  = "mmapi_store_run_purchase"
+
+[[seam]]
+id      = "store_stock"
+file    = "gml/scripts/Stores.gml"
+target  = { fn = "create_store_stock" }
+op      = "wrap"
+hook    = "store.stock"
+ctx     = '{ store: store, menu: global[$ "__mmapi_store_menu"] }'
+blank_before = true
+catch_var = "__mmapi_store_stock"
+marker  = "mmapi_store_stock"
+
+# The StoreMenu prices its shelf and builds its stock inside init(), which the
+# constructor calls before ANCHOR pushes the menu onto open_menus, so
+# ANCHOR.get_menu cannot name the menu during that pass. This companion edit
+# holds the menu in a framework global for exactly the span of init(), and the
+# two wraps whose dispatch can run inside that span read it into their ctx. It
+# dispatches nothing, and with zero handlers nothing reads the global.
+[[seam]]
+id      = "store_menu_ctx_pointer"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+anchor  = '''
+    self.init();
+}'''
+replace = '''
+    global.__mmapi_store_menu = self; // mmapi_store_menu_ctx_pointer
+    self.init();
+    global.__mmapi_store_menu = undefined;
+}'''
+marker   = "mmapi_store_menu_ctx_pointer"
+provides = ["items.store_price", "store.stock"]
+
+# The StoreMenu writes a shelf label's price text only when a tab is selected.
+# Its price pass recomputes the same number for every shelf item on each basket
+# change, but uses it only to pick the label colour. This companion edit has
+# the pass write the number it already computed, so a filtered price that
+# changes while the menu is open reaches the label on the next pass. It
+# dispatches nothing. The expression is the one tab selection uses, so with
+# zero handlers the text written is the text already shown.
+[[seam]]
+id      = "store_shelf_label_refresh"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+anchor  = '''
+            var value = round(item.store_value() * self.price_markup);
+            text.set_color(value > remaining_gold ? CANNOT_AFFORD_TEXT_COLOR : c_white);'''
+replace = '''
+            var value = round(item.store_value() * self.price_markup);
+            text.set_text(value); // mmapi_store_shelf_label_refresh
+            text.set_color(value > remaining_gold ? CANNOT_AFFORD_TEXT_COLOR : c_white);'''
+marker   = "mmapi_store_shelf_label_refresh"
+provides = ["items.store_price"]
+
+# The store tooltip writes its price text once, when the tooltip spawns, and
+# the StoreMenu keeps the tooltip and its price node on hand. This companion
+# edit has the price pass rewrite that node with the price it would compute
+# now, the same expression the tooltip used at spawn. A filtered price that
+# changes while the menu is open therefore reaches the open tooltip on the
+# next pass without re-spawning it. It dispatches nothing, and with zero
+# handlers the text written is the text already shown.
+[[seam]]
+id      = "store_tooltip_price_refresh"
+file    = "gml/scripts/UI/Anchor/Menus/StoreMenu.gml"
+anchor  = '''
+        }
+        self.buy_button.set_unlocked(remaining_gold >= 0 && self.basket_total > 0);'''
+replace = '''
+        }
+        if self.tooltip != undefined && self.tooltip.gold_text != undefined && self.tooltip.item != undefined { // mmapi_store_tooltip_price_refresh
+            self.tooltip.gold_text.set_text(round(self.tooltip.item.store_value() * self.price_markup));
+        }
+        self.buy_button.set_unlocked(remaining_gold >= 0 && self.basket_total > 0);'''
+marker   = "mmapi_store_tooltip_price_refresh"
+provides = ["items.store_price"]
+
+[[seam]]
+id      = "dialogue_conversation_finished"
+file    = "gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml"
+target  = { fn = "finish_conversation", at = "after", anchor = "self.state = ConversationDriverState.Finished;" }
+op      = "emit"
+hook    = "dialogue.conversation_finished"
+ctx_fields = [
+    ["driver", "self"],
+    ["conversation_name", "self.conversation_name"],
+    ["npc_id", "self.npc_owner"],
+    ["end_actions", "end_actions"],
+]
+indent  = 8
+marker  = "mmapi_dialogue_run_conversation_finished"
+
+# The Tool state resolves the cells a use covers once per step and feeds that
+# one List to both the charging preview and the action loop, so filtering it
+# at this call site keeps the two in agreement. The dispatch does not sit
+# inside range_pattern_to_targets(), because that function has a second caller
+# that reads its result by position. The dispatch is skipped once the use has
+# acted, since the engine never reads the List after that step. A final value
+# without a working count() is discarded, so an array or any other return that
+# is not a List cannot fail the player's step at the first loop read.
+[[seam]]
+id      = "tool_targets"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+            var targets = range_pattern_to_targets(self.target_pos.x, self.target_pos.y, self.range_pattern, self.owner.cardinal);
+
+            //
+            if self.tool_charge_released == false || self.has_done || self.owner.par.is_broadcasting(BroadcastMessage.START_ACTION) == false {'''
+replace = '''
+            var targets = range_pattern_to_targets(self.target_pos.x, self.target_pos.y, self.range_pattern, self.owner.cardinal);
+            if (self.has_done == false) { // mmapi_tool_run_targets_filters
+                try {
+                    var __mmapi_tool_targets = mmapi_apply_filters("tool.targets", targets, { x: self.target_pos.x, y: self.target_pos.y, range_pattern: self.range_pattern, cardinal: self.owner.cardinal, item: self.live_item });
+                    if (__mmapi_tool_targets.count() >= 0) { targets = __mmapi_tool_targets; }
+                } catch (__mmapi_tool_targets_error) {}
+            }
+
+            //
+            if self.tool_charge_released == false || self.has_done || self.owner.par.is_broadcasting(BroadcastMessage.START_ACTION) == false {'''
+marker   = "mmapi_tool_run_targets_filters"
+provides = ["tool.targets"]
+
+# The charge loop decides whether the player can afford the next range pattern
+# from range_pattern_to_count(), a table that knows only the engine's own cell
+# counts. This second dispatch site builds the pattern's List, filters it
+# through the same hook with the same ctx shape, and has the affordability
+# test read the count of the result. The stamina test therefore prices the
+# cells the use will cover. The table's counts equal the lengths of the Lists
+# range_pattern_to_targets() builds, so with zero handlers the test compares
+# the same number as before. The table's count stays in place when the
+# dispatch or the count() read fails.
+[[seam]]
+id      = "tool_targets_stamina_gate"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                        var stamina = abs(live_item.prototype.stamina_cost);
+                        var can_afford = range_pattern_to_count(self.range_pattern) * stamina <= ARI.get_stamina();'''
+replace = '''
+                        var stamina = abs(live_item.prototype.stamina_cost);
+                        var __mmapi_tool_target_count = range_pattern_to_count(self.range_pattern);
+                        try { // mmapi_tool_run_targets_stamina_gate
+                            var __mmapi_tool_gate_targets = mmapi_apply_filters("tool.targets", range_pattern_to_targets(self.target_pos.x, self.target_pos.y, self.range_pattern, self.owner.cardinal), { x: self.target_pos.x, y: self.target_pos.y, range_pattern: self.range_pattern, cardinal: self.owner.cardinal, item: self.live_item });
+                            __mmapi_tool_target_count = __mmapi_tool_gate_targets.count();
+                        } catch (__mmapi_tool_gate_error) {}
+                        var can_afford = __mmapi_tool_target_count * stamina <= ARI.get_stamina();'''
+marker   = "mmapi_tool_run_targets_stamina_gate"
+provides = ["tool.targets"]
+
+# The Jump Attack perk's landing test, can_down_smash_on_pos() in the Jump
+# state's create, refuses a landing when any corner of the player's bounding
+# box sits on a collideable node or on water. The corner predicate is the one
+# place the water rule lives, so this seam filters each corner's verdict
+# there. The monster and NPC refusal runs before the corner pass and stays
+# engine-owned. ctx carries the node's collision flag and a water boolean
+# rather than the terrain kind value, since TerrainKind is a native enum with
+# no GML declaration. With zero handlers the predicate returns the pristine
+# expression, and a failed dispatch keeps it.
+[[seam]]
+id      = "player_jump_attack_landing"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+                return owner.check_bbox_at_point(xx, yy, function(xx, yy) {
+                    var ni = GRID.node_index_for_room_position(xx, yy);
+                    if ni == undefined {
+                        return false;
+                    }
+
+                    return GRID.node_collideable[ni] == false && GRID.node_terrain_kind[ni] != TerrainKind.Water;
+                });'''
+replace = '''
+                return owner.check_bbox_at_point(xx, yy, function(xx, yy) {
+                    var ni = GRID.node_index_for_room_position(xx, yy);
+                    if ni == undefined {
+                        return false;
+                    }
+
+                    var __mmapi_landing_ok = GRID.node_collideable[ni] == false && GRID.node_terrain_kind[ni] != TerrainKind.Water;
+                    try { __mmapi_landing_ok = mmapi_apply_filters("player.jump_attack_landing", __mmapi_landing_ok, { x: xx, y: yy, node: ni, collideable: GRID.node_collideable[ni], water: GRID.node_terrain_kind[ni] == TerrainKind.Water }); } catch (__mmapi_jump_attack_landing_error) {} // mmapi_player_run_jump_attack_landing_filters
+                    return __mmapi_landing_ok;
+                });'''
+marker   = "mmapi_player_run_jump_attack_landing_filters"
+provides = ["player.jump_attack_landing"]
+
+# The DownSmash state exits to Default when its animation completes, which
+# vanilla can rely on because the landing test above refuses water. Once a
+# handler allows a water landing, that exit would stand the player on the
+# water, where the Default state walks the surface until the next jump,
+# because player collision tests only a node's collision flag. This companion
+# sends the exit to Swim when the node under the player's position is water,
+# the same test the Jump state's own landing branch makes when a plain jump
+# ends over water, and keeps Default otherwise. The position never changes
+# during the DownSmash state, so the terrain at start is the terrain at exit.
+# Vanilla never enters the state over water, so with zero handlers the water
+# branch is never taken.
+[[seam]]
+id      = "player_jump_attack_water_exit"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+            self.owner.set_animation(AnimationName.DownAttack);
+            self.owner.par.tool_effect = owner.current_tool_effect(false);
+            self.owner.on_animation_complete = PlayerState.Default;'''
+replace = '''
+            self.owner.set_animation(AnimationName.DownAttack);
+            self.owner.par.tool_effect = owner.current_tool_effect(false);
+            self.owner.on_animation_complete = PlayerState.Default;
+            var __mmapi_landing_node = GRID.try_node_index_for_room_position(self.owner.x, self.owner.y); // mmapi_player_jump_attack_water_exit
+            if (__mmapi_landing_node != undefined && GRID.node_terrain_kind[__mmapi_landing_node] == TerrainKind.Water) {
+                self.owner.on_animation_complete = PlayerState.Swim;
+            }'''
+marker   = "mmapi_player_jump_attack_water_exit"
+provides = ["player.jump_attack_landing"]
+
+# Vacant-NPC visibility. The journal's row loop filters through
+# npc_is_unlocked, whose default arm returns true - so a vacancy would leave a
+# ghost row backed by stub data. The seam turns the default arm mod-aware:
+# vacants hide, and the filter hook lets a mod choose a "departed villager"
+# presentation instead. Hiding also short-circuits the highest-reachability
+# post-Setup stub read (the journal's fiddle lookup sits behind this check).
+[[seam]]
+id      = "npc_is_unlocked_vacancy"
+file    = "gml/scripts/GameplaySystems/NPCs/Npc.gml"
+anchor  = '''
+        case NpcId.Seridia: return requirements_pass(Requirement.SeridiaTransformed);
+        //
+        default: return true;'''
+replace = '''
+        case NpcId.Seridia: return requirements_pass(Requirement.SeridiaTransformed);
+        //
+        default:
+            var __mmapi_npc_unlocked = !mmapi_ext_is_vacant("npc_roster", npc_id); // mmapi_npc_is_unlocked
+            __mmapi_npc_unlocked = mmapi_apply_filters("npc.is_unlocked", __mmapi_npc_unlocked, npc_id);
+            return __mmapi_npc_unlocked;'''
+marker   = "mmapi_npc_is_unlocked"
+provides = ["npc.is_unlocked"]
+
+# The VitalsMenu default-case seam the survey predicted. Vanilla's default arm
+# assumes every non-hardcoded status id is a potion infusion and resolves it
+# through FATAL string_to_infusion - an extension status effect with show_hud
+# would crash the HUD. The try_ variant plus a filter keeps vanilla
+# pixel-identical (every id vanilla can produce is an infusion hit) and gives
+# extension effects an icon path; no handler means no icon rather than a crash.
+[[seam]]
+id      = "vitals_status_hud_icon"
+file    = "gml/scripts/UI/Anchor/Menus/VitalsMenu.gml"
+anchor  = '''
+                default:
+                    var demons = string_to_infusion(status_effect_id_to_string(state.status.type));
+                    var infusion_data = INFUSIONS.get(demons);
+                    icon_sprite = infusion_data.tooltip_icon;
+                    color = make_color_rgb(
+                        infusion_data.color[0],
+                        infusion_data.color[1],
+                        infusion_data.color[2],
+                    );
+                    break;'''
+replace = '''
+                default:
+                    var __mmapi_se_infusion = try_string_to_infusion(status_effect_id_to_string(state.status.type)); // mmapi_status_hud_icon
+                    if (__mmapi_se_infusion != undefined) {
+                        var infusion_data = INFUSIONS.get(__mmapi_se_infusion);
+                        icon_sprite = infusion_data.tooltip_icon;
+                        color = make_color_rgb(
+                            infusion_data.color[0],
+                            infusion_data.color[1],
+                            infusion_data.color[2],
+                        );
+                        break;
+                    }
+                    var __mmapi_se_hud = mmapi_apply_filters("status_effect.hud_icon", undefined, state.status.type);
+                    if (__mmapi_se_hud == undefined) { continue; }
+                    icon_sprite = __mmapi_se_hud.icon_sprite;
+                    if (__mmapi_se_hud[$ "color"] != undefined) { color = __mmapi_se_hud.color; }
+                    break;'''
+marker   = "mmapi_status_hud_icon"
+provides = ["status_effect.hud_icon"]
+
+# --- call rewrites -----------------------------------------------------------------
+
 # local_get is a native builtin (fabricator extension): the pristine tree has no
 # GML body for it, so no template, target, text, or wrap form can reach inside
 # it and a wrap has nothing to rename. The waist is created instead by
@@ -2856,7 +4158,573 @@ to       = "mmapi_local_get"
 args     = 1
 provides = ["local.get", "local.missing"]
 
-# --- npc_roster support ------------------------------------------------------------
+# --- engine fixes ------------------------------------------------------------------
+
+# The mmapi lifecycle root. The injected mmapi_run_installs() call is the
+# framework's per-frame tick, and queued install drains run from it.
+[[engine_fix]]
+name    = "game_step_begin_installs"
+file    = "gml/objects/Game.gml"
+anchor  = '''
+        step_begin: function() {
+            TICK++;'''
+replace = '''
+        step_begin: function() {
+            mmapi_run_installs();
+            TICK++;'''
+marker  = "mmapi_run_installs();"
+
+# The tarball chop passed a hardcoded is_burn of true, which burn-throttled
+# every non-fire tarball chop against stump and fruit tree iframes. The fix
+# passes the tarball's real fire flag through.
+[[engine_fix]]
+name    = "tarball_chop_burn_flag"
+file    = "gml/objects/Combat/obj_damage_tarball.gml"
+anchor  = '''
+                                    var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, true);
+                                    if success && has_flag(self.flags, CombatFlag.Fire) {
+'''
+replace = '''
+                                    var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, has_flag(self.flags, CombatFlag.Fire)); // mmapi_tarball_chop_burn_flag
+                                    if success && has_flag(self.flags, CombatFlag.Fire) {
+'''
+marker  = "mmapi_tarball_chop_burn_flag"
+
+# The max-crafts Item loop divides by a modified component count and misses
+# the zero guard its own Duration branch has, so a zero-cost component
+# crashed the craft menu. The fix skips such a component instead.
+[[engine_fix]]
+name    = "max_crafts_zero_component"
+file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
+anchor  = '''
+        for (var i = 0; i < recipe.count(); i++) {
+            var comp = recipe.get(i);
+            var denominator = get_modified_component_count(comp, self.context, item.item_id);
+            var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
+'''
+replace = '''
+        for (var i = 0; i < recipe.count(); i++) {
+            var comp = recipe.get(i);
+            var denominator = get_modified_component_count(comp, self.context, item.item_id);
+            if denominator == 0 { continue; } // mmapi_max_crafts_zero_component
+            var max_fulfill = maximum_fulfillment_for_component(comp) div denominator;
+'''
+marker  = "mmapi_max_crafts_zero_component"
+
+# The two edits below carry a data contract instead of a hook. An item
+# fiddle entry may declare fish_chest = "<key>", naming an entry under
+# fishing/chest_tables. The engine's fishing-chest pipeline is data-driven
+# everywhere except three identity-keyed sites. These two widen the item-use
+# and chest-rarity sites, and the seam fish_chest_table_lookup widens the
+# third while dispatching items.chest_opened. No vanilla data reaches any
+# widened branch, so with no modded data the staged control flow behaves
+# exactly as pristine.
+
+# Widens the OpenChest use assignment so a fiddle item carrying fish_chest
+# opens like the five hardcoded chest items. The key is copied onto the
+# prototype for the AriFsm table lookup. Vanilla items never carry the field.
+[[engine_fix]]
+name    = "fish_chest_item_use"
+file    = "gml/scripts/GameplaySystems/Items/Items.gml"
+anchor  = '''
+        } else if matches(prototype.item_id, ItemId.TreasureBoxWood, ItemId.TreasureBoxCopper, ItemId.TreasureBoxSilver, ItemId.TreasureBoxGold, ItemId.AbyssalChest) {
+            prototype.use = ItemUse.OpenChest;
+'''
+replace = '''
+        } else if matches(prototype.item_id, ItemId.TreasureBoxWood, ItemId.TreasureBoxCopper, ItemId.TreasureBoxSilver, ItemId.TreasureBoxGold, ItemId.AbyssalChest)
+            || fiddle_data[$ "fish_chest"] != undefined { // mmapi_fish_chest_item_use
+            prototype.fish_chest = fiddle_data[$ "fish_chest"];
+            prototype.use = ItemUse.OpenChest;
+'''
+marker  = "mmapi_fish_chest_item_use"
+
+# The chest-rarity switch in create_fish_distributions enumerates the four
+# vanilla rarities for perk adjustments and aborts Setup on anything else.
+# A modded chest rarity now takes the default and simply gets no perk vote
+# adjustments. Its base votes still come from its fishing/votes entry.
+[[engine_fix]]
+name    = "fish_chest_custom_rarity"
+file    = "gml/scripts/GameplaySystems/Fishing/Fish.gml"
+anchor  = '''
+                default: impossible("unexpected chest rarity: {}", fish_proto.rarity);
+'''
+replace = '''
+                default: break; // A modded chest rarity gets no perk vote adjustments. // mmapi_fish_chest_custom_rarity
+'''
+marker  = "mmapi_fish_chest_custom_rarity"
+
+# The color customization popup grows with its entry grid, and a modded LUT
+# list can outgrow the screen. Past seven rows the grid moves into a
+# scroller and the popup keeps a fixed height.
+[[engine_fix]]
+name    = "customization_color_popup_scrollable"
+file    = "gml/scripts/UI/Anchor/Menus/CustomizationMenu.gml"
+anchor  = '''
+        var container_size = layout.container_size();
+        var container = ANCHOR.positional(popup.backplate)
+            .set_size(container_size)
+            .set_align(Align.Center, Align.BottomIn)
+            .set_y(-13)
+
+        popup.backplate.add_height(container_size.y);'''
+replace = '''
+        var container_size = layout.container_size();
+        var mmapi_lut_selector_scrollable = 23 * 7;
+        var container;
+        if (container_size.y > mmapi_lut_selector_scrollable) {
+            var __mmapi_lut_side = SCROLLBAR_WIDTH + 8;
+            popup.backplate.set_width(container_size.x + 1 + __mmapi_lut_side * 2);
+            popup.backplate.add_height(mmapi_lut_selector_scrollable);
+            var __mmapi_lut_body = ANCHOR.positional(popup.backplate)
+                .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_lut_selector_scrollable)
+                .set_align(Align.LeftIn, Align.BottomIn)
+                .set_x(__mmapi_lut_side)
+                .set_y(-13)
+            var __mmapi_lut_scroller = create_scroller_ext(
+                __mmapi_lut_body,
+                Vec2(0, 0),
+                Vec2(container_size.x + 1, mmapi_lut_selector_scrollable),
+                Vec2(Align.LeftIn, Align.TopIn),
+                Vec2(container_size.x + 5, -1),
+                Vec2(SCROLLBAR_WIDTH, mmapi_lut_selector_scrollable + 2),
+                Vec2(Align.LeftIn, Align.TopIn))
+                .subscribe_to_pilot(popup.pilot)
+                .alternate_colors(false)
+            var __mmapi_lut_element = __mmapi_lut_scroller.new_element(1);
+            container = ANCHOR.positional(__mmapi_lut_element)
+                .set_size(container_size)
+                .set_align(Align.LeftIn, Align.TopIn)
+                .set_y(__mmapi_lut_element.get_height())
+            __mmapi_lut_scroller.add_height_to_element(__mmapi_lut_element, container_size.y + 2);
+        } else {
+            container = ANCHOR.positional(popup.backplate)
+                .set_size(container_size)
+                .set_align(Align.Center, Align.BottomIn)
+                .set_y(-13)
+
+            popup.backplate.add_height(container_size.y);
+        }'''
+marker  = "mmapi_lut_selector_scrollable"
+
+# The pet appearance popup grows the same way when modded variants extend
+# its grid, and it gets the same treatment. Past seven rows the grid moves
+# into a scroller and the popup keeps a fixed height.
+[[engine_fix]]
+name    = "pet_appearance_popup_scrollable"
+file    = "gml/scripts/AnimalMenu.gml"
+anchor  = '''
+    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
+
+    var container_size = layout.container_size();
+    var container = ANCHOR.positional(popup.backplate)
+        .set_size(container_size)
+        .set_align(Align.Center, Align.Middle)
+        .set_y(9)
+
+    popup.backplate.add_height(container_size.y);'''
+replace = '''
+    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
+
+    var container_size = layout.container_size();
+    var mmapi_pet_appearance_scrollable = 23 * 7;
+    var container;
+    if (container_size.y > mmapi_pet_appearance_scrollable) {
+        var __mmapi_pet_side = SCROLLBAR_WIDTH + 8;
+        popup.backplate.set_width(container_size.x + 1 + __mmapi_pet_side * 2);
+        popup.backplate.add_height(mmapi_pet_appearance_scrollable);
+        var __mmapi_pet_body = ANCHOR.positional(popup.backplate)
+            .set_size(container_size.x + SCROLLBAR_WIDTH + 8, mmapi_pet_appearance_scrollable)
+            .set_align(Align.LeftIn, Align.BottomIn)
+            .set_x(__mmapi_pet_side)
+            .set_y(-13)
+        var __mmapi_pet_scroller = create_scroller_ext(
+            __mmapi_pet_body,
+            Vec2(0, 0),
+            Vec2(container_size.x + 1, mmapi_pet_appearance_scrollable),
+            Vec2(Align.LeftIn, Align.TopIn),
+            Vec2(container_size.x + 5, -1),
+            Vec2(SCROLLBAR_WIDTH, mmapi_pet_appearance_scrollable + 2),
+            Vec2(Align.LeftIn, Align.TopIn))
+            .subscribe_to_pilot(popup.pilot)
+            .alternate_colors(false)
+        var __mmapi_pet_element = __mmapi_pet_scroller.new_element(1);
+        container = ANCHOR.positional(__mmapi_pet_element)
+            .set_size(container_size)
+            .set_align(Align.LeftIn, Align.TopIn)
+            .set_y(__mmapi_pet_element.get_height())
+        __mmapi_pet_scroller.add_height_to_element(__mmapi_pet_element, container_size.y + 2);
+    } else {
+        container = ANCHOR.positional(popup.backplate)
+            .set_size(container_size)
+            .set_align(Align.Center, Align.Middle)
+            .set_y(9)
+
+        popup.backplate.add_height(container_size.y);
+    }'''
+marker  = "mmapi_pet_appearance_scrollable"
+
+# The store stock parser builds a LiveItem from one of five entry keys and
+# has no branch for pet cosmetics, although the reward parser already
+# accepts the same key for the chicken statue. This adds the missing branch
+# in the reward parser's shape. The value names a merged pets/cosmetic_sets
+# key, and an unknown name fails at Setup with the name in the message, as
+# the sibling cosmetic branches do. No vanilla stock entry carries the key,
+# so with no modded data the staged parser behaves exactly as pristine.
+[[engine_fix]]
+name    = "store_pet_cosmetic_entry"
+file    = "gml/scripts/Stores.gml"
+anchor  = '''
+        item = new LiveItem(ItemId.AnimalCosmetic);
+        item.animal_cosmetic = { animal: animal, cosmetic: entry.animal_cosmetic };
+    }
+
+    assert_neq(item, undefined, "Failed to parse an item out of '{}'", entry);
+'''
+replace = '''
+        item = new LiveItem(ItemId.AnimalCosmetic);
+        item.animal_cosmetic = { animal: animal, cosmetic: entry.animal_cosmetic };
+    }
+
+    if entry[$ "pet_cosmetic"] != undefined { // mmapi_store_pet_cosmetic_entry
+        assert(
+            PET_PROTOTYPE.cosmetic_sets.contains_key(entry.pet_cosmetic),
+            "Pet cosmetic '{}' does not exist", entry.pet_cosmetic
+        );
+
+        item = new LiveItem(ItemId.PetCosmetic);
+        item.pet_cosmetic_set_name = entry.pet_cosmetic;
+    }
+
+    assert_neq(item, undefined, "Failed to parse an item out of '{}'", entry);
+'''
+marker  = "mmapi_store_pet_cosmetic_entry"
+
+# The seven edits below carry the recipe ingredient data contract instead of
+# a hook. A recipe component may list several exact items under `items`, and
+# the engine's own `tag` component becomes usable. No vanilla recipe uses
+# `items` or `tag`, so with no modded data every staged branch behaves
+# exactly as pristine.
+
+# The component factory gains a list form beside the single-item form. The
+# struct keeps the Item type and stores the first listed id as item_id, so
+# every existing reader of a component sees that item, and the full list
+# is kept in item_ids.
+[[engine_fix]]
+name    = "recipe_items_factory"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+    static Item = function(item_id, count) {
+        return {
+            type: RecipeComponentType.Item,
+            item_id: item_id,
+            count: count,
+        }
+    }
+'''
+replace = '''
+    static Item = function(item_id, count) {
+        return {
+            type: RecipeComponentType.Item,
+            item_id: item_id,
+            count: count,
+        }
+    }
+    static Items = function(item_ids, count) { // mmapi_recipe_items_factory
+        return {
+            type: RecipeComponentType.Item,
+            item_id: item_ids[0],
+            item_ids: item_ids,
+            count: count,
+        }
+    }
+'''
+marker  = "mmapi_recipe_items_factory"
+
+# The recipe parser gains an `items` branch between `item` and `tag`. Names
+# resolve through the same lookup the `item` branch uses, and repeated ids
+# are dropped so one id cannot be counted twice at fulfillment.
+[[engine_fix]]
+name    = "recipe_items_parse"
+file    = "gml/scripts/GameplaySystems/Items/Items.gml"
+anchor  = '''
+                if component[$ "item"] != undefined {
+                    array_push(components, RecipeComponent.Item(
+                        string_to_item_id(component.item),
+                        component[$ "count"] ?? 1,
+                    ));
+                } else if component[$ "tag"] != undefined {
+'''
+replace = '''
+                if component[$ "item"] != undefined {
+                    array_push(components, RecipeComponent.Item(
+                        string_to_item_id(component.item),
+                        component[$ "count"] ?? 1,
+                    ));
+                } else if component[$ "items"] != undefined { // mmapi_recipe_items_parse
+                    var ingredient_ids = [];
+                    for (var ingredient = 0; ingredient < array_length(component.items); ingredient++) {
+                        var ingredient_id = string_to_item_id(component.items[ingredient]);
+                        if !array_contains(ingredient_ids, ingredient_id) {
+                            array_push(ingredient_ids, ingredient_id);
+                        }
+                    }
+                    array_push(components, RecipeComponent.Items(
+                        ingredient_ids,
+                        component[$ "count"] ?? 1,
+                    ));
+                } else if component[$ "tag"] != undefined {
+'''
+marker  = "mmapi_recipe_items_parse"
+
+# The Item case of the fulfillment count sums every listed id, in the
+# player's inventory and in each crafting chest. A single-item component
+# has no item_ids member and takes the one-element path.
+[[engine_fix]]
+name    = "recipe_items_fulfillment"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+        case RecipeComponentType.Item:
+            var count = ARI.inventory.item_id_quantity(component.item_id);
+            if use_chests {
+                var len = STORAGE_NODES.count();
+                for (var i = 0; i < len; i++) {
+                    var node = STORAGE_NODES.get(i);
+                    if node.use_in_crafting {
+                        count += node.inventory.item_id_quantity(component.item_id);
+                    }
+                }
+            }
+            return count;
+'''
+replace = '''
+        case RecipeComponentType.Item:
+            var item_ids = component[$ "item_ids"] ?? [component.item_id]; // mmapi_recipe_items_fulfillment
+            var count = 0;
+            for (var j = 0; j < array_length(item_ids); j++) {
+                count += ARI.inventory.item_id_quantity(item_ids[j]);
+            }
+            if use_chests {
+                var len = STORAGE_NODES.count();
+                for (var i = 0; i < len; i++) {
+                    var node = STORAGE_NODES.get(i);
+                    if node.use_in_crafting {
+                        for (var j = 0; j < array_length(item_ids); j++) {
+                            count += node.inventory.item_id_quantity(item_ids[j]);
+                        }
+                    }
+                }
+            }
+            return count;
+'''
+marker  = "mmapi_recipe_items_fulfillment"
+
+# The Item case of the payment drains the listed ids in order, first from the
+# player's inventory and then from each crafting chest, stopping as soon as
+# the scaled count is met. The closing assertion is the pristine one.
+[[engine_fix]]
+name    = "recipe_items_payment"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+            case RecipeComponentType.Item:
+                //
+                var amount_to_remove = min(count, ARI.inventory.item_id_quantity(component.item_id));
+                ARI.inventory.remove(component.item_id, amount_to_remove);
+                count -= amount_to_remove;
+
+                //
+                if count != 0 {
+                    for (var j = 0; j < STORAGE_NODES.count(); j++) {
+                        var node = STORAGE_NODES.get(j);
+                        if !node.use_in_crafting {
+                            continue;
+                        }
+                        var inventory = node.inventory;
+                        var amount_to_remove = min(count, inventory.item_id_quantity(component.item_id));
+                        inventory.remove(component.item_id, amount_to_remove);
+                        count -= amount_to_remove;
+
+                        if count == 0 {
+                            break;
+                        }
+                    }
+                }
+
+                assert_eq(count, 0, "Failed to fulfill item component costs!");
+                break;
+'''
+replace = '''
+            case RecipeComponentType.Item:
+                //
+                var item_ids = component[$ "item_ids"] ?? [component.item_id]; // mmapi_recipe_items_payment
+                for (var k = 0; k < array_length(item_ids) && count != 0; k++) {
+                    var amount_to_remove = min(count, ARI.inventory.item_id_quantity(item_ids[k]));
+                    ARI.inventory.remove(item_ids[k], amount_to_remove);
+                    count -= amount_to_remove;
+                }
+
+                //
+                if count != 0 {
+                    for (var j = 0; j < STORAGE_NODES.count(); j++) {
+                        var node = STORAGE_NODES.get(j);
+                        if !node.use_in_crafting {
+                            continue;
+                        }
+                        var inventory = node.inventory;
+                        for (var k = 0; k < array_length(item_ids) && count != 0; k++) {
+                            var amount_to_remove = min(count, inventory.item_id_quantity(item_ids[k]));
+                            inventory.remove(item_ids[k], amount_to_remove);
+                            count -= amount_to_remove;
+                        }
+
+                        if count == 0 {
+                            break;
+                        }
+                    }
+                }
+
+                assert_eq(count, 0, "Failed to fulfill item component costs!");
+                break;
+'''
+marker  = "mmapi_recipe_items_payment"
+
+# The crafting menu's ingredient renderer handles Item and Essence and stops
+# the game on anything else. A Tag label now falls through into the Item
+# body. The icon is the first prototype carrying the tag, read from the
+# prototype so no LiveItem is built, or the engine's unknown-item warning
+# sprite when no prototype carries it. The has/needs count block below is
+# shared unchanged. With no this_item the box draws no tooltip.
+[[engine_fix]]
+name    = "recipe_tag_display"
+file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
+anchor  = '''
+                case RecipeComponentType.Item:
+                    icon.set_sprite(this_item.get_ui_icon());
+'''
+replace = '''
+                case RecipeComponentType.Tag: // mmapi_recipe_tag_display
+                case RecipeComponentType.Item:
+                    if component.type == RecipeComponentType.Tag {
+                        icon.set_sprite(spr_illegal_16);
+                        for (var k = 0; k < ItemId.LEN; k++) {
+                            if ITEM_PROTOTYPES[k].tags.contains(component.tag) {
+                                icon.set_sprite(ITEM_PROTOTYPES[k].icon_sprite);
+                                break;
+                            }
+                        }
+                    } else {
+                        icon.set_sprite(this_item.get_ui_icon());
+                    }
+'''
+marker  = "mmapi_recipe_tag_display"
+
+# The pristine Tag fulfillment reads the slot count as a method, and the slot
+# holds it as a field, so the branch throws on first use. It now takes the
+# Item case's shape on the inventory's own item_tag_quantity helper, the
+# player's inventory first and then each crafting chest, and honors
+# use_chests.
+[[engine_fix]]
+name    = "recipe_tag_fulfillment"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+        case RecipeComponentType.Tag: return ARI.inventory
+            .slots_with_item_tag(component.tag)
+            .sum_with(function(x) {
+                return x.count();
+            });
+'''
+replace = '''
+        case RecipeComponentType.Tag:
+            var count = ARI.inventory.item_tag_quantity(component.tag); // mmapi_recipe_tag_fulfillment
+            if use_chests {
+                var len = STORAGE_NODES.count();
+                for (var i = 0; i < len; i++) {
+                    var node = STORAGE_NODES.get(i);
+                    if node.use_in_crafting {
+                        count += node.inventory.item_tag_quantity(component.tag);
+                    }
+                }
+            }
+            return count;
+'''
+marker  = "mmapi_recipe_tag_fulfillment"
+
+# The pristine Tag payment has the same field-as-method call, removes the
+# unscaled base count, and never reaches a chest. It now takes the Item
+# case's shape on the inventory's own remove_items_with_tag helper, starting
+# from the quantity-scaled count, the player's inventory first and then each
+# crafting chest, with the Item case's closing assertion.
+[[engine_fix]]
+name    = "recipe_tag_payment"
+file    = "gml/scripts/GameplaySystems/Recipe.gml"
+anchor  = '''
+            case RecipeComponentType.Tag:
+                var slots = ARI.inventory.slots_with_item_tag(component.tag);
+                var left_to_remove = component.count;
+                for (var j = 0; j < slots.count(); j++) {
+                    var slot = slots.get(j);
+                    var amount_to_remove = min(slot.count(), left_to_remove);
+                    slot.remove(amount_to_remove);
+                    left_to_remove -= amount_to_remove;
+                    if left_to_remove == 0 {
+                        break;
+                    }
+                }
+                break;
+'''
+replace = '''
+            case RecipeComponentType.Tag:
+                var amount_to_remove = min(count, ARI.inventory.item_tag_quantity(component.tag)); // mmapi_recipe_tag_payment
+                ARI.inventory.remove_items_with_tag(component.tag, amount_to_remove);
+                count -= amount_to_remove;
+
+                if count != 0 {
+                    for (var j = 0; j < STORAGE_NODES.count(); j++) {
+                        var node = STORAGE_NODES.get(j);
+                        if !node.use_in_crafting {
+                            continue;
+                        }
+                        var inventory = node.inventory;
+                        var amount_to_remove = min(count, inventory.item_tag_quantity(component.tag));
+                        inventory.remove_items_with_tag(component.tag, amount_to_remove);
+                        count -= amount_to_remove;
+
+                        if count == 0 {
+                            break;
+                        }
+                    }
+                }
+
+                assert_eq(count, 0, "Failed to fulfill tag component costs!");
+                break;
+'''
+marker  = "mmapi_recipe_tag_payment"
+# par_monster builds its status overlay renderable without a draw kind, so
+# the frozen and venomous tints draw in the Normal kind, the sprite multiplied
+# by the tint over itself, which is invisible in practice. It also seeds
+# status_particles false and only the mite ever writes it, so no other monster
+# spawns the venom damage numbers, the venom puff, or the ice puff. The hit
+# flash built the same way in setup_white_vfx sets the flat kind. This sets it
+# on the overlay too and defaults the particle flag on. The mite keeps
+# overriding the flag per state.
+[[engine_fix]]
+name    = "monster_status_overlay"
+file    = "gml/objects/Combat/par_monster.gml"
+anchor  = '''
+            self.status_blender = self.create_renderable();
+            self.status_cap = infinity;
+            self.status_particles = false;
+'''
+replace = '''
+            self.status_blender = self.create_renderable();
+            self.status_blender.draw_kind = DrawKind.Flat; // mmapi_monster_status_overlay
+            self.status_cap = infinity;
+            self.status_particles = true; // mmapi_monster_status_overlay
+'''
+marker  = "mmapi_monster_status_overlay"
+
+# The fixes from here to the extension points support custom NPCs and status
+# effects. They let a save load when a name no longer resolves, and keep a vacant
+# NPC member inert.
 
 # LoadGame walks the CURRENT enum and deserializes each NPC's blob with no
 # guard on the lookup. A save written before a custom NPC existed has no blob
@@ -2920,8 +4788,8 @@ replace = '''
                 npc.talk_flag = __mmapi_npc_blob.talk_flag;
                 npc.gift_flag = __mmapi_npc_blob.gift_flag;
                 npc.times_spoken_today = __mmapi_npc_blob.times_spoken_today;
-                npc.known_gift_preferences = HashSetFromArray(array_map(__mmapi_npc_blob.known_gift_preferences, string_to_item_id_or_unknown));
-                npc.gifts_given = HashSetFromArray(array_map(__mmapi_npc_blob.gifts_given, string_to_item_id_or_unknown));
+                npc.known_gift_preferences = HashSetFromArray(array_map(__mmapi_npc_blob.known_gift_preferences, function(__mmapi_s) { return string_to_item_id_or_unknown(__mmapi_s); }));
+                npc.gifts_given = HashSetFromArray(array_map(__mmapi_npc_blob.gifts_given, function(__mmapi_s) { return string_to_item_id_or_unknown(__mmapi_s); }));
             }
             npc.location_position = new LocationPosition(LocationId.Aldaria, Vec2(0, 0));
             npc.brain_dead = true;
@@ -2997,7 +4865,7 @@ anchor  = '''
 replace = '''
     ARI.spells_learned = deserialize_array_bool(
         files.player.spells_learned,
-        try_string_to_spell, // mmapi_save_spells_tolerance
+        function(__mmapi_s) { return try_string_to_spell(__mmapi_s); }, // mmapi_save_spells_tolerance
         Spell.LEN,
     );'''
 marker  = "mmapi_save_spells_tolerance"
@@ -3013,7 +4881,7 @@ file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
 anchor  = '''
     ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, string_to_spell));'''
 replace = '''
-    ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, try_string_to_spell)); // mmapi_save_pinned_tolerance'''
+    ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, function(__mmapi_s) { return try_string_to_spell(__mmapi_s); })); // mmapi_save_pinned_tolerance'''
 marker  = "mmapi_save_pinned_tolerance"
 
 # A slot whose type no longer resolves deserializes to undefined - exactly
@@ -3163,7 +5031,7 @@ anchor  = '''
         : array_bool(ObjectId.LEN);'''
 replace = '''
     ARI.used_object_today = files.player["used_object_today"] != undefined
-        ? deserialize_array_bool(files.player.used_object_today, try_string_to_object_id, ObjectId.LEN) // mmapi_save_used_objects_tolerance
+        ? deserialize_array_bool(files.player.used_object_today, function(__mmapi_s) { return try_string_to_object_id(__mmapi_s); }, ObjectId.LEN) // mmapi_save_used_objects_tolerance
         : array_bool(ObjectId.LEN);'''
 marker  = "mmapi_save_used_objects_tolerance"
 
@@ -3333,47 +5201,6 @@ replace = '''
         }'''
 marker  = "mmapi_save_mount_variant_tolerance"
 
-# The VitalsMenu default-case seam the survey predicted. Vanilla's default arm
-# assumes every non-hardcoded status id is a potion infusion and resolves it
-# through FATAL string_to_infusion - an extension status effect with show_hud
-# would crash the HUD. The try_ variant plus a filter keeps vanilla
-# pixel-identical (every id vanilla can produce is an infusion hit) and gives
-# extension effects an icon path; no handler means no icon rather than a crash.
-[[seam]]
-id      = "vitals_status_hud_icon"
-file    = "gml/scripts/UI/Anchor/Menus/VitalsMenu.gml"
-anchor  = '''
-                default:
-                    var demons = string_to_infusion(status_effect_id_to_string(state.status.type));
-                    var infusion_data = INFUSIONS.get(demons);
-                    icon_sprite = infusion_data.tooltip_icon;
-                    color = make_color_rgb(
-                        infusion_data.color[0],
-                        infusion_data.color[1],
-                        infusion_data.color[2],
-                    );
-                    break;'''
-replace = '''
-                default:
-                    var __mmapi_se_infusion = try_string_to_infusion(status_effect_id_to_string(state.status.type)); // mmapi_status_hud_icon
-                    if (__mmapi_se_infusion != undefined) {
-                        var infusion_data = INFUSIONS.get(__mmapi_se_infusion);
-                        icon_sprite = infusion_data.tooltip_icon;
-                        color = make_color_rgb(
-                            infusion_data.color[0],
-                            infusion_data.color[1],
-                            infusion_data.color[2],
-                        );
-                        break;
-                    }
-                    var __mmapi_se_hud = mmapi_apply_filters("status_effect.hud_icon", undefined, state.status.type);
-                    if (__mmapi_se_hud == undefined) { continue; }
-                    icon_sprite = __mmapi_se_hud.icon_sprite;
-                    if (__mmapi_se_hud[$ "color"] != undefined) { color = __mmapi_se_hud.color; }
-                    break;'''
-marker   = "mmapi_status_hud_icon"
-provides = ["status_effect.hud_icon"]
-
 # Vacancy containment for spouses and roommates. The vacancy design parks a
 # tombstoned NPC in the Aldaria pen, but is_roommate()/is_spouse() read only
 # the {NpcId}_status world fact, and the new-day roommate branch overrides
@@ -3537,34 +5364,6 @@ function get_npc_icon(npc_id) {
 marker  = "mmapi_npc_icon_fallback_guard"
 
 # --- extension points ----------------------------------------------------------------
-
-# Vacant-NPC visibility. The journal's row loop filters through
-# npc_is_unlocked, whose default arm returns true - so a vacancy would leave a
-# ghost row backed by stub data. The seam turns the default arm mod-aware:
-# vacants hide, and the filter hook lets a mod choose a "departed villager"
-# presentation instead. Hiding also short-circuits the highest-reachability
-# post-Setup stub read (the journal's fiddle lookup sits behind this check).
-[[hook]]
-name = "npc.is_unlocked"
-kind = "filter"
-doc  = "Fires in npc_is_unlocked()'s default arm - every NPC the base game does not explicitly gate, which is every extension NPC and any future vanilla NPC without a case. The filtered value is the unlocked boolean, already false for ledger vacancies; ctx is the npc_id ordinal. Return the replacement value, or undefined to keep the current value. Vanilla NPCs with explicit cases (market vendors, story NPCs) never reach this hook."
-
-[[seam]]
-id      = "npc_is_unlocked_vacancy"
-file    = "gml/scripts/GameplaySystems/NPCs/Npc.gml"
-anchor  = '''
-        case NpcId.Seridia: return requirements_pass(Requirement.SeridiaTransformed);
-        //
-        default: return true;'''
-replace = '''
-        case NpcId.Seridia: return requirements_pass(Requirement.SeridiaTransformed);
-        //
-        default:
-            var __mmapi_npc_unlocked = !mmapi_ext_is_vacant("npc_roster", npc_id); // mmapi_npc_is_unlocked
-            __mmapi_npc_unlocked = mmapi_apply_filters("npc.is_unlocked", __mmapi_npc_unlocked, npc_id);
-            return __mmapi_npc_unlocked;'''
-marker   = "mmapi_npc_is_unlocked"
-provides = ["npc.is_unlocked"]
 
 # The first extension point. One registration
 # per custom NPC: the enum member, the two identity mappings, the manifest

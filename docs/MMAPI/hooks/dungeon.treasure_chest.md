@@ -44,5 +44,5 @@ mmapi_on("dungeon.treasure_chest", chest_counter_dungeon_treasure_chest);
 ## See Also
 
 - [items.treasure_distribution](items.treasure_distribution.md) - Filter the dungeon treasure roll itself.
-- [dungeon.side_room_chance](dungeon.side_room_chance.md) - Adjust the odds of treasure side rooms.
+- [dungeon.side_room_range](dungeon.side_room_range.md) - Shape where treasure side rooms land.
 - [dungeon.floor_built](dungeon.floor_built.md) - The floor's room is fully built.

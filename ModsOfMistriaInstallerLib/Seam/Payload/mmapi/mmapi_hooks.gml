@@ -1,3 +1,16 @@
+// MMAPI - A GML modding framework for Fields of Mistria
+// Copyright (C) 2026 Anna Nomoly
+//
+// This file is part of MMAPI, distributed with the Mods of Mistria Installer.
+// Licensed under the GNU General Public License v3.0 or later, WITH
+// ADDITIONAL TERMS under GPLv3 section 7 (attribution preservation, no
+// misrepresentation of origin, no trademark grant).
+//
+// See the LICENSE file in this directory for those additional terms.
+// See LICENCE.txt at the repository root for the full GPL text.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 // mmapi_hooks.gml. The named-hook engine: one generic registry backing the four
 // hook kinds. One hook name holds one kind; a mixed registration warns but
 // still lands, since dispatchers only invoke records of their own kind.
@@ -67,16 +80,30 @@ function __mmapi_hook_register(kind, hook_name, handler, opts) {
     var mod_name = mmapi_current_mod();
     var before = undefined;
     var after = undefined;
+    var watched = undefined;
     if (opts != undefined) {
         if (opts[$ "priority"] != undefined) { priority = opts.priority; }
         if (opts[$ "mod_name"] != undefined) { mod_name = opts.mod_name; }
         if (opts[$ "before"] != undefined) { before = __mmapi_hook_mod_list(opts.before); }
         if (opts[$ "after"] != undefined) { after = __mmapi_hook_mod_list(opts.after); }
+        if (opts[$ "object"] != undefined) { watched = opts.object; }
     }
 
     hook_name = __mmapi_hook_resolve_alias(hook_name, mod_name);
     __mmapi_hook_warn_if_uncataloged(hook_name, mod_name);
     __mmapi_hook_warn_if_kind_mismatch(kind, hook_name, mod_name);
+
+    // The instance poll scans one object per registration. An unscoped
+    // registration would walk every live instance every frame, so it is
+    // refused rather than defaulted.
+    if (hook_name == "instance.created" && watched == undefined) {
+        mmapi_warn_rate_limited(
+            "hook_unscoped:" + string(mod_name),
+            mod_name,
+            "mmapi hook instance.created: registration from " + string(mod_name)
+            + " names no object and is skipped. Pass { object: obj_x }");
+        return;
+    }
 
     var handlers = registry[$ hook_name];
     if (handlers == undefined) {
@@ -84,12 +111,15 @@ function __mmapi_hook_register(kind, hook_name, handler, opts) {
         registry[$ hook_name] = handlers;
     }
 
-    // A duplicate (same fn, kind and mod) does not land twice: installers rerun
-    // every frame, so an unguarded registration would compound. This check runs
-    // first, so the per-frame duplicate path reaches no other warning below.
+    // A duplicate (same fn, kind, mod and watched object) does not land twice:
+    // installers rerun every frame, so an unguarded registration would
+    // compound. The object is part of the identity so one handler can watch
+    // two objects. This check runs first, so the per-frame duplicate path
+    // reaches no other warning below.
     for (var i = 0; i < array_length(handlers); i++) {
         var existing = handlers[i];
-        if (existing.fn == handler && existing.mod_name == mod_name && existing.kind == kind) {
+        if (existing.fn == handler && existing.mod_name == mod_name && existing.kind == kind
+            && existing[$ "object"] == watched) {
             mmapi_warn_rate_limited(
                 "hook_dup:" + string(hook_name) + ":" + string(mod_name),
                 mod_name,
@@ -134,6 +164,9 @@ function __mmapi_hook_register(kind, hook_name, handler, opts) {
 
     if (global[$ "__mmapi_hook_seq"] == undefined) { global.__mmapi_hook_seq = 0; }
     global.__mmapi_hook_seq += 1;
+    // object and marker serve the instance poll. The poll scans the object and
+    // stamps the marker on each instance it has dispatched. Every other hook's
+    // record carries object undefined and an unused marker.
     array_push(handlers, {
         fn: handler,
         priority: priority,
@@ -142,6 +175,8 @@ function __mmapi_hook_register(kind, hook_name, handler, opts) {
         seq: global.__mmapi_hook_seq,
         before: before,
         after: after,
+        object: watched,
+        marker: "__mmapi_seen_" + string(global.__mmapi_hook_seq),
     });
     __mmapi_hook_resort(hook_name, handlers);
 }
@@ -242,6 +277,7 @@ function __mmapi_hook_resort(hook_name, handlers) {
 
 // Call every event handler in dispatch order. Returns undefined.
 function mmapi_emit(hook_name, ctx) {
+    __mmapi_hook_fired(hook_name);
     var registry = global[$ "__mmapi_hooks"];
     if (registry == undefined) { return undefined; }
     var handlers = registry[$ hook_name];
@@ -262,6 +298,7 @@ function mmapi_emit(hook_name, ctx) {
 // Chain the value through every filter handler. A handler returning undefined
 // keeps the current value, and so does a handler error.
 function mmapi_apply_filters(hook_name, value, ctx) {
+    __mmapi_hook_fired(hook_name);
     var registry = global[$ "__mmapi_hooks"];
     if (registry == undefined) { return value; }
     var handlers = registry[$ hook_name];
@@ -303,6 +340,7 @@ function mmapi_apply_filters(hook_name, value, ctx) {
 // `result == false`, which this dialect's numeric coercion also makes true for
 // 0 and 0.0; a runtime test asserting the documented behaviour caught it.
 function mmapi_check_guards(hook_name, ctx) {
+    __mmapi_hook_fired(hook_name);
     var registry = global[$ "__mmapi_hooks"];
     if (registry == undefined) { return true; }
     var handlers = registry[$ hook_name];
@@ -350,6 +388,7 @@ function mmapi_check_guards(hook_name, ctx) {
 
 // The first non-undefined handler result in dispatch order, else undefined.
 function mmapi_run_override(hook_name, ctx) {
+    __mmapi_hook_fired(hook_name);
     var registry = global[$ "__mmapi_hooks"];
     if (registry == undefined) { return undefined; }
     var handlers = registry[$ hook_name];
@@ -409,6 +448,68 @@ function mmapi_hook_kind(hook_name) {
     var catalog = global[$ "__mmapi_hook_catalog"];
     if (catalog == undefined) { return undefined; }
     return catalog[$ hook_name];
+}
+
+// ── Hook liveness ─────────────────────────────────────────────────────
+// A seam can keep applying while its dispatch dies at run time, for example
+// when the injected code reads state the engine reworked and the guarding
+// catch swallows the error. The dispatchers therefore tally every dispatch
+// that reaches them, and the report below turns those tallies into the list
+// of declared hooks that never fired.
+
+// The tally, taken before the registry looks for handlers, so a dispatch
+// site proves itself even when nothing is registered. The peek reads only
+// an already-created debug state with an already-resolved gate. It never
+// creates the state and never triggers the lazy config read, which keeps
+// boot memory-only, and a session that never enables debug counts nothing.
+// Counts therefore cover dispatches made while debug was enabled.
+function __mmapi_hook_fired(hook_name) {
+    var state = global[$ "__mmapi_debug"];
+    if (state == undefined || state.enabled != true) { return; }
+    var current = state.hook_counts[$ hook_name];
+    state.hook_counts[$ hook_name] = (current == undefined) ? 1 : (current + 1);
+}
+
+// One hook's dispatch count since debug was enabled, 0 when debug never ran
+// or the hook never dispatched.
+function mmapi_hook_fired_count(hook_name) {
+    var state = global[$ "__mmapi_debug"];
+    if (state == undefined) { return 0; }
+    var current = state.hook_counts[$ hook_name];
+    return (current == undefined) ? 0 : current;
+}
+
+// The liveness report: { enabled, counts, silent, undeclared }. counts maps
+// hook name to dispatches made while debug was enabled. silent lists the
+// installed catalog's hooks with no dispatches, sorted, and is empty rather
+// than a guess when the catalog table is unavailable. undeclared lists
+// counted names outside the catalog, sorted, which is where custom
+// mod-emitted hooks appear. Many hooks fire only in specific game contexts,
+// so a silent hook is a lead to probe, not an alarm.
+function mmapi_hook_liveness() {
+    var state = global[$ "__mmapi_debug"];
+    var enabled = (state != undefined && state.enabled == true);
+    var counts = (state == undefined) ? {} : state.hook_counts;
+    var silent = [];
+    var undeclared = [];
+    var catalog = global[$ "__mmapi_hook_catalog"];
+    if (catalog != undefined) {
+        var declared = struct_get_names(catalog);
+        array_sort(declared, true);
+        var count = array_length(declared);
+        for (var i = 0; i < count; i++) {
+            var name = declared[i];
+            if (counts[$ name] == undefined) { array_push(silent, name); }
+        }
+        var counted = struct_get_names(counts);
+        array_sort(counted, true);
+        var counted_total = array_length(counted);
+        for (var k = 0; k < counted_total; k++) {
+            var counted_name = counted[k];
+            if (catalog[$ counted_name] == undefined) { array_push(undeclared, counted_name); }
+        }
+    }
+    return { enabled: enabled, counts: counts, silent: silent, undeclared: undeclared };
 }
 
 // An override hook's declared contention class per the installed catalog:

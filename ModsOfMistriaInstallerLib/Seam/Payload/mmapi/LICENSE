@@ -1,0 +1,52 @@
+MMAPI - A GML modding framework for Fields of Mistria
+Copyright (C) 2026 Anna Nomoly
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along
+with this program. If not, see <https://www.gnu.org/licenses/>.
+
+The full text of the GNU General Public License version 3 is in LICENCE.txt
+at the root of this repository.
+
+
+ADDITIONAL TERMS UNDER GNU GPL VERSION 3 SECTION 7
+
+The following additional terms apply to the files in this directory. They
+are permitted supplements under section 7 of the GNU General Public License
+version 3 and are not further restrictions within the meaning of section 10.
+
+  1. (Section 7b) You must preserve the copyright notices, license notices,
+     and author attributions contained in these files and in this LICENSE.
+     They may not be removed, replaced, or obscured in any conveyed copy.
+
+  2. (Section 7c) You must not misrepresent the origin of this material.
+     You must not claim to be its original author. Modified versions must
+     be plainly marked as modified, must state that they differ from the
+     original, and must not be presented as the original MMAPI.
+
+  3. (Section 7e) No rights are granted under trademark law to the names
+     "MMAPI" or "Mods of Mistria Installer", or to any associated logo or
+     branding. A modified version must be distributed under a different
+     name that does not suggest affiliation with or endorsement by the
+     original project.
+
+These additional terms do not limit any right granted by the GNU General
+Public License. Source code, modification, and redistribution rights are
+unaffected.
+
+
+THIRD-PARTY CONTENT
+
+The MMAPI seam catalog contains excerpts of Fields of Mistria game code used
+as anchor patterns. That content is the property of NPC Studio and is not
+covered by this LICENSE. The catalog is not in this directory. See the notice
+at the top of seams.toml under ModsOfMistriaInstallerLib/Seam/.

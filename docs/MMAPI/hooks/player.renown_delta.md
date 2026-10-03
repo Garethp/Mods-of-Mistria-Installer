@@ -53,3 +53,6 @@ mmapi_filter("player.renown_delta", town_favorite_player_renown_delta);
 - [player.xp_delta](player.xp_delta.md) - The similar filter point for skill XP.
 - [player.gold_delta](player.gold_delta.md) - The filter point for the shipping gold that becomes a renown entry.
 - [npc.heart_points](npc.heart_points.md) - The equivalent delta filter for villager hearts.
+- [museum.donate_item](museum.donate_item.md) - The donation moment that queues one of the pending entries this filter drains.
+- [quest.complete](quest.complete.md) - The quest completion moment that queues another kind of pending entry.
+- [renown.level_gained](renown.level_gained.md) - The level-up moment the drained gains produce, downstream in `set_renown()`.

@@ -26,14 +26,14 @@ An NPC that ends up `false` is skipped by the relationships journal *before* any
 ```gml
 // npc.is_unlocked is a FILTER: you receive (value, ctx) and return a
 // replacement, or undefined to keep the game's value.
-function author_mymod_luna_unlocked(_unlocked, _npc_id) {
+function mymod_luna_unlocked(_unlocked, _npc_id) {
     if (_npc_id != NpcId.author_mymod_luna) {
         return undefined;               // not ours - keep the current value
     }
-    return author_mymod_progress();     // false hides the NPC entirely
+    return T2R.read("adeline_has_met") == true;   // shown once the player has met Adeline; false hides the NPC entirely
 }
 
-mmapi_filter("npc.is_unlocked", author_mymod_luna_unlocked);
+mmapi_filter("npc.is_unlocked", mymod_luna_unlocked);
 ```
 
 See [Journal Visibility](../EXTENSIONS.md#journal-visibility) for the full picture. This hook is the primary of three levers, alongside the `vendor` and `animal` tags.

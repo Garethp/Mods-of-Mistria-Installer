@@ -48,7 +48,7 @@ mmapi_on("monster.step_begin", hive_mind_monster_step_begin);
 
 ## See Also
 
-- [monster.draw](monster.draw.md) - This hook is the per-frame draw counterpart, for world-space visuals.
+- [monster.step_end](monster.step_end.md) - This hook is the per-frame counterpart after the engine has settled the monster's frame state, for renderables a mod attaches.
 - [fsm.transition](fsm.transition.md) - This hook fires on transition edges instead of every tick, so you can redirect or cancel state changes.
 - [monster.spawn](monster.spawn.md) - Move, replace, or cancel the spawn before the stepping starts.
 - [monster.death](monster.death.md) - This event fires the moment it all stops.

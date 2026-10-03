@@ -18,7 +18,7 @@ Lets a save that learned a since-removed custom spell load anyway. The spell is 
 ```gml
     ARI.spells_learned = deserialize_array_bool(
         files.player.spells_learned,
-        try_string_to_spell, // mmapi_save_spells_tolerance
+        function(__mmapi_s) { return try_string_to_spell(__mmapi_s); }, // mmapi_save_spells_tolerance
         Spell.LEN,
     );
 ```

@@ -28,14 +28,22 @@ public class SpriteMetaFile
 public class SpriteMetaFileProperties: MetaProperties
 {
     [TomlPropertyName("replace_id")] public string? ReplaceId { get; set; }
-    
+
+    // Opt-in for a *_lut.png replacement: when true, the incoming LUT's unique colour columns are merged on top of the LUT already packed instead of replacing it. Absent/false means a plain replace (the default).
+    [TomlPropertyName("lut_merge")] public bool? LutMerge { get; set; }
+
     public void Merge(SpriteMetaFileProperties? newProperties)
     {
         if (newProperties is null) return;
-        
+
         if (!string.IsNullOrEmpty(newProperties.ReplaceId))
         {
             ReplaceId = newProperties.ReplaceId;
+        }
+
+        if (newProperties.LutMerge is not null)
+        {
+            LutMerge = newProperties.LutMerge;
         }
 
         Merge(newProperties as MetaProperties);

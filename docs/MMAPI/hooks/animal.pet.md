@@ -48,4 +48,5 @@ mmapi_on("animal.pet", pet_parade_animal_pet);
 
 ## See Also
 
-- [animal.heart_points](animal.heart_points.md) - Adjust the heart points a barn animal gains.
+- [animal.heart_points](animal.heart_points.md) - Adjust the heart points an animal gains.
+- [animal.production_gate](animal.production_gate.md) - Petting feeds the happiness result this gate tests for daily production.

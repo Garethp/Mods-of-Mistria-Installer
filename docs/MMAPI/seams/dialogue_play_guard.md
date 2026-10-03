@@ -28,3 +28,5 @@ This entry sits near the end of the catalog on purpose. Catalog order is apply o
 - [dialogue.play_guard](../hooks/dialogue.play_guard.md) - This is the hook this seam dispatches.
 - [dialogue_path](dialogue_path.md) - This is the filter this guard runs ahead of, in the same function.
 - [dialogue_line](dialogue_line.md) - Reword lines of conversations you let through.
+- [ui_spawn_tutorial_guard](ui_spawn_tutorial_guard.md) - This is the same veto shape in front of tutorial popups.
+- [dialogue_conversation_finished](dialogue_conversation_finished.md) - This is the emit at the end of the conversation, in this same file.

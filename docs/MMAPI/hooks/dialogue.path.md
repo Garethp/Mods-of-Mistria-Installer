@@ -57,3 +57,4 @@ mmapi_filter("dialogue.path", understudy_dialogue_path);
 - [dialogue.play_guard](dialogue.play_guard.md) - Block a conversation before it starts (fires first, same struct shape).
 - [dialogue.line](dialogue.line.md) - Reword any dialogue line before the textbox shows it.
 - [dialogue.speaker](dialogue.speaker.md) - Swap the speaker a textbox shows.
+- [dialogue.conversation_finished](dialogue.conversation_finished.md) - Know when a conversation has finished. Its ctx carries the path this filter settled on.

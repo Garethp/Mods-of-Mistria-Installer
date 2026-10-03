@@ -24,3 +24,4 @@ The emit lands between `randomize()` and the return, inside a try/catch, after t
 
 - [request_board.fetch_pool_ready](../hooks/request_board.fetch_pool_ready.md) - This is the hook this seam dispatches.
 - [request_board_fetch_pool](request_board_fetch_pool.md) - The companion filter earlier in the same build.
+- [quest_complete](quest_complete.md) - This is the emit inside a validated quest completion.

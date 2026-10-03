@@ -5,10 +5,13 @@ public enum SeamProblemKind
     Anchor,
     Target,
     Wrap,
+    Reads,
+    Asset,
     Marker,
     Decode,
     MissingFile,
     CallRewrite,
+    Framework,
 
     // Reserved for extension failures where our state is wrong, such as ordinal
     // collision, ordinal gap, vacancy path collision. Extension failures that
@@ -29,10 +32,13 @@ public static class SeamProblemKinds
         SeamProblemKind.Anchor => "anchor",
         SeamProblemKind.Target => "target",
         SeamProblemKind.Wrap => "wrap",
+        SeamProblemKind.Reads => "reads",
+        SeamProblemKind.Asset => "asset",
         SeamProblemKind.Marker => "marker",
         SeamProblemKind.Decode => "decode",
         SeamProblemKind.MissingFile => "missing_file",
         SeamProblemKind.CallRewrite => "call_rewrite",
+        SeamProblemKind.Framework => "framework",
         SeamProblemKind.Extension => "extension",
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };

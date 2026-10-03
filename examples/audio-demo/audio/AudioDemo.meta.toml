@@ -1,0 +1,6 @@
+[meta_properties]
+id = "a0d10de3f00d1234"
+asset_kind = "AudioBank"
+
+[asset_properties]
+load_sync = false

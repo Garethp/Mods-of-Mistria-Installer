@@ -138,15 +138,15 @@ Your NPC is visible in the relationships journal by default, as a faded row with
 To gate on your own condition, register a filter handler using the standard [Quick Start](QUICK_START.md) skeleton, with a top-level named handler:
 
 ```gml
-function author_mymod_luna_unlocked(unlocked, npc_id) {
+function mymod_luna_unlocked(unlocked, npc_id) {
     if (npc_id != NpcId.author_mymod_luna) {
         return undefined;              // not ours, keep the current value
     }
-    return author_mymod_progress();    // false hides the row entirely
+    return NPCS[NpcId.Adeline].heart_level() >= 2;    // shown once Adeline is a friend; false hides the row entirely
 }
 
 // inside your registration latch, alongside your other registrations
-mmapi_filter("npc.is_unlocked", author_mymod_luna_unlocked);
+mmapi_filter("npc.is_unlocked", mymod_luna_unlocked);
 ```
 
 The filtered value is the unlocked boolean, and `ctx` is the `NpcId` ordinal. Return `undefined` to keep the current value.

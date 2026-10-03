@@ -6,7 +6,7 @@ The public `mmapi_*` helper areas and their working contracts. For the hook engi
 
 ## Core
 
-Mod identity and lifecycle.
+These helpers cover mod identity and lifecycle.
 
 | Function | What it does |
 | -------- | ------------ |
@@ -25,11 +25,11 @@ Each mod gets `%LOCALAPPDATA%/FieldsOfMistria/mod_data/<mod>/` for its config, l
 
 | Function | What it does |
 | -------- | ------------ |
-| `mmapi_config_load(mod_name)` | Low-level load of the parsed JSON value. A missing file yields `{}`; a corrupt primary first tries its last-good `.bak`. It does not shape-check, so prefer `mmapi_config_read_valid` for the standard struct contract. |
+| `mmapi_config_load(mod_name)` | Low-level load of the parsed JSON value. A missing file yields `{}`, and a corrupt primary first tries its last-good `.bak`. It does not shape-check, so prefer `mmapi_config_read_valid` for the standard struct contract. |
 | `mmapi_config_save(mod_name, cfg)` | Preserve the old valid file as `<mod>.json.bak`, then write the struct. |
 | `mmapi_config_get(cfg, key, default)` | Read one key with a default. |
 | `mmapi_config_get_range(cfg, key, default, min, max)` | Return the value when it compares inside the inclusive range, otherwise the default. This legacy helper neither clamps nor checks the value's type. |
-| `mmapi_config_read_valid(mod_name, version)` | Load only a struct with the matching numeric `__config_version`; otherwise return `{}` so fields take their defaults. |
+| `mmapi_config_read_valid(mod_name, version)` | Load only a struct with the matching numeric `__config_version`, and otherwise return `{}` so fields take their defaults. |
 | `mmapi_config_version_ok(cfg, version)` | Test that version contract directly. |
 | `mmapi_config_bool(cfg, key, default)` | Read a genuine Boolean, otherwise the default. |
 | `mmapi_config_number(cfg, key, default, min, max)` | Read a number in the inclusive range, normalized with `real()`, otherwise the default. It does not clamp. |
@@ -62,15 +62,18 @@ An absent primary is a fresh config and does not resurrect a stray backup. A pri
 
 ## Log
 
-Leveled logging to the console and a per-mod log file at `mod_data/<mod>/logs/<mod>.log`.
+Leveled logging to the console and a per-mod log file at `mod_data/<mod>/logs/<mod>.log`. `MmapiLogLevel` has five levels, `Trace`, `Debug`, `Info`, `Warn`, and `Error`.
 
-- Levels in `MmapiLogLevel`: `Trace`, `Debug`, `Info`, `Warn`, and `Error`. One call per level: `mmapi_log_trace/debug/info/warn/error(mod_name, message)`, plus `mmapi_log(level, mod_name, message)`.
-- Logging is **safe at boot**. Info and above buffer in memory and flush on the first frame. The configured Debug/Trace threshold is read only after IO becomes ready, so boot-time Debug and Trace are filtered unless code first calls `mmapi_log_set_level`. Lines otherwise flush in batches, and immediately at Warn and above.
-- Level control: `mmapi_log_set_level` / `mmapi_log_get_level` / `mmapi_log_level_from_string`. The shared default comes from `log_level` in `mod_data/mmapi/mmapi.json`, not from each mod's config, and defaults to Info. Trace is file-only.
-- `mmapi_warn_rate_limited(key, mod_name, message)`: the first occurrence logs immediately, then one per 60. Keys share one framework-wide counter, so prefix yours with the mod name.
-- `mmapi_log_flush(mod_name)` forces that mod's file sink after IO is ready, and `mmapi_log_set_sinks(console_on, file_on)` selects the shared sinks. Do not flush at top-level boot; use it from a handler or tick.
+| Function | What it does |
+| -------- | ------------ |
+| `mmapi_log_trace/debug/info/warn/error(mod_name, message)` | One call per level. |
+| `mmapi_log(level, mod_name, message)` | The general form. |
+| `mmapi_log_set_level` / `mmapi_log_get_level` / `mmapi_log_level_from_string` | Level control. The shared default comes from `log_level` in `mod_data/mmapi/mmapi.json`, not from each mod's config, and defaults to Info. Trace is file-only. |
+| `mmapi_warn_rate_limited(key, mod_name, message)` | Logs the first occurrence immediately, then one per 60. Keys share one framework-wide counter, so prefix yours with the mod name. |
+| `mmapi_log_flush(mod_name)` | Forces that mod's file sink after IO is ready. Do not flush at top-level boot. Use it from a handler or tick. |
+| `mmapi_log_set_sinks(console_on, file_on)` | Selects the shared sinks. |
 
-Trace, Debug, and Info normally flush after 20 pending lines; Warn and Error flush immediately. Each flush rewrites the accumulated log for the current session. When proving that a one-off handler fired, log at Warn or call `mmapi_log_flush("my_mod")` after the Info line from gameplay time.
+Logging is **safe at boot**. Info and above buffer in memory and flush on the first frame. The configured Debug/Trace threshold is read only after IO becomes ready, so boot-time Debug and Trace are filtered unless code first calls `mmapi_log_set_level`. Trace, Debug, and Info normally flush after 20 pending lines, while Warn and Error flush immediately. Each flush rewrites the accumulated log for the current session. When proving that a one-off handler fired, log at Warn or call `mmapi_log_flush("my_mod")` after the Info line from gameplay time.
 
 ## Mod Save Files
 
@@ -82,7 +85,7 @@ mmapi_modsave_register("my_mod", my_mod_save_collect, my_mod_save_apply);
 
 `collect` takes no arguments and returns a plain struct to persist (numbers, strings, bools, arrays, and plain structs only, per [save_json_file](MOD_ANATOMY.md#save_json_file-crashes-on-non-plain-values)). `apply(data)` receives it after a save loads. A fresh save passes `undefined`. Version your schema with a field in the struct so an old sidecar can be migrated or discarded.
 
-Returning `undefined` from `collect`, or throwing before it returns, skips that write and preserves the previous sidecar. Callback failures are contained and rate-limited so the remaining registrations still run. Before overwriting a valid sidecar, MMAPI preserves `<prefix>.json.bak`; if the primary later exists but cannot parse, load tries that last-good copy. A merely missing primary is treated as fresh and does not revive the backup.
+Returning `undefined` from `collect`, or throwing before it returns, skips that write and preserves the previous sidecar. Callback failures are contained and rate-limited so the remaining registrations still run. Before overwriting a valid sidecar, MMAPI preserves `<prefix>.json.bak`, and if the primary later exists but cannot parse, load tries that last-good copy. A merely missing primary is treated as fresh and does not revive the backup.
 
 > [!WARNING]
 > Register once, inside your latch. Mod-save registrations are not de-duplicated.
@@ -106,11 +109,11 @@ if (_vk != undefined) {
 
 `mmapi_hotkey_pad_from_name` (also *case-sensitive*) accepts `GAMEPAD_A`, `GAMEPAD_B`, `GAMEPAD_X`, `GAMEPAD_Y`, `GAMEPAD_LEFT_SHOULDER`, `GAMEPAD_RIGHT_SHOULDER`, `GAMEPAD_LEFT_TRIGGER`, `GAMEPAD_RIGHT_TRIGGER`, `GAMEPAD_DPAD_UP`, `GAMEPAD_DPAD_DOWN`, `GAMEPAD_DPAD_LEFT`, `GAMEPAD_DPAD_RIGHT`, `GAMEPAD_LEFT_STICK`, `GAMEPAD_RIGHT_STICK`, `GAMEPAD_SELECT`, and `GAMEPAD_START`. Each map returns `undefined` for the other family's names, so validate a both-families config with `_vk != undefined || _pad != undefined`.
 
-> [!Note]
-> The `A`/`B`/`X`/`Y` names follow the Xbox (XInput) layout by *position*: `GAMEPAD_Y` is the top face button, `GAMEPAD_A` the bottom. Controllers with other label layouts (e.g. a Switch Pro Controller through Steam Input) fire by position, so the label printed on the button may differ unless the player enables their controller's native-layout option in Steam.
+> [!NOTE]
+> The `A`/`B`/`X`/`Y` names follow the Xbox (XInput) layout by *position*, so `GAMEPAD_Y` is the top face button and `GAMEPAD_A` the bottom. Controllers with other label layouts (e.g. a Switch Pro Controller through Steam Input) fire by position, so the label printed on the button may differ unless the player enables their controller's native-layout option in Steam.
 
 > [!WARNING]
-`ALT`, `PAUSE_BREAK`, `CAPS_LOCK`, `NUM_LOCK`, `SCROLL_LOCK`, and `NUMPAD_0` through `NUMPAD_9` are not supported. A mod configured with them will fall back to its default binding.
+> `ALT`, `PAUSE_BREAK`, `CAPS_LOCK`, `NUM_LOCK`, `SCROLL_LOCK`, and `NUMPAD_0` through `NUMPAD_9` are not supported. A mod configured with them will fall back to its default binding.
 
 The callback takes no arguments. A keyboard key the engine cannot poll is rejected at registration with a warning (and disabled with a single warning if the engine rejects it later). Gamepad bindings poll every connected controller and fire on any of them. A disconnected controller is not an error, and the binding simply waits for one. Callback failures are isolated and rate-limited, and polling continues.
 
@@ -153,7 +156,7 @@ if (_alt != undefined) {
 ```
 
 > [!TIP]
-Validate the two fields independently. The main binding should fall back to the mod's default when it is invalid, and an absent alternate simply registers nothing.
+> Validate the two fields independently. The main binding should fall back to the mod's default when it is invalid, and an absent alternate simply registers nothing.
 
 ## Combat
 
@@ -164,7 +167,7 @@ Inject a hit through the engine's own damage pipeline, rather than writing to he
 | `mmapi_deal_damage(target, amount, opts)` | Deal `amount` damage to a receiver instance, or to an instance that owns one (a monster, or the player). Returns the tarball, or `undefined` when the hit is rejected or the target is invalid. |
 | `mmapi_deal_damage_player(amount, opts)` | The same, aimed at the player. Resolves the live `obj_ari` instance and returns `undefined` when there is no player, such as on the title screen. |
 
-`amount` is positive, pre-mitigation damage unless `instant_kill` is set. Player damage goes through the engine's mitigation and one-damage floor; monster damage is raw. A queued hit normally resolves in the owner's next damage drain; a `DamageOnAttack` receiver can consume it during `receiver.damage(...)` before the helper returns.
+`amount` is positive, pre-mitigation damage unless `instant_kill` is set. Player damage goes through the engine's mitigation and one-damage floor, while monster damage is raw. A queued hit normally resolves in the owner's next damage drain, but a `DamageOnAttack` receiver can consume it during `receiver.damage(...)` before the helper returns.
 
 `opts` is optional. Its full surface is:
 
@@ -177,7 +180,7 @@ Inject a hit through the engine's own damage pipeline, rather than writing to he
 | `electrocute_kind` | Add the Electric flag and set the engine's electrocute kind. |
 | `venomous`, `frozen`, `fire_oil` | Set the matching monster-side status effects. |
 | `source` | Instance credited as the tarball parent. Required for `knockback`. |
-| `knockback` | `{ force_min, force_max, radius }`; omitted with a warning when `source` is absent. |
+| `knockback` | `{ force_min, force_max, radius }`, omitted with a warning when `source` is absent. |
 | `provenance`, `stats_entry` | Mines-run accounting fields passed to the builder. |
 | `show_popup`, `flinch` | Player-only presentation controls. Set either to `false` to suppress it. |
 | `target_mask` | Override the tarball target mask. Defaults to the receiver's mask. |
@@ -188,25 +191,27 @@ Inject a hit through the engine's own damage pipeline, rather than writing to he
 
 ## Localization
 
-Every direct engine-GML `local_get(...)` call routes through MMAPI (a call rewrite installed by the seam layer), which makes that game-text surface filterable. Mod files are added after the rewrite; call `mmapi_local_get(key)` explicitly when mod code should use the same hook path:
+Every direct engine-GML `local_get(...)` call routes through MMAPI (a call rewrite installed by the seam layer), which makes that game-text surface filterable. Mod files are added after the rewrite, so call `mmapi_local_get(key)` explicitly when mod code should use the same hook path:
 
-- `mmapi_local_get(key)`: The lookup itself, callable directly.
-- Hook `local.get` (filter): Rewrite any text the engine asks for.
-- Hook `local.missing` (filter): Supply text for keys the tables lack.
+| Surface | What it does |
+| ------- | ------------ |
+| `mmapi_local_get(key)` | The lookup itself, callable directly. |
+| `local.get` (filter hook) | Rewrite any text the engine asks for. |
+| `local.missing` (filter hook) | Supply text for keys the tables lack. |
 
-## Derived Events
+## Runtime Hooks
 
-Some hooks are emitted by the framework itself rather than by an engine seam. `game.day_changed` and `game.room_changed` come from the per-frame state poll; `combat.damage_injected` fires directly from `mmapi_deal_damage`. They register and behave exactly like any other hook. The distinction only matters if you go looking for their seam.
+Some hooks are emitted by the framework itself rather than by an engine seam. They register and behave exactly like any other hook, and the distinction only matters if you go looking for their seam. See [Runtime Hooks](SEAMS.md#runtime-hooks).
 
 ## Cross-Mod Coordination
 
-How mods talk to each other without a cross-mod call API.
+These are the ways mods talk to each other without a cross-mod call API.
 
 ### Never Call Another Mod's Functions
 
 Mod GML compiles into the game as **one program**. A call to a function that does not exist is a *compile error*, not a runtime error. If your mod names another mod's function and that mod is absent, your mod fails to compile and never loads. No `if` guard helps, because the name fails to resolve before any code runs.
 
-Direct cross-mod state access uses **guarded global reads**. Globals are addressed by string through the accessor (`global[$ "name"]`), which resolves at runtime and yields `undefined` when the other mod is absent. Published custom hooks are the other coordination surface; see [Publishing Hooks For Your Mod](#publishing-hooks-for-your-mod).
+Direct cross-mod state access uses **guarded global reads**. Globals are addressed by string through the accessor (`global[$ "name"]`), which resolves at runtime and yields `undefined` when the other mod is absent. Published custom hooks are the other coordination surface (see [Publishing Hooks For Your Mod](#publishing-hooks-for-your-mod)).
 
 ### Reading Another Mod's State
 
@@ -238,18 +243,18 @@ if (is_struct(_arena)) {
 
 ### Ordering Handlers Across Mods
 
-Use the `before` / `after` registration options. They name mods, not functions, and are safe when the named mod is absent. See [Hooks](HOOKS.md#registration-options).
+Use the `before` / `after` registration options. They name mods, not functions, and are safe when the named mod is absent. See [Hooks](HOOKS.md#registration-options-and-dispatch-order).
 
 ### Publishing Hooks For Your Mod
 
-Call the dispatchers (`mmapi_emit`, `mmapi_apply_filters`, `mmapi_check_guards`, `mmapi_run_override`) with your own hook names to give other mods extension points. See [Hooks](HOOKS.md#defining-your-own-hooks).
+Call the dispatchers (`mmapi_emit`, `mmapi_apply_filters`, `mmapi_check_guards`, `mmapi_run_override`) with your own hook names to publish hooks for other mods to handle. See [Hooks](HOOKS.md#publishing-custom-hooks).
 
 ## Calling the Engine Directly
 
 Most mod needs are direct engine calls, not hooks. Since mod GML compiles into the game as one program, every engine function, method, and global is directly callable. Hooks are for observing or changing what the engine does on its own. To ask the engine to do something, call it.
 
 > [!IMPORTANT]
-> Call the engine from a hook handler or a registered tick, never at top-level boot. Top-level code runs before the first frame: there is no player, no room, and file IO throws.
+> Call the engine from a hook handler or a registered tick, never at top-level boot. Top-level code runs before the first frame, when there is no player, no room, and file IO throws.
 
 A sampler of the common ones:
 
@@ -263,7 +268,7 @@ ARI.modify_gold(500);
 
 // Show the toast notification popup. Once per real event, not every frame.
 // The argument is a LOCALIZATION KEY, resolved engine-side through local_get
-// - inside the local_get_dispatch rewrite, so local.get filters apply (pass
+// inside the local_get_dispatch rewrite, so local.get filters apply (pass
 // the key, never pre-localized text). Register your own keys via fiddle
 // strings + l10n fiddle_renames: see Mod Anatomy's "User-Facing Text".
 // Optional second arg suppresses repeats of the same key, in frames.

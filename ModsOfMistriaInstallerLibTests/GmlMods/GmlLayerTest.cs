@@ -347,10 +347,10 @@ public class GmlLayerTest
     {
         var plan = Stage();
 
-        // 9 = the 8 original framework files + mmapi_ext_vacant.gml (the
+        // 10 = the 9 framework files + mmapi_ext_vacant.gml (the
         // vacant-NPC stub object the npc_roster vacancy case resolves to)
         var sources = PayloadResolver.MmapiSources();
-        Assert.That(sources, Has.Count.EqualTo(9));
+        Assert.That(sources, Has.Count.EqualTo(10));
 
         var delivered = plan.Added
             .Where(e => e.Key.StartsWith(SeamStager.MmapiTreePrefix, StringComparison.Ordinal))

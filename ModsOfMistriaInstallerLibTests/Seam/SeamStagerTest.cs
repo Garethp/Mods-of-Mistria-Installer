@@ -164,6 +164,182 @@ public class SeamStagerTest
             "mmapi_apply_filters(\"test.filter\", __mmapi_wrap_result, { thing: self })"));
     }
 
+    private const string FilterSeam = "\n" + """
+        [[seam]]
+        id      = "tfilter"
+        file    = "gml/F.gml"
+        target  = { fn = "regen", at = "head" }
+        op      = "filter"
+        hook    = "test.filter"
+        var     = "amount"
+        ctx     = "{ actor: self, cap: max_amount }"
+        """ + "\n";
+
+    private const string FilterPristine =
+        "function regen(amount, max_amount) {\n"
+        + "    hp = min(hp + amount, max_amount);\n"
+        + "}\n";
+
+    [Test]
+    public void ShouldStageAFilterWhoseReadsAllResolve()
+    {
+        var staged = StageOne(Base + FilterHook + GoodSeam + FilterSeam, FilterPristine,
+            "assets/gml/F.gml");
+
+        Assert.That(staged, Does.Contain(
+            "amount = mmapi_apply_filters(\"test.filter\", amount, { actor: self, cap: max_amount })"));
+    }
+
+    [Test]
+    public void ShouldFailClosedWhenAPayloadReadIsGone()
+    {
+        // an engine update renamed the parameters, so the payload's reads no
+        // longer resolve anywhere in the function
+        var catalog = Load(Base + FilterHook + GoodSeam + FilterSeam);
+        var pristine = Pristine(new Dictionary<string, string>
+        {
+            ["assets/gml/F.gml"] = "function regen(value, value_cap) {\n"
+                                   + "    hp = min(hp + value, value_cap);\n"
+                                   + "}\n",
+            ["assets/gml/A.gml"] = GoodPristine,
+        });
+
+        var exception = Assert.Throws<SeamStagingException>(() => SeamStager.Simulate(catalog, pristine));
+
+        Assert.That(exception!.Message, Does.Contain("the payload reads 'amount', 'max_amount'"));
+        Assert.That(exception.Message, Does.Contain("never mentions them"));
+        Assert.That(exception.Problems[0].Kind, Is.EqualTo(SeamProblemKind.Reads));
+    }
+
+    [Test]
+    public void ShouldExemptNonScopeNamesInAPayload()
+    {
+        // an uppercase enum root, a call name, struct keys and keyword
+        // literals are not scope reads, so a body mentioning none of them
+        // still stages
+        var seam = FilterSeam.Replace(
+            "\"{ actor: self, cap: max_amount }\"",
+            "\"{ kind: ItemKind.Weapon, count: total_count(), flag: true }\"");
+        var staged = StageOne(Base + FilterHook + GoodSeam + seam, FilterPristine,
+            "assets/gml/F.gml");
+
+        Assert.That(staged, Does.Contain("ItemKind.Weapon"));
+    }
+
+    private const string ContextSeam = "\n" + """
+        [[seam]]
+        id      = "tctx"
+        file    = "gml/G.gml"
+        context_before = '''
+            play_sound(track);
+        '''
+        op      = "emit"
+        hook    = "test.event"
+        ctx     = "{ track: track, volume: base_volume }"
+        """ + "\n";
+
+    private const string ContextPristine =
+        "function play_music(track) {\n"
+        + "    var base_volume = 0.8;\n"
+        + "    play_sound(track);\n"
+        + "}\n";
+
+    [Test]
+    public void ShouldStageATextSeamWhoseReadsResolveInTheEnclosingFunction()
+    {
+        // base_volume is declared above the anchored line, outside the
+        // anchor's own text, so only the enclosing span can prove it
+        var staged = StageOne(Base + GoodSeam + ContextSeam, ContextPristine, "assets/gml/G.gml");
+
+        Assert.That(staged, Does.Contain("{ track: track, volume: base_volume }"));
+    }
+
+    [Test]
+    public void ShouldFailClosedWhenATextSeamReadIsGoneFromTheEnclosingFunction()
+    {
+        var catalog = Load(Base + GoodSeam + ContextSeam);
+        var pristine = Pristine(new Dictionary<string, string>
+        {
+            ["assets/gml/G.gml"] = "function play_music(track) {\n"
+                                   + "    var volume_scale = 0.8;\n"
+                                   + "    play_sound(track);\n"
+                                   + "}\n",
+            ["assets/gml/A.gml"] = GoodPristine,
+        });
+
+        var exception = Assert.Throws<SeamStagingException>(() => SeamStager.Simulate(catalog, pristine));
+
+        Assert.That(exception!.Message, Does.Contain("the payload reads 'base_volume'"));
+        Assert.That(exception.Message, Does.Contain("'play_music' in"));
+        Assert.That(exception.Message, Does.Contain("never mentions it"));
+    }
+
+    [Test]
+    public void ShouldFallBackToTheWholeFileForATopLevelAnchor()
+    {
+        // the anchor sits outside any function, so the file is the region.
+        // The asset-prefixed name never needs proving at all
+        var seam = ContextSeam
+            .Replace("    play_sound(track);", "init_thing();")
+            .Replace("\"{ track: track, volume: base_volume }\"",
+                "\"{ mode: boot_mode, icon: spr_boot_icon }\"");
+        var staged = StageOne(Base + GoodSeam + seam, "boot_mode = 0;\ninit_thing();\n",
+            "assets/gml/G.gml");
+
+        Assert.That(staged, Does.Contain("{ mode: boot_mode, icon: spr_boot_icon }"));
+    }
+
+    [Test]
+    public void ShouldHoldAssetReadsAgainstTheInventoryWhenOneExists()
+    {
+        // the fixture seam's ctx references a sprite. A source with an asset
+        // inventory proves or refuses it, and a source without one stands down
+        var seam = ContextSeam.Replace(
+            "\"{ track: track, volume: base_volume }\"",
+            "\"{ track: track, icon: spr_track_icon }\"");
+        var catalog = Load(Base + GoodSeam + seam);
+        var files = new Dictionary<string, string>
+        {
+            ["assets/gml/G.gml"] = ContextPristine,
+            ["assets/gml/A.gml"] = GoodPristine,
+        };
+
+        var carrying = new MemoryPristineSource(
+            files.ToDictionary(f => f.Key, f => Encoding.UTF8.GetBytes(f.Value)),
+            new HashSet<string> { "spr_track_icon" });
+        Assert.That(SeamStager.Simulate(catalog, carrying)["assets/gml/G.gml"].Text,
+            Does.Contain("spr_track_icon"));
+
+        var missing = new MemoryPristineSource(
+            files.ToDictionary(f => f.Key, f => Encoding.UTF8.GetBytes(f.Value)),
+            new HashSet<string>());
+        var exception = Assert.Throws<SeamStagingException>(() => SeamStager.Simulate(catalog, missing));
+        Assert.That(exception!.Message, Does.Contain("references asset 'spr_track_icon'"));
+        Assert.That(exception.Problems[0].Kind, Is.EqualTo(SeamProblemKind.Asset));
+
+        var unknowing = new MemoryPristineSource(
+            files.ToDictionary(f => f.Key, f => Encoding.UTF8.GetBytes(f.Value)));
+        Assert.That(SeamStager.Simulate(catalog, unknowing)["assets/gml/G.gml"].Text,
+            Does.Contain("spr_track_icon"));
+    }
+
+    [Test]
+    public void ShouldHoldWrapPayloadReadsAgainstTheWrappedFunction()
+    {
+        var seam = WrapSeam.Replace("{ thing: self }", "{ thing: self, size: label_size }");
+        var catalog = Load(Base + FilterHook + GoodSeam + seam);
+        var pristine = Pristine(new Dictionary<string, string>
+        {
+            ["assets/gml/E.gml"] = WrapPristine,
+            ["assets/gml/A.gml"] = GoodPristine,
+        });
+
+        var exception = Assert.Throws<SeamStagingException>(() => SeamStager.Simulate(catalog, pristine));
+
+        Assert.That(exception!.Message, Does.Contain("the payload reads 'label_size'"));
+        Assert.That(exception.Message, Does.Contain("never mentions it"));
+    }
+
     [Test]
     public void ShouldRefuseASelfReferencingWrapBody()
     {
@@ -414,6 +590,24 @@ public class SeamStagerTest
         Assert.That(exception!.Message, Does.Contain("Node.gml:2"));
         Assert.That(exception.Message, Does.Contain("Peer.gml:2"));
         Assert.That(exception.Message, Does.Contain("problem(s)"));
+    }
+
+    [Test]
+    public void ShouldBatchSeamAndRewriteProblemsInOneStage()
+    {
+        // a broken anchor must not hide rewrite drift in the same build
+        var catalog = Load(RewriteCatalog);
+        var files = new Dictionary<string, string>(RewriteFiles)
+        {
+            ["assets/gml/objects/Game.gml"] = "function step_begin() {\n    injected();\n}\n",
+            ["assets/gml/scripts/UI/Node.gml"] = "function f() {\n    return local_get(a, b);\n}\n",
+        };
+        var pristine = Pristine(files);
+
+        var exception = Assert.Throws<SeamStagingException>(() => SeamStager.StageAll(catalog, pristine));
+
+        Assert.That(exception!.Message, Does.Contain("game_step"));
+        Assert.That(exception.Message, Does.Contain("passes 2 argument(s)"));
     }
 
     [Test]

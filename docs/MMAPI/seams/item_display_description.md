@@ -25,5 +25,6 @@ With zero handlers a wrap is behaviorally (not byte-) equivalent to pristine: on
 ## See Also
 
 - [item.display_description](../hooks/item.display_description.md) - This is the hook this seam dispatches.
-- [ui_item_icon_live_item](ui_item_icon_live_item.md) - This is the other `LiveItem.gml` wrap, for the icon sprite.
+- [ui_item_icon_live_item](ui_item_icon_live_item.md) - This is the `LiveItem.gml` wrap for the icon sprite.
+- [items_store_price](items_store_price.md) - This is the `LiveItem.gml` wrap for the buy price.
 - [ui_item_node_set_to_item](ui_item_node_set_to_item.md) - Restyle the item node itself, whose `.description` is never drawn.
