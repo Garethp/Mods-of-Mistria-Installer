@@ -51,7 +51,7 @@ version = 2
 [counts]
 hooks = 143
 seams = 160
-engine_fixes = 37
+engine_fixes = 38
 call_rewrites = 1
 
 # --- hook declarations -------------------------------------------------------------
@@ -4802,6 +4802,27 @@ replace = '''
         }
     }'''
 marker  = "mmapi_npc_load_guard"
+
+# The 1.0.5 save patch walks every NpcId member of a pre-1.0.5 save on a
+# festival eve and dereferences each blob with no guard. A custom NPC, live or
+# vacant, has no blob in such a save, so the read throws, the patcher's catch
+# logs an error, and the title menu refuses the save until the mod is removed.
+# The guard skips an absent blob with a warn naming the member. Inert on an
+# unmodded install, where every member of the roster has a blob.
+[[engine_fix]]
+name    = "save_patch_npc_blob_guard"
+file    = "gml/scripts/Serialization/Patches.gml"
+anchor  = '''
+                        var npc_data = npcs[$ npc_id_to_string(i)];
+                        var location = string_to_location_id(npc_data.location_position.location_id);'''
+replace = '''
+                        var npc_data = npcs[$ npc_id_to_string(i)];
+                        if npc_data == undefined { // mmapi_save_patch_npc_blob_guard
+                            warn("MMAPI: save patch found no blob for {NpcId} - skipped", i);
+                            continue;
+                        }
+                        var location = string_to_location_id(npc_data.location_position.location_id);'''
+marker  = "mmapi_save_patch_npc_blob_guard"
 
 # GAME_STATS structs (perks, menu_opens, npcs_spoken_to, location_visits) are
 # name-keyed and seeded ONLY at new-game and at version-migration

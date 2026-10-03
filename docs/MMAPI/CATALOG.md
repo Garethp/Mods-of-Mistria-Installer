@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **143 hooks**, fed by **160 seams**, **37 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **143 hooks**, fed by **160 seams**, **38 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -385,6 +385,7 @@ Hook-less edits the catalog also carries:
 | [recipe_tag_payment](seams/recipe_tag_payment.md) | engine fix | Pays a `tag` component's quantity-scaled cost through the inventory's own tag helper, the player's inventory first and then each crafting chest. |
 | [monster_status_overlay](seams/monster_status_overlay.md) | engine fix | Sets the flat draw kind on the monster status overlay and defaults status particles on, matching the hit flash `setup_white_vfx` builds the same way. |
 | [npc_load_missing_blob_guard](seams/npc_load_missing_blob_guard.md) | engine fix | Lets a pre-existing save load after a custom NPC is installed, and a mod-era save load after the NPC is removed (vacancy resume). |
+| [save_patch_npc_blob_guard](seams/save_patch_npc_blob_guard.md) | engine fix | Lets a pre-1.0.5 save pass the 1.0.5 save patch on a festival eve when a custom NPC has no blob in it, skipping that member with a warn instead of refusing the save. |
 | [save_load_spells_tolerance](seams/save_load_spells_tolerance.md) | engine fix | A learned custom spell whose mod was removed is forgotten with a warn instead of aborting the load. |
 | [save_load_pinned_spell_tolerance](seams/save_load_pinned_spell_tolerance.md) | engine fix | An unknown pinned spell unpins instead of aborting the load. |
 | [save_load_status_effect_tolerance](seams/save_load_status_effect_tolerance.md) | engine fix | An active status effect whose type no longer resolves is dropped with a warn instead of aborting the load. |
