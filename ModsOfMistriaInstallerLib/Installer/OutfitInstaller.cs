@@ -60,6 +60,8 @@ public class OutfitInstaller(
         };
         if (def.PriceOverride.HasValue)
             entry["price_override"] = def.PriceOverride.Value;
+        if (def.HideHair.HasValue )
+            entry["hide_hair"] = def.HideHair.Value;
         var patch = new TomlTable { [def.Id] = entry };
 
         if (_fileModifier.Exists(dest))
