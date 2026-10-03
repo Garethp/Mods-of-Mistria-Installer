@@ -1,6 +1,8 @@
+using System.Text;
 using Garethp.ModsOfMistriaInstallerLib.Generator;
 using Garethp.ModsOfMistriaInstallerLib.GmlMods;
 using Garethp.ModsOfMistriaInstallerLib.Operations;
+using Garethp.ModsOfMistriaInstallerLib.Seam;
 using ModsOfMistriaInstallerLibTests.Fixtures;
 using ModsOfMistriaInstallerLibTests.TestUtils;
 
@@ -128,5 +130,89 @@ public class ModLinterTest
 
         var excluded = Lint(GmlMod("function mod_a_boot() {\n}\n", ["absent.hook"]));
         Assert.That(excluded.ExitCode, Is.EqualTo(1));
+    }
+
+    // Extension registrations lint the way they install: the collector's
+    // problems exclude the mod, the survivors stage so the generated registry
+    // resolves, and a mod of registrations alone still enters the layer.
+
+    private const string CatalogWithPoint = SyntheticLayer.CatalogToml + "\n" + """
+
+        [[extension]]
+        id   = "roster"
+        file = "gml/objects/Other.gml"
+
+        [extension.ordinal]
+        enum     = "Thing"
+        sentinel = "LEN"
+
+        [[extension.fields]]
+        name = "object"
+        type = "identifier"
+        doc  = "The object."
+
+        [[extension.sites]]
+        id       = "enum_member"
+        kind     = "enum_member"
+        template = "{{symbol}} = {{ordinal}},"
+        indent   = 4
+
+        [extension.vacancy]
+        enum_member = "{{symbol}} = {{ordinal}},"
+        """ + "\n";
+
+    private const string OtherWithEnum =
+        "enum Thing {\n    Alpha,\n    LEN\n}\n\n" + SyntheticLayer.PristineOther;
+
+    private static ModLintResult LintWithPoint(MockMod mod, GmlLayerOptions? options = null) =>
+        ModLinter.Lint(mod, SyntheticLayer.Pristine(other: OtherWithEnum), null, options,
+            SeamCatalogLoader.Load(Encoding.UTF8.GetBytes(CatalogWithPoint), "synthetic"));
+
+    private static MockMod RegisteringMod(string registrationFile, string? gml = null)
+    {
+        var files = new Dictionary<string, object> { { registrationFile, "object = \"obj_x\"\n" } };
+        if (gml is not null) files["gml/core/State.gml"] = gml;
+        return new MockMod(files) { Id = "mod.a", DirName = "mod_a", Version = "0.0.1" };
+    }
+
+    [Test]
+    public void ShouldStageARegistrationSoTheGeneratedRegistryResolves()
+    {
+        var mod = RegisteringMod("momi/extensions/roster/luna.toml",
+            "function mod_a_boot() {\n    return mmapi_ext_id(\"roster\", \"luna\");\n}\n");
+
+        var result = LintWithPoint(mod, new GmlLayerOptions { StrictLints = true });
+
+        Assert.That(result.Ok, Is.True, string.Join("; ", result.ExclusionReasons));
+        Assert.That(result.RegistrationCount, Is.EqualTo(1));
+        Assert.That(result.Findings.Select(f => f.ToString()), Has.None.Contains("mmapi_ext_id"));
+        Assert.That(ModLinter.RenderText(result, "mod_a"), Does.Contain("registrations: 1 staged"));
+    }
+
+    [Test]
+    public void ShouldExcludeAModWhoseRegistrationHasAProblem()
+    {
+        var result = LintWithPoint(RegisteringMod("momi/extensions/roster/Luna.toml"));
+
+        Assert.That(result.Ok, Is.False);
+        Assert.That(result.ExclusionReasons, Has.Count.EqualTo(1));
+        Assert.That(result.ExitCode, Is.EqualTo(1));
+        Assert.That(result.Gate, Is.EqualTo(LintGateOutcome.NotReached));
+        var text = ModLinter.RenderText(result, "mod_a");
+        Assert.That(text, Does.Contain("EXCLUDED"));
+        Assert.That(text, Does.Contain("not staged, the registration problems below exclude the mod"));
+        Assert.That(text, Does.Not.Contain("no checker backend"));
+    }
+
+    [Test]
+    public void ShouldStageAModOfRegistrationsAlone()
+    {
+        var result = LintWithPoint(RegisteringMod("momi/extensions/roster/luna.toml"));
+
+        Assert.That(result.Ok, Is.True, string.Join("; ", result.ExclusionReasons));
+        Assert.That(result.Symbol, Is.Not.Null);
+        Assert.That(result.GmlFileCount, Is.EqualTo(0));
+        Assert.That(result.RegistrationCount, Is.EqualTo(1));
+        Assert.That(ModLinter.RenderText(result, "mod_a"), Does.Not.Contain("manifest checks only"));
     }
 }
