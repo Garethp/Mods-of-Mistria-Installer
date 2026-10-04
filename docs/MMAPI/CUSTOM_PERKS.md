@@ -51,7 +51,7 @@ The skills menu is separate from the perk roster. It renders purchase trees from
 	icon = "spr_ui_skills_combat_icon_true_strike"
 ```
 
-MOMI's TOML merge appends table-array entries, so the vanilla tiers keep their entries and yours joins them. The row layout adapts to the extra tile. The `icon` may be any installed named sprite, including one your mod ships through the [art lane](EXTENSIONS.md#shipping-your-npcs-art). The icon resolves through `string_to_asset` at boot, so a typo'd name is a boot crash. `MOMIidentify` and `MOMIaction` remain available when you need to edit a vanilla entry rather than add one.
+MOMI's TOML merge appends table-array entries, so the vanilla tiers keep their entries and yours joins them. The row layout adapts to the extra tile. The `icon` may be any installed named sprite, including one your mod ships through the [art lane](EXTENSIONS.md#named-sprites). The icon resolves through `string_to_asset` at boot, so a typo'd name is a boot crash. `MOMIidentify` and `MOMIaction` remain available when you need to edit a vanilla entry rather than add one.
 
 Purchasing through the menu calls the same `acquire_perk` as your code would, and the two grant paths coexist safely.
 

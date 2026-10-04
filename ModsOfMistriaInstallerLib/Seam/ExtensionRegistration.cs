@@ -11,8 +11,8 @@ public record ExtensionRegistration(
     IReadOnlyDictionary<string, string> RenderedValues);
 
 // One symbol's permanent ordinal assignment. Append-only. The entry survives
-// the mod being uninstalled, since a save naming a removed NPC would
-// otherwise throw in native string_to_X.
+// the mod being uninstalled, since a save naming a removed member would
+// otherwise throw in the engine's native string_to_X converter.
 public record ExtensionAssignment(string Symbol, int Ordinal, string ModId);
 
 // One ordinal the expander wants recorded, not yet recorded. The caller

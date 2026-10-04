@@ -137,7 +137,7 @@ public class ExtensionVacancyAndRegistryTest
         // live symbols answer "is this here" through mmapi_ext_catalog. A
         // vacancy is not there (the mod is gone, and the registry saying yes
         // would be a lie) but is in the vacant catalog, which is what the
-        // npc_is_unlocked seam consults to keep tombstones out of the journal
+        // engine seams consult to keep tombstones out of the player's view
         var ledger = new MemoryExtensionLedger(
             ("roster", new ExtensionAssignment("modx_gone", 2, "mod.gone")),
             ("roster", new ExtensionAssignment("modx_here", 3, "mod.here")));

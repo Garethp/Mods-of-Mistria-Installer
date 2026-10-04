@@ -108,7 +108,7 @@ A plain villager needs no hooks. The `requires_hooks` list stays empty unless yo
 object = "obj_luna"
 ```
 
-A registration is data. It names the GML object that represents your NPC in the world, and nothing else. MOMI validates it before installing anything, and a registration problem skips the whole mod the same way a GML problem does. See [Registering a Custom NPC](EXTENSIONS.md#registering-a-custom-npc) for the full rules.
+A registration is data. It names the GML object that represents your NPC in the world, and nothing else. MOMI validates it before installing anything, and a registration problem skips the whole mod the same way a GML problem does. See [npc_roster](extensions/npc_roster.md#registration) for the full rules.
 
 ## The Object
 
@@ -185,7 +185,7 @@ Copy the file for the other three seasons and change the `season` value in each.
 - The first entry must be exactly `6:00am`. That entry is the day-start anchor the engine snaps NPCs to when the day begins. Later entries are walked as real itineraries.
 - A destination is `"location/Trellis Point Name"`, and the point must already exist in that room. Check the vanilla schedules under `t2/Schedules/` before claiming a waypoint, because two NPCs scheduled to the same point at the same time will stand on the same tile.
 
-See [Schedules and Waypoints](EXTENSIONS.md#schedules-and-waypoints) for the full behavior.
+See [Schedules and Waypoints](extensions/npc_roster.md#schedules-and-waypoints) for the full behavior.
 
 ## The Dialogue
 
@@ -245,6 +245,6 @@ Reinstalling the mod brings her back with hearts, gift history, and other status
 
 ## Next Steps
 
-- Read [Extension Points](EXTENSIONS.md) for everything this page glossed over: journal visibility, custom world facts, art rules, and the save semantics in full.
+- Read [npc_roster](extensions/npc_roster.md) for everything this page glossed over: journal visibility, custom world facts and art rules, and [Extension Points](EXTENSIONS.md) for the save semantics in full.
 - The `status_effect` extension point follows the same registration pattern with far less bookkeeping: one registration file, one `register` call from your GML, and a HUD icon hook. See [Custom Status Effects](CUSTOM_STATUS_EFFECTS.md).
 - Custom spells and perks need no extension point at all. See [Custom Spells](CUSTOM_SPELLS.md) and [Custom Perks](CUSTOM_PERKS.md).

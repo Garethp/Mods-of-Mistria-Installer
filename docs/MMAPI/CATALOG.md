@@ -401,7 +401,7 @@ Hook-less edits the catalog also carries:
 | [save_load_infusion_tolerance](seams/save_load_infusion_tolerance.md) | engine fix | An item's unknown infusion is dropped with a warn instead of aborting the load. |
 | [save_load_animal_variant_tolerance](seams/save_load_animal_variant_tolerance.md) | engine fix | A barn animal's unknown variant falls back to its kind's first variant instead of crashing in play. |
 | [save_load_mount_variant_tolerance](seams/save_load_mount_variant_tolerance.md) | engine fix | The mount's unknown variant falls back to its kind's first variant instead of crashing in play. |
-| [game_stats_seed_on_load](seams/game_stats_seed_on_load.md) | engine fix | Seeds the per-name game-stats structs on every load, so mod-added locations/NPCs/perks cannot crash a same-version save's first stats increment. |
+| [game_stats_seed_on_load](seams/game_stats_seed_on_load.md) | engine fix | Seeds the per-name game-stats structs on every load, so content added after a save was written cannot crash its first stats increment. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Growing The Catalog

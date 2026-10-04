@@ -26,7 +26,7 @@ public class RebaseResult(IReadOnlyList<RebasedPoint> points, IReadOnlyList<Seam
 
 // Repacks every point's assignments contiguously above a grown base enum's
 // LEN, preserving relative order, symbols untouched. Save-invisible because
-// the engine persists NPC state by name, so every install runs it
+// the engine persists extension state by name, so every install runs it
 // automatically and logs each move.
 public static class ExtensionRebaser
 {

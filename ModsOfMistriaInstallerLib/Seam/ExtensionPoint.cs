@@ -155,8 +155,8 @@ public record ExtensionPoint(
     IReadOnlyList<ExtensionVacancyFile> VacancyFiles,
     IReadOnlyList<ExtensionCompanion> Companions)
 {
-    // Every file this point's sites touch, sorted. A point may span files. The
-    // npc point touches NpcId.gml and object_manifest.gml.
+    // Every file this point's sites touch, sorted. A point may span files when
+    // its sites append to a second one.
     public IReadOnlyList<string> Files => Sites
         .Select(s => s.File)
         .Distinct()

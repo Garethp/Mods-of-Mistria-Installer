@@ -1,4 +1,4 @@
-# Mods of Mistria Installer
+﻿# Mods of Mistria Installer
 
 ## Installation
 1. Create a mods folder to put your mods
@@ -99,11 +99,12 @@ mods. A mod that fails those checks is skipped completely.
 For additional information, see [MMAPI](docs/MMAPI/MMAPI.md) documentation.
 
 ### `momi/extensions/` (extension points)
-If you want your mod to add a custom NPC or a custom status effect, put a registration file in the
-`momi/extensions/` folder, and set the `minInstallerVersion` in your `manifest.json` to no lower than `0.16.0`.
+If you want your mod to add a custom status effect, put a registration file in the `momi/extensions/`
+folder, and set the `minInstallerVersion` in your `manifest.json` to no lower than `0.16.0`.
 
-A registration is a small TOML file that names your addition, such as `momi/extensions/npc_roster/luna.toml`
-for a villager. MOMI generates the engine wiring for it, and your mod supplies the content the player sees.
+A registration is a small TOML file that names your addition, such as `momi/extensions/status_effect/well_rested.toml`.
+MOMI generates the engine wiring for it, and your mod supplies the content the player sees.
+Custom NPCs register the same way, with `momi/extensions/npc_roster/luna.toml` for a villager.
 
 Before anything is written, MOMI validates every registration the same way it checks GML. A mod that fails
 those checks is skipped completely. Removing the mod later never breaks a player's save.

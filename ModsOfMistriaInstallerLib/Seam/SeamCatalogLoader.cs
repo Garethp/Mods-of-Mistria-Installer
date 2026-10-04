@@ -181,7 +181,7 @@ public static class SeamCatalogLoader
         }
 
         // extension ids share the seam/fix/rewrite id namespace. One namespace
-        // for problem reporting, so `ext:npc_roster` in a batched error is
+        // for problem reporting, so `ext:<point>` in a batched error is
         // never ambiguous about which entry it names
         foreach (var point in extensions)
         {
@@ -976,12 +976,11 @@ public static class SeamCatalogLoader
     }
 
     // A file a registration must ship alongside itself. Existence checks only.
-    // The other two lints are content-shaped ("the object value appears in an
-    // object_create call", "the companion toml declares a spring outfit key"),
-    // neither is expressible as a path. Both now live as targeted advisory
-    // checks in ExtensionCollector (CheckObjectCreation / CheckNpcRosterOutfits)
-    // - code, not schema. A generic content-check language for two advisory
-    // rules remains the wrong thing to build.
+    // Content-shaped lints ("the field value appears in an object_create
+    // call", "the companion toml declares a required key") are not
+    // expressible as a path. Those live as targeted advisory checks in
+    // ExtensionCollector, code rather than schema. A generic content-check
+    // language for a few advisory rules remains the wrong thing to build.
     private static ExtensionCompanion? ParseExtensionCompanion(TomlTable table, int index, string where,
         List<string> errors)
     {

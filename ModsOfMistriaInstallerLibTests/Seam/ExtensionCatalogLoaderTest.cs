@@ -426,27 +426,34 @@ public class ExtensionCatalogLoaderTest
     }
 
     [Test]
-    public void ShouldShipTheNpcRosterAndStatusEffectPoints()
+    public void ShouldShipTheStatusEffectPoint()
     {
-        // The catalog ships npc_roster and status_effect. The second is
-        // deliberately the simple shape (enum member only,
-        // vacancy-benign, no companions, no vacancy files). This pins both
-        // so a catalog edit that drops a site or companion fails here, not
-        // in someone's install.
+        // status_effect is deliberately the simple shape (enum member only,
+        // vacancy-benign, no companions, no vacancy files). Pinned so a
+        // catalog edit that changes its shape fails here, not in someone's
+        // install.
         var (name, bytes) = PayloadResolver.SeamCatalog();
 
         var extensions = SeamCatalogLoader.Load(bytes, name).Extensions;
-        Assert.That(extensions.Select(e => e.Id), Is.EqualTo(new[] { "npc_roster", "status_effect" }));
 
         var status = extensions.Single(e => e.Id == "status_effect");
         Assert.That(status.OrdinalEnum, Is.EqualTo("StatusEffectId"));
         Assert.That(status.Sites.Single().Kind, Is.EqualTo(ExtensionSiteKind.EnumMember));
         Assert.That(status.Companions, Is.Empty);
         Assert.That(status.VacancyFiles, Is.Empty);
+    }
+
+    [Test]
+    public void ShouldShipTheNpcRosterPoint()
+    {
+        // npc_roster is the full shape: five sites across two file kinds, an
+        // error-level companion and a vacancy stub. Pinned so a catalog edit
+        // that drops a site or companion fails here, not in someone's install.
+        var (name, bytes) = PayloadResolver.SeamCatalog();
+
+        var extensions = SeamCatalogLoader.Load(bytes, name).Extensions;
 
         var point = extensions.Single(e => e.Id == "npc_roster");
-
-        Assert.That(point.Id, Is.EqualTo("npc_roster"));
         Assert.That(point.OrdinalEnum, Is.EqualTo("NpcId"));
         Assert.That(point.Sites.Select(s => s.Id), Is.EqualTo(new[]
         {

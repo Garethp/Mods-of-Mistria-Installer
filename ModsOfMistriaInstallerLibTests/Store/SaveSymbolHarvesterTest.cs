@@ -63,6 +63,7 @@ public class SaveSymbolHarvesterTest
     private const string StatusEnum = """
         enum StatusEffectId {
             Burn,
+            WellRested,
             LEN,
         }
         """;
@@ -144,26 +145,26 @@ public class SaveSymbolHarvesterTest
     [Test]
     public void ShouldUnionAcrossSaves()
     {
-        var first = Pack(("npcs", """{"ari":{},"modauthor_luna":{}}"""));
-        var second = Pack(("npcs", """{"ari":{},"modauthor_rex":{}}"""));
+        var first = Pack(("player", """{"stats":{"status_effects":[{"type":"burn"},{"type":"modauthor_zeal"}]}}"""));
+        var second = Pack(("player", """{"stats":{"status_effects":[{"type":"modauthor_haste"}]}}"""));
         var dir = WriteSaves(first, second);
 
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine());
 
-        Assert.That(harvest["npc_roster"].Symbols,
-            Is.EquivalentTo(new[] { "modauthor_luna", "modauthor_rex" }));
+        Assert.That(harvest["status_effect"].Symbols,
+            Is.EquivalentTo(new[] { "modauthor_zeal", "modauthor_haste" }));
     }
 
     [Test]
     public void ShouldSkipAnUnreadableSaveWithoutThrowing()
     {
-        var good = Pack(("npcs", """{"ari":{},"modauthor_luna":{}}"""));
+        var good = Pack(("player", """{"stats":{"status_effects":[{"type":"modauthor_zeal"}]}}"""));
         var garbage = Encoding.UTF8.GetBytes("this is not a zlib stream at all");
         var dir = WriteSaves(good, garbage);
 
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine());
 
-        Assert.That(harvest["npc_roster"].Symbols, Is.EquivalentTo(new[] { "modauthor_luna" }),
+        Assert.That(harvest["status_effect"].Symbols, Is.EquivalentTo(new[] { "modauthor_zeal" }),
             "the readable save still harvests when a sibling is corrupt");
     }
 
@@ -173,27 +174,28 @@ public class SaveSymbolHarvesterTest
         // A crafted save must not smuggle arbitrary text into generated GML
         // through a symbol, so anything outside the strict lowercase
         // identifier shape is refused at harvest.
-        var sav = Pack(("npcs",
-            """{"ari":{},"Not Valid":{},"UPPER":{},"9starts_with_digit":{},"has-hyphen":{}}"""));
+        var sav = Pack(("player",
+            """{"stats":{"status_effects":[{"type":"burn"},{"type":"Not Valid"},{"type":"UPPER"},{"type":"9starts_with_digit"},{"type":"has-hyphen"}]}}"""));
         var dir = WriteSaves(sav);
 
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine());
 
-        Assert.That(harvest["npc_roster"].Symbols, Is.Empty);
+        Assert.That(harvest["status_effect"].Symbols, Is.Empty);
     }
 
     [Test]
     public void ShouldSubtractPristineMembersInTheirNativeNameForm()
     {
         // The live regression this pins. Capitalized members subtracted
-        // verbatim match nothing, and the whole vanilla roster harvests as
-        // custom. The save key "eiland" must be explained by member Eiland.
-        var sav = Pack(("npcs", """{"ari":{},"eiland":{}}"""));
+        // verbatim match nothing, and every vanilla member harvests as
+        // custom. The save type "well_rested" must be explained by member
+        // WellRested.
+        var sav = Pack(("player", """{"stats":{"status_effects":[{"type":"burn"},{"type":"well_rested"}]}}"""));
         var dir = WriteSaves(sav);
 
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine());
 
-        Assert.That(harvest["npc_roster"].Symbols, Is.Empty);
+        Assert.That(harvest["status_effect"].Symbols, Is.Empty);
     }
 
     [Test]
@@ -208,7 +210,7 @@ public class SaveSymbolHarvesterTest
     public void ShouldReturnEmptyHarvestWhenPristineScanFails()
     {
         var pristine = new MemoryPristineSource(new Dictionary<string, byte[]>());
-        var sav = Pack(("npcs", """{"modauthor_luna":{}}"""));
+        var sav = Pack(("player", """{"stats":{"status_effects":[{"type":"modauthor_zeal"}]}}"""));
         var dir = WriteSaves(sav);
 
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), pristine);
@@ -221,14 +223,14 @@ public class SaveSymbolHarvesterTest
     public void ShouldCapSymbolsPerPointAndSayThatItDid()
     {
         // a truncated recovery must never present itself as a complete one
-        var keys = string.Join(",", Enumerable.Range(0, 300).Select(i => $"\"flood_{i:d3}\":{{}}"));
-        var sav = Pack(("npcs", "{\"ari\":{}," + keys + "}"));
+        var slots = string.Join(",", Enumerable.Range(0, 300).Select(i => $"{{\"type\":\"flood_{i:d3}\"}}"));
+        var sav = Pack(("player", "{\"stats\":{\"status_effects\":[" + slots + "]}}"));
         var dir = WriteSaves(sav);
 
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine());
 
-        Assert.That(harvest["npc_roster"].Symbols, Has.Count.EqualTo(SaveSymbolHarvester.MaxSymbolsPerPoint));
-        Assert.That(harvest["npc_roster"].CapHit, Is.True);
+        Assert.That(harvest["status_effect"].Symbols, Has.Count.EqualTo(SaveSymbolHarvester.MaxSymbolsPerPoint));
+        Assert.That(harvest["status_effect"].CapHit, Is.True);
     }
 
     [Test]
@@ -237,13 +239,12 @@ public class SaveSymbolHarvesterTest
         // format drift, where the wanted record parses as JSON but is not the shape
         // the rule understands. Nothing harvests, and the harvester reports
         // the drift instead of presenting silence as health
-        var driftedNpcs = Pack(("npcs", """["ari","modauthor_luna"]"""));
+        var driftedSlots = Pack(("player", """{"stats":{"status_effects":{"0":{"type":"modauthor_zeal"}}}}"""));
         var driftedStats = Pack(("player", """{"someday":{"the":"stats"}}"""));
-        var dir = WriteSaves(driftedNpcs, driftedStats);
+        var dir = WriteSaves(driftedSlots, driftedStats);
 
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine());
 
-        Assert.That(harvest["npc_roster"].Symbols, Is.Empty);
         Assert.That(harvest["status_effect"].Symbols, Is.Empty);
     }
 
@@ -257,21 +258,21 @@ public class SaveSymbolHarvesterTest
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine());
 
         Assert.That(harvest["npc_roster"].PristineNames, Is.EquivalentTo(new[] { "ari", "eiland" }));
-        Assert.That(harvest["status_effect"].PristineNames, Is.EquivalentTo(new[] { "burn" }));
+        Assert.That(harvest["status_effect"].PristineNames, Is.EquivalentTo(new[] { "burn", "well_rested" }));
     }
 
     [Test]
     public void ShouldIgnoreFilesOutsideTheSavePattern()
     {
-        var real = Pack(("npcs", """{"ari":{},"modauthor_luna":{}}"""));
-        var decoy = Pack(("npcs", """{"ari":{},"modauthor_decoy":{}}"""));
+        var real = Pack(("player", """{"stats":{"status_effects":[{"type":"modauthor_zeal"}]}}"""));
+        var decoy = Pack(("player", """{"stats":{"status_effects":[{"type":"modauthor_decoy"}]}}"""));
         var dir = WriteSaves(real);
         File.WriteAllBytes(Path.Combine(dir, "game-1-9.sav.bak"), decoy);
         File.WriteAllBytes(Path.Combine(dir, "notes.sav"), decoy);
 
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine());
 
-        Assert.That(harvest["npc_roster"].Symbols, Is.EquivalentTo(new[] { "modauthor_luna" }));
+        Assert.That(harvest["status_effect"].Symbols, Is.EquivalentTo(new[] { "modauthor_zeal" }));
     }
 
     [Test]

@@ -15,7 +15,7 @@ Mods talk to the game through **named hooks**, which are moments in game code MM
 | [Hooks](HOOKS.md) | The named-hook engine. The four hook kinds, registration, ordering, dispatch, and error isolation. |
 | [Seams](SEAMS.md) | How hooks come to exist. The seam catalog, contributor authoring reference, application pipeline, and game-update checks. |
 | [Catalog](CATALOG.md) | Every hook and seam the catalog declares, each with its own page. |
-| [Extension Points](EXTENSIONS.md) | Growing the engine's own rosters: custom NPCs, registrations, art, dialogue, journal visibility. |
+| [Extension Points](EXTENSIONS.md) | Growing the engine's own enums by registration: short names, symbols, the ledger, and uninstalling. |
 | [Mod Anatomy](MOD_ANATOMY.md) | The mod folder, the boot file skeleton, the lifecycle, and the engine quirks every mod must respect. |
 | [The Manifest](MANIFEST.md) | The manifest fields a GML mod uses, and how MOMI validates them. |
 | [API Reference](API_REFERENCE.md) | The `mmapi_*` helper areas, covering config, logging, per-save data, hotkeys, localization, combat, cross-mod coordination, and calling the engine directly. |

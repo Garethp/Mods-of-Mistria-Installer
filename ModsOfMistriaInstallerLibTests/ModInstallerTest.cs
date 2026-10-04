@@ -333,12 +333,13 @@ public class ModInstallerTest
         Assert.That((string)assignment["mod"]!, Is.EqualTo("gone.mod"), "attribution must survive the rebase");
     }
 
-    // The synthetic extension catalog with the point named npc_roster, so the
-    // save-harvest rule table recognises it end to end.
-    private const string NpcRosterCatalogTail = """
+    // The synthetic extension catalog. WriteExtensionFixture substitutes the
+    // point id, so a test that needs the save-harvest rule table to recognise
+    // its point end to end names a shipped point id.
+    private const string ExtensionCatalogTail = """
 
         [[extension]]
-        id   = "npc_roster"
+        id   = "roster"
         file = "gml/objects/Other.gml"
 
         [extension.ordinal]
@@ -367,9 +368,7 @@ public class ModInstallerTest
     private void WriteExtensionFixture(string ledgerJson, string pointId = "roster")
     {
         var catalogPath = Path.Combine(_fom, "catalog.toml");
-        var tail = pointId == "roster"
-            ? NpcRosterCatalogTail.Replace("id   = \"npc_roster\"", "id   = \"roster\"")
-            : NpcRosterCatalogTail;
+        var tail = ExtensionCatalogTail.Replace("id   = \"roster\"", $"id   = \"{pointId}\"");
         File.WriteAllText(catalogPath, SyntheticLayer.CatalogToml + "\n" + tail + "\n");
 
         var livePath = Path.Combine(_fom, "assets.zip");
@@ -414,25 +413,25 @@ public class ModInstallerTest
         // The full reseed union through the installer. A save names a symbol
         // the (absent) ledger does not, the install recovers it as a vacancy
         // attributed "recovered", and a second install is a byte-level no-op.
-        WriteExtensionFixture("", pointId: "npc_roster");
+        WriteExtensionFixture("", pointId: "status_effect");
         var savesDir = Path.Combine(_fom, "saves");
         Directory.CreateDirectory(savesDir);
         File.WriteAllBytes(Path.Combine(savesDir, "game-1-0.sav"),
-            PackSave(("npcs", """{"alpha":{},"gone_luna":{}}""")));
+            PackSave(("player", """{"stats":{"status_effects":[null,{"type":"alpha"},{"type":"gone_zeal"}]}}""")));
 
         new ModInstaller(_fom, "", savesDir).InstallMods([], (_, _) => { },
             gateMode: CompileGateMode.Off);
 
         var ledgerPath = Path.Combine(_fom, ExtensionLedgerStore.FileName);
         var saved = JObject.Parse(File.ReadAllText(ledgerPath));
-        var assignment = saved["points"]!["npc_roster"]!["assigned"]!.Single();
-        Assert.That((string)assignment["symbol"]!, Is.EqualTo("gone_luna"));
+        var assignment = saved["points"]!["status_effect"]!["assigned"]!.Single();
+        Assert.That((string)assignment["symbol"]!, Is.EqualTo("gone_zeal"));
         Assert.That((int)assignment["ordinal"]!, Is.EqualTo(1));
         Assert.That((string)assignment["mod"]!, Is.EqualTo("recovered"));
         using (var live = ZipFile.OpenRead(new AssetsStore(_fom).LivePath))
         {
             Assert.That(ReadEntry(live, "assets/gml/objects/Other.gml"),
-                Does.Contain("gone_luna = 1, // mmapi_ext:npc_roster:enum_member:gone_luna:vacant"));
+                Does.Contain("gone_zeal = 1, // mmapi_ext:status_effect:enum_member:gone_zeal:vacant"));
         }
 
         var ledgerAfterFirst = File.ReadAllText(ledgerPath);
@@ -449,7 +448,7 @@ public class ModInstallerTest
         // (marked) archive recovers, and a marker naming a pristine member is
         // rejected instead of re-minted. The backup carries the pristine enum
         // and the live archive is marked, so EnsureBackup leaves it alone.
-        WriteExtensionFixture("", pointId: "npc_roster");
+        WriteExtensionFixture("");
         var livePath = Path.Combine(_fom, "assets.zip");
         File.Copy(livePath, Path.Combine(_fom, "assets.bak.zip"));
         File.Delete(livePath);
@@ -459,8 +458,8 @@ public class ModInstallerTest
             WriteEntry(archive, "assets/gml/objects/Game.gml", SyntheticLayer.PristineGame);
             WriteEntry(archive, "assets/gml/objects/Other.gml",
                 "enum Thing {\n    Alpha,\n"
-                + "    gone_rex = 1, // mmapi_ext:npc_roster:enum_member:gone_rex:vacant\n"
-                + "    alpha = 2, // mmapi_ext:npc_roster:enum_member:alpha\n"
+                + "    gone_rex = 1, // mmapi_ext:roster:enum_member:gone_rex:vacant\n"
+                + "    alpha = 2, // mmapi_ext:roster:enum_member:alpha\n"
                 + "    LEN\n}\n\n" + SyntheticLayer.PristineOther);
             WriteEntry(archive, "assets/fiddle/locations.toml", "");
         }
@@ -472,7 +471,7 @@ public class ModInstallerTest
             gateMode: CompileGateMode.Off);
 
         var saved = JObject.Parse(File.ReadAllText(Path.Combine(_fom, ExtensionLedgerStore.FileName)));
-        var assignment = saved["points"]!["npc_roster"]!["assigned"]!.Single();
+        var assignment = saved["points"]!["roster"]!["assigned"]!.Single();
         Assert.That((string)assignment["symbol"]!, Is.EqualTo("gone_rex"),
             "the marker symbol recovers, and 'alpha' must not because the game defines it natively");
         Assert.That((string)assignment["mod"]!, Is.EqualTo("recovered"));
@@ -484,11 +483,11 @@ public class ModInstallerTest
         // A reseed minted the tombstone as "recovered". The mod coming back
         // adopts its ordinal and takes its attribution back.
         WriteExtensionFixture(
-            """{"version":1,"points":{"npc_roster":{"assigned":[{"symbol":"tester_mymod_luna","ordinal":1,"mod":"recovered"}]}}}""",
-            pointId: "npc_roster");
+            """{"version":1,"points":{"roster":{"assigned":[{"symbol":"tester_mymod_luna","ordinal":1,"mod":"recovered"}]}}}""",
+            pointId: "roster");
         var mod = new MockMod(new Dictionary<string, object>
         {
-            ["momi/extensions/npc_roster/luna.toml"] = "object = \"tester_mymod_luna_obj\"\n",
+            ["momi/extensions/roster/luna.toml"] = "object = \"tester_mymod_luna_obj\"\n",
         })
         {
             Id = "tester.mymod", Name = "mymod", Author = "tester",
@@ -500,7 +499,7 @@ public class ModInstallerTest
 
         Assert.That(result.Skipped, Is.Empty);
         var saved = JObject.Parse(File.ReadAllText(Path.Combine(_fom, ExtensionLedgerStore.FileName)));
-        var assignment = saved["points"]!["npc_roster"]!["assigned"]!.Single();
+        var assignment = saved["points"]!["roster"]!["assigned"]!.Single();
         Assert.That((int)assignment["ordinal"]!, Is.EqualTo(1), "adoption keeps the ordinal");
         Assert.That((string)assignment["mod"]!, Is.EqualTo("tester.mymod"),
             "the returning mod reclaims attribution from the recovered placeholder");

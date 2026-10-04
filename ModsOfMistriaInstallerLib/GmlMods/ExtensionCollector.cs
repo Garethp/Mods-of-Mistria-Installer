@@ -303,11 +303,11 @@ public static class ExtensionCollector
     }
 
     // The files a registration must ship alongside itself. A registration
-    // wires up identity. The mod supplies the data behind it. For npc_roster
-    // the missing-data case is not a degraded NPC but a crash during Setup -
-    // the roster array is built for every ordinal and the prototype lookup
-    // resolves by name, so its companion is declared `error` and excluding the
-    // mod is strictly better than shipping a game that will not boot.
+    // wires up identity. The mod supplies the data behind it. Where the engine
+    // loads that data for every ordinal at boot, the missing-data case is a
+    // crash rather than a degraded feature, so such a companion is declared
+    // `error` and excluding the mod is strictly better than shipping a game
+    // that will not boot.
     private static void CheckCompanions(IMod mod, ExtensionPoint point,
         ExtensionRegistration registration, string rel, List<string> problems, List<LintFinding> findings)
     {
@@ -322,8 +322,8 @@ public static class ExtensionCollector
             [ExtensionPlaceholders.Ordinal] = "",
         };
 
-        // The install-time local-name pass renames fiddle/npcs/<local>.toml to
-        // the <symbol> form, so a companion the author named with the local
+        // An install-time rewrite may rename a companion from its local name
+        // to the <symbol> form, so a companion the author named with the local
         // name satisfies the requirement too. Accept either spelling here.
         Dictionary<string, string> localValues = new(values)
         {

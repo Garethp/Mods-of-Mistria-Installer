@@ -85,10 +85,10 @@ public static class ExtensionExpander
         }
 
         // The registry ships only when something is registered or a vacancy is
-        // alive. The vacant table is what npc_is_unlocked's seam consults to
-        // keep tombstones out of the journal, so a vacancy-only install still
-        // needs it. With neither, no file, and the staged tree is what it would
-        // have been without the mechanism.
+        // alive. Engine seams consult the vacant table to keep tombstones out
+        // of the player's view, so a vacancy-only install still needs it. With
+        // neither, no file, and the staged tree is what it would have been
+        // without the mechanism.
         if (apply && problems.Count == 0 && registry.Count + vacants.Count > 0)
             expansion.Added[ExtensionRegistryRenderer.RegistryRel] =
                 Encoding.UTF8.GetBytes(ExtensionRegistryRenderer.Render(registry, vacants));
@@ -181,10 +181,9 @@ public static class ExtensionExpander
 
         if (!apply) return;
 
-        // Vacancy data, not just vacancy code. A vacant enum member with no
-        // fiddle prototype crashes at Game-create, because the roster array is built
-        // unconditionally for every ordinal and the Npc constructor
-        // dereferences its prototype with no nullish guard. Generating a stub
+        // Vacancy data, not just vacancy code. Some enums pair every member
+        // with a data file the engine loads unconditionally for every ordinal,
+        // so a vacant member with no data crashes at boot. Generating a stub
         // per symbol preserves the archive's 1:1 member-to-data invariant, so
         // every engine call site keeps working, including ones added by a
         // future game build, which is why this beat redirecting the lookup.
@@ -278,7 +277,7 @@ public static class ExtensionExpander
         }
     }
 
-    // Catalog paths are archive-relative ("fiddle/npcs/x.toml"). Staged and
+    // Catalog paths are archive-relative ("fiddle/x.toml"). Staged and
     // added keys carry the "assets/" prefix. Accept either, as the seam
     // catalog's `file` values do.
     private static string NormaliseArchivePath(string rel)
@@ -443,7 +442,7 @@ public static class ExtensionExpander
 
         // Contiguity. The append-only rule implies it, but a hand-edited or
         // half-written ledger produces a hole, and a hole crashes the game
-        // at launch ("34 did not match any NpcId"), before the main menu.
+        // at launch (an ordinal that matches no member), before the main menu.
         // This turns that into a staging error naming the gap.
         var expected = baseLen;
         foreach (var entry in entries)

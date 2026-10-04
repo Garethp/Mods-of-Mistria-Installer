@@ -74,8 +74,8 @@ public static class ExtensionRegistryRenderer
             "",
             "// Ledger vacancies: symbols whose ordinal is alive (saves may still name",
             "// them) but whose mod is not installed. Consumed by the framework's",
-            "// mmapi_ext_is_vacant(), which the npc_is_unlocked seam asks so vacants",
-            "// stay out of the journal. Flat point, symbol, ordinal triples, sorted.",
+            "// mmapi_ext_is_vacant(), which engine seams ask so vacants stay out of",
+            "// the player's view. Flat point, symbol, ordinal triples, sorted.",
             "function mmapi_ext_vacant_catalog() {",
             "    return [",
         ]);

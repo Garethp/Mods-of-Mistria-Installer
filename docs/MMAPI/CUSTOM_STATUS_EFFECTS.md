@@ -82,7 +82,7 @@ The manifest lists both hooks: `"requires_hooks": ["game.day_changed", "status_e
 
 ## The HUD Icon
 
-Without a [status_effect.hud_icon](hooks/status_effect.hud_icon.md) handler the effect works but draws no icon. The handler returns `{ icon_sprite, color }`, where `color` is optional and defaults to the vanilla status orange. The example above reuses a vanilla sprite. To ship your own, add a meta and png pair under `animations/` and reference the sprite by name, the same [art lane](EXTENSIONS.md#shipping-your-npcs-art) custom NPCs use.
+Without a [status_effect.hud_icon](hooks/status_effect.hud_icon.md) handler the effect works but draws no icon. The handler returns `{ icon_sprite, color }`, where `color` is optional and defaults to the vanilla status orange. The example above reuses a vanilla sprite. To ship your own, add a meta and png pair under `animations/` and reference the sprite by name, through the [art lane](EXTENSIONS.md#named-sprites) every named sprite uses.
 
 ## Reacting to the End
 

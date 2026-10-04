@@ -50,7 +50,7 @@ public class ShippedCatalogTest
     [Test]
     public void ShouldAnchorEveryExtensionSiteZeroRegistrant()
     {
-        // the shipped npc_roster entry proven against its own anchors like
+        // every shipped extension point proven against its own anchors like
         // every seam. Enum scans clean, anchors match exactly once post-seam,
         // append targets exist and end in live code
         var pristine = new MemoryPristineSource(

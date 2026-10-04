@@ -36,4 +36,4 @@ function mymod_luna_unlocked(_unlocked, _npc_id) {
 mmapi_filter("npc.is_unlocked", mymod_luna_unlocked);
 ```
 
-See [Journal Visibility](../EXTENSIONS.md#journal-visibility) for the full picture. This hook is the primary of three levers, alongside the `vendor` and `animal` tags.
+See [Journal Visibility](../extensions/npc_roster.md#journal-visibility) for the full picture. This hook is the primary of three levers, alongside the `vendor` and `animal` tags.
