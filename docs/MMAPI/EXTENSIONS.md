@@ -164,6 +164,8 @@ See [Custom Status Effects](CUSTOM_STATUS_EFFECTS.md) for the guide, and [status
 
 Removing your mod never breaks a player's save. MOMI maintains a **ledger** containing your NPC's identity and persists it invisibly, so every save reference keeps resolving. Hearts, gift history, etc. are restored when the mod is reinstalled. Saves made before your NPC existed load fine too.
 
+The ledger also rebuilds itself when lost, from the names the saves carry and from the markers in the installed archive. `--reseed-check` on the command line reports what that rebuild would recover, without installing. See [Seams](SEAMS.md#check-the-ledger-reseed).
+
 > [!WARNING]
 > Festival dates are the one exception. If your NPC joins a festival's `npc_date.participants` table, a save made between accepting a festival date and the festival itself will error on festival day after your mod is removed, because the participants entry is your mod's data and leaves with it. Weigh festival participation accordingly.
 

@@ -402,37 +402,10 @@ public class ModInstaller
             using var pristine = new ZipPristineSource(store.BackupPath);
             var harvest = SaveSymbolHarvester.Harvest(_savesLocation!, catalog, pristine);
 
-            // The outgoing archive's markers are the second harvest source.
-            // Its symbols join a point's set only when the pristine
-            // scan for that point succeeded (the entry exists at all), and
-            // they pass the same pristine-name subtraction and cap the save
-            // path applies, so a stale marker can never re-mint a name the
-            // current game defines natively. A point with no save rule still
-            // gets archive coverage through the same entries.
+            // The outgoing archive's markers are the second harvest source,
+            // unioned under the save path's own subtraction and cap.
             var fromArchive = ArchiveMarkerHarvester.Harvest(store.LivePath, catalog);
-            foreach (var (pointId, symbols) in fromArchive)
-            {
-                if (!harvest.TryGetValue(pointId, out var found)) continue;
-                foreach (var symbol in symbols.OrderBy(s => s, StringComparer.Ordinal))
-                {
-                    if (found.PristineNames.Contains(symbol))
-                    {
-                        Logger.Log($"  reseed: archive marker for '{pointId}' names '{symbol}', "
-                                   + "which the current game defines natively - marker ignored");
-                        continue;
-                    }
-
-                    if (found.Symbols.Count >= SaveSymbolHarvester.MaxSymbolsPerPoint)
-                    {
-                        Logger.Log($"  reseed: '{pointId}' union hit the "
-                                   + $"{SaveSymbolHarvester.MaxSymbolsPerPoint}-symbol cap, "
-                                   + "remaining archive markers dropped");
-                        break;
-                    }
-
-                    found.Symbols.Add(symbol);
-                }
-            }
+            SaveSymbolHarvester.UnionArchiveMarkers(harvest, fromArchive);
 
             foreach (var (pointId, found) in harvest)
             {

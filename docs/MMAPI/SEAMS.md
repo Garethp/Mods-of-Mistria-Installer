@@ -423,6 +423,22 @@ Exit codes are part of the command-line contract:
 
 For automation, substitute `--seam-check-json`. Its `problem_records` include `kind`, `entry_id`, `file`, `line`, `hint`, `message`, and `context`. When a closest source location is available, `context` is a numbered excerpt, and problem kinds without a source site leave it empty.
 
+### Check The Ledger Reseed
+
+An install carrying extension points keeps a ledger of the ordinals it has handed out, and rebuilds a lost ledger from two sources: the symbol names the player's saves carry, and the markers stamped on generated lines in the archive it is about to replace. The reseed check runs both harvests and reports, without installing:
+
+```powershell
+dotnet run --project ModsOfMistriaCommandLine -- --reseed-check
+```
+
+With no arguments it uses the located install's saves folder, pristine backup, live archive and ledger. Pass a saves folder and a pristine zip to check another set. The report lists, per extension point, what the saves name, what the archive's markers name, what the union would recover, and what the ledger already holds. Every message the harvesters would log on an install prints as a note.
+
+| Exit | Meaning |
+| ---- | ------- |
+| `0` | Every save and the outgoing archive read as expected. |
+| `1` | A note was raised: an unreadable save, a record whose shape the reader does not recognize, a cap hit, or a stale marker. A shape note after a game update means the save format moved under the reader. |
+| `2` | No saves folder or no pristine archive could be located. |
+
 ### Triage A Game Update
 
 The seam check proves that every anchor still holds on a given build. It cannot see the opposite failure, where an anchor keeps holding while the code around it changes meaning. The seam diff covers that blind spot. It compares two pristine builds across every region the catalog anchors into and reports each one that changed.

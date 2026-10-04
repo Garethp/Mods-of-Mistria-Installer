@@ -46,7 +46,7 @@ public static class SaveSymbolHarvester
     // and the set of save-carried symbol names the pristine enum does not
     // explain. The caller subtracts the ledger and unions the remainder.
     public static Dictionary<string, PointHarvest> Harvest(
-        string savesDir, SeamCatalog catalog, IPristineSource pristine)
+        string savesDir, SeamCatalog catalog, IPristineSource pristine, List<string>? notes = null)
     {
         var result = new Dictionary<string, PointHarvest>(StringComparer.Ordinal);
 
@@ -55,8 +55,8 @@ public static class SaveSymbolHarvester
             var scanned = PristineMembers(point, pristine);
             if (scanned is null)
             {
-                Logger.Log($"  reseed: pristine enum scan failed for '{point.Id}', "
-                           + "the point cannot be harvested this install");
+                Note(notes, $"  reseed: pristine enum scan failed for '{point.Id}', "
+                            + "the point cannot be harvested this install");
                 continue;
             }
 
@@ -77,7 +77,7 @@ public static class SaveSymbolHarvester
         }
         catch (Exception exception)
         {
-            Logger.Log($"  reseed: could not list saves in {savesDir}: {exception.Message}");
+            Note(notes, $"  reseed: could not list saves in {savesDir}: {exception.Message}");
             return result;
         }
 
@@ -86,7 +86,7 @@ public static class SaveSymbolHarvester
             var records = ReadRecords(savPath, wanted);
             if (records is null)
             {
-                Logger.Log($"  reseed: unreadable save skipped: {System.IO.Path.GetFileName(savPath)}");
+                Note(notes, $"  reseed: unreadable save skipped: {System.IO.Path.GetFileName(savPath)}");
                 continue;
             }
 
@@ -108,14 +108,14 @@ public static class SaveSymbolHarvester
                     // be indistinguishable from a healthy no-op, which is
                     // the one place this feature cannot afford silence.
                     if (!recognized)
-                        Logger.Log($"  reseed: {recordName} in {System.IO.Path.GetFileName(savPath)} "
-                                   + "has an unexpected shape, possible save-format drift - "
-                                   + "nothing harvested from it");
+                        Note(notes, $"  reseed: {recordName} in {System.IO.Path.GetFileName(savPath)} "
+                                    + "has an unexpected shape, possible save-format drift - "
+                                    + "nothing harvested from it");
                 }
                 catch (JsonException exception)
                 {
-                    Logger.Log($"  reseed: {recordName} in "
-                               + $"{System.IO.Path.GetFileName(savPath)} did not parse: {exception.Message}");
+                    Note(notes, $"  reseed: {recordName} in "
+                                + $"{System.IO.Path.GetFileName(savPath)} did not parse: {exception.Message}");
                 }
             }
         }
@@ -123,11 +123,52 @@ public static class SaveSymbolHarvester
         foreach (var (pointId, harvest) in result)
         {
             if (harvest.CapHit)
-                Logger.Log($"  reseed: save harvest for '{pointId}' hit the {MaxSymbolsPerPoint}-symbol "
-                           + "cap, further symbols were dropped and the recovery is incomplete");
+                Note(notes, $"  reseed: save harvest for '{pointId}' hit the {MaxSymbolsPerPoint}-symbol "
+                            + "cap, further symbols were dropped and the recovery is incomplete");
         }
 
         return result;
+    }
+
+    // The outgoing archive's markers are the second harvest source. They join
+    // a point's set only when that point's pristine scan succeeded, and they
+    // pass the same pristine-name subtraction and cap the save path applies,
+    // so a stale marker can never re-mint a name the current game defines
+    // natively. A point with no save rule still gets archive coverage here.
+    public static void UnionArchiveMarkers(Dictionary<string, PointHarvest> harvest,
+        Dictionary<string, HashSet<string>> fromArchive, List<string>? notes = null)
+    {
+        foreach (var (pointId, symbols) in fromArchive)
+        {
+            if (!harvest.TryGetValue(pointId, out var found)) continue;
+            foreach (var symbol in symbols.OrderBy(s => s, StringComparer.Ordinal))
+            {
+                if (found.PristineNames.Contains(symbol))
+                {
+                    Note(notes, $"  reseed: archive marker for '{pointId}' names '{symbol}', "
+                                + "which the current game defines natively - marker ignored");
+                    continue;
+                }
+
+                if (found.Symbols.Count >= MaxSymbolsPerPoint)
+                {
+                    Note(notes, $"  reseed: '{pointId}' union hit the {MaxSymbolsPerPoint}-symbol cap, "
+                                + "remaining archive markers dropped");
+                    break;
+                }
+
+                found.Symbols.Add(symbol);
+            }
+        }
+    }
+
+    // Every message is logged as before. A caller that passes a list also
+    // receives it, which is how the read-only check and its tests see what
+    // the install path only logs.
+    private static void Note(List<string>? notes, string message)
+    {
+        Logger.Log(message);
+        notes?.Add(message.Trim());
     }
 
     // Pristine member names and base length for a point, through the same
@@ -172,6 +213,14 @@ public static class SaveSymbolHarvester
     {
         using var doc = JsonDocument.Parse(body);
         if (doc.RootElement.ValueKind != JsonValueKind.Object) return false;
+
+        // A real record carries every vanilla member alive when the save was
+        // written. Keys with no vanilla name among them are not this shape,
+        // and harvesting them would mint a stray symbol from whatever a
+        // drift renamed.
+        if (!doc.RootElement.EnumerateObject().Any(p => harvest.PristineNames.Contains(p.Name)))
+            return false;
+
         foreach (var property in doc.RootElement.EnumerateObject())
             Consider(property.Name, harvest);
         return true;
@@ -192,9 +241,13 @@ public static class SaveSymbolHarvester
 
         foreach (var slot in slots.EnumerateArray())
         {
-            if (slot.ValueKind != JsonValueKind.Object) continue;
+            // An empty slot is null. An occupied slot is an object carrying
+            // its type by name. Anything else is the slot shape drifting, and
+            // skipping it quietly would hide exactly that.
+            if (slot.ValueKind == JsonValueKind.Null) continue;
+            if (slot.ValueKind != JsonValueKind.Object) return false;
             if (!slot.TryGetProperty("type", out var type)
-                || type.ValueKind != JsonValueKind.String) continue;
+                || type.ValueKind != JsonValueKind.String) return false;
             var name = type.GetString();
             if (name is not null) Consider(name, harvest);
         }

@@ -222,7 +222,7 @@ public class SaveSymbolHarvesterTest
     {
         // a truncated recovery must never present itself as a complete one
         var keys = string.Join(",", Enumerable.Range(0, 300).Select(i => $"\"flood_{i:d3}\":{{}}"));
-        var sav = Pack(("npcs", "{" + keys + "}"));
+        var sav = Pack(("npcs", "{\"ari\":{}," + keys + "}"));
         var dir = WriteSaves(sav);
 
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine());
@@ -272,5 +272,47 @@ public class SaveSymbolHarvesterTest
         var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine());
 
         Assert.That(harvest["npc_roster"].Symbols, Is.EquivalentTo(new[] { "modauthor_luna" }));
+    }
+
+    [Test]
+    public void ShouldHandANoteForEveryLoggedProblemToTheCaller()
+    {
+        var dir = WriteSaves(Encoding.UTF8.GetBytes("not a vault"));
+        List<string> notes = [];
+
+        SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine(), notes);
+
+        Assert.That(notes, Has.Exactly(1).Contains("unreadable save skipped"));
+    }
+
+    [Test]
+    public void ShouldTreatAnOccupiedSlotWithoutATypeAsDrift()
+    {
+        // An occupied slot without a type string is an unrecognized shape,
+        // not an empty slot.
+        var sav = Pack(("player", """{"stats":{"status_effects":[null,{"kind":"modauthor_zeal"}]}}"""));
+        var dir = WriteSaves(sav);
+        List<string> notes = [];
+
+        var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine(), notes);
+
+        Assert.That(harvest["status_effect"].Symbols, Is.Empty);
+        Assert.That(notes, Has.Exactly(1).Contains("unexpected shape"));
+    }
+
+    [Test]
+    public void ShouldTreatAnNpcsRecordWithNoVanillaNameAsDrift()
+    {
+        // A real npcs record carries the vanilla roster. A record with no
+        // vanilla name among its keys is some other shape, and harvesting
+        // it would mint stray symbols.
+        var sav = Pack(("npcs", """{"entries":{},"roster":{}}"""));
+        var dir = WriteSaves(sav);
+        List<string> notes = [];
+
+        var harvest = SaveSymbolHarvester.Harvest(dir, LoadCatalog(), Pristine(), notes);
+
+        Assert.That(harvest["npc_roster"].Symbols, Is.Empty);
+        Assert.That(notes, Has.Exactly(1).Contains("unexpected shape"));
     }
 }
