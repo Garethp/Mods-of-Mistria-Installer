@@ -142,3 +142,19 @@ Enables or disables the agent at runtime, bypassing (and thereafter shadowing) t
 
 > [!CAUTION]
 > Resume before disabling. A disabled agent no longer drives the engine's pause flag, so a pause left set stays set. Once enabling has installed F8 through F10, disabling cannot unregister them, so those hotkeys remain for the rest of the session.
+
+## When a Save Silently Refuses to Load
+
+You pick a save, the load starts, and the game returns to the title screen with no dialog and nothing after `Setup.gml` in the verbose log. Where to look, in order:
+
+1. **`%LOCALAPPDATA%\FieldsOfMistria\error_log.json` and `crash-images\`.** GML runtime errors land here with a VM backtrace. Check the file's timestamp, because it is not cleared between sessions, and a stale entry from an earlier crash reads exactly like fresh evidence.
+2. If those are silent, the failure is native, inside a function the engine implements outside the shipped GML, typically a hard `string_to_*` resolving a name the current install does not define. With MMAPI installed this class is largely retired, because the save-load tolerance fixes forget unknown spells and status effects with `MMAPI: save carried unknown entry ... - dropped` warns in the log instead of aborting, so look for those warns first. On a vanilla game install the usual cause is a save made with a mod that is no longer installed, such as a learned custom spell or an active custom status effect. Reinstall the mod, or MOMI, and the save will load.
+3. The load's last verbose-log trace names the stage that failed. The load prints a trace as each stage completes, "Loaded files", "Loaded player", "Loaded grids", "Loaded t2 and npcs" and finally "Finished load", so the first one missing is the stage that was running. The player stage covers spells, status effects, and stats. The later stages cover world state.
+
+With MMAPI installed, the `save_load_*` tolerance family converts the load pipeline's fatal name lookups into named warns of the form `MMAPI: save carried ... - dropped`, so a bounce-to-title then points at something the catalog doesn't cover.
+
+> [!TIP]
+> The quickest way to see those warns live is to launch the game from a terminal, which streams the engine's full log to stdout. From the install directory, run `& .\FieldsOfMistria.exe 2>&1 | Write-Host`.
+
+> [!NOTE]
+> A `Checksums test failed! Save has been tampered` WARN on load is advisory. Vanilla emits it for any modded save and continues. It is never the reason a save load failed.

@@ -7,14 +7,18 @@ namespace Garethp.ModsOfMistriaInstallerLib.GmlMods;
 // prefixed with the base path and are normalised to mod-relative here.
 public static class GmlModCollector
 {
-    public static GmlModCode? Collect(IMod mod)
+    // `evenWithoutGml` keeps a mod that ships only extension registrations in
+    // the GML layer. It has no code, but it still owns an install namespace,
+    // still needs lint and skip-pass attribution, and still has to be
+    // excludable by the same machinery as everything else.
+    public static GmlModCode? Collect(IMod mod, bool evenWithoutGml = false)
     {
         var gmlFiles = mod.GetAllFiles(".gml")
             .Select(path => RelativePath(mod, path))
             .Where(rel => rel.StartsWith("gml/", StringComparison.Ordinal))
             .Order(StringComparer.Ordinal)
             .ToList();
-        if (gmlFiles.Count == 0) return null;
+        if (gmlFiles.Count == 0 && !evenWithoutGml) return null;
 
         return new GmlModCode(mod, DirName(mod), gmlFiles);
     }

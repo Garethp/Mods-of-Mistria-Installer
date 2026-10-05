@@ -347,8 +347,10 @@ public class GmlLayerTest
     {
         var plan = Stage();
 
+        // 10 = the 9 framework files + the extension vacancy query
+        // (mmapi_ext_vacant.gml)
         var sources = PayloadResolver.MmapiSources();
-        Assert.That(sources, Has.Count.EqualTo(9));
+        Assert.That(sources, Has.Count.EqualTo(10));
 
         var delivered = plan.Added
             .Where(e => e.Key.StartsWith(SeamStager.MmapiTreePrefix, StringComparison.Ordinal))

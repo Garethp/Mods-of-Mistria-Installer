@@ -1,8 +1,8 @@
-# Recipes
+# Snippets
 
 [← MMAPI](MMAPI.md)
 
-Most mod needs are direct engine calls, not hooks. Hooks change what the engine does on its own. To make the engine do something, call it. Each recipe below is a plain engine call you run from a hook handler or a registered tick. Some may depend on fiddle data as well.
+Most mod needs are direct engine calls, not hooks. Hooks change what the engine does on its own. To make the engine do something, call it. Most snippets below are a plain engine call you run from a hook handler or a registered tick. Some depend on fiddle data as well, and the last two sections are world-fact clauses and hook observers rather than calls.
 
 > [!CAUTION]
 > Never run these at top-level boot. Boot runs while the game is still loading, when there is no player, no room, and file IO throws. Call them from a handler or a `mmapi_register` tick. See [Mod Anatomy](MOD_ANATOMY.md#the-lifecycle).
@@ -109,3 +109,22 @@ requires = [
    { weather = "rainy" },
 ]
 ```
+
+## Tracing Dialogue
+
+To see exactly which conversation and lines the engine serves, and which prompt a player picked, register observers on the shipped hooks. No engine edits or new seams are needed:
+
+```gml
+function my_mod_trace_play(ctx) {
+    mmapi_log_warn("my_mod", "convo start: " + string(ctx[$ "path"]));
+    return undefined; // observe only, never veto
+}
+function my_mod_trace_line(value, ctx) {
+    mmapi_log_warn("my_mod", "line: " + string(value)); // banked lines arrive as the line PATH
+    return undefined; // observe only, never rewrite
+}
+mmapi_guard("dialogue.play_guard", my_mod_trace_play);
+mmapi_filter("dialogue.line", my_mod_trace_line);
+```
+
+`T2R.request_conversation(npc_id)` returns the currently pending conversation for an NPC and is side-effect-free. Poll it, for example from an `mmapi_hotkey_register` dump, to watch selection react to world-fact changes live. Add both hook names to `requires_hooks`.

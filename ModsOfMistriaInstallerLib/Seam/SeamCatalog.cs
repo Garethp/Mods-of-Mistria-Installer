@@ -2,7 +2,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Seam;
 
 // The catalog's self-declared integrity counts ([counts] in seams.toml), or
 // null for a catalog that does not declare them (fixture catalogs stay terse).
-public record CatalogCounts(int Hooks, int Seams, int EngineFixes, int CallRewrites);
+public record CatalogCounts(int Hooks, int Seams, int EngineFixes, int CallRewrites, int Extensions);
 
 // The loaded, validated seam catalog. Entries are in application order:
 // catalog order plus depends_on edges.
@@ -11,6 +11,7 @@ public class SeamCatalog(
     IReadOnlyList<SeamEntry> entries,
     IReadOnlyList<HookDeclaration> hookDeclarations,
     IReadOnlyList<CallRewrite> callRewrites,
+    IReadOnlyList<ExtensionPoint>? extensions = null,
     CatalogCounts? declaredCounts = null)
 {
     public int Version { get; } = version;
@@ -22,6 +23,9 @@ public class SeamCatalog(
     public IReadOnlyList<HookDeclaration> HookDeclarations { get; } = hookDeclarations;
 
     public IReadOnlyList<CallRewrite> CallRewrites { get; } = callRewrites;
+
+    // Declared extension points, in catalog order.
+    public IReadOnlyList<ExtensionPoint> Extensions { get; } = extensions ?? [];
 
     public IReadOnlyList<SeamEntry> Seams => Entries
         .Where(e => e.Kind == SeamEntryKind.Seam)

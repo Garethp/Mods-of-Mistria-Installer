@@ -174,7 +174,7 @@ public class GmlCompileGateTest
         }
     }
 
-    // GATE-004's drift guard: the pin lives in five places (four Cargo.toml
+    // The pin's drift guard. The pin lives in five places (four Cargo.toml
     // dependency revs and rev.rs), and a partial re-pin would ship a binary
     // that misreports the VM it was built against. Offline and always on.
     [Test]

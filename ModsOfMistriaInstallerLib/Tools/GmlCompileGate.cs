@@ -3,15 +3,9 @@ using System.Text;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Tools;
 
-// Runs the bundled `momi-gml-check` over staged GML. The checker is the only
-// backend (D13): it compiles every path in one invocation and never executes,
-// so it is safe to point at user mod code.
-//
-// The compat dialect late-binds unknown identifiers, so staged engine files
-// reaching game-only names compile headlessly. The gate catches syntax and
-// structural errors, same-file duplicate functions and stdlib shadowing, plus
-// cross-chunk duplicate exports in unit mode. It does not catch unresolved
-// names; no fabricator mode rejects those at compile time.
+// Runs the bundled `momi-gml-check` over staged GML. Compiles every path in
+// one invocation, never executes, and catches syntax and structural errors
+// but never unresolved names.
 public class GmlCompileGate : ICompileGate
 {
     private static readonly string CheckerExe =

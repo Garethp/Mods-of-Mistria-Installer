@@ -19,4 +19,14 @@ public class StagedFile(string text, string eol)
     // UTF-8, no BOM, \n → Eol
     public byte[] Encode() =>
         Encoding.UTF8.GetBytes(Eol == "\n" ? Text : Text.Replace("\n", Eol));
+
+    // An independent copy. The exclusion fixpoint re-derives extension edits
+    // against a clean snapshot each round rather than unsplicing them, so it
+    // needs the snapshot to survive being expanded over.
+    internal StagedFile Clone()
+    {
+        var copy = new StagedFile(Text, Eol);
+        copy.AppliedIds.AddRange(AppliedIds);
+        return copy;
+    }
 }

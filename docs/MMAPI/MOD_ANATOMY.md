@@ -15,6 +15,20 @@ my_first_mod/
 
 `gml/` may hold any number of `.gml` files, in subfolders if you like, and the installer copies them all. One file is plenty for most mods. Large mods split into domain folders (`gml/core/`, `gml/ui/`, and so on). Everything else in the folder (sprites, item definitions, localization) is MOMI's regular content-mod territory and installs through its own pipelines. The GML layer only handles `gml/`.
 
+### Extension Registrations
+
+A mod may also carry registrations against [extension points](EXTENSIONS.md), one TOML file each, under `momi/extensions/`.
+
+```text
+my_first_mod/
+├─ momi/
+│  ├─ extensions/
+│  │  ├─ status_effect/
+│  │  │  ├─ exhaustion.toml
+```
+
+Registrations are typed data files. They enter the GML layer alongside `gml/` even when the mod ships no GML, and a registration problem skips the whole mod the same way a GML problem does.
+
 ## One Name Everywhere
 
 Pick one short snake_case name for your mod and use it for every name the mod owns:

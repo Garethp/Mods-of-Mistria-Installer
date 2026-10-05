@@ -88,7 +88,7 @@ function my_first_mod_new_day(_ctx) {
     // create_notification takes a LOCALIZATION KEY, not raw text (the engine
     // runs it through local_get). Wrapping with ANCHOR.wrap_for_local lets raw
     // text through - fine for a first mod. Shipped mods register real keys
-    // instead (translatable, filter-aware): see RECIPES.md "Show a
+    // instead (translatable, filter-aware): see SNIPPETS.md "Show a
     // Notification" and Mod Anatomy's "User-Facing Text".
     create_notification(ANCHOR.wrap_for_local("Day " + string(_ctx.total_days) + " begins."));
     mmapi_log_info("my_first_mod", "new day: " + string(_ctx.total_days));

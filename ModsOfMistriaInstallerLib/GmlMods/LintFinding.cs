@@ -1,7 +1,7 @@
 namespace Garethp.ModsOfMistriaInstallerLib.GmlMods;
 
 // One lint finding. File is the mod-relative gml path, empty for cross-mod
-// findings (whose Line is 0); the file-bearing/file-less split is D12's
+// findings (whose Line is 0); the file-bearing/file-less split is the
 // escalation boundary.
 public record LintFinding(string ModId, string File, int Line, string Message)
 {

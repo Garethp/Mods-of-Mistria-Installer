@@ -17,12 +17,15 @@ The catalog is `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`, embedded int
 | `[[seam]]` | An engine edit that helps provide one or more declared hooks. It may be generated from a template or written as a verbatim text replacement. |
 | `[[engine_fix]]` | A hook-less engine edit. It applies like a text seam but dispatches nothing. |
 | `[[call_rewrite]]` | A tree-wide redirect of direct calls to a native function that has no GML body to seam. |
+| `[[extension]]` | An extension point. The enum it grows and the templates that render one member per mod registration. See [Extension Points](EXTENSIONS.md). |
 
 The catalog opens with a `[counts]` table stating how many records of each type follow. The loader refuses a catalog whose records do not match that table, so a truncated or mis-merged file fails at load time instead of shipping a partial hook surface.
 
-The shipped catalog currently declares **141 hooks**, fed by **158 seams**, **16 engine fixes**, and **1 call rewrite**. The [Catalog](CATALOG.md) gives each one its own page, under `docs/MMAPI/hooks/` for hooks and `docs/MMAPI/seams/` for the rest. The shipped-catalog test holds the count sentences on this page, the Catalog, and [Hooks](HOOKS.md) to those totals, and the page set to the catalog, so a stale count, a record without a page, or a page without a record fails the suite.
+The shipped catalog currently declares **142 hooks**, fed by **159 seams**, **29 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The [Catalog](CATALOG.md) gives each one its own page.
 
 MOMI also renders the hook declarations into `mmapi_hook_catalog.gml` at install time, so the runtime can check registrations and answer introspection. See [The Installed Catalog](HOOKS.md#the-installed-catalog).
+
+Extension points have their own generated file, `mmapi_ext.gml`, the registry of symbols and ordinals, written only when a registration or a ledger vacancy exists. See [The Installed Registry](EXTENSIONS.md#the-installed-registry).
 
 ### Runtime Hooks
 
@@ -115,7 +118,7 @@ doc  = "Fires at the top of TANGO.play(asset_name, ...), before a sound effect s
 
 A seam-provided hook must appear in at least one seam or call rewrite's provider list. A runtime-provided hook must appear in neither.
 
-Every added or removed record also moves the `[counts]` integrity table at the top of the file. Bump `hooks` now, and bump `seams`, `engine_fixes`, or `call_rewrites` as the matching records land in step 4. The loader compares that table to the stanzas it parses and refuses the whole catalog on any mismatch, so a forgotten bump fails every shipped-catalog test and the seam check at once, before a single anchor is examined.
+Every added or removed record also moves the `[counts]` integrity table at the top of the file. Bump `hooks` now, and bump `seams`, `engine_fixes`, `call_rewrites`, or `extensions` as the matching records land in step 4. The loader compares that table to the stanzas it parses and refuses the whole catalog on any mismatch, so a forgotten bump fails every shipped-catalog test and the seam check at once, before a single anchor is examined.
 
 ### 4. Choose The Smallest Seam Form
 
@@ -421,6 +424,22 @@ Exit codes are part of the command-line contract:
 | `2` | No source archive could be located, or the named archive was missing. Other malformed input or catalog errors are reported as command failures outside this exit-code contract. |
 
 For automation, substitute `--seam-check-json`. Its `problem_records` include `kind`, `entry_id`, `file`, `line`, `hint`, `message`, and `context`. When a closest source location is available, `context` is a numbered excerpt, and problem kinds without a source site leave it empty.
+
+### Check The Ledger Reseed
+
+An install carrying extension points keeps a ledger of the ordinals it has handed out, and rebuilds a lost ledger from two sources. One is the symbol names the player's saves carry. The other is the markers stamped on generated lines in the archive it is about to replace. The reseed check runs both harvests and reports, without installing:
+
+```powershell
+dotnet run --project ModsOfMistriaCommandLine -- --reseed-check
+```
+
+With no arguments it uses the located install's saves folder, pristine backup, live archive and ledger. Pass a saves folder and a pristine zip to check another set. The report lists, per extension point, what the saves name, what the archive's markers name, what the union would recover, and what the ledger already holds. Every message the harvesters would log on an install prints as a note.
+
+| Exit | Meaning |
+| ---- | ------- |
+| `0` | Every save and the outgoing archive read as expected. |
+| `1` | A note was raised: an unreadable save, a record whose shape the reader does not recognize, a cap hit, or a stale marker. A shape note after a game update means the save format moved under the reader. |
+| `2` | No saves folder or no pristine archive could be located. |
 
 ### Triage A Game Update
 

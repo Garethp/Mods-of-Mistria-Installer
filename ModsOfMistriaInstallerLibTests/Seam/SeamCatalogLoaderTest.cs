@@ -128,6 +128,7 @@ public class SeamCatalogLoaderTest
         seams = 0
         engine_fixes = 0
         call_rewrites = 1
+        extensions = 0
         """ + "\n";
 
     [Test]
@@ -135,7 +136,7 @@ public class SeamCatalogLoaderTest
     {
         var catalog = Load(RewriteBase + MatchingCounts + Rewrite);
 
-        Assert.That(catalog.DeclaredCounts, Is.EqualTo(new CatalogCounts(2, 0, 0, 1)));
+        Assert.That(catalog.DeclaredCounts, Is.EqualTo(new CatalogCounts(2, 0, 0, 1, 0)));
     }
 
     [Test]
@@ -146,6 +147,16 @@ public class SeamCatalogLoaderTest
         var message = LoadError(RewriteBase + mismatched + Rewrite);
 
         Assert.That(message, Does.Contain("[counts] declares 5 hooks but the catalog parses 2"));
+    }
+
+    [Test]
+    public void ShouldRejectAMismatchedExtensionCount()
+    {
+        var mismatched = MatchingCounts.Replace("extensions = 0", "extensions = 3");
+
+        var message = LoadError(RewriteBase + mismatched + Rewrite);
+
+        Assert.That(message, Does.Contain("[counts] declares 3 extension points but the catalog parses 0"));
     }
 
     [Test]
