@@ -11,9 +11,10 @@ internal record RenderedLine(string Symbol, long Ordinal, bool Vacant, string Te
 internal record PlannedSplice(int At, string Block, string SiteId, bool IsAppend);
 
 // Expands every [[extension]] point into the staged engine text. It assigns
-// ordinals, renders each registrant's line per site, splices at the anchors.
-// Fail-closed, batched into one SeamStagingException. With zero registrants
-// and zero vacancies the output is byte-identical to the seam-only stager.
+// ordinals, renders each registrant's line per site, and splices at the
+// anchors. It fails closed, batching every problem into one
+// SeamStagingException. With zero registrants and zero vacancies the output
+// is byte-identical to the seam-only stager.
 public static class ExtensionExpander
 {
     // A registrant's line marker. The {site} component keeps markers unique
@@ -27,9 +28,9 @@ public static class ExtensionExpander
     // summaries and the journal show extension activity beside seam ids.
     public static string AppliedId(string pointId) => $"ext:{pointId}";
 
-    // Expand in place over the seam stager's output. `added` receives whole
-    // new files (vacancy stubs, the registry) and stays apart from `staged`,
-    // the edited-pristine set.
+    // Expands in place over the seam stager's output. `added` receives whole
+    // new files, such as vacancy stubs and the registry, and stays apart from
+    // `staged`, the edited-pristine set.
     public static ExtensionExpansion Expand(SeamCatalog catalog,
         IReadOnlyList<ExtensionRegistration> regs,
         IExtensionLedger ledger,
@@ -53,8 +54,8 @@ public static class ExtensionExpander
     {
         // A copy of the dictionary, so a point can never register a file into
         // the caller's stage. The StagedFile objects are shared, which is safe
-        // because Run does not reach its mutation block when apply is false -
-        // and ShouldValidateZeroRegistrantWithoutMutatingTheStage pins that.
+        // because Run does not reach its mutation block when apply is false.
+        // ShouldValidateZeroRegistrantWithoutMutatingTheStage pins that.
         var scratch = staged.ToDictionary(f => f.Key, f => f.Value);
         var problems = Run(catalog, [], new MemoryExtensionLedger(), scratch, pristine,
             apply: false, out anchoredSites, new ExtensionExpansion());
@@ -85,10 +86,9 @@ public static class ExtensionExpander
         }
 
         // The registry ships only when something is registered or a vacancy is
-        // alive. Engine seams consult the vacant table to keep tombstones out
-        // of the player's view, so a vacancy-only install still needs it. With
-        // neither, no file, and the staged tree is what it would have been
-        // without the mechanism.
+        // alive. The vacant table is what mmapi_ext_is_vacant answers from, so a
+        // vacancy-only install still needs it. With neither there is no file, and
+        // the staged tree is what it would have been without the mechanism.
         if (apply && problems.Count == 0 && registry.Count + vacants.Count > 0)
             expansion.Added[ExtensionRegistryRenderer.RegistryRel] =
                 Encoding.UTF8.GetBytes(ExtensionRegistryRenderer.Render(registry, vacants));
@@ -108,9 +108,9 @@ public static class ExtensionExpander
         List<ExtensionRegistryEntry> registry,
         List<ExtensionRegistryEntry> vacants)
     {
-        // load every file this point's sites touch, from the staged text when a
-        // seam already edited it (extension sites anchor against the seamed
-        // result), else from pristine
+        // Load every file this point's sites touch. A file a seam already
+        // edited comes from the staged text, because extension sites anchor
+        // against the seamed result. Any other file comes from pristine.
         Dictionary<string, StagedFile> files = [];
         var loadFailed = false;
         foreach (var file in point.Files)
@@ -154,8 +154,8 @@ public static class ExtensionExpander
         if (entries is null) return;
 
         // Render every site's lines against the pre-splice snapshot, then
-        // splice. Rendering nothing (zero registrants, zero vacancies) leaves
-        // every file untouched, which is the inertness invariant.
+        // splice. With zero registrants and zero vacancies nothing renders and
+        // every file stays untouched, which is the inertness invariant.
         Dictionary<string, List<PlannedSplice>> plans = [];
         foreach (var site in point.Sites)
         {
@@ -244,8 +244,8 @@ public static class ExtensionExpander
         {
             var rel = NormaliseArchivePath(ExtensionPlaceholders.Render(vacancyFile.Path, values));
 
-            // the loader proved the template is safe. This proves the rendered
-            // path is, because a symbol is data and data gets checked
+            // The loader proved the template is safe. This proves the rendered
+            // path is, because a symbol is data and data gets checked.
             var unsafePath = Utils.PathSafety.PathProblem(rel, $"vacancy file for '{entry.Symbol}'");
             if (unsafePath is not null)
             {
@@ -287,8 +287,9 @@ public static class ExtensionExpander
     }
 
     // The ordinal enum, with the shape the ordinal maths depends on proven.
-    // These are Target problems, not Extension ones, because the failure class is a
-    // structural locator that stopped matching, i.e. the game changed shape.
+    // These are Target problems, not Extension ones, because the failure class
+    // is a structural locator that stopped matching, which means the game
+    // changed shape.
     internal static GmlEnumScan? ScanOrdinalEnum(ExtensionPoint point, string text, List<SeamProblem> problems)
     {
         var scans = GmlScanner.ScanEnum(text, point.OrdinalEnum);
@@ -392,10 +393,10 @@ public static class ExtensionExpander
             return null;
         }
 
-        // The game grew the enum into an ordinal we already handed out. The
-        // install normally repairs this before staging (the automatic
-        // rebase), so reaching this check means that repair could not
-        // run. Fail closed and point at the log.
+        // The game grew the enum into an ordinal the ledger already handed
+        // out. The automatic rebase normally repairs this before staging, so
+        // reaching this check means that repair could not run. Fail closed and
+        // point at the log.
         var collided = assigned.Where(a => a.Ordinal < baseLen).ToList();
         if (collided.Count > 0)
         {
@@ -425,8 +426,8 @@ public static class ExtensionExpander
                 live.GetValueOrDefault(assignment.Symbol)));
         }
 
-        // new symbols take the next ordinals in a deterministic order, so the
-        // same mod set always lands the same assignment
+        // New symbols take the next ordinals in a deterministic order, so the
+        // same mod set always lands the same assignment.
         var next = Math.Max(assigned.Count > 0 ? assigned.Max(a => a.Ordinal) : baseLen - 1, baseLen - 1) + 1;
         foreach (var reg in live.Values
                      .Where(r => !seen.Contains(r.Symbol))
@@ -441,8 +442,8 @@ public static class ExtensionExpander
         entries = entries.OrderBy(e => e.Ordinal).ToList();
 
         // Contiguity. The append-only rule implies it, but a hand-edited or
-        // half-written ledger produces a hole, and a hole crashes the game
-        // at launch (an ordinal that matches no member), before the main menu.
+        // half-written ledger produces a hole, an ordinal that matches no
+        // member, and a hole crashes the game at launch before the main menu.
         // This turns that into a staging error naming the gap.
         var expected = baseLen;
         foreach (var entry in entries)
@@ -483,8 +484,8 @@ public static class ExtensionExpander
                 [ExtensionPlaceholders.Symbol] = entry.Symbol,
                 [ExtensionPlaceholders.Ordinal] = entry.Ordinal.ToString(),
             };
-            // a vacancy has no mod behind it, so only symbol and ordinal are
-            // in scope, since the loader already proved its template names no more
+            // A vacancy has no mod behind it, so only symbol and ordinal are in
+            // scope. The loader already proved its template names no more.
             if (!vacant)
                 foreach (var (key, value) in entry.Registration!.RenderedValues)
                     values[key] = value;
@@ -506,9 +507,9 @@ public static class ExtensionExpander
         switch (site.Kind)
         {
             case ExtensionSiteKind.EnumMember:
-                // immediately before the sentinel line. Generated members carry
-                // explicit values, so GML resumes auto-numbering after them and
-                // the sentinel needs no rewrite.
+                // The block lands immediately before the sentinel line.
+                // Generated members carry explicit values, so GML resumes
+                // auto-numbering after them and the sentinel needs no rewrite.
                 anchored[point.Id]++;
                 return GmlScanner.LineStart(text, scan.Members[^1].Start);
 

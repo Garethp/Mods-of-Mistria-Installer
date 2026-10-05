@@ -2,7 +2,7 @@
 
 Seeds the per-name game-stats structs on every load, so content added after a save was written cannot crash its first stats increment.
 
-`game_stats_seed_on_load` is an **engine fix**, a hook-less edit. It dispatches nothing, and there is no handler to register. See [Seams](../SEAMS.md).
+`game_stats_seed_on_load` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,22 +10,27 @@ Seeds the per-name game-stats structs on every load, so content added after a sa
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Cycle/LoadGame.gml` |
 | **Locator** | text anchor on the `GAME_STATS` restore |
-| **Op** | text (one added call) |
+| **Feeds** | (no hook) |
 | **Marker** | `mmapi_game_stats_seed` |
 
 ## The Edit
+
+The replace adds one call after the `GAME_STATS` restore.
 
 ```gml
     GAME_STATS = files.game_stats;
     patch_game_stats(GAME_STATS); // mmapi_game_stats_seed
 ```
 
-## Why
-
-`GAME_STATS`'s name-keyed structs (`perks`, `menu_opens`, `npcs_spoken_to`, `location_visits`) are seeded only at new-game and at save-version migration. Both paths call the engine's own `patch_game_stats`, which fills a `0` for every current enum member's key. A same-version save takes neither path, so it never gains keys for content installed after it was written, and the engine's roughly 90 raw `[$ key] += 1` sites crash with `bad unary op "inc" undefined` on first touch.
+`GAME_STATS`'s name-keyed structs (`perks`, `menu_opens`, `npcs_spoken_to`, `location_visits`) are seeded only at new-game and at save-version migration. Both paths call the engine's own `patch_game_stats`, which fills a `0` for every current enum member's key. A same-version save takes neither path, so it never gains keys for content installed after it was written, and the engine's raw `[$ key] += 1` sites crash with `bad unary op "inc" undefined` on first touch.
 
 The first arrival in a mod-added location dies at Taxi's `location_visits` increment. The same hazard exists where a perk chosen at runtime is counted, in the recipe infusion roll and the crafting menu's bonus yield. It exists for custom NPCs too, at the `npcs_spoken_to` increment on their first conversation.
 
-The fix invokes `patch_game_stats` on every load. It is the engine's own migration function. It is idempotent, filling only keys that are `undefined` and prototype-patching missing fields. It is cheap, costing a few hundred key probes. It retires the whole class at one site instead of guarding roughly 90 increments.
+The fix invokes `patch_game_stats` on every load. That is the engine's own migration function, idempotent because it fills only keys that are `undefined` and patches missing fields from the prototype, and cheap, since each key is one struct lookup. It retires the whole class at one site instead of guarding each increment.
 
-Zero-registrant inert: a same-version vanilla save already carries every key, so every probe finds them defined and the call changes nothing.
+On an intact install a same-version save already carries every key, so the call finds every key defined and changes nothing.
+
+## See Also
+
+- [Custom Perks](../CUSTOM_PERKS.md) - The guide whose perks this fix keeps safe on an older save.
+- [Engine Fixes](../CATALOG.md#engine-fixes-and-the-call-rewrite) - The save-load tolerance family this fix ships beside.

@@ -15,9 +15,9 @@ public class GeneratedOverlayMod : IMod
     // forward-slash relative path → generated file content
     private readonly IReadOnlyDictionary<string, string> _virtual;
     private readonly IReadOnlyDictionary<string, string> _redirects;
-    // inner rel paths the overlay replaces or renames, excluded from
-    // enumeration so a renamed file does not also install under its original
-    // name, and a content override does not enumerate twice
+    // The inner rel paths the overlay replaces or renames. They are excluded
+    // from enumeration so a renamed file does not also install under its
+    // original name, and a content override does not enumerate twice.
     private readonly HashSet<string> _suppressed;
 
     public GeneratedOverlayMod(

@@ -21,9 +21,9 @@ public class ModSymbols(string modId)
 
     public Dictionary<string, GlobalRoot> GlobalRoots { get; } = [];
 
-    // enum name → (file, 1-based line) of its first declaration. GML hoists
-    // top-level enums into the same flat global namespace as functions, so
-    // they are export surface too (two mods declaring `enum MyState`
-    // collide with no compiler help).
+    // Maps an enum name to the file and 1-based line of its first declaration.
+    // GML hoists top-level enums into the same flat global namespace as
+    // functions, so they are export surface too. Two mods declaring
+    // `enum MyState` collide with no compiler help.
     public Dictionary<string, (string File, int Line)> Enums { get; } = [];
 }

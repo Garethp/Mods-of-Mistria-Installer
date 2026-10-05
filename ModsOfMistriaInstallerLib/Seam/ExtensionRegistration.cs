@@ -23,11 +23,11 @@ public record ExtensionLedgerEntry(string PointId, ExtensionAssignment Assignmen
 // What one expansion produced, beyond its in-place edits to the staged text.
 public class ExtensionExpansion
 {
-    // rel → bytes, holding the per-vacancy data stubs and the generated registry
+    // Maps rel to bytes, holding the per-vacancy data stubs and the generated registry.
     public Dictionary<string, byte[]> Added { get; } = [];
 
-    // ordinals this run assigned, in assignment order, for the caller to
-    // commit once it knows the mods holding them survived
+    // The ordinals this run assigned, in assignment order, for the caller to
+    // commit once it knows the mods holding them survived.
     public List<ExtensionLedgerEntry> NewAssignments { get; } = [];
 }
 
@@ -44,8 +44,9 @@ public interface IExtensionLedger
     void Assign(string pointId, ExtensionAssignment assignment);
 }
 
-// The in-memory ledger, which --seam-check validates against (nothing assigned,
-// so every point is checked zero-registrant) and what the expander tests drive.
+// The in-memory ledger. --seam-check validates against it with nothing
+// assigned, so every point is checked zero-registrant, and the expander tests
+// drive it.
 public class MemoryExtensionLedger : IExtensionLedger
 {
     private readonly Dictionary<string, List<ExtensionAssignment>> _points = [];

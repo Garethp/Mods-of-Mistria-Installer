@@ -99,17 +99,25 @@ mods. A mod that fails those checks is skipped completely.
 For additional information, see [MMAPI](docs/MMAPI/MMAPI.md) documentation.
 
 ### `momi/extensions/` (extension points)
-If you want your mod to add a custom status effect, put a registration file in the `momi/extensions/`
-folder, and set the `minInstallerVersion` in your `manifest.json` to no lower than `0.16.0`.
+If you want your mod to add a new member to one of the game's own enums, register it through an extension
+point. Put a registration file under the `momi/extensions/` folder, and set the `minInstallerVersion` in your
+`manifest.json` to no lower than `0.17.0`. MOMI ships the `status_effect` point, for custom
+status effects, and the `npc_roster` point, for custom villagers.
 
-A registration is a small TOML file that names your addition, such as `momi/extensions/status_effect/well_rested.toml`.
-MOMI generates the engine wiring for it, and your mod supplies the content the player sees.
-Custom NPCs register the same way, with `momi/extensions/npc_roster/luna.toml` for a villager.
+A registration is a small TOML file, one per addition, filed under the point it registers against, such as
+`momi/extensions/status_effect/exhaustion.toml`. MOMI generates the enum member and everything else the
+engine needs to carry it. Your mod's GML drives the behavior behind it. A custom NPC registers the same way,
+with `momi/extensions/npc_roster/luna.toml` for a villager.
+
+> [!IMPORTANT]
+> A registration only creates the identity. For a status effect that means, applying it, giving it a HUD icon and reacting
+> when it ends are all GML work in the same mod, so in practice an extension mod ships GML too.
 
 Before anything is written, MOMI validates every registration the same way it checks GML. A mod that fails
-those checks is skipped completely. Removing the mod later never breaks a player's save.
+those checks is skipped completely.
 
-For additional information, see the [Extension Points](docs/MMAPI/EXTENSIONS.md) documentation.
+For additional information, see the [Extension Points](docs/MMAPI/EXTENSIONS.md) reference, the
+[Custom Status Effects](docs/MMAPI/CUSTOM_STATUS_EFFECTS.md) guide and the [Your First Custom NPC](docs/MMAPI/CUSTOM_NPC.md) guide.
 
 ## Contributing Translations
 

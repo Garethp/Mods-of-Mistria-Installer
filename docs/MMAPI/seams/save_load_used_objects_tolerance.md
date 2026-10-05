@@ -2,7 +2,7 @@
 
 Lets a save whose daily used-objects flags name a since-removed object load anyway. Unknown names are skipped, and [save_load_forget_warn](save_load_forget_warn.md) names them in the log.
 
-`save_load_used_objects_tolerance` is an **engine fix**, a hook-less edit. It dispatches nothing, and there is no handler to register. See [Seams](../SEAMS.md).
+`save_load_used_objects_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,10 +10,12 @@ Lets a save whose daily used-objects flags name a since-removed object load anyw
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Cycle/LoadGame.gml` |
 | **Locator** | text anchor on the `used_object_today` deserialize |
-| **Op** | text (functor swap) |
+| **Feeds** | (no hook) |
 | **Marker** | `mmapi_save_used_objects_tolerance` |
 
 ## The Edit
+
+The replace swaps the converter the array loader calls for its tolerant variant.
 
 ```gml
     ARI.used_object_today = files.player["used_object_today"] != undefined
@@ -21,10 +23,13 @@ Lets a save whose daily used-objects flags name a since-removed object load anyw
         : array_bool(ObjectId.LEN);
 ```
 
-## Why
-
 The daily used-objects flags are stored as a list of object names and resolved with fatal `string_to_object_id`, while the perks, items, and recipes lines around it use the tolerant `try_` variants. Object prototypes are fiddle content, so mods can mint object names, and one stale name aborts the load natively.
 
-The fix is the same functor swap the spells line received: unknown names route through `deserialize_array_bool`'s existing skip and the forget-warn fix names them. A skipped flag means the object counts as unused today, which is the mildest possible amputation.
+The fix is the same swap as the spells line. Unknown names route through the skip `deserialize_array_bool` already has, and [save_load_forget_warn](save_load_forget_warn.md) names them. A skipped flag means the object counts as unused today, which is the mildest possible loss.
 
-Zero-registrant inert: for names that resolve, the `try_` variant returns the same ordinal as the fatal one, so an intact install is behaviorally identical.
+For names that resolve, the `try_` variant returns the same ordinal as the fatal one, so an intact install behaves exactly as before.
+
+## See Also
+
+- [save_load_forget_warn](save_load_forget_warn.md) - Names the skipped object in the log.
+- [save_load_spells_tolerance](save_load_spells_tolerance.md) - The same swap, for learned spells.

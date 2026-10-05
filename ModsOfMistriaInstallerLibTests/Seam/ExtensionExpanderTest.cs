@@ -563,10 +563,10 @@ public class ExtensionExpanderTest
     [Test]
     public void ShouldStageTheShippedCatalogIdenticallyThroughTheExpander()
     {
-        // Byte-identity form 1. Weak while the catalog shipped no points.
-        // Now that npc_roster ships, this exercises the real entry's full
-        // zero-registrant path (load, enum scan, anchor resolution) against
-        // its own synthesised anchors, and still demands byte-identity.
+        // Byte-identity form 1. With a shipped point, this exercises the real
+        // entry's full zero-registrant path, the load, the enum scan and the
+        // anchor resolution, against its own synthesised anchors, and still
+        // demands byte-identity.
         var (name, bytes) = PayloadResolver.SeamCatalog();
         var catalog = SeamCatalogLoader.Load(bytes, name);
         var pristine = new MemoryPristineSource(PristineSynthesis.FromCatalog(catalog)

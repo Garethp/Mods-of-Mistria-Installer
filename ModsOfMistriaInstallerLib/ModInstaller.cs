@@ -23,8 +23,8 @@ public class ModInstaller
     private readonly string _assetsLocation;
     private readonly string _atlasDirectory;
     // The game's save directory, for the reseed harvest. Null disables the
-    // harvest entirely. An explicit dependency rather than resolved here, so
-    // tests stay hermetic and entry points opt in deliberately.
+    // harvest entirely. It is an explicit dependency rather than resolved
+    // here, so tests stay hermetic and entry points opt in deliberately.
     private readonly string? _savesLocation;
     private IFileModifier _fileModifier;
 
@@ -98,13 +98,13 @@ public class ModInstaller
         var ledger = ExtensionLedgerStore.Load(_fomLocation);
         List<ExtensionRegistration> registrations = [];
 
-        // A grown base enum used to fail the install until a manual rebase.
+        // A grown base enum would otherwise fail the install until a rebase.
         // The rebase is save-invisible, so it runs here automatically.
         AutoRebaseLedger(store, ledger);
 
         // The reseed union. A lost ledger is rebuilt from the saves' symbol
-        // names before the staging gate reads HasAssignments. Fail-soft, and
-        // only when a saves location is wired.
+        // names before the staging gate reads HasAssignments. It fails soft,
+        // and it runs only when a saves location is wired.
         if (_savesLocation is not null) ReseedLedgerFromSaves(store, ledger);
         else Logger.Log("  reseed: no saves location wired, the save half of the ledger "
                         + "reseed is unavailable this install");
@@ -226,7 +226,7 @@ public class ModInstaller
 
         if (plan is not null)
         {
-            // One mod, one fate. An excluded mod's content is excluded too
+            // One mod, one fate. An excluded mod's content is excluded too.
             foreach (var excluded in plan.Excluded)
             {
                 var mod = excluded.Mod.Mod;
@@ -295,9 +295,9 @@ public class ModInstaller
         }
 
         // A returning mod reclaims its attribution from a reseed's
-        // "recovered" placeholder. Diagnostic only (the symbol and ordinal
-        // are the contract), but the ledger is what a person reads to trace
-        // a symbol, so it should name the real owner again.
+        // "recovered" placeholder. Attribution is diagnostic only, since the
+        // symbol and ordinal are the contract, but the ledger is what a person
+        // reads to trace a symbol, so it should name the real owner again.
         var survivingIds = installMods.Select(m => m.GetId()).ToHashSet(StringComparer.Ordinal);
         foreach (var registration in registrations.Where(r => survivingIds.Contains(r.ModId)))
             ledger.Reattribute(registration.PointId, registration.Symbol, registration.ModId);
@@ -329,7 +329,7 @@ public class ModInstaller
         catch (Exception exception)
         {
             // A raw zip exception here would otherwise escape the staging
-            // catch (which handles SeamStagingException only) with a message
+            // catch, which handles SeamStagingException only, with a message
             // that never names the backup as the failing piece.
             throw new InvalidOperationException(
                 $"the pristine backup at {store.BackupPath} could not be opened "
@@ -346,9 +346,9 @@ public class ModInstaller
 
     // Normalizes ledger ordinals against the current pristine base enums by
     // running the rebaser in memory, persisted through the same
-    // commit-then-save transaction via Dirty. Fail-soft. A scan problem here
-    // leaves the ledger untouched and falls through to staging, which fails
-    // closed with its own message.
+    // commit-then-save transaction via Dirty. It fails soft. A scan problem
+    // here leaves the ledger untouched and falls through to staging, which
+    // fails closed with its own message.
     private static void AutoRebaseLedger(AssetsStore store, ExtensionLedgerStore ledger)
     {
         if (!ledger.HasAssignments) return;
@@ -390,7 +390,7 @@ public class ModInstaller
     }
 
     // Harvested symbols enter as vacancy assignments attributed to
-    // "recovered", ordinals appended densely above the ledger's maximum.
+    // "recovered", with ordinals appended densely above the ledger's maximum.
     // Re-deriving after a failed install is idempotent, not a burned ordinal.
     private void ReseedLedgerFromSaves(AssetsStore store, ExtensionLedgerStore ledger)
     {
@@ -419,12 +419,13 @@ public class ModInstaller
                     .ToList();
                 if (fresh.Count == 0) continue;
 
-                // Tripwire, not a gate (the harvest never blocks an install).
-                // A recovery this large has one known benign cause (a genuine
-                // multi-mod loss) and one known dangerous one, a pristine
-                // backup that no longer matches the installed game, which is
-                // exactly how the live near-miss recovered a whole vanilla
-                // roster before the stub-collision check stopped it.
+                // A tripwire, not a gate, because the harvest never blocks an
+                // install. A recovery this large has one known benign cause,
+                // a genuine multi-mod loss, and one known dangerous one, a
+                // pristine backup that no longer matches the installed game.
+                // The dangerous one recovers a whole vanilla roster as modded
+                // symbols, and only the stub-collision check stops it from
+                // installing.
                 if (fresh.Count >= 10)
                     Logger.Log($"  ! reseed: recovering {fresh.Count} symbols for '{pointId}' in "
                                + "one install is unusually large - if this game was recently "
@@ -452,10 +453,10 @@ public class ModInstaller
         UninstallAurie();
 
         // Informational only, never a gate. The ledger keeps its symbols
-        // through an uninstall (names live forever), but the vanilla archive
-        // stops rendering them, so a save that names modded content needs a
-        // reinstall before it can load again. This is the one moment MOMI
-        // knows both halves of that, so it says so in the log.
+        // through an uninstall, because names live forever, but the vanilla
+        // archive stops rendering them, so a save that names modded content
+        // needs a reinstall before it can load again. This is the one moment
+        // MOMI knows both halves of that, so it says so in the log.
         try
         {
             if (ExtensionLedgerStore.Load(_fomLocation).HasAssignments)
@@ -465,7 +466,7 @@ public class ModInstaller
         }
         catch (Exception)
         {
-            // a corrupt ledger must not block an uninstall
+            // A corrupt ledger must not block an uninstall.
         }
 
         if (new AssetsStore(_fomLocation).Uninstall())

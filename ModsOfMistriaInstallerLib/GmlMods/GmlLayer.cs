@@ -5,9 +5,9 @@ using Garethp.ModsOfMistriaInstallerLib.Tools;
 
 namespace Garethp.ModsOfMistriaInstallerLib.GmlMods;
 
-// StrictLints escalates file-bearing lint findings into exclusions; FailOnSkip
+// StrictLints escalates file-bearing lint findings into exclusions. FailOnSkip
 // turns any exclusion into an abort before the rebuild begins. Both are CLI
-// flags for CI and mod development; the GUI never sets them.
+// flags for CI and mod development, and the GUI never sets them.
 public class GmlLayerOptions
 {
     public bool StrictLints { get; init; }
@@ -15,10 +15,10 @@ public class GmlLayerOptions
     public bool FailOnSkip { get; init; }
 }
 
-// Stages the whole GML layer in memory: the mmapi framework, each behavioural
-// mod's gml, the seamed engine files and the generated hook catalog. Nothing
-// is written; a stale anchor throws before the store is touched, and every
-// mod-content failure excludes that one mod and proceeds.
+// Stages the whole GML layer in memory. That is the mmapi framework, each
+// behavioural mod's gml, the seamed engine files and the generated hook
+// catalog. Nothing is written. A stale anchor throws before the store is
+// touched, and every mod-content failure excludes that one mod and proceeds.
 public static class GmlLayer
 {
     // The exclusion fixpoint's backstop. Survivors shrink monotonically and
@@ -36,19 +36,19 @@ public static class GmlLayer
         ledger ??= new MemoryExtensionLedger();
         var plan = new GmlLayerPlan();
 
-        // 1. The mmapi framework, delivered verbatim (MMAPI-001..015)
+        // 1. The mmapi framework, delivered verbatim.
         foreach (var (name, bytes) in PayloadResolver.MmapiSources())
             plan.Added[SeamStager.MmapiTreePrefix + name] = bytes;
 
         // 2. Each mod's gml under its own symbol dir. A symbol clash excludes
-        //    the later mod; an unsafe path is mod content, not a crash.
+        //    the later mod, and an unsafe path is mod content rather than a crash.
         Dictionary<string, string> symbolOwners = new() { { "mmapi", "the mmapi framework" } };
         List<GmlModCode> live = [];
         foreach (var mod in mods)
         {
             if (symbolOwners.TryGetValue(mod.Symbol, out var owner))
             {
-                // removeFiles false: the prefix belongs to the earlier owner
+                // The prefix belongs to the earlier owner, so its files stay.
                 Exclude(plan, mod,
                     [$"shares the install namespace 'scripts/{mod.Symbol}/' with {owner} - give one of them a distinct manifest id"],
                     removeFiles: false);
@@ -78,10 +78,10 @@ public static class GmlLayer
         var stage = SeamStager.StageAll(catalog, pristine);
         plan.Added[SeamStager.HookCatalogRel] = Encoding.UTF8.GetBytes(stage.HookCatalogGml);
 
-        // 3b-7. A dropped mod's generated lines must disappear with it, so
-        //    each round re-derives from the snapshot rather than unsplicing.
-        //    The loop converges because generated text is per-registrant independent and
-        //    survivors shrink monotonically.
+        // 3b to 7, in rounds. A dropped mod's generated lines must disappear
+        //    with it, so each round re-derives from the snapshot rather than
+        //    unsplicing. The loop converges because generated text is independent
+        //    per registrant and survivors shrink monotonically.
         var symbols = live.ToDictionary(m => m.Id, GmlModLint.ScanSymbols);
         var survivors = live;
         List<string> generated = [];
@@ -95,8 +95,8 @@ public static class GmlLayer
                     + "drop at least one mod, so this is a bug in the exclusion loop, not "
                     + "something a mod set can cause");
 
-            // last round's generated files describe a mod set that no longer
-            // holds, so drop them before re-deriving
+            // The last round's generated files describe a mod set that no longer
+            // holds, so they go before the re-derivation.
             foreach (var rel in generated) plan.Added.Remove(rel);
             generated.Clear();
 
@@ -117,15 +117,15 @@ public static class GmlLayer
 
             var before = survivors.Count;
 
-            // 4. The skip pass over the future tree
+            // 4. The skip pass over the future tree.
             var treeExports = SkipPass.FutureTreeExports(pristine, staged, plan.Added);
             var (kept, skipped) = SkipPass.Run(survivors, symbols, treeExports);
             survivors = kept;
             foreach (var (mod, reasons) in skipped) Exclude(plan, mod, reasons);
 
-            // 5. requires_hooks against declared hooks plus aliases; a miss
-            //    excludes the mod (the remedy is a newer installer, but the
-            //    other mods are fine)
+            // 5. requires_hooks against the declared hooks plus aliases. A miss
+            //    excludes the mod. The remedy is a newer installer, and the other
+            //    mods are unaffected.
             HashSet<string> declared = [.. catalog.Hooks];
             foreach (var declaration in catalog.HookDeclarations) declared.UnionWith(declaration.Aliases);
             foreach (var mod in survivors.ToList())
@@ -139,9 +139,9 @@ public static class GmlLayer
             }
 
             // 6. The three lints. StrictLints escalates file-bearing findings
-            //    into exclusions, file-less cross-mod findings stay warnings.
-            //    Recomputed per round, so a dropped mod's findings do
-            //    not linger.
+            //    into exclusions, while file-less cross-mod findings stay
+            //    warnings. They are recomputed per round, so a dropped mod's
+            //    findings do not linger.
             plan.Findings.Clear();
             plan.Findings.AddRange(GmlModLint.LintHooks(survivors, catalog));
             plan.Findings.AddRange(GmlModLint.LintSymbols(survivors, symbols));
@@ -193,8 +193,8 @@ public static class GmlLayer
         var scratch = Path.Combine(Path.GetTempPath(), $"momi_stage_{Guid.NewGuid():N}");
         try
         {
-            // mirror the real tree: an injective mapping, keeping the .gml
-            // suffix so the compat dialect applies
+            // Mirror the real tree with an injective mapping, keeping the .gml
+            // suffix so the compat dialect applies.
             string Materialise(string rel, byte[] data)
             {
                 var target = Path.Combine(scratch, rel.Replace('/', Path.DirectorySeparatorChar));
@@ -216,8 +216,8 @@ public static class GmlLayer
 
             foreach (var mod in survivors.ToList())
             {
-                // the mod's chunks as one unit, the way the boot's
-                // global-script compile sees them
+                // The mod's chunks compile as one unit, the way the boot's
+                // global-script compile sees them.
                 var prefix = $"assets/gml/scripts/{mod.Symbol}/";
                 var targets = plan.Added.Keys
                     .Where(rel => rel.StartsWith(prefix, StringComparison.Ordinal))
@@ -226,8 +226,8 @@ public static class GmlLayer
                     .Select(rel => Materialise(rel, plan.Added[rel]))
                     .ToList();
 
-                // a registration-only mod ships no code, and there is nothing to
-                // compile and an empty unit is not a meaningful question
+                // A registration-only mod ships no code, so there is nothing to
+                // compile, and an empty unit is not a meaningful question.
                 if (targets.Count == 0) continue;
 
                 try
@@ -249,23 +249,21 @@ public static class GmlLayer
         }
     }
 
-    // The gate compiles GML. Today every staged and added path is already a
-    // .gml under assets/gml/, so this filter changes nothing, but that is a
-    // property of where files happen to live, not something anything states.
-    // Extension points will add data files to plan.Added (the vacancy fiddle
-    // stubs), and feeding one to momi-gml-check would be a confusing compile
-    // failure over a file that was never GML. Say what the gate takes.
+    // The gate compiles GML, and nothing else. Extension points add data files
+    // to plan.Added, such as a vacancy's fiddle stub, and feeding one to the
+    // checker would be a confusing compile failure over a file that was never
+    // GML. This filter says what the gate takes.
     private static bool IsGml(string rel) => rel.EndsWith(".gml", StringComparison.Ordinal);
 
     // The user-facing shape of a compile-gate failure. The checker reports the
-    // absolute staged path twice per diagnostic
-    // (<scratch>/assets/gml/scripts/<id>/F.gml: <msg> at <same>:<line>), so
-    // each line is rewritten to scripts/<id>/F.gml:<line>: <msg> under a
-    // "Compile Error:" heading. Anything unrecognised passes through with only
-    // the scratch prefix trimmed: a reason can get shorter here, never lost.
+    // absolute staged path twice per diagnostic, as
+    // <scratch>/assets/gml/scripts/<id>/F.gml: <msg> at <same>:<line>, so each
+    // line is rewritten to scripts/<id>/F.gml:<line>: <msg> under a "Compile
+    // Error:" heading. Anything unrecognised passes through with only the
+    // scratch prefix trimmed, so a reason can get shorter here but is never lost.
     public static string FormatCompileError(string message, string scratch)
     {
-        // both separators, so a forward-slash path is trimmed on any platform
+        // Both separators are tried, so a forward-slash path is trimmed on any platform.
         string Trim(string text) => new[] { Path.DirectorySeparatorChar, '/' }
             .Select(sep => $"{scratch}{sep}assets{sep}gml{sep}")
             .Aggregate(text, (current, prefix) => current.Replace(prefix, ""));
@@ -274,9 +272,9 @@ public static class GmlLayer
 
         // Only the gate's compile-failure message carries the
         // "compile pass FAILED (exit N):" scaffold on its first line. Its
-        // operational throws (vanished staged file, launch failure) are
-        // scaffold-less single lines and surface raw rather than losing their
-        // reason to the Skip below.
+        // operational throws, such as a vanished staged file or a launch
+        // failure, are single lines without the scaffold, and they surface raw
+        // rather than losing their reason to the Skip below.
         if (!lines[0].StartsWith("compile pass FAILED", StringComparison.Ordinal))
             return Trim(message);
 
@@ -289,8 +287,8 @@ public static class GmlLayer
             var path = line[..sep];
             var rest = line[(sep + 2)..];
 
-            // hoist the line number out of the trailing " at <path>:<line>";
-            // a diagnostic without one keeps its original path: message shape
+            // Hoist the line number out of the trailing " at <path>:<line>". A
+            // diagnostic without one keeps its original "path: message" shape.
             var tail = $" at {path}:";
             var at = rest.LastIndexOf(tail, StringComparison.Ordinal);
             return at >= 0 && int.TryParse(rest[(at + tail.Length)..], out var lineNumber)

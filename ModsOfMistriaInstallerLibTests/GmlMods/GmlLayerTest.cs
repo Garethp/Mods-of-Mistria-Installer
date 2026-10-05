@@ -347,8 +347,8 @@ public class GmlLayerTest
     {
         var plan = Stage();
 
-        // 11 = the 9 framework files + the extension vacancy query
-        // (mmapi_ext_vacant.gml) + the vacant-NPC stub object the npc_roster
+        // 11 = the 9 framework files, the extension vacancy query
+        // (mmapi_ext_vacant.gml) and the vacant-NPC stub object the npc_roster
         // vacancy case resolves to (mmapi_npc_vacant.gml)
         var sources = PayloadResolver.MmapiSources();
         Assert.That(sources, Has.Count.EqualTo(11));

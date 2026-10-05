@@ -75,7 +75,7 @@ public static class ExtensionCollector
         {
 
             // momi/extensions/<point_id>/<local_name>.toml carries exactly one level
-            // of nesting, so the point id is unambiguous
+            // of nesting, so the point id is unambiguous.
             var parts = rel.Split('/');
             if (parts.Length != 4)
             {
@@ -88,7 +88,7 @@ public static class ExtensionCollector
 
             if (!byPoint.TryGetValue(pointId, out var point))
             {
-                // a newer installer may know this point. An older one never will
+                // A newer installer may know this point. An older one never will.
                 problems.Add($"registration '{rel}' targets unknown extension point '{pointId}' - "
                              + "this installer does not provide it, so the mod needs a newer MOMI");
                 continue;
@@ -117,9 +117,9 @@ public static class ExtensionCollector
                 continue;
             }
 
-            // guards same-mod duplicates. Cross-mod duplicates are possible
+            // Guards same-mod duplicates. Cross-mod duplicates are possible
             // too (differently split prefixes can compose the same symbol)
-            // and the expander fails those closed with a mod-naming problem
+            // and the expander fails those closed with a mod-naming problem.
             if (!seenSymbols.Add(registration.Symbol))
             {
                 problems.Add($"registration '{rel}' resolves to symbol '{registration.Symbol}', "
@@ -316,9 +316,9 @@ public static class ExtensionCollector
         Dictionary<string, string> values = new()
         {
             [ExtensionPlaceholders.Symbol] = registration.Symbol,
-            // the ordinal is not known until staging, so a companion path that
+            // The ordinal is not known until staging, so a companion path that
             // uses it would not be checkable here. The loader permits it for
-            // symmetry with vacancy_files. Nothing declares one today.
+            // symmetry with vacancy_files.
             [ExtensionPlaceholders.Ordinal] = "",
         };
 

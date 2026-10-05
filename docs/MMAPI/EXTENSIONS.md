@@ -27,7 +27,7 @@ While a [seam](SEAMS.md) observes or filters behavior at a point in a function, 
 A **registration** is a single TOML file at `momi/extensions/<point>/<name>.toml`. The file name is your addition's **short name**, and the file's fields are whatever the point declares. A point with no fields takes an empty file:
 
 ```toml
-# momi/extensions/status_effect/well_rested.toml
+# momi/extensions/status_effect/exhaustion.toml
 ```
 
 Each point's page lists its fields, the files it requires beside the registration, and the lines MOMI generates for it.
@@ -47,7 +47,7 @@ During install, MOMI derives a full **symbol** from the short name. A **symbol**
 
 A symbol has the form `<author>_<mod>_<short name>`. The author and mod pieces come from your manifest, lowercased with punctuation stripped. The short name piece is used verbatim.
 
-Use the full **symbol** in `gml/` files for enum references, such as `StatusEffectId.author_mymod_well_rested`.
+Use the full **symbol** in `gml/` files for enum references, such as `StatusEffectId.author_mymod_exhaustion`.
 
 > [!IMPORTANT]
 > The stripped `<author>` must start with a letter, and the whole symbol may not exceed 81 characters.
@@ -59,13 +59,25 @@ Use the full **symbol** in `gml/` files for enum references, such as `StatusEffe
 | [status_effect](extensions/status_effect.md) | A `StatusEffectId` member. Your GML applies the effect, draws its HUD icon, and reacts when it ends. | [Custom Status Effects](CUSTOM_STATUS_EFFECTS.md) |
 | [npc_roster](extensions/npc_roster.md) | An `NpcId` member with its object mappings, manifest macro and baseline schedule. Your mod ships the prototype, art, schedule and dialogue. | [Your First Custom NPC](CUSTOM_NPC.md) |
 
+## The Installed Registry
+
+At install time MOMI renders the ledger into `mmapi_ext.gml`. The generated file maps every live registrant's symbol to its ordinal per point, and publishes the vacancies the ledger still holds. It is written only when a registration or a ledger vacancy exists, so a mod that registers nothing and only reads other mods' points checks `global[$ "__mmapi_ext_ids"]` is defined before calling the first four helpers. A mod with its own registration never needs the check.
+
+| Function | What it answers |
+| -------- | --------------- |
+| `mmapi_ext_id(point, symbol)` | The ordinal a symbol holds in a point. Returns `undefined` when the point or the symbol is absent. |
+| `mmapi_ext_symbol(point, ordinal)` | The symbol behind an ordinal. Returns `undefined` when the point or the ordinal is absent. |
+| `mmapi_ext_ids(point)` | Every live ordinal for a point, ascending. Empty for an unknown point. |
+| `mmapi_ext_catalog()` | The raw table behind the three lookups, flat point, symbol, ordinal triples of every live registrant. |
+| `mmapi_ext_is_vacant(point, ordinal)` | Whether the ordinal belongs to a symbol whose mod is uninstalled. Safe to call when no registry exists. |
+
 ## Named Sprites
 
 Any sprite your content references by name, such as a HUD icon or a perk tile, ships as a meta and png pair under `animations/`, at a vanilla-shaped path. The engine registers a named sprite for every pair it finds there.
 
 A meta must carry the fields the engine loads for its sprite kind, and no `id`. MOMI assigns ids at install.
 
-Every sprite also requires a partner shape file: a `poly_*` meta under `shapes/`, at the mirrored path, carrying the sprite's geometry. MOMI links each shape to its paired animation.
+Every sprite also requires a partner shape file, a `poly_*` meta under `shapes/` at the mirrored path, carrying the sprite's geometry. MOMI links each shape to its paired animation.
 
 > [!TIP]
 > The vanilla metas are the reference for which fields each sprite kind carries.
@@ -80,6 +92,6 @@ The ledger also rebuilds itself when lost, from the names the saves carry and fr
 
 ## Rules
 
-- Reference a member as `<Enum>.<symbol>` in your own GML, such as `StatusEffectId.<symbol>`, or look it up with `mmapi_ext_id("<point>", "<symbol>")` and back with `mmapi_ext_symbol(point, ordinal)`. Both come from the generated registry (`mmapi_ext.gml`).
+- Reference a member as `<Enum>.<symbol>` in your own GML, such as `StatusEffectId.<symbol>`, or look it up through [the installed registry](#the-installed-registry).
 - Persist the **symbol**, never the ordinal, in your modsave.
-- Registrations require a `minInstallerVersion` of at least `0.16.0`.
+- Registrations require a `minInstallerVersion` of at least `0.17.0`.

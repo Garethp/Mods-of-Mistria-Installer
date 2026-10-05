@@ -53,6 +53,7 @@ hooks = 143
 seams = 160
 engine_fixes = 38
 call_rewrites = 1
+extensions = 2
 
 # --- hook declarations -------------------------------------------------------------
 
@@ -532,7 +533,7 @@ doc  = "Fires at the top of Ari.modify_stamina(), before stamina_costs_modifier 
 [[hook]]
 name = "status_effect.hud_icon"
 kind = "filter"
-doc  = "Fires in VitalsMenu.refresh_statuses() for a status effect the base game cannot draw: not a hardcoded vanilla id and not a potion infusion. The filtered value starts undefined; ctx is the StatusEffectId ordinal. Return { icon_sprite, color } (color optional, defaults to the vanilla status orange) to draw the HUD icon, or undefined to leave the icon undrawn. Register this for any extension status effect you show with show_hud - without a handler the effect still works, it just has no HUD icon. Vanilla never reaches this hook: every vanilla non-hardcoded id is an infusion."
+doc  = "Fires in VitalsMenu.refresh_statuses() for a status effect the base game cannot draw, one that is neither a hardcoded vanilla id nor a potion infusion. The filtered value starts undefined. ctx is the StatusEffectId ordinal. Return { icon_sprite, color } to draw the HUD icon, where color is optional and defaults to the vanilla status orange, or undefined to leave the icon undrawn. Register this for any extension status effect you show with show_hud. Without a handler the effect still works, it just has no HUD icon. Vanilla never reaches this hook, because every vanilla non-hardcoded id is an infusion."
 
 [[hook]]
 name = "player.status_effect_cancel"
@@ -4093,12 +4094,12 @@ replace = '''
 marker   = "mmapi_npc_is_unlocked"
 provides = ["npc.is_unlocked"]
 
-# The VitalsMenu default-case seam the survey predicted. Vanilla's default arm
-# assumes every non-hardcoded status id is a potion infusion and resolves it
-# through FATAL string_to_infusion - an extension status effect with show_hud
-# would crash the HUD. The try_ variant plus a filter keeps vanilla
-# pixel-identical (every id vanilla can produce is an infusion hit) and gives
-# extension effects an icon path; no handler means no icon rather than a crash.
+# The VitalsMenu default-case seam. Vanilla's default arm assumes every
+# non-hardcoded status id is a potion infusion and resolves it through FATAL
+# string_to_infusion, so an extension status effect with show_hud would crash
+# the HUD. The try_ variant plus a filter keeps vanilla pixel-identical, since
+# every id vanilla can produce is an infusion hit, and gives extension effects
+# an icon path. No handler means no icon rather than a crash.
 [[seam]]
 id      = "vitals_status_hud_icon"
 file    = "gml/scripts/UI/Anchor/Menus/VitalsMenu.gml"
@@ -4722,9 +4723,9 @@ replace = '''
 '''
 marker  = "mmapi_monster_status_overlay"
 
-# The fixes from here to the extension points support custom NPCs and status
-# effects. They let a save load when a name no longer resolves, and keep a vacant
-# NPC member inert.
+# The fixes from here to the extension points support custom content a save
+# may name. They let a save load when a name no longer resolves, and keep a
+# vacant NPC member inert.
 
 # LoadGame walks the CURRENT enum and deserializes each NPC's blob with no
 # guard on the lookup. A save written before a custom NPC existed has no blob
@@ -4824,20 +4825,19 @@ replace = '''
                         var location = string_to_location_id(npc_data.location_position.location_id);'''
 marker  = "mmapi_save_patch_npc_blob_guard"
 
-# GAME_STATS structs (perks, menu_opens, npcs_spoken_to, location_visits) are
-# name-keyed and seeded ONLY at new-game and at version-migration
-# (patch_game_stats, called from NewGame.gml and the versioned block in
-# Serialization/Patches.gml). A same-version save therefore never seeds keys
-# for content added after it was written, and ~90 raw `[$ key] += 1` sites
-# crash with `bad unary op "inc" undefined` on first touch. Found live: first
-# arrival in a mod-added location dies at Taxi's location_visits increment;
-# npcs_spoken_to (T2r) is the same bomb for custom NPCs (masked in earlier
-# testing only because a game update's migration happened to run after the
-# NPC was installed), and two perk sites increment DYNAMIC perk refs. The
-# engine's own patch_game_stats is idempotent (fills only undefined keys,
-# prototype-patches missing fields) - invoking it on every load retires the
-# whole class at one site. Zero-delta: a same-version vanilla save already
-# has every key, so every PATCH probe finds them defined and writes nothing.
+# The GAME_STATS structs for perks, menu_opens, npcs_spoken_to and
+# location_visits are name-keyed and seeded only at new-game and at
+# version-migration, both through patch_game_stats. A same-version save
+# therefore never seeds keys for content added after it was written, and the
+# engine's raw `[$ key] += 1` sites crash with `bad unary op "inc" undefined`
+# on first touch. The first arrival in a mod-added location dies at the
+# location_visits increment, a custom NPC's first conversation dies at the
+# npcs_spoken_to increment, and the recipe and crafting sites increment
+# runtime-chosen perk keys. The engine's own patch_game_stats is idempotent,
+# since it fills only undefined keys and patches missing fields from the
+# prototype, so invoking it on every load retires the whole class at one
+# site. A same-version vanilla save already has every key, so the call finds
+# them defined and writes nothing.
 [[engine_fix]]
 name    = "game_stats_seed_on_load"
 file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
@@ -4850,30 +4850,23 @@ replace = '''
 '''
 marker  = "mmapi_game_stats_seed"
 
-# Save-load tolerance family. Trace-probe bisection of a mod-era save on a
-# clean install found exactly two hard name lookups in the whole load
-# pipeline: spells_learned resolves through FATAL string_to_spell (vanilla's
-# own inconsistency - the perks/items/recipes lines beside it use try_
-# variants and skip unknowns) and an occupied status-effect slot resolves
-# through FATAL string_to_status_effect_id. Either one aborts the load
-# natively - no dialog, no error_log.json entry, straight back to the title
-# screen - so removing a mod that taught a spell or left a status effect
-# active bricks the save until the mod returns. These fixes route the two
-# sites through the tolerant variants (both builtins probed in-game: they
-# exist and return undefined for unknown names), which makes every mod-era
-# save loadable: unknown content is dropped from memory with a warn, and the
-# next save writes the cleansed arrays. Zero-registrant inert: on an intact
-# install every name resolves, so the new arms never run and behaviour is
-# identical to vanilla.
-#
-# The 2026-08 static sweep completed the
-# enumeration the bisection began. The probed save never exercised the date,
-# pet, renown, construction, or infusion paths, and each of those resolves a
-# save-carried name fatally too. The nine fixes below close the eight
-# remaining sites in the same drop-and-warn mold. The renown path needs two
-# edits, one for its parser and one for its caller. Every tolerant builtin
-# these fixes call is attested in the vanilla tree, so no new in-game builtin
-# probe was required.
+# Save-load tolerance family. The load pipeline resolves several save-carried
+# names through FATAL converters, while the perks, items and recipes lines
+# beside them use the try_ variants and skip unknowns. A learned or pinned
+# spell, an occupied status-effect slot, a daily used-object flag, a pending
+# renown donation, the pet's item queue, a construction node and an item's
+# infusion each carry such a name, and a barn/coop or mount variant is copied
+# raw and dereferenced fatally during gameplay instead. One unknown name
+# aborts the load natively, with no dialog and no error_log.json entry,
+# straight back to the title screen, so removing a mod whose content a save
+# names bricks the save until the mod returns. The fixes below route each
+# site through the tolerant variant, or normalize the variant, dropping or
+# replacing the unknown entry with a warn so the next save writes the
+# cleansed data. The tolerant converters they call are the engine's own try_
+# variants, the same family the perks, items and recipes lines use. On an
+# intact install every name resolves, so the new arms never run and
+# behaviour is identical to vanilla. The renown path needs two edits, one
+# for its parser and one for its caller.
 [[engine_fix]]
 name    = "save_load_spells_tolerance"
 file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
@@ -4892,8 +4885,8 @@ replace = '''
 marker  = "mmapi_save_spells_tolerance"
 
 # An unknown pinned spell becomes set_pinned_spell(undefined), the engine's
-# own unpin call (SpellcastingMenu toggles the pin off the same way). No
-# warn of its own: a pinned spell is always also learned, so the
+# own unpin call, which is how SpellcastingMenu toggles the pin off. This
+# fix logs no warn of its own. A pinned spell is always also learned, so the
 # spells-tolerance path has already warned about the name by the time this
 # line runs.
 [[engine_fix]]
@@ -4905,12 +4898,12 @@ replace = '''
     ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, function(__mmapi_s) { return try_string_to_spell(__mmapi_s); })); // mmapi_save_pinned_tolerance'''
 marker  = "mmapi_save_pinned_tolerance"
 
-# A slot whose type no longer resolves deserializes to undefined - exactly
-# what an empty slot already is; the manager's update loop never sees it.
-# Ledgered status effects normally survive removal by tombstone (the vacant
-# enum member keeps the name resolving); this guard is for the remaining
-# cases: ledger wiped by hand, or a save moved to an install with a
-# different ledger.
+# A slot whose type no longer resolves deserializes to undefined, which is
+# exactly what an empty slot already is, so the manager's update loop never
+# sees it. Ledgered status effects normally survive removal by tombstone,
+# because the vacant enum member keeps the name resolving. This guard is for
+# the remaining cases, a ledger wiped by hand or a save moved to an install
+# with a different ledger.
 [[engine_fix]]
 name    = "save_load_status_effect_tolerance"
 file    = "gml/scripts/Player/StatusEffectManager.gml"
@@ -4932,10 +4925,10 @@ replace = '''
 marker  = "mmapi_save_status_tolerance"
 
 # Visibility for every forgetful path, the new one and the ones vanilla
-# already had: deserialize_array_bool silently drops unresolvable entries
-# for perks, items, recipes (and now spells). The DEBUG_ASSERTIONS crash arm
-# is preserved untouched; retail builds fall into the new else and name what
-# was dropped in the log.
+# already had. deserialize_array_bool silently drops unresolvable entries
+# for perks, items, recipes and, with the spells fix, spells. The
+# DEBUG_ASSERTIONS crash arm is preserved untouched, and the shipped game
+# falls into the new else and names what was dropped in the log.
 [[engine_fix]]
 name    = "save_load_forget_warn"
 file    = "gml/scripts/Utilities/ArrayBool.gml"
@@ -5039,10 +5032,11 @@ replace = '''
     }'''
 marker  = "mmapi_save_date_photos_tolerance"
 
-# The one fatal converter in the used-objects daily flag line. The functor
-# swap routes unknown object names through deserialize_array_bool's existing
-# skip, and save_load_forget_warn names them in the log. Object prototypes
-# are fiddle content, so the domain is mod-reachable.
+# The used-objects daily flag line resolves names through a fatal
+# converter. Swapping in the tolerant one routes unknown object names
+# through deserialize_array_bool's existing skip, and save_load_forget_warn
+# names them in the log. Object prototypes are fiddle content, so the domain
+# is mod-reachable.
 [[engine_fix]]
 name    = "save_load_used_objects_tolerance"
 file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
@@ -5118,10 +5112,11 @@ marker  = "mmapi_save_pet_items_tolerance"
 # written, through the same skip path unknown objects already take. Skipping
 # the whole node matters because turn-in boxes dereference
 # BLUEPRINT_PROTOTYPES[node.blueprint_id] on interact, so a cleared field
-# alone would trade the load crash for an interact crash. There is no
-# attested try variant for blueprints, so resolution is a Blueprint.LEN scan
-# over blueprint_to_string, the same reflection the serializer uses. Vanilla
-# names always match, which keeps an intact install identical.
+# alone would trade the load crash for an interact crash. The engine's own
+# GML uses no tolerant converter for blueprints, so resolution is a
+# Blueprint.LEN scan over blueprint_to_string, the same reflection the
+# serializer uses. Vanilla names always match, which keeps an intact install
+# identical.
 [[engine_fix]]
 name    = "save_load_blueprint_node_tolerance"
 file    = "gml/scripts/GameplaySystems/Data/Grid/__GridGeneral/Grid.gml"
@@ -5165,7 +5160,7 @@ marker  = "mmapi_save_blueprint_tolerance"
 # load. The guarded shape leaves the constructor's default in place instead
 # of overwriting it with undefined, because LiveItem seeds infusion from the
 # prototype's default_infusion. The engine already uses the try variant at
-# its two other infusion read sites.
+# its other infusion read sites.
 [[engine_fix]]
 name    = "save_load_infusion_tolerance"
 file    = "gml/scripts/GameplaySystems/Items/LiveItem.gml"
@@ -5185,12 +5180,11 @@ replace = '''
 marker  = "mmapi_save_infusion_tolerance"
 
 # The pet deserialize falls back to cat_tabby for an unknown variant, and
-# barn animals had no such guard: the saved variant string is copied raw and
-# the first prototype.variants.get dereference (production tier at
-# Animal.gml:64, sprite packs) crashes in play rather than at load. Variants
-# are fiddle content, so mods mint them. The 2026-08 hardening audit found
-# this as the one deref chain the load-pipeline sweep's converter net could
-# not see. Falls back to the kind's first variant with a warn.
+# barn/coop animals had no such guard. The saved variant string is copied
+# raw, and the first prototype.variants.get dereference, for the production
+# tier or a sprite pack, crashes during gameplay rather than at load.
+# Variants are fiddle content, so mods mint them. The fix falls back to the
+# kind's first variant with a warn.
 [[engine_fix]]
 name    = "save_load_animal_variant_tolerance"
 file    = "gml/scripts/GameplaySystems/Ranching/Animal.gml"
@@ -5524,21 +5518,20 @@ path  = "fiddle/npcs/{{symbol}}.toml"
 level = "error"
 doc   = "The NPC prototype. Without it load_npc_prototypes resolves this ordinal to nothing and the game dies during Setup (observed live)."
 
-# The second extension point, and deliberately the simple one (the survey's
-# natural follow-on): StatusEffectId is a pure GML roster enum, the manager is
-# id-agnostic (register/cancel/get_effect_value take any id), lifecycle hooks
-# already ship, serialization round-trips by name, and the update loop skips
-# absent entries - vacancy-benign by construction, so the vacancy template is
-# the enum member alone and there is no data invariant to satisfy. A mod
-# registers the id, then drives the effect entirely from its own GML:
-# ARI.status_effects.register(<ordinal>, ...) plus hook handlers, with
-# status_effect.hud_icon supplying the HUD icon.
+# Deliberately the simple shape. StatusEffectId is a pure GML roster enum,
+# the manager is id-agnostic since register, cancel and get_effect_value take
+# any id, lifecycle hooks already ship, serialization round-trips by name,
+# and the update loop skips absent entries. That makes a vacancy benign by
+# construction, so the vacancy template is the enum member alone and there
+# is no data invariant to satisfy. A mod registers the id, then drives the
+# effect entirely from its own GML, through ARI.status_effects.register plus
+# hook handlers, with status_effect.hud_icon supplying the HUD icon.
 [[extension]]
 id   = "status_effect"
 file = "gml/scripts/Player/StatusEffect.gml"
 doc  = """One registration per custom status effect. Adds the StatusEffectId
-member; the mod applies and reacts to the effect from its own gml via
-ARI.status_effects and the player.status_effect_* / status_effect.hud_icon
+member. The mod applies and reacts to the effect from its own gml through
+ARI.status_effects and the player.status_effect_* and status_effect.hud_icon
 hooks."""
 
 [extension.ordinal]

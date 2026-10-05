@@ -17,13 +17,15 @@ The catalog is `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`, embedded int
 | `[[seam]]` | An engine edit that helps provide one or more declared hooks. It may be generated from a template or written as a verbatim text replacement. |
 | `[[engine_fix]]` | A hook-less engine edit. It applies like a text seam but dispatches nothing. |
 | `[[call_rewrite]]` | A tree-wide redirect of direct calls to a native function that has no GML body to seam. |
-| `[[extension]]` | An extension point: templates for growing a GML-declared roster enum per mod registration. See [Extension Points](EXTENSIONS.md). |
+| `[[extension]]` | An extension point. The enum it grows and the templates that render one member per mod registration. See [Extension Points](EXTENSIONS.md). |
 
 The catalog opens with a `[counts]` table stating how many records of each type follow. The loader refuses a catalog whose records do not match that table, so a truncated or mis-merged file fails at load time instead of shipping a partial hook surface.
 
-The shipped catalog currently declares **143 hooks**, fed by **160 seams**, **38 engine fixes**, and **1 call rewrite**, plus **2 extension points** ([npc_roster](extensions/npc_roster.md), [status_effect](extensions/status_effect.md)). The [Catalog](CATALOG.md) gives each one its own page.
+The shipped catalog currently declares **143 hooks**, fed by **160 seams**, **38 engine fixes**, and **1 call rewrite**, plus **2 extension points**. The [Catalog](CATALOG.md) gives each one its own page.
 
 MOMI also renders the hook declarations into `mmapi_hook_catalog.gml` at install time, so the runtime can check registrations and answer introspection. See [The Installed Catalog](HOOKS.md#the-installed-catalog).
+
+Extension points have their own generated file, `mmapi_ext.gml`, the registry of symbols and ordinals, written only when a registration or a ledger vacancy exists. See [The Installed Registry](EXTENSIONS.md#the-installed-registry).
 
 ### Runtime Hooks
 
@@ -116,7 +118,7 @@ doc  = "Fires at the top of TANGO.play(asset_name, ...), before a sound effect s
 
 A seam-provided hook must appear in at least one seam or call rewrite's provider list. A runtime-provided hook must appear in neither.
 
-Every added or removed record also moves the `[counts]` integrity table at the top of the file. Bump `hooks` now, and bump `seams`, `engine_fixes`, or `call_rewrites` as the matching records land in step 4. The loader compares that table to the stanzas it parses and refuses the whole catalog on any mismatch, so a forgotten bump fails every shipped-catalog test and the seam check at once, before a single anchor is examined.
+Every added or removed record also moves the `[counts]` integrity table at the top of the file. Bump `hooks` now, and bump `seams`, `engine_fixes`, `call_rewrites`, or `extensions` as the matching records land in step 4. The loader compares that table to the stanzas it parses and refuses the whole catalog on any mismatch, so a forgotten bump fails every shipped-catalog test and the seam check at once, before a single anchor is examined.
 
 ### 4. Choose The Smallest Seam Form
 
@@ -425,7 +427,7 @@ For automation, substitute `--seam-check-json`. Its `problem_records` include `k
 
 ### Check The Ledger Reseed
 
-An install carrying extension points keeps a ledger of the ordinals it has handed out, and rebuilds a lost ledger from two sources: the symbol names the player's saves carry, and the markers stamped on generated lines in the archive it is about to replace. The reseed check runs both harvests and reports, without installing:
+An install carrying extension points keeps a ledger of the ordinals it has handed out, and rebuilds a lost ledger from two sources. One is the symbol names the player's saves carry. The other is the markers stamped on generated lines in the archive it is about to replace. The reseed check runs both harvests and reports, without installing:
 
 ```powershell
 dotnet run --project ModsOfMistriaCommandLine -- --reseed-check

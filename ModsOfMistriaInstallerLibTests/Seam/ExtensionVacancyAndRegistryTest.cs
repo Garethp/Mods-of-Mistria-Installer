@@ -134,10 +134,10 @@ public class ExtensionVacancyAndRegistryTest
     [Test]
     public void ShouldSplitLiveAndVacantBetweenTheTwoCatalogs()
     {
-        // live symbols answer "is this here" through mmapi_ext_catalog. A
-        // vacancy is not there (the mod is gone, and the registry saying yes
-        // would be a lie) but is in the vacant catalog, which is what the
-        // engine seams consult to keep tombstones out of the player's view
+        // Live symbols answer "is this here" through mmapi_ext_catalog. A
+        // vacancy is not there, because the mod is gone and the registry saying
+        // yes would be a lie, but it is in the vacant catalog, which is what
+        // mmapi_ext_is_vacant answers from.
         var ledger = new MemoryExtensionLedger(
             ("roster", new ExtensionAssignment("modx_gone", 2, "mod.gone")),
             ("roster", new ExtensionAssignment("modx_here", 3, "mod.here")));
@@ -173,24 +173,24 @@ public class ExtensionVacancyAndRegistryTest
     }
 
     [Test]
-    public void ShouldCallOnlyAttestedBuiltinsFromTheRegistry()
+    public void ShouldCallOnlyEngineBuiltinsFromTheRegistry()
     {
-        // Every call in the rendered file must be self-defined or an
-        // engine-attested builtin.
+        // Every call in the rendered file must be self-defined or an engine
+        // builtin.
         var gml = Text(Run([Reg("modx_luna")]), ExtensionRegistryRenderer.RegistryRel);
 
         var defined = GmlScanner.TopLevelDefinitions(gml).Select(s => s.Name).ToHashSet();
-        var attested = new HashSet<string> { "array_length", "array_push", "string" };
+        var builtins = new HashSet<string> { "array_length", "array_push", "string" };
         // control-flow keywords tokenize like call sites (`for (`, `if (`)
         var keywords = new HashSet<string> { "if", "for", "while", "switch", "repeat", "with", "catch", "until" };
         var unknown = GmlScanner.FindPrefixedCalls(gml, [""])
             .Select(c => c.Name)
-            .Where(n => !defined.Contains(n) && !attested.Contains(n) && !keywords.Contains(n))
+            .Where(n => !defined.Contains(n) && !builtins.Contains(n) && !keywords.Contains(n))
             .Distinct()
             .ToList();
 
         Assert.That(unknown, Is.Empty,
-            "the registry calls names neither self-defined nor attested in the engine dialect");
+            "the registry calls names neither self-defined nor builtins of the engine dialect");
     }
 
     [Test]

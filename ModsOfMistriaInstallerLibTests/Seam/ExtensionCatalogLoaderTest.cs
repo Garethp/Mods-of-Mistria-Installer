@@ -12,7 +12,7 @@ public class ExtensionCatalogLoaderTest
     // no seam behind it is itself a catalog error, which would mask these
     private const string Base = "version = 2\n";
 
-    // the npc_roster shape, trimmed to what the loader cares about
+    // the full point shape, trimmed to what the loader cares about
     private const string GoodPoint = "\n" + """
         [[extension]]
         id   = "roster"

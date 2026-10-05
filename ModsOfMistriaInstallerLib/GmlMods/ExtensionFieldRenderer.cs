@@ -61,7 +61,7 @@ public static class ExtensionFieldRenderer
             {
                 // TOML gives a long for an integer. Anything else (including a
                 // float or a numeric-looking string) is a type mismatch, not
-                // something to coerce
+                // something to coerce.
                 if (raw is not long value)
                 {
                     problem = $"field '{field.Name}' must be an integer";

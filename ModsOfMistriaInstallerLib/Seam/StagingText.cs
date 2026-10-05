@@ -5,9 +5,9 @@ namespace Garethp.ModsOfMistriaInstallerLib.Seam;
 
 // The text mechanics both staging layers share, meaning pristine decode, EOL
 // normalisation, occurrence counting, line ownership, and the closest-match
-// diagnostics a missed anchor reports. Extracted from SeamStager when the
-// extension expander needed the same rules, because anchor discipline forked in two
-// places is anchor discipline that drifts.
+// diagnostics a missed anchor reports. The seam stager and the extension
+// expander follow the same rules from one place, because anchor discipline
+// forked in two places is anchor discipline that drifts.
 public static class StagingText
 {
     private static readonly Regex WhitespaceRuns = new(@"\s+");
@@ -30,7 +30,7 @@ public static class StagingText
         return new StagedFile(Norm(text), DetectEol(text));
     }
 
-    // Non-overlapping occurrences, the anchor-count contract
+    // Counts non-overlapping occurrences, which is the anchor-count contract.
     public static int CountOccurrences(string text, string value)
     {
         var count = 0;
@@ -44,11 +44,11 @@ public static class StagingText
         return count;
     }
 
-    // 1-based line number of the char offset
+    // The 1-based line number of the char offset.
     public static int CountLines(string text, int pos) =>
         text.AsSpan(0, pos).Count('\n') + 1;
 
-    // True when nothing but whitespace or a line comment follows pos on its line
+    // True when nothing but whitespace or a line comment follows pos on its line.
     public static bool RestOfLineIsBlank(string text, int pos)
     {
         var lineEnd = text.IndexOf('\n', pos);
@@ -92,9 +92,9 @@ public static class StagingText
         return "no part of the anchor is present";
     }
 
-    // The best-guess location for a missed anchor, the first anchor line that
-    // still occurs in the file, in anchor order. (0, "") when no line survives -
-    // the hint already says so.
+    // The best-guess location for a missed anchor, which is the first anchor
+    // line that still occurs in the file, in anchor order. It is (0, "") when
+    // no line survives, and the hint already says so.
     public static (int Line, string Context) ClosestContext(string anchor, string text)
     {
         foreach (var probe in anchor.Trim().Split('\n').Select(l => l.Trim()))

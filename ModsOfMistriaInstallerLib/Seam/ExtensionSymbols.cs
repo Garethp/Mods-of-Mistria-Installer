@@ -15,9 +15,9 @@ public static class ExtensionSymbols
 
     public static readonly Regex Shape = new($@"\A{ShapeCore}\z", RegexOptions.Compiled);
 
-    // The engine's member-to-string convention observed in save data and
-    // world-fact keys. It is lowercase, with an underscore before any interior
-    // uppercase run (single-word members simply lowercase). Extension
+    // The engine's member-to-string convention, as save data and world-fact
+    // keys spell it. It is lowercase, with an underscore before any interior
+    // uppercase run, and a single-word member is simply lowercased. Extension
     // symbols are already lowercase and round-trip unchanged.
     public static string ToNativeName(string member)
     {

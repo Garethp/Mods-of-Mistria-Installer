@@ -143,40 +143,18 @@ Enables or disables the agent at runtime, bypassing (and thereafter shadowing) t
 > [!CAUTION]
 > Resume before disabling. A disabled agent no longer drives the engine's pause flag, so a pause left set stays set. Once enabling has installed F8 through F10, disabling cannot unregister them, so those hotkeys remain for the rest of the session.
 
-## Tracing Dialogue
-
-To see exactly which conversation and lines the engine serves, and which prompt a player picked, register observers on the shipped hooks. No engine edits or new seams are needed:
-
-```gml
-function my_mod_trace_play(ctx) {
-    mmapi_log_warn("my_mod", "convo start: " + string(ctx[$ "path"]));
-    return undefined; // observe only, never veto
-}
-function my_mod_trace_line(value, ctx) {
-    mmapi_log_warn("my_mod", "line: " + string(value)); // banked lines arrive as the line PATH
-    return undefined; // observe only, never rewrite
-}
-mmapi_guard("dialogue.play_guard", my_mod_trace_play);
-mmapi_filter("dialogue.line", my_mod_trace_line);
-```
-
-`T2R.request_conversation(npc_id)` returns the currently pending conversation for an NPC and is side-effect-free. Poll it, for example from an `mmapi_hotkey_register` dump, to watch selection react to world-fact changes live. Add both hook names to `requires_hooks`.
-
 ## When a Save Silently Refuses to Load
 
-The symptom: you pick a save, the load starts, and the game returns to the title screen with no dialog and nothing after `Setup.gml` in the verbose log. Where to look, in order:
+You pick a save, the load starts, and the game returns to the title screen with no dialog and nothing after `Setup.gml` in the verbose log. Where to look, in order:
 
 1. **`%LOCALAPPDATA%\FieldsOfMistria\error_log.json` and `crash-images\`.** GML runtime errors land here with a VM backtrace. Check the file's timestamp, because it is not cleared between sessions, and a stale entry from an earlier crash reads exactly like fresh evidence.
-2. **If those are silent, the failure is native**, typically a hard `string_to_*` resolving a name the current install does not define. On a MOMI-managed install this class is largely retired, because the save-load tolerance fixes forget unknown spells and status effects with `MMAPI: save carried unknown entry ... - dropped` warns in the log instead of aborting, so look for those warns first. On a clean game the usual cause is a save made with a mod that is no longer installed, such as a learned custom spell or an active custom status effect. Reinstall the mod, or MOMI, and the save is not damaged.
-3. The load's last verbose-log trace brackets the failure. `LoadGame.gml:46` ("Loaded files") to `:232` ("Loaded player") is the player block, covering spells, status effects, and stats. Later traces (`:376` for grids, `:461` for t2 and NPCs) bracket world state.
+2. If those are silent, the failure is native, inside a function the engine implements outside the shipped GML, typically a hard `string_to_*` resolving a name the current install does not define. With MMAPI installed this class is largely retired, because the save-load tolerance fixes forget unknown spells and status effects with `MMAPI: save carried unknown entry ... - dropped` warns in the log instead of aborting, so look for those warns first. On a vanilla game install the usual cause is a save made with a mod that is no longer installed, such as a learned custom spell or an active custom status effect. Reinstall the mod, or MOMI, and the save will load.
+3. The load's last verbose-log trace names the stage that failed. The load prints a trace as each stage completes, "Loaded files", "Loaded player", "Loaded grids", "Loaded t2 and npcs" and finally "Finished load", so the first one missing is the stage that was running. The player stage covers spells, status effects, and stats. The later stages cover world state.
 
-On a MOMI-managed install, the `save_load_*` tolerance family converts every fatal name lookup the load pipeline contains into a named warn of the form `MMAPI: save carried ... - dropped`, so a bounce-to-title on a managed install points at something the catalog has not met yet. The quickest way to see those warns live is to launch the game from a terminal, which streams the engine's full log to stdout: from the install directory, `& .\FieldsOfMistria.exe 2>&1 | Write-Host`.
+With MMAPI installed, the `save_load_*` tolerance family converts the load pipeline's fatal name lookups into named warns of the form `MMAPI: save carried ... - dropped`, so a bounce-to-title then points at something the catalog doesn't cover.
 
-A `Checksums test failed! Save has been tampered` WARN on load is advisory. Vanilla emits it for any modded-era save and continues, so it is never the reason a load bailed.
+> [!TIP]
+> The quickest way to see those warns live is to launch the game from a terminal, which streams the engine's full log to stdout. From the install directory, run `& .\FieldsOfMistria.exe 2>&1 | Write-Host`.
 
-### Bisecting a Native Failure With Trace Probes
-
-When the failure is native, with no GML backtrace anywhere, two tools pin it exactly:
-
-1. **Trace injection.** The engine compiles GML from `assets.zip` at boot, so numbered `trace("MMAPI-BISECT B01 ...")` lines inserted around the suspect calls turn the verbose log into a bisection. The last probe printed brackets the killing call. Rewrite the archive from `assets.bak.zip` with the patched files, and never write the backup itself. Afterwards restore vanilla from the backup before running the installer, because `EnsureBackup` copies an unmarked live archive over the backup, which would poison the pristine copy with your probes.
-2. **Save surgery.** The community `vaultc` tool unpacks a `.sav` into readable JSON (`vaultc unpack save.sav outdir`) and packs it back (`vaultc pack outdir save.sav`). Reading the JSON shows exactly which names a save carries. Editing it produces controlled experiment saves, for example the same save minus one `spells_learned` entry, with the farm renamed so the load menu distinguishes it. The game's checksum WARN on a repacked save is advisory.
+> [!NOTE]
+> A `Checksums test failed! Save has been tampered` WARN on load is advisory. Vanilla emits it for any modded save and continues. It is never the reason a save load failed.

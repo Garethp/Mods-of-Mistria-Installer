@@ -26,8 +26,8 @@ public class ModLintResult(string modId, string version, string? symbol, int gml
 
     public string Version { get; } = version;
 
-    // Null when the mod ships neither a gml/ tree nor extension registrations
-    // (manifest checks still ran)
+    // Null when the mod ships neither a gml/ tree nor extension registrations.
+    // The manifest checks still ran.
     public string? Symbol { get; } = symbol;
 
     public int GmlFileCount { get; } = gmlFileCount;

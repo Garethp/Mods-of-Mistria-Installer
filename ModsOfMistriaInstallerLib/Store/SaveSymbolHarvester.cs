@@ -12,9 +12,10 @@ namespace Garethp.ModsOfMistriaInstallerLib.Store;
 // the reader is strictly read-only.
 public static class SaveSymbolHarvester
 {
-    // Caps chosen far above any real save (about 1 MB of plaintext, 36
-    // records) so they only ever reject corruption. The symbol cap is public
-    // because the installer's archive-marker union enforces the same bound.
+    // The caps sit far above any real save, which is about 1 MB of plaintext
+    // and 36 records, so they only ever reject corruption. The symbol cap is
+    // public because the installer's archive-marker union enforces the same
+    // bound.
     private const long MaxPlainBytes = 64L << 20;
     private const int MaxRecords = 4096;
     private const int MaxNameBytes = 256;
@@ -28,8 +29,8 @@ public static class SaveSymbolHarvester
     }
 
     // Per save-harvest-capable extension point, the record name the rule
-    // reads. A declared point with no rule here still enters the result (its
-    // pristine scan permitting), because the archive-marker harvest covers
+    // reads. A declared point with no rule here still enters the result when
+    // its pristine scan permits, because the archive-marker harvest covers
     // every declared point and unions into the same entries. A future point
     // whose symbols can appear in saves must add its rule here, and the
     // catalog completeness test forces that decision to be made explicitly.
@@ -195,9 +196,9 @@ public static class SaveSymbolHarvester
         if (scan is null) return null;
 
         // Saves carry the native name form, not the member spelling. The
-        // engine's reflection lowercases the member (Eiland serializes as
-        // eiland). Subtracting the member spelling verbatim would harvest
-        // the entire vanilla roster. Compare in the native form.
+        // engine's reflection lowercases the member, so Eiland serializes as
+        // eiland. Subtracting the member spelling verbatim would harvest the
+        // entire vanilla roster. Compare in the native form.
         var names = scan.Members
             .Take(scan.Members.Count - 1)
             .Select(m => ExtensionSymbols.ToNativeName(m.Name))

@@ -77,8 +77,8 @@ public class ImageInstaller(
 
             reportStatus($"Packed {animationGroup.BaseName} → {metaToml.Asset.Atlas} atlas (id {id})", "");
 
-            // A named sprite (what string_to_asset resolves) requires a
-            // meta+png pair under animations/, so the png is copied into the
+            // A named sprite, which is what string_to_asset resolves, requires
+            // a meta+png pair under animations/, so the png is copied into the
             // tree beside the meta. images/ sprites stay id-referenced.
             if (animationGroup.PngRelPath!.Replace('\\', '/').StartsWith("animations/", StringComparison.OrdinalIgnoreCase))
             {
@@ -106,7 +106,7 @@ public class ImageInstaller(
             var baseName   = spriteName.StartsWith("spr_", StringComparison.OrdinalIgnoreCase)
                              ? spriteName[4..] : spriteName;
 
-            // Find the game's own animation meta, which provides id, atlas, frame_size, frame_len
+            // Find the game's own animation meta, which provides id, atlas, frame_size and frame_len.
             var gameMetaPath = FindGameAnimationMetaPath(spriteName);
             if (gameMetaPath is null)
             {

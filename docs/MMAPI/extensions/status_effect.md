@@ -1,6 +1,6 @@
 # Extension Point: status_effect
 
-One registration per custom status effect.
+Adds a `StatusEffectId` member for each registered custom status effect.
 
 `status_effect` is an **extension point**. See [Extension Points](../EXTENSIONS.md).
 
@@ -16,7 +16,7 @@ The registration is `momi/extensions/status_effect/<name>.toml` with no fields. 
 
 ## Driving the Effect
 
-The manager is id-agnostic, and your mod does everything from its own `gml/`:
+The manager is id-agnostic, and your mod does everything from its own GML:
 
 - Apply with `ARI.status_effects.register(mmapi_ext_id("status_effect", "<symbol>"), amount, start, finish)`. See [player.status_effect_register](../hooks/player.status_effect_register.md).
 - React with [player.status_effect_expired](../hooks/player.status_effect_expired.md) or [player.status_effect_cancel](../hooks/player.status_effect_cancel.md), or poll `get_effect_value`.
@@ -24,4 +24,4 @@ The manager is id-agnostic, and your mod does everything from its own `gml/`:
 
 ## Vacancy
 
-Vacancy-benign by construction: the enum member alone survives (saves round-trip active effects by name), the update loop skips absent entries, and an uninstalled mod's effect simply ticks out with no handlers.
+When the registering mod is uninstalled, MOMI keeps only the enum member, and nothing more is needed. A save records an active effect by its type name, so the name still resolves and the save loads. An effect that was mid-duration when the mod left runs out and expires on its own, with no icon and no behavior, because the mod's handlers are gone. A member with no active effect costs nothing, since the engine's update loop visits only active entries.

@@ -13,13 +13,14 @@ public enum SeamProblemKind
     CallRewrite,
     Framework,
 
-    // Reserved for extension failures where our state is wrong, such as ordinal
-    // collision, ordinal gap, vacancy path collision. Extension failures that
-    // share a class with a seam failure reuse that class instead. An anchor
-    // that stopped matching is Anchor whether a seam or an extension site
-    // owned it, so a consumer filtering on "anchor" catches extension rot too.
-    // The split a consumer acts on is "the game changed" vs "your
-    // configuration is wrong", not which subsystem reported it.
+    // Reserved for extension failures where MOMI's own state is wrong, such as
+    // an ordinal collision, an ordinal gap, or a vacancy path collision.
+    // Extension failures that share a class with a seam failure reuse that
+    // class instead. An anchor that stopped matching is Anchor whether a seam
+    // or an extension site owned it, so a consumer filtering on "anchor"
+    // catches extension rot too. The split a consumer acts on is "the game
+    // changed" against "your configuration is wrong", not which subsystem
+    // reported it.
     Extension,
 }
 

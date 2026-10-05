@@ -2,7 +2,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Seam;
 
 // The catalog's self-declared integrity counts ([counts] in seams.toml), or
 // null for a catalog that does not declare them (fixture catalogs stay terse).
-public record CatalogCounts(int Hooks, int Seams, int EngineFixes, int CallRewrites);
+public record CatalogCounts(int Hooks, int Seams, int EngineFixes, int CallRewrites, int Extensions);
 
 // The loaded, validated seam catalog. Entries are in application order:
 // catalog order plus depends_on edges.

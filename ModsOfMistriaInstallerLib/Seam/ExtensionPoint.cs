@@ -2,9 +2,9 @@ using System.Text.RegularExpressions;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Seam;
 
-// The {{placeholder}} vocabulary shared by the loader (which validates that a
-// template names nothing else) and the expander (which substitutes). One regex,
-// so a template that validates is a template that renders.
+// The {{placeholder}} vocabulary shared by the loader, which validates that
+// a template names nothing else, and the expander, which substitutes. One
+// regex, so a template that validates is a template that renders.
 public static class ExtensionPlaceholders
 {
     // Always supplied by the expander, never declared as a field.
@@ -18,9 +18,9 @@ public static class ExtensionPlaceholders
     public static List<string> Names(string template) =>
         Regex.Matches(template).Select(m => m.Groups[1].Value).Distinct().ToList();
 
-    // Substitute from `values`. Every placeholder is known to be present, because the
-    // loader proved the template names only declared fields plus symbol and
-    // ordinal, and the expander supplies all of those.
+    // Substitutes from `values`. Every placeholder is known to be present,
+    // because the loader proved the template names only declared fields plus
+    // symbol and ordinal, and the expander supplies all of those.
     public static string Render(string template, IReadOnlyDictionary<string, string> values) =>
         Regex.Replace(template, match => values.TryGetValue(match.Groups[1].Value, out var value)
             ? value
@@ -28,7 +28,7 @@ public static class ExtensionPlaceholders
 }
 
 // The four value types a registration field may declare. The type decides how
-// a registrant's value is escaped into GML, which is why the set is closed:
+// a registrant's value is escaped into GML, which is why the set is closed.
 // `identifier` is the only one that lands as a bare token, and its charset
 // forbids anything but a single identifier, so a registration cannot inject a
 // statement into catalog-authored text.
@@ -106,26 +106,27 @@ public record ExtensionField(string Name, ExtensionFieldType Type, string Doc);
 
 // One place generated lines land, and the line template rendered there. A site
 // renders one line per registrant. A ledger entry whose mod is absent renders
-// VacancyTemplate instead (empty = no line for this site).
+// VacancyTemplate instead, and an empty VacancyTemplate means no line for
+// this site.
 public record ExtensionSite(
     string Id,
     ExtensionSiteKind Kind,
-    string File,             // normalised to "assets/..."; defaults to the point's file
+    string File,             // normalised to "assets/...", defaulting to the point's file
     string Anchor,           // anchor sites only
-    string Place,            // anchor sites only: "before" | "after"
+    string Place,            // anchor sites only, "before" or "after"
     string Template,
     int Indent,
     string VacancyTemplate,
-    string Comment = "//");  // marker-comment leader; append sites may say "#" (TOML targets)
+    string Comment = "//");  // marker-comment leader, "#" allowed on append sites for TOML targets
 
-// A data file emitted (as an added file) for every ledger vacancy. The
-// schema and its validation land ahead of the renderer so the catalog
-// format is settled before anything depends on it.
+// A data file emitted as an added file for every ledger vacancy, so a member
+// the engine pairs with data keeps its data after the registering mod is gone.
 public record ExtensionVacancyFile(string Path, string Content);
 
-// What a failed companion check does. `error` excludes the whole mod (the
-// registration TOML wires up identity, and without the data the identity resolves
-// to nothing and the game crashes at boot). `warning` reports and installs.
+// What a failed companion check does. `error` excludes the whole mod. The
+// registration TOML wires up identity, and without the data the identity
+// resolves to nothing and the game crashes at boot. `warning` reports and
+// installs.
 public enum ExtensionCompanionLevel
 {
     Error,
@@ -134,22 +135,22 @@ public enum ExtensionCompanionLevel
 
 // A file a registration must ship alongside itself, elsewhere in the mod. The
 // registration wires up identity. The mod supplies the data. Existence checks
-// only. The two content-shaped lints are not path-expressible and live as
-// advisory checks in ExtensionCollector instead.
+// only. Content-shaped lints are not path-expressible and live as advisory
+// checks in ExtensionCollector instead.
 public record ExtensionCompanion(
     string Path,                       // mod-relative template, {{symbol}}/{{ordinal}}
     ExtensionCompanionLevel Level,
     string Doc);                       // becomes the message a mod author reads
 
-// One [[extension]] stanza, saying where the engine can be extended and what the generated
-// code looks like. The catalog is the sole author of that text. A mod ships
-// typed field values and nothing else.
+// One [[extension]] stanza, saying where the engine can be extended and what
+// the generated code looks like. The catalog is the sole author of that text.
+// A mod ships typed field values and nothing else.
 public record ExtensionPoint(
     string Id,
     string File,             // the point's default site file, normalised to "assets/..."
     string Doc,
-    string OrdinalEnum,      // [extension.ordinal].enum - required
-    string OrdinalSentinel,  // [extension.ordinal].sentinel - required
+    string OrdinalEnum,      // [extension.ordinal].enum, required
+    string OrdinalSentinel,  // [extension.ordinal].sentinel, required
     IReadOnlyList<ExtensionField> Fields,
     IReadOnlyList<ExtensionSite> Sites,
     IReadOnlyList<ExtensionVacancyFile> VacancyFiles,

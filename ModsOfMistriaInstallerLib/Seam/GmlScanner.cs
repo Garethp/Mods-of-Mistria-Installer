@@ -469,8 +469,9 @@ public static class GmlScanner
         var bodyOpen = i + 2;
         closeIndex = -1;
 
-        // balance to the closing brace, because a member's value may itself carry
-        // braces (a struct literal is legal in an expression), so track depth
+        // Balance to the closing brace and track depth, because a member's
+        // value may itself carry braces. A struct literal is legal in an
+        // expression.
         var depth = 0;
         var j = bodyOpen;
         while (j < tokens.Count)
@@ -539,7 +540,7 @@ public static class GmlScanner
             BodyClose: tokens[closeIndex].Start);
     }
 
-    // Decimal, hex (0x1f, $1f) and negative integer , the forms a GML
+    // Decimal, hex (0x1f, $1f) and negative integer literals, the forms a GML
     // enum value can take. Anything else leaves the member positional-valued
     // and its ValueText populated for the caller to reject.
     private static bool TryParseIntLiteral(string text, out long value)

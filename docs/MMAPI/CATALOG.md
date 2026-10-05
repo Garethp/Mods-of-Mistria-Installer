@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, and call rewrite behind them. The catalog currently declares **143 hooks**, fed by **160 seams**, **38 engine fixes**, and **1 call rewrite**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **143 hooks**, fed by **160 seams**, **38 engine fixes**, and **1 call rewrite**, plus **2 extension points**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -86,7 +86,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [player.status_effect_register](hooks/player.status_effect_register.md) | filter | Rewrite a status effect as it registers. |
 | [player.status_effect_cancel](hooks/player.status_effect_cancel.md) | event | Know when the game cancels a status effect. |
 | [player.status_effect_expired](hooks/player.status_effect_expired.md) | event | Know the moment a status effect runs out. |
-| [status_effect.hud_icon](hooks/status_effect.hud_icon.md) | filter | Supply the HUD icon for a custom status effect. |
+| [status_effect.hud_icon](hooks/status_effect.hud_icon.md) | filter | Choose the HUD icon a custom status effect draws. |
 | [fishing.should_reel](hooks/fishing.should_reel.md) | filter | Change whether the player reels from the fishing Wait state this frame. |
 | [tool.targets](hooks/tool.targets.md) | filter | Change which cells a tool use covers. |
 | [player.jump_attack_landing](hooks/player.jump_attack_landing.md) | filter | Change where the jump attack may land. |
@@ -262,7 +262,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [gossip_selections](seams/gossip_selections.md) | Wraps the gossip picker so the day's NPC selection passes through a filter. |
 | [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it applies. |
 | [npc_is_unlocked_vacancy](seams/npc_is_unlocked_vacancy.md) | Makes npc_is_unlocked()'s default arm vacancy-aware and mod-filterable. |
-| [vitals_status_hud_icon](seams/vitals_status_hud_icon.md) | Makes the vitals HUD's status-icon default arm safe for non-infusion ids and mod-suppliable. |
+| [vitals_status_hud_icon](seams/vitals_status_hud_icon.md) | Filters the vitals HUD's icon for a status effect the base game cannot draw. |
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
 | [npc_created](seams/npc_created.md) | Emits at the end of `spawn_npc()`, after `initialize` attaches the NPC data and FSM. |
 | [date_run](seams/date_run.md) | Puts a claim-scoped override in front of every player-initiated date. |
@@ -397,12 +397,21 @@ Hook-less edits the catalog also carries:
 | [save_load_renown_list_tolerance](seams/save_load_renown_list_tolerance.md) | engine fix | Keeps dropped renown entries out of the pending list the end-of-day processor walks. |
 | [save_load_renown_item_tolerance](seams/save_load_renown_item_tolerance.md) | engine fix | A pending museum donation of an unknown item is dropped with a warn instead of aborting the load. |
 | [save_load_pet_items_tolerance](seams/save_load_pet_items_tolerance.md) | engine fix | Unknown items queued on the pet are dropped with a warn instead of aborting the load. |
-| [save_load_blueprint_node_tolerance](seams/save_load_blueprint_node_tolerance.md) | engine fix | A construction node for an unknown blueprint is skipped whole, closing both the load crash and the turn-in interact crash. |
+| [save_load_blueprint_node_tolerance](seams/save_load_blueprint_node_tolerance.md) | engine fix | A construction node for an unknown blueprint is skipped with a warn instead of aborting the load. |
 | [save_load_infusion_tolerance](seams/save_load_infusion_tolerance.md) | engine fix | An item's unknown infusion is dropped with a warn instead of aborting the load. |
-| [save_load_animal_variant_tolerance](seams/save_load_animal_variant_tolerance.md) | engine fix | A barn animal's unknown variant falls back to its kind's first variant instead of crashing in play. |
-| [save_load_mount_variant_tolerance](seams/save_load_mount_variant_tolerance.md) | engine fix | The mount's unknown variant falls back to its kind's first variant instead of crashing in play. |
+| [save_load_animal_variant_tolerance](seams/save_load_animal_variant_tolerance.md) | engine fix | A barn/coop animal's unknown variant falls back to its kind's first variant instead of crashing during gameplay. |
+| [save_load_mount_variant_tolerance](seams/save_load_mount_variant_tolerance.md) | engine fix | The mount's unknown variant falls back to its kind's first variant instead of crashing during gameplay. |
 | [game_stats_seed_on_load](seams/game_stats_seed_on_load.md) | engine fix | Seeds the per-name game-stats structs on every load, so content added after a save was written cannot crash its first stats increment. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
+
+## Extension Points
+
+The catalog also declares the enums a mod registration can grow. Each point has its own page under `docs/MMAPI/extensions/`.
+
+| Name | Enum | Description |
+| ---- | ---- | ----------- |
+| [npc_roster](extensions/npc_roster.md) | `NpcId` | Adds an `NpcId` member with its object mappings, manifest macro and baseline schedule for each registered custom NPC. |
+| [status_effect](extensions/status_effect.md) | `StatusEffectId` | Adds a `StatusEffectId` member for each registered custom status effect. |
 
 ## Growing The Catalog
 

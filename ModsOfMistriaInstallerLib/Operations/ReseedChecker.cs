@@ -3,9 +3,9 @@ using Garethp.ModsOfMistriaInstallerLib.Store;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Operations;
 
-// One extension point's view of the reseed: what the saves name, what the
-// outgoing archive's markers name, what the union would recover, and what
-// the ledger already holds.
+// One extension point's view of the reseed. It lists what the saves name,
+// what the outgoing archive's markers name, what the union would recover,
+// and what the ledger already holds.
 public sealed record ReseedPointReport(
     string PointId,
     int BaseLen,
@@ -84,7 +84,7 @@ public static class ReseedChecker
         }
         catch (Exception)
         {
-            // already a note from the harvest
+            // The harvest already recorded a note for a saves folder it could not read.
         }
 
         return new ReseedCheckResult(points, notes, saveCount, liveArchivePath is not null, ledger is not null);

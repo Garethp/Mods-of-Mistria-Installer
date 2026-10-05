@@ -41,7 +41,7 @@ public class ExtensionCollectorTest
         enum_member = "{{symbol}} = {{ordinal}},"
         """ + "\n";
 
-    // the same point plus the mandatory-data companion npc_roster will carry, and
+    // the same point plus a mandatory-data companion, and
     // the vacancy_files block satisfies the error-companion coupling rule
     private const string WithCompanion = Catalog + "\n" + """
         [[extension.companions]]

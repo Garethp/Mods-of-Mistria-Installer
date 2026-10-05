@@ -4,9 +4,10 @@ using Garethp.ModsOfMistriaInstallerLib.Store;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Operations;
 
-// One point's rebase outcome, listing every symbol with its old and new ordinal, in
-// the order they were reassigned. Unchanged means the packing was already
-// correct. Running the flag when nothing collided is a no-op, not a shuffle.
+// One point's rebase outcome, listing every symbol with its old and new
+// ordinal, in the order they were reassigned. Unchanged means the packing was
+// already correct. Running the rebase when nothing collided is a no-op, not a
+// shuffle.
 public record RebasedPoint(string PointId, int BaseLen,
     IReadOnlyList<(string Symbol, int OldOrdinal, int NewOrdinal)> Moves)
 {
@@ -25,17 +26,17 @@ public class RebaseResult(IReadOnlyList<RebasedPoint> points, IReadOnlyList<Seam
 }
 
 // Repacks every point's assignments contiguously above a grown base enum's
-// LEN, preserving relative order, symbols untouched. Save-invisible because
-// the engine persists extension state by name, so every install runs it
-// automatically and logs each move.
+// LEN, preserving relative order and leaving symbols untouched. It is
+// save-invisible because the engine persists extension state by name, so
+// every install runs it automatically and logs each move.
 public static class ExtensionRebaser
 {
-    // Compute the reassignment for every point, then apply it to the
-    // in-memory ledger only when every point scanned clean. All or nothing:
-    // a partial apply would persist silently-moved points beside a failed
-    // one, and the caller's per-move log never runs on a failed result, so
-    // the gate is what keeps the "every move is logged" contract true.
-    // Nothing touches disk here. The caller decides whether to Save().
+    // Computes the reassignment for every point, then applies it to the
+    // in-memory ledger only when every point scanned clean. All or nothing. A
+    // partial apply would persist silently moved points beside a failed one,
+    // and the caller's per-move log never runs on a failed result, so the gate
+    // is what keeps the "every move is logged" contract true. Nothing touches
+    // disk here. The caller decides whether to Save().
     public static RebaseResult Run(SeamCatalog catalog, IPristineSource pristine,
         ExtensionLedgerStore ledger)
     {
@@ -48,11 +49,11 @@ public static class ExtensionRebaser
             var assigned = ledger.Assignments(point.Id);
             if (assigned.Count == 0) continue;
 
-            // Base LEN from the pristine enum. Pristine, not staged, because seams
-            // never add enum members (only extensions do), so the pristine
-            // count is the base count, and rebase must not depend on a full
-            // stage succeeding, and staging is exactly what is broken when this
-            // operation is the remedy.
+            // The base LEN comes from the pristine enum rather than the staged
+            // one. Seams never add enum members, only extensions do, so the
+            // pristine count is the base count. The rebase must also not depend
+            // on a full stage succeeding, because staging is exactly what is
+            // broken when this operation is the remedy.
             byte[]? raw;
             try
             {
@@ -92,7 +93,7 @@ public static class ExtensionRebaser
 
             var baseLen = scan.Members.Count - 1;
 
-            // relative order preserved. Sort by old ordinal, pack from baseLen
+            // Relative order is preserved. Sort by old ordinal and pack from baseLen.
             var next = baseLen;
             List<(string, int, int)> moves = [];
             List<ExtensionAssignment> reassigned = [];

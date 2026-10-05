@@ -2,8 +2,8 @@ using Garethp.ModsOfMistriaInstallerLib.Seam;
 
 namespace Garethp.ModsOfMistriaInstallerLib.GmlMods;
 
-// One excluded mod and every reason (one mod, one fate - a mod-content
-// failure excludes the whole mod, content included, and the apply proceeds)
+// One excluded mod and every reason. One mod, one fate, so a mod-content
+// failure excludes the whole mod, content included, and the apply proceeds.
 public class ExcludedMod(GmlModCode mod)
 {
     public GmlModCode Mod { get; } = mod;

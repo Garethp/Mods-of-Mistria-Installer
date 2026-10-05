@@ -27,9 +27,9 @@ public class VerifyResult(bool ok, int seamCount, int engineFixCount, int callRe
     public IReadOnlyList<SeamProblem> Problems { get; } = problems;
 
     // Sites successfully anchored per extension point, zero-registrant. Empty
-    // while the catalog declares no points, which is why the report says
-    // nothing about extensions today. With none declared, the output is
-    // byte-identical to what the seam check printed before they existed.
+    // when the catalog declares no points, in which case the report says
+    // nothing about extensions and the output is byte-identical to what the
+    // seam check printed before they existed.
     public IReadOnlyDictionary<string, int> ExtensionSites { get; } =
         extensionSites ?? new Dictionary<string, int>();
 
@@ -69,8 +69,8 @@ public static class SeamVerifier
         }
         catch (SeamStagingException exception)
         {
-            // seam staging failed, so there is no staged text to anchor
-            // extension sites against. The seam problems are the report
+            // Seam staging failed, so there is no staged text to anchor
+            // extension sites against. The seam problems are the report.
             problems.AddRange(exception.Problems);
         }
 
@@ -150,8 +150,9 @@ public static class SeamVerifier
             + $"{result.CallRewriteCount} call-rewrite(s), {result.EngineFileCount} engine files",
         ];
 
-        // only when the catalog declares a point, so a build with none renders
-        // exactly the report it rendered before extensions existed
+        // These lines appear only when the catalog declares a point, so a
+        // build with none renders exactly the report it rendered before
+        // extensions existed.
         lines.AddRange(result.ExtensionSites
             .OrderBy(e => e.Key, StringComparer.Ordinal)
             .Select(e => $"  extension '{e.Key}': {e.Value} site(s) anchored OK"));

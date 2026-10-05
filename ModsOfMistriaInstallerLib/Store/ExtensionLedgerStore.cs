@@ -4,10 +4,10 @@ using Newtonsoft.Json.Linq;
 
 namespace Garethp.ModsOfMistriaInstallerLib.Store;
 
-// The per-game-install ordinal ledger, beside assets.bak.zip. Append-only:
-// a symbol keeps its ordinal forever, and the tombstone of an uninstalled
-// mod keeps the enum member alive for saves that still name it. Nothing
-// reaches disk until the install commits.
+// The per-game-install ordinal ledger, beside assets.bak.zip. It is
+// append-only. A symbol keeps its ordinal forever, and the tombstone of an
+// uninstalled mod keeps the enum member alive for saves that still name it.
+// Nothing reaches disk until the install commits.
 public class ExtensionLedgerStore : IExtensionLedger
 {
     public const int SupportedVersion = 1;
@@ -30,8 +30,8 @@ public class ExtensionLedgerStore : IExtensionLedger
     // True when any point holds any assignment. Load-bearing for the install
     // gate. A ledger tombstone must render its vacancy even when zero mods are
     // installed. The enum member is what keeps a save's name references
-    // (date photos) resolving, so a non-empty ledger pulls the GML layer
-    // into the install all by itself.
+    // resolving, so a non-empty ledger pulls the GML layer into the install
+    // all by itself.
     public bool HasAssignments => _points.Any(p => p.Value.Count > 0);
 
     // A corrupt or future-versioned file is a hard error, never a silent
@@ -119,12 +119,11 @@ public class ExtensionLedgerStore : IExtensionLedger
         Dirty = true;
     }
 
-    // The one sanctioned rewrite, the automatic install-time rebase,
-    // after a game update grows the base enum into assigned ordinals, or the
-    // update shrinks it. Replaces a point's
-    // assignments wholesale. Every symbol must survive. The tombstone
-    // guarantee is about names living forever, not ordinals, so dropping one
-    // here is a programming error, not a policy call.
+    // The one sanctioned rewrite, the automatic install-time rebase after a
+    // game update grows the base enum into assigned ordinals or shrinks it.
+    // It replaces a point's assignments wholesale. Every symbol must survive.
+    // The tombstone guarantee is about names living forever, not ordinals, so
+    // dropping one here is a programming error, not a policy call.
     public void Rebase(string pointId, IReadOnlyList<ExtensionAssignment> reassigned)
     {
         var before = Assignments(pointId).Select(a => a.Symbol).Order(StringComparer.Ordinal);
@@ -145,10 +144,10 @@ public class ExtensionLedgerStore : IExtensionLedger
         Dirty = true;
     }
 
-    // Correct a stale mod attribution in place, most commonly a reseed's
+    // Corrects a stale mod attribution in place, most commonly a reseed's
     // "recovered" placeholder after the registering mod returns. Attribution
-    // is diagnostic (the symbol and ordinal are the contract), but a wrong
-    // owner misleads anyone reading the ledger to trace a symbol.
+    // is diagnostic, since the symbol and ordinal are the contract, but a
+    // wrong owner misleads anyone reading the ledger to trace a symbol.
     public void Reattribute(string pointId, string symbol, string modId)
     {
         if (!_points.TryGetValue(pointId, out var assignments)) return;
@@ -159,9 +158,10 @@ public class ExtensionLedgerStore : IExtensionLedger
         Dirty = true;
     }
 
-    // Write the ledger out. Called only alongside a successful commit. Sorted
-    // by ordinal so the file is stable and diffable, because a ledger that reshuffles
-    // its own lines makes a real reassignment impossible to spot by eye.
+    // Writes the ledger out. Called only alongside a successful commit. Sorted
+    // by ordinal so the file is stable and diffable, because a ledger that
+    // reshuffles its own lines makes a real reassignment impossible to spot
+    // by eye.
     public void Save()
     {
         var points = new JObject();

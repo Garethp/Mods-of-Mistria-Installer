@@ -91,9 +91,9 @@ public static class GmlModLint
                     + "another mod or a future engine export"));
             }
 
-            // enums share the same flat namespace and the same prefix rule:
-            // an unprefixed `enum MyState` collides silently with
-            // another mod's or a future engine roster
+            // Enums share the same flat namespace and the same prefix rule. An
+            // unprefixed `enum MyState` collides silently with another mod's
+            // or a future engine roster.
             foreach (var (name, (rel, line)) in syms.Enums.OrderBy(e => e.Key, StringComparer.Ordinal))
             {
                 if (prefixes.Any(p => name.StartsWith(p, StringComparison.Ordinal))) continue;
@@ -162,9 +162,10 @@ public static class GmlModLint
             }
         }
 
-        // enum name → first-declaring mod id. Same flat-namespace hazard as
-        // bare global roots, because a cross-mod duplicate declaration collides with
-        // no compiler help, and namespacing (above) is what prevents it.
+        // Maps an enum name to the first-declaring mod id. This is the same
+        // flat-namespace hazard as bare global roots, because a cross-mod
+        // duplicate declaration collides with no compiler help, and the
+        // namespacing above is what prevents it.
         Dictionary<string, string> enumOwners = [];
         foreach (var mod in mods)
         {

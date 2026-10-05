@@ -8,9 +8,9 @@ namespace Garethp.ModsOfMistriaInstallerLib.Store;
 // the save harvest, since the archive tends to die with the ledger.
 public static class ArchiveMarkerHarvester
 {
-    // mmapi_ext:<point>:<site>:<symbol>, ":vacant" suffix on tombstones.
-    // Anchored to end of line so a garbled marker never matches a truncated
-    // symbol prefix.
+    // The marker shape is mmapi_ext:<point>:<site>:<symbol>, with a ":vacant"
+    // suffix on tombstones. It is anchored to end of line so a garbled marker
+    // never matches a truncated symbol prefix.
     private static Regex MarkerPattern(ExtensionPoint point) => new(
         $@"mmapi_ext:{Regex.Escape(point.Id)}:{Regex.Escape(point.EnumMemberSite.Id)}"
         + $@":({ExtensionSymbols.ShapeCore})(?::vacant)?(?=[ \t]*$)",

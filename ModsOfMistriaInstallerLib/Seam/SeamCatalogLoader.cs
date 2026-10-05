@@ -64,7 +64,7 @@ public static class SeamCatalogLoader
             if (countsRaw is TomlTable countsTable)
             {
                 Dictionary<string, int> countFields = [];
-                foreach (var field in (string[]) ["hooks", "seams", "engine_fixes", "call_rewrites"])
+                foreach (var field in (string[]) ["hooks", "seams", "engine_fixes", "call_rewrites", "extensions"])
                 {
                     if (countsTable.TryGetValue(field, out var raw))
                         countFields[field] = (int)Convert.ToInt64(raw, CultureInfo.InvariantCulture);
@@ -72,9 +72,9 @@ public static class SeamCatalogLoader
                         errors.Add($"[counts] is missing '{field}'");
                 }
 
-                if (countFields.Count == 4)
+                if (countFields.Count == 5)
                     declaredCounts = new CatalogCounts(countFields["hooks"], countFields["seams"],
-                        countFields["engine_fixes"], countFields["call_rewrites"]);
+                        countFields["engine_fixes"], countFields["call_rewrites"], countFields["extensions"]);
             }
             else
             {
@@ -180,9 +180,9 @@ public static class SeamCatalogLoader
             }
         }
 
-        // extension ids share the seam/fix/rewrite id namespace. One namespace
-        // for problem reporting, so `ext:<point>` in a batched error is
-        // never ambiguous about which entry it names
+        // Extension ids share the seam, fix and rewrite id namespace. One
+        // namespace serves problem reporting, so `ext:<point>` in a batched
+        // error is never ambiguous about which entry it names.
         foreach (var point in extensions)
         {
             if (seenIds.ContainsKey(point.Id)) errors.Add($"duplicate id/name '{point.Id}'");
@@ -220,6 +220,8 @@ public static class SeamCatalogLoader
                 errors.Add($"[counts] declares {declaredCounts.EngineFixes} engine fixes but the catalog parses {fixCount}");
             if (declaredCounts.CallRewrites != rewrites.Count)
                 errors.Add($"[counts] declares {declaredCounts.CallRewrites} call rewrites but the catalog parses {rewrites.Count}");
+            if (declaredCounts.Extensions != extensions.Count)
+                errors.Add($"[counts] declares {declaredCounts.Extensions} extension points but the catalog parses {extensions.Count}");
         }
 
         var ordered = OrderEntries(entries, errors);
@@ -649,11 +651,11 @@ public static class SeamCatalogLoader
         return new CallRewrite(rewriteId, callee, to, (int)args, hooks);
     }
 
-    // One [[extension]] stanza, carrying the ordinal domain, the typed fields a registration
-    // supplies, the sites generated lines land at, and the vacancy text for a
-    // ledger entry whose mod is gone. Everything here is catalog-authored -
-    // a mod never ships anchors, templates or engine text, and this
-    // parser is where that stays true.
+    // One [[extension]] stanza, carrying the ordinal domain, the typed fields
+    // a registration supplies, the sites generated lines land at, and the
+    // vacancy text for a ledger entry whose mod is gone. Everything here is
+    // catalog-authored. A mod never ships anchors, templates or engine text,
+    // and this parser is where that stays true.
     private static ExtensionPoint? ParseExtension(TomlTable table, int index, List<string> errors)
     {
         var where = $"[[extension]] #{index + 1}";
@@ -713,7 +715,7 @@ public static class SeamCatalogLoader
             fields.Add(field);
         }
 
-        // vacancy templates are keyed by site id, so sites must be parsed first
+        // Vacancy templates are keyed by site id, so sites must be parsed first.
         var vacancy = table.TryGetValue("vacancy", out var vacancyRaw) && vacancyRaw is TomlTable vacancyTable
             ? vacancyTable
             : null;
@@ -905,7 +907,7 @@ public static class SeamCatalogLoader
             vacancyTemplate = ToStr(vacancyRaw);
             if (vacancyTemplate.Contains('\n') || vacancyTemplate.Contains('\r'))
                 errors.Add($"{siteWhere} vacancy template spans lines - same one-line rule as `template`");
-            // a vacancy has no mod behind it, so the mod's field values are gone
+            // A vacancy has no mod behind it, so the mod's field values are gone.
             CheckPlaceholders(vacancyTemplate, new HashSet<string>(), $"{siteWhere} vacancy template", errors);
         }
 
@@ -918,10 +920,10 @@ public static class SeamCatalogLoader
             indent = 0;
         }
 
-        // The marker-comment leader. An append site may target a TOML file
-        // (the schedule), where a `//` marker is a syntax error, so the
-        // leader is explicit, "#" allowed on append sites only. Non-append
-        // sites splice into GML and stay `//`.
+        // The marker-comment leader. An append site may target a TOML file,
+        // where a `//` marker is a syntax error, so the leader is explicit,
+        // with "#" allowed on append sites only. Non-append sites splice into
+        // GML and stay `//`.
         var comment = Str(table, "comment");
         if (comment.Length == 0) comment = "//";
         if (comment is not ("//" or "#"))
@@ -936,8 +938,8 @@ public static class SeamCatalogLoader
     }
 
     // Loader-checkable rules only. Collision with an existing archive entry is
-    // a stage-time check (the loader has no pristine source) and lives in the
-    // expander.
+    // a stage-time check, because the loader has no pristine source, and it
+    // lives in the expander.
     private static ExtensionVacancyFile? ParseExtensionVacancyFile(TomlTable table, int index, string where,
         List<string> errors)
     {
@@ -949,9 +951,10 @@ public static class SeamCatalogLoader
             return null;
         }
 
-        // the path carries placeholders, so check the shape of what it renders
-        // to rather than the template, because a symbol is a plain identifier by
-        // construction, so a stand-in proves the surrounding path is safe
+        // The path carries placeholders, so the check runs on the shape of
+        // what it renders to rather than on the template. A symbol is a plain
+        // identifier by construction, so a stand-in proves the surrounding
+        // path is safe.
         var probe = NormFilePath(RenderProbe(path));
         var problem = PathSafety.PathProblem(probe, $"{fileWhere} `path`");
         if (problem is not null) errors.Add(problem);
@@ -976,11 +979,12 @@ public static class SeamCatalogLoader
     }
 
     // A file a registration must ship alongside itself. Existence checks only.
-    // Content-shaped lints ("the field value appears in an object_create
-    // call", "the companion toml declares a required key") are not
-    // expressible as a path. Those live as targeted advisory checks in
-    // ExtensionCollector, code rather than schema. A generic content-check
-    // language for a few advisory rules remains the wrong thing to build.
+    // Content-shaped lints, such as whether a field value appears in an
+    // object_create call or whether the companion toml declares a required
+    // key, are not expressible as a path. Those live as targeted advisory
+    // checks in ExtensionCollector, as code rather than schema. A generic
+    // content-check language for a few advisory rules would be the wrong
+    // thing to build.
     private static ExtensionCompanion? ParseExtensionCompanion(TomlTable table, int index, string where,
         List<string> errors)
     {
@@ -992,8 +996,8 @@ public static class SeamCatalogLoader
             return null;
         }
 
-        // mod-relative, so it is checked as it stands rather than under
-        // assets/, the same PathSafety rule mod gml placement uses
+        // The path is mod-relative, so the check prefixes assets/ to give it
+        // the install root, the same PathSafety rule mod gml placement uses.
         var problem = PathSafety.PathProblem($"assets/{RenderProbe(path)}", $"{companionWhere} `path`");
         if (problem is not null) errors.Add(problem);
         CheckPlaceholders(path, new HashSet<string>(), $"{companionWhere} path", errors);
@@ -1007,8 +1011,8 @@ public static class SeamCatalogLoader
             return null;
         }
 
-        // the doc is the message a mod author reads when the check fires, so a
-        // companion without one reports a missing file and no reason
+        // The doc is the message a mod author reads when the check fires, so a
+        // companion without one would report a missing file and no reason.
         var doc = Str(table, "doc");
         if (doc.Length == 0)
         {

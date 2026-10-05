@@ -8,8 +8,8 @@ namespace Garethp.ModsOfMistriaInstallerLib;
 // the install-state manifest.
 public record SkippedMod(string Id, string Version, IReadOnlyList<string> Reasons);
 
-// Per-mod outcomes of one install run, returned by InstallMods. A mod
-// is installed whole or skipped whole; a skipped mod's content is excluded
+// Per-mod outcomes of one install run, returned by InstallMods. A mod is
+// installed whole or skipped whole, and a skipped mod's content is excluded
 // with its behaviour.
 public class InstallResult
 {

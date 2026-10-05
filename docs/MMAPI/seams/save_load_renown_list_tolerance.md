@@ -2,7 +2,7 @@
 
 Caller half of the renown tolerance pair. Keeps dropped entries out of the pending renown list so the end-of-day processor never sees them.
 
-`save_load_renown_list_tolerance` is an **engine fix**, a hook-less edit. It dispatches nothing, and there is no handler to register. See [Seams](../SEAMS.md) and [save_load_renown_item_tolerance](save_load_renown_item_tolerance.md) for the parser half.
+`save_load_renown_list_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,10 +10,12 @@ Caller half of the renown tolerance pair. Keeps dropped entries out of the pendi
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Cycle/LoadGame.gml` |
 | **Locator** | text anchor on the `pending_renown_entries` deserialize |
-| **Op** | text (filtering rebuild) |
+| **Feeds** | (no hook) |
 | **Marker** | `mmapi_save_renown_list_tolerance` |
 
 ## The Edit
+
+The replace rebuilds the list, keeping only the entries that parsed.
 
 ```gml
     ARI.pending_renown_entries = List(); // mmapi_save_renown_list_tolerance
@@ -25,8 +27,11 @@ Caller half of the renown tolerance pair. Keeps dropped entries out of the pendi
     }
 ```
 
-## Why
+With [save_load_renown_item_tolerance](save_load_renown_item_tolerance.md) in place, `deserialize_renown_entry` returns `undefined` for a pending museum donation of an unknown item. Vanilla's `map` would keep that `undefined` in the list, and the end-of-day renown processor dereferences every entry it walks, which would trade the load crash for an overnight crash. This rebuild keeps only real entries.
 
-With the parser half in place, `deserialize_renown_entry` returns `undefined` for a pending museum donation of an unknown item. Vanilla's `map` would keep that `undefined` in the list, and the end-of-day renown processor dereferences every entry it walks, which would trade the load crash for an overnight crash. This rebuild keeps only real entries.
+When every entry parses, the loop builds the same list in the same order as the vanilla `map`, so an intact install is unchanged.
 
-Zero-registrant inert: when every entry parses, the loop builds the same list in the same order as the vanilla `map`.
+## See Also
+
+- [save_load_renown_item_tolerance](save_load_renown_item_tolerance.md) - The parser half of the pair.
+- [save_load_pet_items_tolerance](save_load_pet_items_tolerance.md) - Another by-name item queue the load filters.

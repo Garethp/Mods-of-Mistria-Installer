@@ -109,11 +109,11 @@ public static class PristineSynthesis
             pristine[file] = text;
         }
 
-        // Extension points validate unconditionally at stage time (even
-        // with zero registrants), so the synthesis must carry their world too:
-        // the ordinal enum in the point's file, every anchor site's anchor,
-        // and a body for every append target. This is what proves the shipped
-        // npc_roster entry against its own anchors with no game checkout.
+        // Extension points validate unconditionally at stage time, even with
+        // zero registrants, so the synthesis must carry their world too. That
+        // is the ordinal enum in the point's file, every anchor site's anchor,
+        // and a body for every append target. This is what proves each shipped
+        // point against its own anchors with no game checkout.
         foreach (var point in catalog.Extensions)
         {
             foreach (var group in point.Sites.GroupBy(s => s.File))

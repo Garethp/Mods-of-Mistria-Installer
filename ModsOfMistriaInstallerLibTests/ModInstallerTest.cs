@@ -206,8 +206,8 @@ public class ModInstallerTest
     public void ShouldRenderLedgerVacanciesEvenWithZeroMods()
     {
         // The tombstone contract is load-bearing precisely when every mod is
-        // gone, because a save's name references (date photos) resolve only
-        // while the enum member exists.
+        // gone, because a save's name references resolve only while the enum
+        // member exists.
         var catalogPath = Path.Combine(_fom, "catalog.toml");
         File.WriteAllText(catalogPath, SyntheticLayer.CatalogToml + "\n" + """
 

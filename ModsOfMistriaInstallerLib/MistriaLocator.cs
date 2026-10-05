@@ -42,9 +42,8 @@ public class MistriaLocator
     
     // The game's writable save directory, for the reseed harvest. Windows
     // keeps it under the local app data root. Under Proton the same tree
-    // lives inside the
-    // install's compatdata prefix, reachable relative to the install
-    // location. Null when neither exists, which skips the harvest.
+    // lives inside the install's compatdata prefix, reachable relative to
+    // the install location. Null when neither exists, which skips the harvest.
     public static string? GetSavesLocation(string? mistriaLocation)
     {
         var possibleLocations = new List<string>
