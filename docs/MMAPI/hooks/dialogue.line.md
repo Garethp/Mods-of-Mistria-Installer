@@ -10,6 +10,8 @@ Fires in `ConversationDriver.deliver_line()`, before the textbox shows the line.
 
 The filtered text is what the textbox receives however the line is delivered, whether by `say()` for speech, `info()` for info lines, or `ask()` for prompt lines.
 
+For banked lines, the value arrives as the line's path, such as `.../<conversation>/<node>`, rather than localized text. During development that makes the hook a tracer, since the path names the conversation and node a player reached. See [Tracing Dialogue](../SNIPPETS.md#tracing-dialogue) for the observer pair that logs it.
+
 | | |
 | --- | --- |
 | **Fires** | In `ConversationDriver.deliver_line()`, before the textbox shows the line. |

@@ -15,10 +15,14 @@ Mods talk to the game through **named hooks**, which are moments in game code MM
 | [Hooks](HOOKS.md) | The named-hook engine. The four hook kinds, registration, ordering, dispatch, and error isolation. |
 | [Seams](SEAMS.md) | How hooks come to exist. The seam catalog, contributor authoring reference, application pipeline, and game-update checks. |
 | [Catalog](CATALOG.md) | Every hook and seam the catalog declares, each with its own page. |
+| [Extension Points](EXTENSIONS.md) | Grow the engine's own enums by registration. How a registration becomes a symbol, how the ledger keeps it stable, and what uninstalling leaves behind. |
 | [Mod Anatomy](MOD_ANATOMY.md) | The mod folder, the boot file skeleton, the lifecycle, and the engine quirks every mod must respect. |
 | [The Manifest](MANIFEST.md) | The manifest fields a GML mod uses, and how MOMI validates them. |
 | [API Reference](API_REFERENCE.md) | The `mmapi_*` helper areas, covering config, logging, per-save data, hotkeys, localization, combat, cross-mod coordination, and calling the engine directly. |
-| [Recipes](RECIPES.md) | Common tasks done with a direct engine call, no hook needed. |
+| [Custom Spells](CUSTOM_SPELLS.md) | Add a castable spell with a data entry, a learning call, and the override handlers that give it behavior. |
+| [Custom Perks](CUSTOM_PERKS.md) | Add a perk with a data entry, a granting call, effect handlers, and a Dragon Shrine listing. |
+| [Custom Status Effects](CUSTOM_STATUS_EFFECTS.md) | Add a status effect from a registration, apply it with a duration, give it a HUD icon, and react when it ends. |
+| [Snippets](SNIPPETS.md) | Short pieces of code for everyday needs. Engine calls, world-fact clauses, and hook observers. |
 | [Treasure Chests](TREASURE_CHESTS.md) | Add custom treasure chests with unique loot tables in plain fiddle data. |
 | [Pet Cosmetics](PET_COSMETICS.md) | Sell pet cosmetic sets from any store's stock in plain fiddle data. |
 | [Recipe Ingredients](RECIPE_INGREDIENTS.md) | Write recipe ingredients that accept any mix of items in plain fiddle data. |

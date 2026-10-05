@@ -52,6 +52,12 @@ if (args.Contains("--seam-diff") || args.Contains("--seam-diff-json"))
     Environment.Exit(RunSeamDiff(args));
 }
 
+// The reseed check likewise prints its report alone.
+if (args.Contains("--reseed-check"))
+{
+    Environment.Exit(RunReseedCheck(args));
+}
+
 // Lint likewise: the stage's own log lines stay internal and the report is
 // the only thing on stdout.
 if (args.Contains("--lint"))
@@ -298,6 +304,81 @@ static int RunLint(string[] args, CompileGateMode gateMode)
         Console.WriteLine(exception.Message);
         return 2;
     }
+}
+
+// --reseed-check [savesDir] [zip]: what the ledger reseed would recover from
+// the saves and the outgoing archive, without installing. With no arguments
+// the located install supplies its saves folder, its pristine backup, its
+// live archive and its ledger. Exit 0 when every source read as expected, 1
+// when a save or the archive did not, 2 when there is nothing to check.
+static int RunReseedCheck(string[] args)
+{
+    var index = Array.IndexOf(args, "--reseed-check");
+    List<string> positional = [];
+    for (var i = index + 1; i < args.Length && positional.Count < 2; i++)
+    {
+        if (args[i].StartsWith("--")) break;
+        positional.Add(args[i]);
+    }
+
+    var mistriaLocation = MistriaLocator.GetMistriaLocation();
+    var savesDir = positional.Count > 0 ? positional[0] : null;
+    var zipPath = positional.Count > 1 ? positional[1] : null;
+
+    if (savesDir is null || zipPath is null)
+    {
+        if (mistriaLocation is null)
+        {
+            Console.WriteLine(Resources.CoreMistriaNotFound);
+            return 2;
+        }
+
+        savesDir ??= MistriaLocator.GetSavesLocation(mistriaLocation);
+        if (savesDir is null)
+        {
+            Console.WriteLine("reseed-check: no saves folder could be located");
+            return 2;
+        }
+
+        if (zipPath is null)
+        {
+            try
+            {
+                zipPath = SeamVerifier.LocateBackup(mistriaLocation);
+            }
+            catch (FileNotFoundException exception)
+            {
+                Console.WriteLine(exception.Message);
+                return 2;
+            }
+        }
+    }
+
+    // The located install's live archive and ledger join when there is one,
+    // read-only, so the report shows both halves of the union.
+    string? liveArchive = null;
+    IExtensionLedger? ledger = null;
+    if (mistriaLocation is not null)
+    {
+        var store = new AssetsStore(mistriaLocation);
+        if (File.Exists(store.LivePath)) liveArchive = store.LivePath;
+        ledger = ExtensionLedgerStore.Load(mistriaLocation);
+    }
+
+    ReseedCheckResult result;
+    try
+    {
+        using var pristine = new ZipPristineSource(zipPath);
+        result = ReseedChecker.Check(savesDir, pristine, liveArchive, ledger);
+    }
+    catch (FileNotFoundException exception)
+    {
+        Console.WriteLine(exception.Message);
+        return 2;
+    }
+
+    Console.WriteLine(ReseedChecker.RenderText(result, savesDir, zipPath, liveArchive));
+    return result.ExitCode;
 }
 
 static bool IsMissing(string? zipPath) =>

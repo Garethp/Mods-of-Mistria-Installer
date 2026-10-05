@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Garethp.ModsOfMistriaInstallerLib.Seam;
+using Garethp.ModsOfMistriaInstallerLib.Store;
 using ModsOfMistriaInstallerLibTests.TestUtils;
 
 namespace ModsOfMistriaInstallerLibTests.Seam;
@@ -47,6 +48,44 @@ public class ShippedCatalogTest
     }
 
     [Test]
+    public void ShouldAnchorEveryExtensionSiteZeroRegistrant()
+    {
+        // every shipped extension point proven against its own anchors like
+        // every seam. Enum scans clean, anchors match exactly once post-seam,
+        // append targets exist and end in live code
+        var pristine = new MemoryPristineSource(
+            _pristine.ToDictionary(f => f.Key, f => Encoding.UTF8.GetBytes(f.Value)));
+        var staged = SeamStager.Simulate(_catalog, pristine);
+
+        var problems = ExtensionExpander.Validate(_catalog, staged, pristine, out var anchored);
+
+        Assert.That(problems, Is.Empty);
+        Assert.That(anchored["status_effect"], Is.EqualTo(1));
+    }
+
+    // Points whose symbols provably cannot appear in a save file, each with
+    // the reasoning that earns its exemption. Empty, since every shipped point
+    // stamps saves.
+    private static readonly Dictionary<string, string> SaveInvisiblePoints = new();
+
+    [Test]
+    public void ShouldGiveEveryExtensionPointASaveHarvestRuleOrAnExemption()
+    {
+        // The reseed harvest's rule table is code, and a declared point
+        // missing from it is silently skipped there. This test is what makes
+        // that skip impossible to ship. A new point must either add its
+        // harvest rule or record here why saves cannot reference it.
+        foreach (var point in _catalog.Extensions)
+        {
+            var covered = SaveSymbolHarvester.HasRuleFor(point.Id)
+                          || SaveInvisiblePoints.ContainsKey(point.Id);
+            Assert.That(covered, Is.True,
+                $"extension point '{point.Id}' has no save-harvest rule and no recorded "
+                + "save-invisibility exemption - decide which it is before shipping it");
+        }
+    }
+
+    [Test]
     public void ShouldDeclareAndCountEveryHook()
     {
         // The shipped catalog must self-declare its integrity counts; the loader
@@ -57,6 +96,7 @@ public class ShippedCatalogTest
         Assert.That(_catalog.DeclaredCounts.Seams, Is.EqualTo(_catalog.Seams.Count));
         Assert.That(_catalog.DeclaredCounts.EngineFixes, Is.EqualTo(_catalog.EngineFixes.Count));
         Assert.That(_catalog.DeclaredCounts.CallRewrites, Is.EqualTo(_catalog.CallRewrites.Count));
+        Assert.That(_catalog.DeclaredCounts.Extensions, Is.EqualTo(_catalog.Extensions.Count));
 
         var runtime = _catalog.HookDeclarations
             .Where(d => d.Provider == HookProvider.Runtime)
@@ -77,8 +117,8 @@ public class ShippedCatalogTest
         // File order is presentational and the parsed model erases it, so this
         // check reads the raw text. The convention holds records grouped by
         // type under one banner per section, ordered hook declarations, then
-        // seams, then call rewrites, then engine fixes, with new records
-        // appended to their type's section.
+        // seams, then call rewrites, then engine fixes, then extension points,
+        // with new records appended to their type's section.
         var (_, bytes) = PayloadResolver.SeamCatalog();
         var lines = Encoding.UTF8.GetString(bytes).Replace("\r\n", "\n").Split('\n');
 
@@ -88,8 +128,9 @@ public class ShippedCatalogTest
             "# --- seams ",
             "# --- call rewrites ",
             "# --- engine fixes ",
+            "# --- extension points ",
         ];
-        string[] headers = ["[[hook]]", "[[seam]]", "[[call_rewrite]]", "[[engine_fix]]"];
+        string[] headers = ["[[hook]]", "[[seam]]", "[[call_rewrite]]", "[[engine_fix]]", "[[extension]]"];
 
         var section = -1;
         var perSection = new int[banners.Length];
@@ -114,7 +155,7 @@ public class ShippedCatalogTest
         Assert.That(section, Is.EqualTo(banners.Length - 1), "not every banner is present");
         var counts = _catalog.DeclaredCounts!;
         Assert.That(perSection, Is.EqualTo(new[]
-            { counts.Hooks, counts.Seams, counts.CallRewrites, counts.EngineFixes }));
+            { counts.Hooks, counts.Seams, counts.CallRewrites, counts.EngineFixes, counts.Extensions }));
     }
 
     [Test]
@@ -126,7 +167,8 @@ public class ShippedCatalogTest
 
         var counts = _catalog.DeclaredCounts!;
         var sentence = new Regex(
-            @"\*\*(\d+) hooks\*\*, fed by \*\*(\d+) seams\*\*, \*\*(\d+) engine fixes\*\*, and \*\*(\d+) call rewrites?\*\*");
+            @"\*\*(\d+) hooks\*\*, fed by \*\*(\d+) seams\*\*, \*\*(\d+) engine fixes\*\*, and \*\*(\d+) call rewrites?\*\*, "
+            + @"plus \*\*(\d+) extension points?\*\*");
         foreach (var page in (string[]) ["CATALOG.md", "SEAMS.md", "HOOKS.md"])
         {
             var text = File.ReadAllText(Path.Combine(repoRoot!, "docs", "MMAPI", page));
@@ -136,6 +178,7 @@ public class ShippedCatalogTest
             Assert.That(int.Parse(match.Groups[2].Value), Is.EqualTo(counts.Seams), $"{page} seam count");
             Assert.That(int.Parse(match.Groups[3].Value), Is.EqualTo(counts.EngineFixes), $"{page} engine fix count");
             Assert.That(int.Parse(match.Groups[4].Value), Is.EqualTo(counts.CallRewrites), $"{page} call rewrite count");
+            Assert.That(int.Parse(match.Groups[5].Value), Is.EqualTo(counts.Extensions), $"{page} extension point count");
         }
     }
 
@@ -144,18 +187,20 @@ public class ShippedCatalogTest
     {
         // The count sentences are already gated. This holds the page set in
         // step with the catalog in both directions, since a missing page is an
-        // undocumented hook or seam and an unmatched page is a leftover from a
-        // rename.
+        // undocumented hook, seam or extension point and an unmatched page is
+        // a leftover from a rename.
         var repoRoot = FindRepoRoot();
         if (repoRoot is null)
             Assert.Ignore("docs/MMAPI not found - running outside the repo checkout");
 
         var hooksDir = Path.Combine(repoRoot!, "docs", "MMAPI", "hooks");
         var seamsDir = Path.Combine(repoRoot!, "docs", "MMAPI", "seams");
+        var extensionsDir = Path.Combine(repoRoot!, "docs", "MMAPI", "extensions");
         var hookNames = _catalog.HookDeclarations.Select(d => d.Name).ToHashSet();
         var entryIds = _catalog.Entries.Select(e => e.Id)
             .Concat(_catalog.CallRewrites.Select(r => r.Id))
             .ToHashSet();
+        var pointIds = _catalog.Extensions.Select(e => e.Id).ToHashSet();
 
         foreach (var name in hookNames)
             Assert.That(File.Exists(Path.Combine(hooksDir, name + ".md")), Is.True,
@@ -163,6 +208,9 @@ public class ShippedCatalogTest
         foreach (var id in entryIds)
             Assert.That(File.Exists(Path.Combine(seamsDir, id + ".md")), Is.True,
                 $"entry '{id}' has no docs page");
+        foreach (var id in pointIds)
+            Assert.That(File.Exists(Path.Combine(extensionsDir, id + ".md")), Is.True,
+                $"extension point '{id}' has no docs page");
 
         foreach (var page in Directory.GetFiles(hooksDir, "*.md"))
             Assert.That(hookNames, Does.Contain(Path.GetFileNameWithoutExtension(page)),
@@ -170,6 +218,9 @@ public class ShippedCatalogTest
         foreach (var page in Directory.GetFiles(seamsDir, "*.md"))
             Assert.That(entryIds, Does.Contain(Path.GetFileNameWithoutExtension(page)),
                 $"seam page '{Path.GetFileName(page)}' matches no catalog entry");
+        foreach (var page in Directory.GetFiles(extensionsDir, "*.md"))
+            Assert.That(pointIds, Does.Contain(Path.GetFileNameWithoutExtension(page)),
+                $"extension page '{Path.GetFileName(page)}' matches no declared point");
     }
 
     [Test]

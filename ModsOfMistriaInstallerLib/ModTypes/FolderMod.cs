@@ -40,7 +40,7 @@ public class FolderMod : IMod
     {
         get
         {
-            var initialId = $"{_author.ToLower()}.{_name.ToLower()}".Replace(" ", "_");
+            var initialId = $"{_author.ToLowerInvariant()}.{_name.ToLowerInvariant()}".Replace(" ", "_");
             return Regex.Replace(initialId, "[^a-zA-Z0-9_\\.]", "");
         }
     }

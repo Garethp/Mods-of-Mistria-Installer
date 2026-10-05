@@ -49,10 +49,11 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 141
-seams = 158
-engine_fixes = 16
+hooks = 142
+seams = 159
+engine_fixes = 29
 call_rewrites = 1
+extensions = 1
 
 # --- hook declarations -------------------------------------------------------------
 
@@ -528,6 +529,11 @@ doc  = "Fires in gain_xp() when the applied XP raises the skill's level, right a
 name = "player.stamina_delta"
 kind = "filter"
 doc  = "Fires at the top of Ari.modify_stamina(), before stamina_costs_modifier is applied. The filtered value is the signed stamina delta. ctx is { player }. Return the replacement delta, or undefined to keep the current value."
+
+[[hook]]
+name = "status_effect.hud_icon"
+kind = "filter"
+doc  = "Fires in VitalsMenu.refresh_statuses() for a status effect the base game cannot draw, one that is neither a hardcoded vanilla id nor a potion infusion. The filtered value starts undefined. ctx is the StatusEffectId ordinal. Return { icon_sprite, color } to draw the HUD icon, where color is optional and defaults to the vanilla status orange, or undefined to leave the icon undrawn. Register this for any extension status effect you show with show_hud. Without a handler the effect still works, it just has no HUD icon. Vanilla never reaches this hook, because every vanilla non-hardcoded id is an infusion."
 
 [[hook]]
 name = "player.status_effect_cancel"
@@ -4060,6 +4066,47 @@ replace = '''
 marker   = "mmapi_player_jump_attack_water_exit"
 provides = ["player.jump_attack_landing"]
 
+# The VitalsMenu default-case seam. Vanilla's default arm assumes every
+# non-hardcoded status id is a potion infusion and resolves it through FATAL
+# string_to_infusion, so an extension status effect with show_hud would crash
+# the HUD. The try_ variant plus a filter keeps vanilla pixel-identical, since
+# every id vanilla can produce is an infusion hit, and gives extension effects
+# an icon path. No handler means no icon rather than a crash.
+[[seam]]
+id      = "vitals_status_hud_icon"
+file    = "gml/scripts/UI/Anchor/Menus/VitalsMenu.gml"
+anchor  = '''
+                default:
+                    var demons = string_to_infusion(status_effect_id_to_string(state.status.type));
+                    var infusion_data = INFUSIONS.get(demons);
+                    icon_sprite = infusion_data.tooltip_icon;
+                    color = make_color_rgb(
+                        infusion_data.color[0],
+                        infusion_data.color[1],
+                        infusion_data.color[2],
+                    );
+                    break;'''
+replace = '''
+                default:
+                    var __mmapi_se_infusion = try_string_to_infusion(status_effect_id_to_string(state.status.type)); // mmapi_status_hud_icon
+                    if (__mmapi_se_infusion != undefined) {
+                        var infusion_data = INFUSIONS.get(__mmapi_se_infusion);
+                        icon_sprite = infusion_data.tooltip_icon;
+                        color = make_color_rgb(
+                            infusion_data.color[0],
+                            infusion_data.color[1],
+                            infusion_data.color[2],
+                        );
+                        break;
+                    }
+                    var __mmapi_se_hud = mmapi_apply_filters("status_effect.hud_icon", undefined, state.status.type);
+                    if (__mmapi_se_hud == undefined) { continue; }
+                    icon_sprite = __mmapi_se_hud.icon_sprite;
+                    if (__mmapi_se_hud[$ "color"] != undefined) { color = __mmapi_se_hud.color; }
+                    break;'''
+marker   = "mmapi_status_hud_icon"
+provides = ["status_effect.hud_icon"]
+
 # --- call rewrites -----------------------------------------------------------------
 
 # local_get is a native builtin (fabricator extension): the pristine tree has no
@@ -4647,3 +4694,345 @@ replace = '''
             self.status_particles = true; // mmapi_monster_status_overlay
 '''
 marker  = "mmapi_monster_status_overlay"
+
+# The fixes from here to the extension points support custom content a save
+# may name. They let a save load when a name no longer resolves.
+
+# The GAME_STATS structs for perks, menu_opens, npcs_spoken_to and
+# location_visits are name-keyed and seeded only at new-game and at
+# version-migration, both through patch_game_stats. A same-version save
+# therefore never seeds keys for content added after it was written, and the
+# engine's raw `[$ key] += 1` sites crash with `bad unary op "inc" undefined`
+# on first touch. The first arrival in a mod-added location dies at the
+# location_visits increment, and the recipe and crafting sites increment
+# runtime-chosen perk keys. The engine's own patch_game_stats is idempotent,
+# since it fills only undefined keys and patches missing fields from the
+# prototype, so invoking it on every load retires the whole class at one
+# site. A same-version vanilla save already has every key, so the call finds
+# them defined and writes nothing.
+[[engine_fix]]
+name    = "game_stats_seed_on_load"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    GAME_STATS = files.game_stats;
+'''
+replace = '''
+    GAME_STATS = files.game_stats;
+    patch_game_stats(GAME_STATS); // mmapi_game_stats_seed
+'''
+marker  = "mmapi_game_stats_seed"
+
+# Save-load tolerance family. The load pipeline resolves several save-carried
+# names through FATAL converters, while the perks, items and recipes lines
+# beside them use the try_ variants and skip unknowns. A learned or pinned
+# spell, an occupied status-effect slot, a daily used-object flag, a pending
+# renown donation, the pet's item queue, a construction node and an item's
+# infusion each carry such a name, and a barn/coop or mount variant is copied
+# raw and dereferenced fatally during gameplay instead. One unknown name
+# aborts the load natively, with no dialog and no error_log.json entry,
+# straight back to the title screen, so removing a mod whose content a save
+# names bricks the save until the mod returns. The fixes below route each
+# site through the tolerant variant, or normalize the variant, dropping or
+# replacing the unknown entry with a warn so the next save writes the
+# cleansed data. The tolerant converters they call are the engine's own try_
+# variants, the same family the perks, items and recipes lines use. On an
+# intact install every name resolves, so the new arms never run and
+# behaviour is identical to vanilla. The renown path needs two edits, one
+# for its parser and one for its caller.
+[[engine_fix]]
+name    = "save_load_spells_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.spells_learned = deserialize_array_bool(
+        files.player.spells_learned,
+        string_to_spell,
+        Spell.LEN,
+    );'''
+replace = '''
+    ARI.spells_learned = deserialize_array_bool(
+        files.player.spells_learned,
+        function(__mmapi_s) { return try_string_to_spell(__mmapi_s); }, // mmapi_save_spells_tolerance
+        Spell.LEN,
+    );'''
+marker  = "mmapi_save_spells_tolerance"
+
+# An unknown pinned spell becomes set_pinned_spell(undefined), the engine's
+# own unpin call, which is how SpellcastingMenu toggles the pin off. This
+# fix logs no warn of its own. A pinned spell is always also learned, so the
+# spells-tolerance path has already warned about the name by the time this
+# line runs.
+[[engine_fix]]
+name    = "save_load_pinned_spell_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, string_to_spell));'''
+replace = '''
+    ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, function(__mmapi_s) { return try_string_to_spell(__mmapi_s); })); // mmapi_save_pinned_tolerance'''
+marker  = "mmapi_save_pinned_tolerance"
+
+# A slot whose type no longer resolves deserializes to undefined, which is
+# exactly what an empty slot already is, so the manager's update loop never
+# sees it. Ledgered status effects normally survive removal by tombstone,
+# because the vacant enum member keeps the name resolving. This guard is for
+# the remaining cases, a ledger wiped by hand or a save moved to an install
+# with a different ledger.
+[[engine_fix]]
+name    = "save_load_status_effect_tolerance"
+file    = "gml/scripts/Player/StatusEffectManager.gml"
+anchor  = '''
+            self.effects.set(i, opt_and_then(effect, function(e) {
+                e.type = string_to_status_effect_id(e.type);
+                return e;
+            }));'''
+replace = '''
+            self.effects.set(i, opt_and_then(effect, function(e) {
+                var __mmapi_se_type = try_string_to_status_effect_id(e.type); // mmapi_save_status_tolerance
+                if (__mmapi_se_type == undefined) {
+                    warn("MMAPI: save carried unknown status effect '{}' - dropped", e.type);
+                    return undefined;
+                }
+                e.type = __mmapi_se_type;
+                return e;
+            }));'''
+marker  = "mmapi_save_status_tolerance"
+
+# Visibility for every forgetful path, the new one and the ones vanilla
+# already had. deserialize_array_bool silently drops unresolvable entries
+# for perks, items, recipes and, with the spells fix, spells. The
+# DEBUG_ASSERTIONS crash arm is preserved untouched, and the shipped game
+# falls into the new else and names what was dropped in the log.
+[[engine_fix]]
+name    = "save_load_forget_warn"
+file    = "gml/scripts/Utilities/ArrayBool.gml"
+anchor  = '''
+        var num = string_to_num(string_array[i]);
+        if is_numeric(num) {
+            target[num] = true;
+        } else if DEBUG_ASSERTIONS {
+            crash("unexpected input in functor...{}/{} -> {}", i, string_array[i], num);
+        }'''
+replace = '''
+        var num = string_to_num(string_array[i]);
+        if is_numeric(num) {
+            target[num] = true;
+        } else if DEBUG_ASSERTIONS {
+            crash("unexpected input in functor...{}/{} -> {}", i, string_array[i], num);
+        } else {
+            warn("MMAPI: save carried unknown entry '{}' - dropped", string_array[i]); // mmapi_save_forget_warn
+        }'''
+marker  = "mmapi_save_forget_warn"
+
+# The used-objects daily flag line resolves names through a fatal
+# converter. Swapping in the tolerant one routes unknown object names
+# through deserialize_array_bool's existing skip, and save_load_forget_warn
+# names them in the log. Object prototypes are fiddle content, so the domain
+# is mod-reachable.
+[[engine_fix]]
+name    = "save_load_used_objects_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.used_object_today = files.player["used_object_today"] != undefined
+        ? deserialize_array_bool(files.player.used_object_today, string_to_object_id, ObjectId.LEN)
+        : array_bool(ObjectId.LEN);'''
+replace = '''
+    ARI.used_object_today = files.player["used_object_today"] != undefined
+        ? deserialize_array_bool(files.player.used_object_today, function(__mmapi_s) { return try_string_to_object_id(__mmapi_s); }, ObjectId.LEN) // mmapi_save_used_objects_tolerance
+        : array_bool(ObjectId.LEN);'''
+marker  = "mmapi_save_used_objects_tolerance"
+
+# Caller half of the renown pair. save_load_renown_item_tolerance makes the
+# parser return undefined for a donation of an unknown item, and this loop
+# keeps undefined entries out of the pending list, where the end-of-day
+# processor would dereference them.
+[[engine_fix]]
+name    = "save_load_renown_list_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.pending_renown_entries = ListFromArray(files.player.pending_renown_entries)
+        .map(deserialize_renown_entry);'''
+replace = '''
+    ARI.pending_renown_entries = List(); // mmapi_save_renown_list_tolerance
+    for (var __mmapi_ri = 0; __mmapi_ri < array_length(files.player.pending_renown_entries); __mmapi_ri++) {
+        var __mmapi_re = deserialize_renown_entry(files.player.pending_renown_entries[__mmapi_ri]);
+        if (__mmapi_re != undefined) {
+            ARI.pending_renown_entries.push(__mmapi_re);
+        }
+    }'''
+marker  = "mmapi_save_renown_list_tolerance"
+
+# Parser half of the renown pair. A pending museum-donation entry naming an
+# unknown item warns and drops instead of aborting the load. The other two
+# entry kinds are untouched.
+[[engine_fix]]
+name    = "save_load_renown_item_tolerance"
+file    = "gml/scripts/GameplaySystems/Player/RenownUtils.gml"
+anchor  = '''
+        case RenownEntryType.MuseumDonation: return RenownEntry.MuseumDonation(string_to_item_id(entry.item));'''
+replace = '''
+        case RenownEntryType.MuseumDonation:
+            var __mmapi_donated = try_string_to_item_id(entry.item); // mmapi_save_renown_item_tolerance
+            if (__mmapi_donated == undefined) {
+                warn("MMAPI: save carried a pending renown entry for unknown item '{}' - dropped", entry.item);
+                return undefined;
+            }
+            return RenownEntry.MuseumDonation(__mmapi_donated);'''
+marker  = "mmapi_save_renown_item_tolerance"
+
+# The pet's queued drop items resolve fatally while the item flag arrays
+# beside them use the try variants. Unknown queued items are dropped with a
+# warn, and the pet pops the rest.
+[[engine_fix]]
+name    = "save_load_pet_items_tolerance"
+file    = "gml/scripts/Pet.gml"
+anchor  = '''
+        self.items_to_pop = array_map(pet_data.items_to_pop, string_to_item_id);'''
+replace = '''
+        self.items_to_pop = []; // mmapi_save_pet_items_tolerance
+        for (var __mmapi_pi = 0; __mmapi_pi < array_length(pet_data.items_to_pop); __mmapi_pi++) {
+            var __mmapi_pit = try_string_to_item_id(pet_data.items_to_pop[__mmapi_pi]);
+            if (__mmapi_pit == undefined) {
+                warn("MMAPI: save carried an unknown item '{}' queued on the pet - dropped", pet_data.items_to_pop[__mmapi_pi]);
+                continue;
+            }
+            array_push(self.items_to_pop, __mmapi_pit);
+        }'''
+marker  = "mmapi_save_pet_items_tolerance"
+
+# A construction node for an unknown blueprint is skipped before it is
+# written, through the same skip path unknown objects already take. Skipping
+# the whole node matters because turn-in boxes dereference
+# BLUEPRINT_PROTOTYPES[node.blueprint_id] on interact, so a cleared field
+# alone would trade the load crash for an interact crash. The engine's own
+# GML uses no tolerant converter for blueprints, so resolution is a
+# Blueprint.LEN scan over blueprint_to_string, the same reflection the
+# serializer uses. Vanilla names always match, which keeps an intact install
+# identical.
+[[engine_fix]]
+name    = "save_load_blueprint_node_tolerance"
+file    = "gml/scripts/GameplaySystems/Data/Grid/__GridGeneral/Grid.gml"
+anchor  = '''
+            var object_id = try_string_to_object_id(obj.object_id);
+            if object_id == undefined {
+                if DEBUG_ASSERTIONS {
+                    crash("Unexpected ObjectId name `{}`, did not match any ids", obj.object_id)
+                } else {
+                    error("Unexpected object name: `{}`. ignoring...", obj.object_id);
+                    continue;
+                }
+            }'''
+replace = '''
+            var object_id = try_string_to_object_id(obj.object_id);
+            if object_id == undefined {
+                if DEBUG_ASSERTIONS {
+                    crash("Unexpected ObjectId name `{}`, did not match any ids", obj.object_id)
+                } else {
+                    error("Unexpected object name: `{}`. ignoring...", obj.object_id);
+                    continue;
+                }
+            }
+            var __mmapi_bp_name = obj[$ "blueprint_id"]; // mmapi_save_blueprint_tolerance
+            if (__mmapi_bp_name != undefined) {
+                var __mmapi_bp = undefined;
+                for (var __mmapi_bi = 0; __mmapi_bi < Blueprint.LEN; __mmapi_bi++) {
+                    if (blueprint_to_string(__mmapi_bi) == __mmapi_bp_name) {
+                        __mmapi_bp = __mmapi_bi;
+                        break;
+                    }
+                }
+                if (__mmapi_bp == undefined) {
+                    warn("MMAPI: save carried a construction node for unknown blueprint '{}' - node dropped", __mmapi_bp_name);
+                    continue;
+                }
+            }'''
+marker  = "mmapi_save_blueprint_tolerance"
+
+# An unknown infusion is dropped from the item rather than aborting the
+# load. The guarded shape leaves the constructor's default in place instead
+# of overwriting it with undefined, because LiveItem seeds infusion from the
+# prototype's default_infusion. The engine already uses the try variant at
+# its other infusion read sites.
+[[engine_fix]]
+name    = "save_load_infusion_tolerance"
+file    = "gml/scripts/GameplaySystems/Items/LiveItem.gml"
+anchor  = '''
+    if !is_nullish(item.infusion) {
+        live_item.infusion = string_to_infusion(item.infusion);
+    }'''
+replace = '''
+    if !is_nullish(item.infusion) {
+        var __mmapi_inf = try_string_to_infusion(item.infusion); // mmapi_save_infusion_tolerance
+        if (__mmapi_inf == undefined) {
+            warn("MMAPI: save carried an item with unknown infusion '{}' - dropped", item.infusion);
+        } else {
+            live_item.infusion = __mmapi_inf;
+        }
+    }'''
+marker  = "mmapi_save_infusion_tolerance"
+
+# The pet deserialize falls back to cat_tabby for an unknown variant, and
+# barn/coop animals had no such guard. The saved variant string is copied
+# raw, and the first prototype.variants.get dereference, for the production
+# tier or a sprite pack, crashes during gameplay rather than at load.
+# Variants are fiddle content, so mods mint them. The fix falls back to the
+# kind's first variant with a warn.
+[[engine_fix]]
+name    = "save_load_animal_variant_tolerance"
+file    = "gml/scripts/GameplaySystems/Ranching/Animal.gml"
+anchor  = '''
+        self.variant = animal_data.variant;'''
+replace = '''
+        self.variant = animal_data.variant; // mmapi_save_animal_variant_tolerance
+        if (self.prototype.variants.contains_key(self.variant) == false) {
+            var __mmapi_av_keys = self.prototype.variants.keys();
+            warn("MMAPI: save carried animal variant '{}' that no longer exists - replaced with '{}'", self.variant, __mmapi_av_keys[0]);
+            self.variant = __mmapi_av_keys[0];
+        }'''
+marker  = "mmapi_save_animal_variant_tolerance"
+
+# The mount's copy of the same hazard. LoadGame sets the mount's variant
+# from the save five lines before it assigns the prototype, so the guard
+# anchors on the prototype assignment and normalizes right after it.
+[[engine_fix]]
+name    = "save_load_mount_variant_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+        ARI.mount.prototype = ANIMAL_PROTOTYPES[ARI.mount.kind];'''
+replace = '''
+        ARI.mount.prototype = ANIMAL_PROTOTYPES[ARI.mount.kind];
+        if (ARI.mount.prototype.variants.contains_key(ARI.mount.variant) == false) { // mmapi_save_mount_variant_tolerance
+            var __mmapi_mv_keys = ARI.mount.prototype.variants.keys();
+            warn("MMAPI: save carried mount variant '{}' that no longer exists - replaced with '{}'", ARI.mount.variant, __mmapi_mv_keys[0]);
+            ARI.mount.variant = __mmapi_mv_keys[0];
+        }'''
+marker  = "mmapi_save_mount_variant_tolerance"
+
+# --- extension points ----------------------------------------------------------------
+
+# Deliberately the simple shape. StatusEffectId is a pure GML roster enum,
+# the manager is id-agnostic since register, cancel and get_effect_value take
+# any id, lifecycle hooks already ship, serialization round-trips by name,
+# and the update loop skips absent entries. That makes a vacancy benign by
+# construction, so the vacancy template is the enum member alone and there
+# is no data invariant to satisfy. A mod registers the id, then drives the
+# effect entirely from its own GML, through ARI.status_effects.register plus
+# hook handlers, with status_effect.hud_icon supplying the HUD icon.
+[[extension]]
+id   = "status_effect"
+file = "gml/scripts/Player/StatusEffect.gml"
+doc  = """One registration per custom status effect. Adds the StatusEffectId
+member. The mod applies and reacts to the effect from its own gml through
+ARI.status_effects and the player.status_effect_* and status_effect.hud_icon
+hooks."""
+
+[extension.ordinal]
+enum     = "StatusEffectId"
+sentinel = "LEN"
+
+[[extension.sites]]
+id       = "enum_member"
+kind     = "enum_member"
+template = "{{symbol}} = {{ordinal}},"
+indent   = 4
+
+[extension.vacancy]
+enum_member = "{{symbol}} = {{ordinal}},"

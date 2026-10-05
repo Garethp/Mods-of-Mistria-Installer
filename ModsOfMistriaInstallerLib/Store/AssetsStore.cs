@@ -9,7 +9,7 @@ namespace Garethp.ModsOfMistriaInstallerLib.Store;
 // pristine: copy the backup over the live archive, write both layers into it
 // in update mode, commit on dispose. No temp file and no atomic swap; a crash
 // mid-install leaves the complete vanilla copy on disk (update mode buffers in
-// memory), and the copy and flush windows stay a known risk (D4).
+// memory), and the copy and flush windows stay a known risk.
 public class AssetsStore(string fomLocation)
 {
     private ZipArchive? _archive;
@@ -92,7 +92,7 @@ public class AssetsStore(string fomLocation)
         }
     }
 
-    // The uninstall guard ladder (D15). Unmarked → the game updated or nothing
+    // The uninstall guard ladder. Unmarked → the game updated or nothing
     // was ever installed, so clean up the stale backup instead of copying old
     // game files over new ones. Marked or unreadable → restore the pristine
     // copy, refusing when there is none. True when the store changed.
