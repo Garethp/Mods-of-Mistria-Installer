@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **142 hooks**, fed by **159 seams**, **29 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **142 hooks**, fed by **159 seams**, **31 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -395,6 +395,8 @@ Hook-less edits the catalog also carries:
 | [save_load_animal_variant_tolerance](seams/save_load_animal_variant_tolerance.md) | engine fix | A barn/coop animal's unknown variant falls back to its kind's first variant instead of crashing during gameplay. |
 | [save_load_mount_variant_tolerance](seams/save_load_mount_variant_tolerance.md) | engine fix | The mount's unknown variant falls back to its kind's first variant instead of crashing during gameplay. |
 | [game_stats_seed_on_load](seams/game_stats_seed_on_load.md) | engine fix | Seeds the per-name game-stats structs on every load, so content added after a save was written cannot crash its first stats increment. |
+| [eod_intro_fade_cancel](seams/eod_intro_fade_cancel.md) | engine fix | Keeps the end-of-day menu's intro fade-in chain in a field and clears the field when it fires, so a Next Day tap that lands before the fade-in starts can cancel it. |
+| [eod_prep_cancels_intro_fade](seams/eod_prep_cancels_intro_fade.md) | engine fix | Cancels the stored intro fade-in chain when the player commits to the end of the day, so a tap during the black transition no longer strands the sequence waiting on `is_out()`. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
 
 ## Extension Points
