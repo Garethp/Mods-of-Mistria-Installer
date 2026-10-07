@@ -12,7 +12,7 @@ internal enum Pages
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    private readonly Settings _settings = new();
+    private readonly Settings _settings = Settings.Load();
 
     private readonly Dictionary<Pages, PageViewBase> _pages;
 
@@ -22,8 +22,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        _settings.MistriaLocation = MistriaLocator.GetMistriaLocation() ?? "";
-        _settings.ModsLocation = MistriaLocator.GetModsLocation(_settings.MistriaLocation) ?? "";
+        if (!_settings.ValidMistriaLocation())
+            _settings.MistriaLocation = MistriaLocator.GetMistriaLocation() ?? "";
+        if (!_settings.ValidModsLocation())
+            _settings.ModsLocation = MistriaLocator.GetModsLocation(_settings.MistriaLocation) ?? "";
 
         _pages = new Dictionary<Pages, PageViewBase>
         {
@@ -38,6 +40,7 @@ public partial class MainWindowViewModel : ViewModelBase
         else
         {
             CurrentPage = _pages[Pages.Modlist];
+            _settings.Save();
         }
 
         _settings.PropertyChanged += (_, _) =>
