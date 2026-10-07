@@ -51,7 +51,7 @@ version = 2
 [counts]
 hooks = 142
 seams = 159
-engine_fixes = 29
+engine_fixes = 31
 call_rewrites = 1
 extensions = 1
 
@@ -5005,6 +5005,62 @@ replace = '''
             ARI.mount.variant = __mmapi_mv_keys[0];
         }'''
 marker  = "mmapi_save_mount_variant_tolerance"
+
+# EodMenu.init() fades the screen out, and its callback spawns the receipt and
+# the two buttons, then queues an intro chain that fades the screen back in two
+# chain passes later. The buttons take input from the frame they exist, while
+# the screen is still black. A Next Day tap that lands after the intro chain's
+# first pass and before its second finds the screen already black, so the
+# fade_out in prep_for_sequence is a no-op, and the intro chain then runs the
+# fader back to 0 before the tap's own chain awaits SCREEN_FADER.is_out(). That
+# await never passes. Both buttons stay locked by the tap, the farm tour is
+# cancelled, the music is stopped, and the day is never saved. Mashing Interact
+# through the sleep transition lands a press in that frame. This edit keeps the
+# intro chain in a field and clears the field when the chain fires, so the
+# companion edit below can cancel it when the player commits.
+[[engine_fix]]
+name    = "eod_intro_fade_cancel"
+file    = "gml/scripts/UI/Anchor/Menus/EodMenu.gml"
+anchor  = '''
+            new_chain()
+                .append(LinkId.Timer, 1)
+                .append(LinkId.Function, SCREEN_FADER.fade_in, [FADE_SPEED_CUTSCENE]);
+'''
+replace = '''
+            self.intro_chain = new_chain()
+                .append(LinkId.Timer, 1)
+                .append(LinkId.Function, function() {
+                    self.intro_chain = undefined;
+                    SCREEN_FADER.fade_in(FADE_SPEED_CUTSCENE);
+                }); // mmapi_eod_intro_fade_cancel
+'''
+marker  = "mmapi_eod_intro_fade_cancel"
+
+# The companion of eod_intro_fade_cancel. prep_for_sequence cancels the pending
+# intro chain right after it cancels the tour chain, so a tap during the black
+# transition leaves the screen black and the sequence proceeds exactly as it
+# does for any later tap. The field is read through a struct accessor, so the
+# edit is a no-op if the chain has already fired or the field was never set.
+[[engine_fix]]
+name    = "eod_prep_cancels_intro_fade"
+file    = "gml/scripts/UI/Anchor/Menus/EodMenu.gml"
+anchor  = '''
+        if self.life_chain != undefined {
+            CHAINS.cancel_chain(self.life_chain);
+            self.life_chain = undefined;
+        }
+'''
+replace = '''
+        if self.life_chain != undefined {
+            CHAINS.cancel_chain(self.life_chain);
+            self.life_chain = undefined;
+        }
+        if self[$ "intro_chain"] != undefined { // mmapi_eod_prep_cancels_intro_fade
+            CHAINS.cancel_chain(self.intro_chain);
+            self.intro_chain = undefined;
+        }
+'''
+marker  = "mmapi_eod_prep_cancels_intro_fade"
 
 # --- extension points ----------------------------------------------------------------
 
