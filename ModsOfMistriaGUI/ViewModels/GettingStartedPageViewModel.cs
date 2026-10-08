@@ -16,22 +16,32 @@ public partial class GettingStartedPageViewModel(Settings settings) : PageViewBa
 
     public bool WrongMistriaVersion => Settings.WrongMistriaVersion(); 
 
+    private static IReadOnlyList<FilePickerFileType> MistriaFileTypes()
+    {
+        if (OperatingSystem.IsWindows())
+            return [new FilePickerFileType("Mistria Executable") { Patterns = ["FieldsOfMistria.exe"] }];
+        return
+            [
+                new FilePickerFileType("Linux") { Patterns = ["FieldsOfMistria"] },
+                new FilePickerFileType("Proton/Wine") { Patterns = ["FieldsOfMistria.exe"] }
+            ];
+
+        
+    }
+    
+    
     [RelayCommand]
     private async Task SelectMistriaLocation()
     {
         var topLevel = App.TopLevel;
         if (topLevel is null) return;
 
+        var filePicker = MistriaFileTypes();
+
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
             Title = Resources.GUIFoMPickerTitle,
-            FileTypeFilter =
-            [
-                new FilePickerFileType("FieldsOfMistria.exe")
-                {
-                    Patterns = ["FieldsOfMistria.exe"]
-                }
-            ],
+            FileTypeFilter = filePicker,
             AllowMultiple = false
         });
 
