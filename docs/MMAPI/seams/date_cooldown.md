@@ -18,23 +18,7 @@ Threads the date cooldown through a filter before the eligibility scan uses it.
 
 ## The Edit
 
-The pristine site compares each history entry against a literal:
-
-```gml
-    if time_to_check == v.timestamp
-        || (v.npc == npc && time_to_check - v.timestamp < days(6))
-```
-
-The seamed site hoists the literal into `__mmapi_date_cooldown` before the loop, filters it once per eligibility check, validates the result, and uses it in the comparison:
-
-```gml
-    var __mmapi_date_cooldown = days(6);
-    try { __mmapi_date_cooldown = mmapi_apply_filters("date.cooldown", __mmapi_date_cooldown, { npc: npc, time_to_check: time_to_check }); } catch (__mmapi_date_cooldown_err) {} // mmapi_date_cooldown_filter
-    if (is_numeric(__mmapi_date_cooldown) == false) {
-        mmapi_warn_rate_limited(...);
-        __mmapi_date_cooldown = days(6);
-    }
-```
+The pristine site compares each history entry against a literal. An entry blocks the date when its timestamp equals `time_to_check`, or when it names the same NPC and `time_to_check` minus its timestamp is under `days(6)`. The seamed site hoists that literal into `__mmapi_date_cooldown` before the loop, filters it once per eligibility check through `mmapi_apply_filters("date.cooldown", ...)` with `{ npc: npc, time_to_check: time_to_check }` as ctx, validates the result, and uses the local in the comparison. The dispatch line carries the marker as a trailing comment.
 
 The dispatch fails open twice over. The filter call sits under its own try/catch, and a non-numeric result falls back to the vanilla duration with a rate-limited warning under the `mmapi` label. The comparison would throw on a non-numeric operand, and eligibility runs from the talk menu, so the type check is what keeps a broken handler from crashing a conversation.
 

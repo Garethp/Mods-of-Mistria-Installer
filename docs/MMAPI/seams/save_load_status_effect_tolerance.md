@@ -15,19 +15,7 @@ A status-effect slot whose type no longer resolves is dropped with a logged warn
 
 ## The Edit
 
-The replace guards the conversion with the tolerant variant.
-
-```gml
-            self.effects.set(i, opt_and_then(effect, function(e) {
-                var __mmapi_se_type = try_string_to_status_effect_id(e.type); // mmapi_save_status_tolerance
-                if (__mmapi_se_type == undefined) {
-                    warn("MMAPI: save carried unknown status effect '{}' - dropped", e.type);
-                    return undefined;
-                }
-                e.type = __mmapi_se_type;
-                return e;
-            }));
-```
+The replace guards the conversion with the tolerant variant. Inside the `opt_and_then` that restores each effect slot, the entry's `type` is resolved with `try_string_to_status_effect_id`, with the marker on that line. An unknown name logs a warn naming the effect and returns `undefined`, so the slot stays empty, and a known name is written back onto the entry before it is returned.
 
 Active status effects persist inside the player blob as an ordinal-indexed slot array whose entries carry their type by name, restored through the fatal `string_to_status_effect_id`. It is one of the fatal name lookups the `save_load_*` family covers, with [save_load_spells_tolerance](save_load_spells_tolerance.md) as its closest sibling. A save written while a custom effect was active aborts silently on a clean install.
 

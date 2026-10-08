@@ -18,36 +18,7 @@ Threads the date cutscene name through a filter before `MIST.run_scene`, and int
 
 ## The Edit
 
-The pristine site runs the date's cutscene directly and later gates the reward chain on the vanilla scene's flag:
-
-```gml
-    MIST.run_scene(data.cutscene);
-
-    new_chain().append(LinkId.Await, function(npc, date, item) {
-        ...
-        if CUTSCENES.get(DATES[date].cutscene).ends_day && ANCHOR.get_menu(Menu.Eod) == undefined {
-```
-
-The seamed site hoists the name into `__mmapi_date_scene`, filters it, validates the result, and threads it into the chain so the gate reads the scene that actually played:
-
-```gml
-    var __mmapi_date_scene = data.cutscene;
-    try { __mmapi_date_scene = mmapi_apply_filters("date.cutscene", __mmapi_date_scene, { npc: npc, date: date }); } catch (__mmapi_date_cutscene) {} // mmapi_date_cutscene_filter
-    try {
-        if (__mmapi_date_scene != data.cutscene && CUTSCENES.get(__mmapi_date_scene) == undefined) {
-            mmapi_warn_rate_limited(...);
-            __mmapi_date_scene = data.cutscene;
-        }
-    } catch (__mmapi_date_cutscene_probe) {
-        mmapi_warn_rate_limited(...);
-        __mmapi_date_scene = data.cutscene;
-    }
-    MIST.run_scene(__mmapi_date_scene);
-
-    new_chain().append(LinkId.Await, function(npc, date, item, __mmapi_date_scene) {
-        ...
-        if CUTSCENES.get(__mmapi_date_scene).ends_day && ANCHOR.get_menu(Menu.Eod) == undefined {
-```
+The pristine site runs the date's cutscene with `MIST.run_scene(data.cutscene)` and later gates the reward chain on that scene's `ends_day` flag, read from `CUTSCENES` by the date's own cutscene name. The seamed site hoists the name into `__mmapi_date_scene`, filters it through `mmapi_apply_filters("date.cutscene", ...)` with `{ npc: npc, date: date }` as ctx, validates the result, runs the scene by the local, and binds the local as a fourth argument of the reward chain's callback so the gate reads the scene that actually played. The dispatch line carries the marker as a trailing comment.
 
 The dispatch fails open twice over. The filter call sits under its own try/catch, and the returned name is probed against the loaded cutscene table (`load_cutscenes` asserts a mist script behind every entry, so one probe proves both halves). An unknown or throwing result falls back to the vanilla scene with a rate-limited warning under the `mmapi` label, so a broken handler costs the swap but never the date.
 

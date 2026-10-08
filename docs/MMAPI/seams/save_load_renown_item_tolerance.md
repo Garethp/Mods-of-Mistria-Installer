@@ -15,17 +15,7 @@ Parser half of the renown tolerance pair. A pending museum donation of a since-r
 
 ## The Edit
 
-The replace resolves the item through the tolerant variant and drops the entry when the name is unknown.
-
-```gml
-        case RenownEntryType.MuseumDonation:
-            var __mmapi_donated = try_string_to_item_id(entry.item); // mmapi_save_renown_item_tolerance
-            if (__mmapi_donated == undefined) {
-                warn("MMAPI: save carried a pending renown entry for unknown item '{}' - dropped", entry.item);
-                return undefined;
-            }
-            return RenownEntry.MuseumDonation(__mmapi_donated);
-```
+The replace resolves the item through the tolerant variant and drops the entry when the name is unknown. In the `RenownEntryType.MuseumDonation` case, `entry.item` is resolved with `try_string_to_item_id`, with the marker on that line. An unknown name logs a warn naming the item and returns `undefined`, and a known one returns `RenownEntry.MuseumDonation` of the resolved id.
 
 Donating an item to the museum queues a renown entry naming the item, and a save written before the entry was processed carries that name. The load resolves it with the fatal `string_to_item_id`, one of the few item lookups in the pipeline that is not tolerant, while the item flag arrays all use the `try_` variants. One pending donation of a removed custom item aborts the load natively.
 

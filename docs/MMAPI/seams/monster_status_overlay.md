@@ -15,13 +15,7 @@ Sets the flat draw kind on the monster status overlay and defaults status partic
 
 ## The Edit
 
-The anchor is the status setup at the end of `par_monster`'s overlay color block in `create()`:
-
-```gml
-self.status_blender = self.create_renderable();
-self.status_cap = infinity;
-self.status_particles = false;
-```
+The anchor is the status setup at the end of `par_monster`'s overlay color block in `create()`, the three lines that create `status_blender` with `create_renderable()`, set `status_cap` to `infinity`, and seed `status_particles` as `false`.
 
 The replace adds one line and changes one value. `self.status_blender.draw_kind = DrawKind.Flat;` follows the renderable's creation, and `self.status_particles` becomes `true`. Both carry the `mmapi_monster_status_overlay` marker as a trailing comment.
 

@@ -15,24 +15,7 @@ Lets a save load when a placed construction ghost references a since-removed cus
 
 ## The Edit
 
-The replace appends a guard immediately after the existing unknown-object skip, before the node is written:
-
-```gml
-            var __mmapi_bp_name = obj[$ "blueprint_id"]; // mmapi_save_blueprint_tolerance
-            if (__mmapi_bp_name != undefined) {
-                var __mmapi_bp = undefined;
-                for (var __mmapi_bi = 0; __mmapi_bi < Blueprint.LEN; __mmapi_bi++) {
-                    if (blueprint_to_string(__mmapi_bi) == __mmapi_bp_name) {
-                        __mmapi_bp = __mmapi_bi;
-                        break;
-                    }
-                }
-                if (__mmapi_bp == undefined) {
-                    warn("MMAPI: save carried a construction node for unknown blueprint '{}' - node dropped", __mmapi_bp_name);
-                    continue;
-                }
-            }
-```
+The replace appends a guard immediately after the existing unknown-object skip, before the node is written. It reads the node's optional `blueprint_id` through a struct accessor, with the marker on that line, and when one is present it searches the `Blueprint` members for one whose `blueprint_to_string` equals the name. A name that matches no member logs a warn naming the blueprint and skips the node with `continue`.
 
 Placing a blueprint writes a construction node that records the blueprint by name, and the grid load resolves it with fatal `string_to_blueprint`. Blueprint prototypes are fiddle content, so mods can mint blueprint names, and a placed ghost for a removed custom building aborts the load natively.
 

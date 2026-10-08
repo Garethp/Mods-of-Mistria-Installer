@@ -15,17 +15,7 @@ Wraps the customization colour popup's swatch grid in a capped-height scroller w
 
 ## The Edit
 
-The anchor is the block that places the swatch grid and grows the popup to fit it:
-
-```gml
-        var container_size = layout.container_size();
-        var container = ANCHOR.positional(popup.backplate)
-            .set_size(container_size)
-            .set_align(Align.Center, Align.BottomIn)
-            .set_y(-13)
-
-        popup.backplate.add_height(container_size.y);
-```
+The anchor is the block that places the swatch grid and grows the popup to fit it. It reads `layout.container_size()`, creates a positional container under `popup.backplate` at that size, aligned `Align.Center, Align.BottomIn` with `set_y(-13)`, and then adds the container's height to `popup.backplate`.
 
 `create_color_popup` lists a cosmetic's colours as one swatch per LUT column, with `color_count = sprite_get_width(asset_data.lut_sprite)`, lays them out with `GridLayout`, and grows the popup backplate by the grid's full height with no scroll. The vanilla LUTs are narrow, so the grid never overflows. A cosmetic mod can widen a LUT far past the vanilla colour count, and then the lower swatches land off-screen where they cannot be selected.
 

@@ -17,12 +17,7 @@ Puts a claim-scoped override in front of every grid-object interaction.
 
 ## The Edit
 
-Two injected lines land at the head of `interact(node)`, before `can_interact` runs:
-
-```gml
-var __mmapi_object_interact = mmapi_run_override("object.interact", node); // mmapi_object_interact_override
-if (typeof(__mmapi_object_interact) != "undefined") { return __mmapi_object_interact; }
-```
+Two injected lines land at the head of `interact(node)`, before `can_interact` runs. The first stores the result of `mmapi_run_override("object.interact", node)` in `__mmapi_object_interact`, with the marker as a trailing comment, and the second returns that value when it is not `undefined`.
 
 A non-`undefined` return short-circuits the function: the engine's interact for this node is skipped entirely and the override's value becomes `interact`'s return (return `true` for a handled interaction). When every handler defers (`undefined`), execution falls straight through into the engine's normal handling.
 

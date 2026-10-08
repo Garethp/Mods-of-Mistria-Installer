@@ -18,11 +18,7 @@ Extends the date completion chain's argument list so the filtered cutscene name 
 
 ## The Edit
 
-A one-line extension of the chain's bound arguments:
-
-```gml
-    }, [npc, date, item, __mmapi_date_scene]); // mmapi_date_cutscene_chain_args
-```
+The edit is a one-line extension of the chain's bound arguments. The callback's args array gains `__mmapi_date_scene` as its fourth element, after `npc`, `date`, and `item`, with the marker as a trailing comment.
 
 Chain callbacks are not closures, so the engine threads locals through an explicit args array. The [date_cutscene](date_cutscene.md) seam adds a fourth parameter to the callback and hoists `__mmapi_date_scene` at the dispatch site. This edit passes the value through, completing the pair. It declares `depends_on` for the dispatch seam, and staging fails closed across the catalog, so the two edits apply together or not at all.
 

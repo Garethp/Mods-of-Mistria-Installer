@@ -17,13 +17,7 @@ Puts a veto check on the ladder's descend action, before the sound and the floor
 
 ## The Edit
 
-The anchor is the ladder's interaction action closure, the `function()` literal whose first pristine statement is `TANGO.play("SoundEffects/Entrances/LadderDescend")`. The replace injects the guard as the closure's new first statement:
-
-```gml
-if (mmapi_check_guards("interact.ladder_down_action", { subject: self, key: "dungeon_ladder_down" }) == false) {
-    return;
-}
-```
+The anchor is the ladder's interaction action closure, the `function()` literal whose first pristine statement is `TANGO.play("SoundEffects/Entrances/LadderDescend")`. The replace injects the guard as the closure's new first statement, a return when `mmapi_check_guards("interact.ladder_down_action", { subject: self, key: "dungeon_ladder_down" })` is `false`.
 
 On veto the closure returns before the descend sound plays and before the floor-change logic that follows (the `if room() == rm_mines_entry` branch), so the player simply does not descend. Like the elevator guard, this fires on the actual press. The engine's facing and selection have already routed the interaction to this ladder. With zero handlers the seam is behaviorally identical to pristine.
 

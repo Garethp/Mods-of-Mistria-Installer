@@ -15,15 +15,7 @@ Lets a save that learned a since-removed custom spell load anyway. The spell is 
 
 ## The Edit
 
-The replace swaps the converter the array loader calls for its tolerant variant.
-
-```gml
-    ARI.spells_learned = deserialize_array_bool(
-        files.player.spells_learned,
-        function(__mmapi_s) { return try_string_to_spell(__mmapi_s); }, // mmapi_save_spells_tolerance
-        Spell.LEN,
-    );
-```
+The replace swaps the converter the array loader calls for its tolerant variant. The `deserialize_array_bool` call that restores `ARI.spells_learned` from `files.player.spells_learned` over `Spell.LEN` keeps its shape, and its converter becomes a closure returning `try_string_to_spell` of its argument, with the marker as a trailing comment on that line.
 
 The save records learned spells by name, and this line resolves them with the fatal `string_to_spell`. It is one of the load pipeline's fatal name lookups that the `save_load_*` family in the [Catalog](../CATALOG.md) covers. Vanilla's own perks, items, and recipes lines directly beside it use the tolerant `try_` variants, so the tolerant form is the engine's own convention and this line is the exception. One unknown name, such as a custom spell whose mod was uninstalled, aborts the load natively. There is no dialog and nothing in any log. The game returns to the title screen.
 

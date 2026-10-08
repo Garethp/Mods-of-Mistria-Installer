@@ -15,12 +15,7 @@ Passes the tarball's real fire flag to its grid chop, so non-fire chops stop bei
 
 ## The Edit
 
-The anchor is the grid-chop call inside `obj_damage_tarball`'s `can_chop_grid_objects` block:
-
-```gml
-var success = chop_node(GRID, xx, yy, axe_prototype, 5, doppel, true);
-if success && has_flag(self.flags, CombatFlag.Fire) {
-```
+The anchor is the grid-chop call inside `obj_damage_tarball`'s `can_chop_grid_objects` block, the `chop_node(GRID, xx, yy, axe_prototype, 5, doppel, true)` call whose result is stored in `success`, together with the `if success && has_flag(self.flags, CombatFlag.Fire)` line that follows it.
 
 The replace changes one argument. The chop's `is_burn` becomes `has_flag(self.flags, CombatFlag.Fire)` instead of the hardcoded `true`. That is exactly the expression the pick block above already passes to `pick_node`, and the very next line already tests it for the fire sound. The corrected line carries the `mmapi_tarball_chop_burn_flag` marker as a trailing comment.
 
