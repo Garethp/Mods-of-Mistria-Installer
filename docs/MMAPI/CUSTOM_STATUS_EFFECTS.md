@@ -104,4 +104,4 @@ Without a [status_effect.hud_icon](hooks/status_effect.hud_icon.md) handler the 
 
 Active effects persist across save and load. The manager serializes inside the player blob as a slot array whose entries carry their type by name, and an effect mid-duration survives a full quit and relaunch.
 
-On removal, the ledger's tombstone keeps the type name resolving through the vacant enum member, so a saved effect ticks out inert with no handlers. For saves that land on an install without that ledger history, the [save_load_status_effect_tolerance](seams/save_load_status_effect_tolerance.md) engine fix drops the unresolvable slot with a warn instead of letting vanilla's fatal lookup abort the load. Only a vanilla game without MMAPI still refuses to load such a save.
+On removal, the ledger's tombstone keeps the type name resolving through the vacant enum member, so a saved effect ticks out inert with no handlers. For saves that land on an install without that ledger history, the engine itself drops the unresolvable slot with a warn, so such a save loads on a vanilla game as well.

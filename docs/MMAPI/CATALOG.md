@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **142 hooks**, fed by **159 seams**, **31 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **142 hooks**, fed by **159 seams**, **27 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -382,10 +382,6 @@ Hook-less edits the catalog also carries:
 | [recipe_tag_fulfillment](seams/recipe_tag_fulfillment.md) | engine fix | Counts a `tag` component's stock through the inventory's own tag helper, in the player's inventory and in each crafting chest, replacing a branch that threw. |
 | [recipe_tag_payment](seams/recipe_tag_payment.md) | engine fix | Pays a `tag` component's quantity-scaled cost through the inventory's own tag helper, the player's inventory first and then each crafting chest. |
 | [monster_status_overlay](seams/monster_status_overlay.md) | engine fix | Sets the flat draw kind on the monster status overlay and defaults status particles on, matching the hit flash `setup_white_vfx` builds the same way. |
-| [save_load_spells_tolerance](seams/save_load_spells_tolerance.md) | engine fix | A learned custom spell whose mod was removed is forgotten with a warn instead of aborting the load. |
-| [save_load_pinned_spell_tolerance](seams/save_load_pinned_spell_tolerance.md) | engine fix | An unknown pinned spell unpins instead of aborting the load. |
-| [save_load_status_effect_tolerance](seams/save_load_status_effect_tolerance.md) | engine fix | An active status effect whose type no longer resolves is dropped with a warn instead of aborting the load. |
-| [save_load_forget_warn](seams/save_load_forget_warn.md) | engine fix | Every save entry dropped for an unresolvable name is named in the log. |
 | [save_load_used_objects_tolerance](seams/save_load_used_objects_tolerance.md) | engine fix | An unknown object name in the daily used-objects flags is skipped instead of aborting the load. |
 | [save_load_renown_list_tolerance](seams/save_load_renown_list_tolerance.md) | engine fix | Keeps dropped renown entries out of the pending list the end-of-day processor walks. |
 | [save_load_renown_item_tolerance](seams/save_load_renown_item_tolerance.md) | engine fix | A pending museum donation of an unknown item is dropped with a warn instead of aborting the load. |
