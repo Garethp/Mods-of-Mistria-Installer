@@ -8,7 +8,9 @@ namespace Garethp.ModsOfMistriaInstallerLib.Operations;
 //
 // TOML directives (on a table value):
 //   MOMIaction = "remove"  → delete the key from the destination
-//   MOMIaction = "merge"   → force a recursive merge even when the default would replace
+//   MOMIaction = "merge"   → merge into the destination table, appending the plain
+//                            arrays directly inside it (sub-tables still replace
+//                            theirs unless they carry their own "merge")
 //
 // Table-array directives (on an entry inside a [[table.array]]):
 //   MOMIidentify = { key = value, ... }  → find the matching destination entry
@@ -17,13 +19,24 @@ namespace Garethp.ModsOfMistriaInstallerLib.Operations;
 //   MOMIaction   = "merge"               → merge into matched entry, appending plain arrays
 //   MOMIremove   = { field = ["x", …] }  → remove listed items from named arrays in the matched entry
 //   (no MOMIaction)                      → same as "replace"
+//
+// Inline arrays of tables (x = [{ ... }]) that are appended through a "merge"
+// accept the same per-entry directives. An identified entry with no match is
+// appended without its directives, or dropped when its action is "remove".
 public static class MOMIOperations
 {
     // TOML
 
     // mergeArrays: when true, TomlArray values are appended rather than replaced.
     // Activated when a table-array entry carries MOMIaction = "merge".
-    public static void MergeTomlTables(TomlTable destination, TomlTable source, bool mergeArrays = false)
+    public static void MergeTomlTables(TomlTable destination, TomlTable source, bool mergeArrays = false) =>
+        MergeTomlTables(destination, source, mergeArrays, mergeArrays);
+
+    // mergeNestedArrays: what mergeArrays becomes for sub-tables. A table-array
+    // entry's "merge" reaches its whole subtree; a plain table's "merge" stops
+    // at its own keys.
+    private static void MergeTomlTables(
+        TomlTable destination, TomlTable source, bool mergeArrays, bool mergeNestedArrays)
     {
         foreach (var (key, sourceValue) in source)
         {
@@ -42,7 +55,7 @@ public static class MOMIOperations
                         var copy = CloneTable(sourceTable);
                         copy.Remove("MOMIidentify");
                         copy.Remove("MOMIaction");
-                        MergeTomlTables(destTable, copy, mergeArrays);
+                        MergeTomlTables(destTable, copy, mergeArrays: true, mergeNestedArrays);
                     }
                     continue;
                 }
@@ -55,12 +68,11 @@ public static class MOMIOperations
             }
 
             if (sourceValue is TomlTable st && destinationValue is TomlTable dt)
-                MergeTomlTables(dt, st, mergeArrays);
+                MergeTomlTables(dt, st, mergeNestedArrays, mergeNestedArrays);
             else if (sourceValue is TomlTableArray sa && destinationValue is TomlTableArray da)
                 MergeTomlTableArrays(da, sa);
             else if (mergeArrays && sourceValue is TomlArray srcArr && destinationValue is TomlArray destArr)
-                foreach (var item in srcArr)
-                    destArr.Add(item);
+                MergeTomlArrays(destArr, srcArr);
             else
                 destination[key] = CloneValue(sourceValue);
         }
@@ -70,53 +82,92 @@ public static class MOMIOperations
     {
         foreach (var sourceEntry in source)
         {
-            if (sourceEntry.TryGetValue("MOMIidentify", out var identObj) &&
-                identObj is TomlTable identifier)
-            {
-                var match = destination.FirstOrDefault(x => MatchesIdentifier(x, identifier));
-
-                if (match is not null)
-                {
-                    var action = sourceEntry.TryGetValue("MOMIaction", out var act)
-                        ? act?.ToString()
-                        : null;
-
-                    if (action is "remove" or "delete")
-                    {
-                        destination.Remove(match);
-                        continue;
-                    }
-
-                    // MOMIremove: remove listed items from named arrays before merging
-                    if (sourceEntry.TryGetValue("MOMIremove", out var removeObj) &&
-                        removeObj is TomlTable removeSpec)
-                    {
-                        foreach (var (removeKey, removeVal) in removeSpec)
-                        {
-                            if (removeVal is not TomlArray itemsToRemove) continue;
-                            if (!match.TryGetValue(removeKey, out var destArrObj) ||
-                                destArrObj is not TomlArray destArr) continue;
-
-                            foreach (var item in itemsToRemove)
-                            {
-                                var found = destArr.FirstOrDefault(x => TomlValuesEqual(x, item));
-                                if (found is not null) destArr.Remove(found);
-                            }
-                        }
-                    }
-
-                    var copy = CloneTable(sourceEntry);
-                    copy.Remove("MOMIidentify");
-                    copy.Remove("MOMIaction");
-                    copy.Remove("MOMIremove");
-                    // "merge" action: TomlArray fields are appended rather than replaced
-                    MergeTomlTables(match, copy, mergeArrays: action is "merge");
-                    continue;
-                }
-            }
+            if (TryApplyToIdentifiedEntry(sourceEntry, destination, match => destination.Remove(match)))
+                continue;
 
             destination.Add(CloneTable(sourceEntry));
         }
+    }
+
+    // Appends an inline array, letting entries that are tables target an
+    // existing destination entry with MOMIidentify.
+    private static void MergeTomlArrays(TomlArray destination, TomlArray source)
+    {
+        foreach (var item in source)
+        {
+            if (item is not TomlTable sourceEntry)
+            {
+                destination.Add(CloneValue(item));
+                continue;
+            }
+
+            if (sourceEntry.ContainsKey("MOMIidentify"))
+            {
+                var candidates = destination.OfType<TomlTable>().ToList();
+                if (TryApplyToIdentifiedEntry(sourceEntry, candidates, match => destination.Remove(match)))
+                    continue;
+
+                if (EntryAction(sourceEntry) is "remove" or "delete")
+                    continue;
+            }
+
+            destination.Add(StripDirectives(sourceEntry));
+        }
+    }
+
+    // Applies an entry's MOMIidentify directives to its match among the
+    // candidates. Returns false when it has no identifier or nothing matches.
+    private static bool TryApplyToIdentifiedEntry(
+        TomlTable sourceEntry, IEnumerable<TomlTable> candidates, Action<TomlTable> removeMatch)
+    {
+        if (!sourceEntry.TryGetValue("MOMIidentify", out var identObj) ||
+            identObj is not TomlTable identifier)
+            return false;
+
+        var match = candidates.FirstOrDefault(x => MatchesIdentifier(x, identifier));
+        if (match is null) return false;
+
+        var action = EntryAction(sourceEntry);
+
+        if (action is "remove" or "delete")
+        {
+            removeMatch(match);
+            return true;
+        }
+
+        // MOMIremove: remove listed items from named arrays before merging
+        if (sourceEntry.TryGetValue("MOMIremove", out var removeObj) &&
+            removeObj is TomlTable removeSpec)
+        {
+            foreach (var (removeKey, removeVal) in removeSpec)
+            {
+                if (removeVal is not TomlArray itemsToRemove) continue;
+                if (!match.TryGetValue(removeKey, out var destArrObj) ||
+                    destArrObj is not TomlArray destArr) continue;
+
+                foreach (var item in itemsToRemove)
+                {
+                    var found = destArr.FirstOrDefault(x => TomlValuesEqual(x, item));
+                    if (found is not null) destArr.Remove(found);
+                }
+            }
+        }
+
+        // "merge" action: TomlArray fields are appended rather than replaced
+        MergeTomlTables(match, StripDirectives(sourceEntry), mergeArrays: action is "merge");
+        return true;
+    }
+
+    private static string? EntryAction(TomlTable entry) =>
+        entry.TryGetValue("MOMIaction", out var act) ? act?.ToString() : null;
+
+    private static TomlTable StripDirectives(TomlTable entry)
+    {
+        var copy = CloneTable(entry);
+        copy.Remove("MOMIidentify");
+        copy.Remove("MOMIaction");
+        copy.Remove("MOMIremove");
+        return copy;
     }
 
     private static bool MatchesIdentifier(TomlTable candidate, TomlTable identifier)
