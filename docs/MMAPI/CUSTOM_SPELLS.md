@@ -63,6 +63,4 @@ A cast handler that applies a [custom status effect](CUSTOM_STATUS_EFFECTS.md) i
 
 ## Saves and Uninstalling
 
-MMAPI makes spells uninstall-tolerant. The save records learned spells by name, so reordering ordinals never corrupts a save. Vanilla resolves those names fatally, though, so a clean game cannot load a save that learned a since-removed custom spell.
-
-The [save_load_spells_tolerance](seams/save_load_spells_tolerance.md) engine fix and its [pinned-spell companion](seams/save_load_pinned_spell_tolerance.md) swap in the tolerant converter, so the load simply forgets the unknown spell, and the same related [engine fix](seams/save_load_forget_warn.md) that covers perks ensures it is warn logged on load. The forgetting becomes permanent when the player next saves, and reinstalling the mod before that restores the spell untouched.
+Spells are uninstall-tolerant. The save records learned spells by name, so reordering ordinals never corrupts a save. The load resolves those names through the engine's own `try_string_to_spell`, so a save that learned a since-removed custom spell loads on a vanilla game as well as on an MMAPI install. The load simply forgets the unknown spell, unpins it if it was pinned, and names it in the log. The forgetting becomes permanent when the player next saves, and reinstalling the mod before that restores the spell untouched.

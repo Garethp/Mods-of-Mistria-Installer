@@ -71,4 +71,4 @@ Rebalancing the perk is then a data edit, with no code change, and the `{value}`
 
 ## Saves and Uninstalling
 
-Perks are uninstall-tolerant everywhere. Both the perk roster and the stats acquisition record load through vanilla's own `try_string_to_perk`, so any load simply forgets an unknown perk, even on a clean game without MMAPI. The [save_load_forget_warn](seams/save_load_forget_warn.md) engine fix ensures unknown perks are warn logged on boot.
+Perks are uninstall-tolerant everywhere. Both the perk roster and the stats acquisition record load through vanilla's own `try_string_to_perk`, so any load simply forgets an unknown perk, even on a clean game without MMAPI. The engine names every forgotten perk in the log.

@@ -28,4 +28,3 @@ With zero handlers on an intact install the seam is behaviorally identical to pr
 
 - [status_effect.hud_icon](../hooks/status_effect.hud_icon.md) - This is the hook this seam dispatches.
 - [status_effect](../extensions/status_effect.md) - The extension point whose effects reach this arm.
-- [save_load_status_effect_tolerance](save_load_status_effect_tolerance.md) - The load-side companion, which drops an effect whose type no longer resolves.
