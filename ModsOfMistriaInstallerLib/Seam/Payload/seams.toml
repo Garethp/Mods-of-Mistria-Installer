@@ -51,7 +51,7 @@ version = 2
 [counts]
 hooks = 142
 seams = 159
-engine_fixes = 31
+engine_fixes = 27
 call_rewrites = 1
 extensions = 1
 
@@ -4724,10 +4724,12 @@ marker  = "mmapi_game_stats_seed"
 
 # Save-load tolerance family. The load pipeline resolves several save-carried
 # names through FATAL converters, while the perks, items and recipes lines
-# beside them use the try_ variants and skip unknowns. A learned or pinned
-# spell, an occupied status-effect slot, a daily used-object flag, a pending
-# renown donation, the pet's item queue, a construction node and an item's
-# infusion each carry such a name, and a barn/coop or mount variant is copied
+# beside them use the try_ variants and skip unknowns. The learned and pinned
+# spell lines, the status effect slots and the log line for every entry
+# deserialize_array_bool drops already sit on that tolerant path in the
+# engine, so no fix covers them. A daily used-object flag, a pending renown
+# donation, the pet's item queue, a construction node and an item's infusion
+# each still carry such a name, and a barn/coop or mount variant is copied
 # raw and dereferenced fatally during gameplay instead. One unknown name
 # aborts the load natively, with no dialog and no error_log.json entry,
 # straight back to the title screen, so removing a mod whose content a save
@@ -4739,94 +4741,11 @@ marker  = "mmapi_game_stats_seed"
 # intact install every name resolves, so the new arms never run and
 # behaviour is identical to vanilla. The renown path needs two edits, one
 # for its parser and one for its caller.
-[[engine_fix]]
-name    = "save_load_spells_tolerance"
-file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
-anchor  = '''
-    ARI.spells_learned = deserialize_array_bool(
-        files.player.spells_learned,
-        string_to_spell,
-        Spell.LEN,
-    );'''
-replace = '''
-    ARI.spells_learned = deserialize_array_bool(
-        files.player.spells_learned,
-        function(__mmapi_s) { return try_string_to_spell(__mmapi_s); }, // mmapi_save_spells_tolerance
-        Spell.LEN,
-    );'''
-marker  = "mmapi_save_spells_tolerance"
-
-# An unknown pinned spell becomes set_pinned_spell(undefined), the engine's
-# own unpin call, which is how SpellcastingMenu toggles the pin off. This
-# fix logs no warn of its own. A pinned spell is always also learned, so the
-# spells-tolerance path has already warned about the name by the time this
-# line runs.
-[[engine_fix]]
-name    = "save_load_pinned_spell_tolerance"
-file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
-anchor  = '''
-    ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, string_to_spell));'''
-replace = '''
-    ARI.set_pinned_spell(opt_and_then(files.player.pinned_spell, function(__mmapi_s) { return try_string_to_spell(__mmapi_s); })); // mmapi_save_pinned_tolerance'''
-marker  = "mmapi_save_pinned_tolerance"
-
-# A slot whose type no longer resolves deserializes to undefined, which is
-# exactly what an empty slot already is, so the manager's update loop never
-# sees it. Ledgered status effects normally survive removal by tombstone,
-# because the vacant enum member keeps the name resolving. This guard is for
-# the remaining cases, a ledger wiped by hand or a save moved to an install
-# with a different ledger.
-[[engine_fix]]
-name    = "save_load_status_effect_tolerance"
-file    = "gml/scripts/Player/StatusEffectManager.gml"
-anchor  = '''
-            self.effects.set(i, opt_and_then(effect, function(e) {
-                e.type = string_to_status_effect_id(e.type);
-                return e;
-            }));'''
-replace = '''
-            self.effects.set(i, opt_and_then(effect, function(e) {
-                var __mmapi_se_type = try_string_to_status_effect_id(e.type); // mmapi_save_status_tolerance
-                if (__mmapi_se_type == undefined) {
-                    warn("MMAPI: save carried unknown status effect '{}' - dropped", e.type);
-                    return undefined;
-                }
-                e.type = __mmapi_se_type;
-                return e;
-            }));'''
-marker  = "mmapi_save_status_tolerance"
-
-# Visibility for every forgetful path, the new one and the ones vanilla
-# already had. deserialize_array_bool silently drops unresolvable entries
-# for perks, items, recipes and, with the spells fix, spells. The
-# DEBUG_ASSERTIONS crash arm is preserved untouched, and the shipped game
-# falls into the new else and names what was dropped in the log.
-[[engine_fix]]
-name    = "save_load_forget_warn"
-file    = "gml/scripts/Utilities/ArrayBool.gml"
-anchor  = '''
-        var num = string_to_num(string_array[i]);
-        if is_numeric(num) {
-            target[num] = true;
-        } else if DEBUG_ASSERTIONS {
-            crash("unexpected input in functor...{}/{} -> {}", i, string_array[i], num);
-        }'''
-replace = '''
-        var num = string_to_num(string_array[i]);
-        if is_numeric(num) {
-            target[num] = true;
-        } else if DEBUG_ASSERTIONS {
-            crash("unexpected input in functor...{}/{} -> {}", i, string_array[i], num);
-        } else {
-            warn("MMAPI: save carried unknown entry '{}' - dropped", string_array[i]); // mmapi_save_forget_warn
-        }'''
-marker  = "mmapi_save_forget_warn"
 
 # The used-objects daily flag line resolves names through a fatal
 # converter. Swapping in the tolerant one routes unknown object names
-# through deserialize_array_bool's existing skip, and save_load_forget_warn
-# names them in the log. Object prototypes are fiddle content, so the domain
-# is mod-reachable.
+# through deserialize_array_bool's existing skip, which names them in the
+# log. Object prototypes are fiddle content, so the domain is mod-reachable.
 [[engine_fix]]
 name    = "save_load_used_objects_tolerance"
 file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
