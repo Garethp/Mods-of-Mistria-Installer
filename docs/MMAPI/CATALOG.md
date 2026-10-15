@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **142 hooks**, fed by **159 seams**, **27 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **143 hooks**, fed by **161 seams**, **27 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -50,6 +50,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [furniture.floor_sprite](hooks/furniture.floor_sprite.md) | filter | Swap a furniture piece's floor sprite as its renderer is built. |
 | [furniture.preview_sprite](hooks/furniture.preview_sprite.md) | filter | Swap the sprites the furniture placement preview draws, so the ghost agrees with the piece. |
 | [object.interact](hooks/object.interact.md) | override | Take over any grid object's interaction. |
+| [object.chest_open_guard](hooks/object.chest_open_guard.md) | guard | Stop a treasure chest from opening when the player interacts with or slashes it. |
 | [object.node_sprite](hooks/object.node_sprite.md) | filter | Swap the sprite of any world node before it draws. |
 | [instance.created](hooks/instance.created.md) | event | Customize any object's instances as they appear, with the object named at registration. |
 | [store.item_added](hooks/store.item_added.md) | event | Know when an item lands in the shopping basket. |
@@ -216,6 +217,8 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [furniture_preview_sprite](seams/furniture_preview_sprite.md) | Filters the main sprite the furniture placement preview is about to draw. |
 | [furniture_preview_floor_sprite](seams/furniture_preview_floor_sprite.md) | Filters the floor sprite the furniture placement preview is about to draw. |
 | [object_interact](seams/object_interact.md) | Puts a claim-scoped override in front of every grid-object interaction. |
+| [object_chest_open_guard_interact](seams/object_chest_open_guard_interact.md) | Puts a veto check on the chest interact press, just before the chest opens. |
+| [object_chest_open_guard_slash](seams/object_chest_open_guard_slash.md) | Puts a veto check on the slash path's chest open, just before the chest opens. |
 | [node_renderer_set_sprite](seams/node_renderer_set_sprite.md) | Filters the sprite every world node renderer is about to wear. |
 | [store_item_added](seams/store_item_added.md) | Announces every shelf tap that puts an item in the shopping basket. |
 | [store_basket_cost](seams/store_basket_cost.md) | Filters the basket total inside the store's price pass, guarded so only a number replaces it. |
