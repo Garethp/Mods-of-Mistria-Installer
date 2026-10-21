@@ -4,7 +4,7 @@
 
 A mod can write a recipe ingredient that accepts any mix of items using only fiddle data. No GML, no hooks, and no handlers are involved.
 
-A vanilla recipe component names exactly one item. The engine also accepts a `tag` component in recipe data but cannot count, pay, or display one. Seven catalog entries close both gaps. Four [engine fixes](seams/recipe_items_factory.md) add the `items` list form, and three [engine fixes](seams/recipe_tag_display.md) make a `tag` component count, pay, and display correctly.
+A vanilla recipe component names exactly one item. The engine also accepts a `tag` component in recipe data but cannot count, pay, or display one. Nine catalog entries close both gaps. Four [engine fixes](seams/recipe_items_factory.md) add the `items` list form. Five [engine fixes](seams/recipe_tag_display.md) make a `tag` component count, pay, and display correctly, and keep a recipe with nothing but `tag` entries from crashing the two places where the engine assumes a plain item.
 
 A recipe ingredient is one entry in an item's `recipe` array, with a `count` and one key that says what is required. Vanilla recipes use `item`, which names one item. Two keys no vanilla recipe uses, `items` and `tag`, may also be used. `items` lists the accepted items, and `tag` names a tag every accepted item has.
 
@@ -59,11 +59,11 @@ recipe = [
 
 - `tag` names an item tag. Any item that has it satisfies the requirement, including items other mods add.
 - A mod's own items can have any tag. A vanilla item's `tags` array cannot be extended from a mod, because fiddle merging replaces the array, so a set of vanilla items with no shared tag needs `items`.
-- No other reader sees a tag component. The recipe tooltip omits it, recipe pricing and dish restore values skip it, and the return-ingredient perks never return a tagged item.
+- The popup that announces a learned recipe shows a `tag` component the same way the crafting menu does. No other reader sees one. Recipe pricing and dish restore values skip it, and the return-ingredient perks never return a tagged item. A recipe with no `item` or `items` entry returns nothing when one of those perks triggers.
 - `count` is the number required, and any mix of tagged items satisfies it. It defaults to 1. No perk reduces it, because the engine only applies its ingredient discounts to `item` and `items` components.
 
 > [!IMPORTANT]
-> For `tag` components, the crafting menu shows the icon of the first item in the game's item list that has the tag, regardless of what ingredients the player has available. Every tagged item the player holds, in their inventory or a chest, counts toward the requirement. Payment drains tagged stacks in slot order, prioritizing inventory over chests.
+> For `tag` components, the crafting menu and the popup that announces a learned recipe show the icon of the first item in the game's item list that has the tag, regardless of what ingredients the player has available. Every tagged item the player holds, in their inventory or a chest, counts toward the requirement. Payment drains tagged stacks in slot order, prioritizing inventory over chests.
 
 ## Failure Modes
 
@@ -71,12 +71,13 @@ recipe = [
 - A component with no recognized key stops the game at Setup with the recipe and the component number in the error message.
 - A component with more than one recognized key parses by the engine's key order with no error. `item` beats `items`, and `items` beats `tag`. The losing keys are ignored, so a component that mixes `item` and `items` requires the single item and refuses the listed alternatives.
 - An empty `items` array, or an `items` value that is not an array, stops the game at Setup with a runtime error.
-- A tag no item has draws the game's missing item warning icon with a count of zero, and the recipe cannot be crafted.
+- A tag no item has draws the game's missing item warning icon, with a count of zero in the crafting menu and no count in the popup that announces a learned recipe, and the recipe cannot be crafted.
 
 ## See Also
 
 - [recipe_items_parse](seams/recipe_items_parse.md) - The parser branch that reads `items`.
 - [recipe_tag_payment](seams/recipe_tag_payment.md) - The payment edit that makes `tag` correct in bulk and from chests.
+- [recipe_tag_popup](seams/recipe_tag_popup.md) - The edit that lets the learned recipe popup open for a recipe with nothing but `tag` entries.
 - [crafting.component_count](hooks/crafting.component_count.md) - The filter over every component's cost.
 - [Treasure Chests](TREASURE_CHESTS.md) - Another contract the catalog carries in data alone.
 - [Mod Anatomy](MOD_ANATOMY.md) - The mod folder layout the fiddle files above live in.

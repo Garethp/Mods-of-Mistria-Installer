@@ -2,7 +2,7 @@
 
 Pays a `tag` component's quantity-scaled cost through the inventory's own tag helper, the player's inventory first and then each crafting chest.
 
-`recipe_tag_payment` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. Together with [recipe_tag_display](recipe_tag_display.md) and [recipe_tag_fulfillment](recipe_tag_fulfillment.md) it carries the `tag` half of the [Recipe Ingredients](../RECIPE_INGREDIENTS.md) contract. See [Seams](../SEAMS.md).
+`recipe_tag_payment` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. Together with [recipe_tag_display](recipe_tag_display.md), [recipe_tag_fulfillment](recipe_tag_fulfillment.md), [recipe_tag_popup](recipe_tag_popup.md), and [recipe_tag_perk_return](recipe_tag_perk_return.md) it carries the `tag` half of the [Recipe Ingredients](../RECIPE_INGREDIENTS.md) contract. See [Seams](../SEAMS.md).
 
 ## Placement
 
