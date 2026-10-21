@@ -15,16 +15,7 @@ Lets a save load and play when the mount wears a since-removed custom variant. T
 
 ## The Edit
 
-The replace normalizes an unknown variant right after the prototype assignment.
-
-```gml
-        ARI.mount.prototype = ANIMAL_PROTOTYPES[ARI.mount.kind];
-        if (ARI.mount.prototype.variants.contains_key(ARI.mount.variant) == false) { // mmapi_save_mount_variant_tolerance
-            var __mmapi_mv_keys = ARI.mount.prototype.variants.keys();
-            warn("MMAPI: save carried mount variant '{}' that no longer exists - replaced with '{}'", ARI.mount.variant, __mmapi_mv_keys[0]);
-            ARI.mount.variant = __mmapi_mv_keys[0];
-        }
-```
+The replace normalizes an unknown variant right after the prototype assignment. After `ARI.mount.prototype` is set from `ANIMAL_PROTOTYPES[ARI.mount.kind]`, a check of `ARI.mount.prototype.variants.contains_key(ARI.mount.variant)` carries the marker. When the key is missing, the fix logs a warn naming the old and new variants and sets `ARI.mount.variant` to the prototype's first variant key.
 
 The load sets the mount's variant from the save several lines before it assigns the prototype, so the guard anchors on the prototype assignment and normalizes immediately after it. Without the guard, a mount variant from a removed mod survives the load and crashes at the first `prototype.variants.get` dereference during gameplay, the same hazard the animal fix closes.
 

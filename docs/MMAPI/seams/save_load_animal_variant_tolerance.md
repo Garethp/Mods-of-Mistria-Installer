@@ -15,16 +15,7 @@ Lets a save load and play when a barn/coop animal wears a since-removed custom v
 
 ## The Edit
 
-The replace normalizes an unknown variant right after the copy.
-
-```gml
-        self.variant = animal_data.variant; // mmapi_save_animal_variant_tolerance
-        if (self.prototype.variants.contains_key(self.variant) == false) {
-            var __mmapi_av_keys = self.prototype.variants.keys();
-            warn("MMAPI: save carried animal variant '{}' that no longer exists - replaced with '{}'", self.variant, __mmapi_av_keys[0]);
-            self.variant = __mmapi_av_keys[0];
-        }
-```
+The replace normalizes an unknown variant right after the copy. The line that copies `animal_data.variant` into `self.variant` carries the marker, and it is followed by a check of `self.prototype.variants.contains_key(self.variant)`. When the key is missing, the fix logs a warn naming the old and new variants and sets `self.variant` to the prototype's first variant key.
 
 A saved animal's variant is copied raw at load and only resolved later, when gameplay dereferences `prototype.variants.get(variant)` for production tier or sprites. The pet has an explicit fallback for exactly this case, and barn/coop animals had none, so a variant from a removed mod loaded fine and then crashed during gameplay. Variants load from fiddle content, so mods can mint them.
 

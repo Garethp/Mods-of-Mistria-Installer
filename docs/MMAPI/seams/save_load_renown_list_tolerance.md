@@ -15,17 +15,7 @@ Caller half of the renown tolerance pair. Keeps dropped entries out of the pendi
 
 ## The Edit
 
-The replace rebuilds the list, keeping only the entries that parsed.
-
-```gml
-    ARI.pending_renown_entries = List(); // mmapi_save_renown_list_tolerance
-    for (var __mmapi_ri = 0; __mmapi_ri < array_length(files.player.pending_renown_entries); __mmapi_ri++) {
-        var __mmapi_re = deserialize_renown_entry(files.player.pending_renown_entries[__mmapi_ri]);
-        if (__mmapi_re != undefined) {
-            ARI.pending_renown_entries.push(__mmapi_re);
-        }
-    }
-```
+The replace rebuilds the list, keeping only the entries that parsed. It assigns a fresh `List()` to `ARI.pending_renown_entries`, with the marker as a trailing comment, then walks `files.player.pending_renown_entries` by index, passes each element through `deserialize_renown_entry`, and pushes only the results that are not `undefined`.
 
 With [save_load_renown_item_tolerance](save_load_renown_item_tolerance.md) in place, `deserialize_renown_entry` returns `undefined` for a pending museum donation of an unknown item. Vanilla's `map` would keep that `undefined` in the list, and the end-of-day renown processor dereferences every entry it walks, which would trade the load crash for an overnight crash. This rebuild keeps only real entries.
 

@@ -18,11 +18,7 @@ Reroutes every animal heart-point delta through a filter before it lands.
 
 ## The Edit
 
-The seam re-states the head of `add_heart_points(points)` (the signature plus its `static MAX_POINTS = animal_heart_level_to_points(10);` line) and appends one injected line:
-
-```gml
-points = mmapi_apply_filters("animal.heart_points", points, self); // mmapi_animal_run_heart_filters
-```
+The seam re-states the head of `add_heart_points(points)` (the signature plus its `static MAX_POINTS = animal_heart_level_to_points(10);` line) and appends one injected line, a reassignment of `points` to the result of `mmapi_apply_filters("animal.heart_points", points, self)`, with the marker as a trailing comment.
 
 The reassignment runs before the delta is applied, so whatever a filter returns is what the animal's heart total actually absorbs. ctx is `self`, the `Animal` struct, letting a handler scope its change to specific animals. The injected line is a bare reassignment with no try/catch of its own. Per-handler isolation lives inside the registry dispatch, and with zero handlers `mmapi_apply_filters` hands `points` back unchanged, leaving pristine behavior.
 

@@ -17,11 +17,7 @@ Announces every shelf tap that puts an item in the shopping basket.
 
 ## The Edit
 
-One injected line lands in the StoreMenu's shelf-tap handling, immediately after the pristine `self.basket.add(item);`:
-
-```gml
-try { mmapi_emit("store.item_added", { menu: self, item: item }); } catch (__mmapi_store_item_added) {} // mmapi_store_run_item_added
-```
+One injected line lands in the StoreMenu's shelf-tap handling, immediately after the pristine `self.basket.add(item);`. It calls `mmapi_emit("store.item_added", { menu: self, item: item })` inside a try/catch, with the marker as a trailing comment.
 
 It fires right after a shelf tap adds an item to the shopping basket, before the ghost and price update. ctx carries the `StoreMenu` (`menu.basket` is the `Inventory` cart with `.can_add(item)`/`.add(item)`, and `menu.update_prices()` refreshes the totals) and the `LiveItem` just added.
 
