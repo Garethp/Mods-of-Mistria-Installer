@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **143 hooks**, fed by **161 seams**, **27 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **144 hooks**, fed by **162 seams**, **27 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -91,6 +91,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [fishing.should_reel](hooks/fishing.should_reel.md) | filter | Change whether the player reels from the fishing Wait state this frame. |
 | [tool.targets](hooks/tool.targets.md) | filter | Change which cells a tool use covers. |
 | [player.jump_attack_landing](hooks/player.jump_attack_landing.md) | filter | Change where the jump attack may land. |
+| [player.sword_swing_guard](hooks/player.sword_swing_guard.md) | guard | Stop any swing of the player's sword combo before it starts. |
 | [gossip.selections](hooks/gossip.selections.md) | filter | Change which NPCs the day's gossip offers. |
 | [npc.heart_points](hooks/npc.heart_points.md) | filter | Adjust the heart points a villager gains. |
 | [npc.gift_received](hooks/npc.gift_received.md) | event | Know when the player gives an NPC a gift. |
@@ -261,6 +262,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [tool_targets_stamina_gate](seams/tool_targets_stamina_gate.md) | Filters the cells again in the charge loop, so the stamina test counts the cells the use will cover. |
 | [player_jump_attack_landing](seams/player_jump_attack_landing.md) | Filters whether the jump attack may land, once for each corner of the player's bounding box. |
 | [player_jump_attack_water_exit](seams/player_jump_attack_water_exit.md) | Ends a jump attack that landed on water in the Swim state instead of Default. |
+| [player_sword_swing_guard](seams/player_sword_swing_guard.md) | Puts a veto check at the top of the Sword state's next_swing(), before each swing of a combo starts. |
 | [gossip_selections](seams/gossip_selections.md) | Wraps the gossip picker so the day's NPC selection passes through a filter. |
 | [npc_heart_points](seams/npc_heart_points.md) | Reroutes every villager heart-point delta through a filter before it applies. |
 | [vitals_status_hud_icon](seams/vitals_status_hud_icon.md) | Filters the vitals HUD's icon for a status effect the base game cannot draw. |

@@ -49,8 +49,8 @@ version = 2
 # hook surface. Keep them in step when adding or removing entries; the
 # shipped-catalog test also holds the docs' count sentences to these numbers.
 [counts]
-hooks = 143
-seams = 161
+hooks = 144
+seams = 162
 engine_fixes = 27
 call_rewrites = 1
 extensions = 1
@@ -783,6 +783,11 @@ doc  = "Fires in the player's Tool FSM state wherever the engine resolves the ce
 name = "player.jump_attack_landing"
 kind = "filter"
 doc  = "Fires inside the Jump Attack perk's landing test, once per corner of the player's bounding box, on the frames after a jump's peak while the attack input is buffered, a weapon is held, and no animal is carried. The filtered value is whether that corner's grid node lets the jump attack land, true for a node that is neither collideable nor water. ctx is { x, y, node, collideable, water }: x and y are the corner's room position, node is its grid node index, collideable is the node's collision flag, and water is true when the node's terrain is water. Return a replacement boolean, or undefined to keep the current value. The engine enters the jump attack only when every corner's final value is true, and a corner outside the grid fails before dispatch. A monster or NPC under the player fails that frame's test before any corner is tested, so the hook does not fire on that frame. The attack enters on the first frame every corner passes, so an allowed landing happens where the player is at that moment along the jump's arc, not at the jump's destination. A landing whose node under the player's position is water sends the attack's exit to the Swim state instead of Default. The test runs on every frame from the jump's peak until the attack lands or the jump ends, and the engine tests no further corners on that frame, so a refused landing dispatches about once per frame for the rest of the jump."
+
+[[hook]]
+name = "player.sword_swing_guard"
+kind = "guard"
+doc  = "Fires inside the player FSM's Sword state at the top of next_swing(), before each swing of a combo starts and before its animation, sound, or hitbox exist. It fires for all three swings of a combo, the first from the state's start() and the second and third from its step() on buffered input. ctx is { owner, sword, combo }, with owner the player instance, sword the LiveItem being swung, and combo the index of the swing about to start (0, 1, or 2). Return false to veto the swing. The site then returns from next_swing() before the combo count advances, so the swing never starts, and it clears the state's input buffer and the flag that admits the next swing, so the veto ends the combo. Every other return allows. After a vetoed swing 1 or 2 the swing in progress plays out, the state accepts no further swing and no early exit on a direction press, and it exits to the Default state when that animation completes. After a vetoed swing 0 the site queues the exit to the Default state itself, so the state leaves at the next tick with no swing having started. The state's stop() runs at that exit and removes the sword attachment. A handler that wants the player somewhere other than Default calls change_state on owner.fsm before it returns false. The site leaves that change in place, and the engine applies it at the next tick. The engine calls next_swing() once more when input is still buffered after the third swing. That call starts no swing and never reaches the guard. The first swing is also subject to items.use_guard, which fires at the press, and a veto there keeps the Sword state from starting at all."
 
 # --- seams -------------------------------------------------------------------------
 
@@ -4107,6 +4112,50 @@ replace = '''
             }'''
 marker   = "mmapi_player_jump_attack_water_exit"
 provides = ["player.jump_attack_landing"]
+
+# The Sword state starts every swing of the player's combo through its
+# next_swing(), the first from start() and the second and third from step()
+# on buffered input. This seam puts the guard at the top of that function,
+# ahead of the combo count and buffer writes, so a vetoed swing leaves the
+# count as it was. The veto clears the state's input buffer, because step()
+# calls next_swing() again on every frame the buffer is set and the next swing
+# is admitted. It also writes the flag that admits the next swing, which
+# create() never initializes and which vanilla relies on next_swing() to set
+# before the first step reads it, and a false there keeps the step's direction
+# exit from replacing a transition the handler queued in the same frame. A
+# vetoed first swing queues the exit to Default itself when no other change is
+# pending, so the state leaves at the next tick instead of idling until the
+# player's animation completes. step() also calls next_swing() once more when
+# input is still buffered after the third swing, and that call starts no
+# swing, so the dispatch is gated on the combo count and never fires for it.
+# With zero handlers the check returns true and the function runs as pristine.
+[[seam]]
+id      = "player_sword_swing_guard"
+file    = "gml/scripts/Player/AriFsm.gml"
+anchor  = '''
+            function next_swing() {
+                self.combo_state += 1;
+                self.blackboard.set("input_buffer", false);
+                self.can_go_to_next_combo = false;
+                self.input_buffer = false;'''
+replace = '''
+            function next_swing() {
+                if (self.combo_state < 2) { // mmapi_player_run_sword_swing_guards
+                    try {
+                        if (mmapi_check_guards("player.sword_swing_guard", { owner: self.owner, sword: self.sword, combo: self.combo_state + 1 }) == false) {
+                            self.input_buffer = false;
+                            self.can_go_to_next_combo = false;
+                            if (self.combo_state < 0 && self.fsm.next_state == undefined) { self.fsm.change_state(PlayerState.Default); }
+                            return;
+                        }
+                    } catch (__mmapi_sword_swing_guard_error) {}
+                }
+                self.combo_state += 1;
+                self.blackboard.set("input_buffer", false);
+                self.can_go_to_next_combo = false;
+                self.input_buffer = false;'''
+marker   = "mmapi_player_run_sword_swing_guards"
+provides = ["player.sword_swing_guard"]
 
 # The VitalsMenu default-case seam. Vanilla's default arm assumes every
 # non-hardcoded status id is a potion infusion and resolves it through FATAL
