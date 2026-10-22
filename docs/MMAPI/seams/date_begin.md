@@ -17,14 +17,7 @@ Guards `start_date_cutscene` inside `run_date`, after the acceptance conversatio
 
 ## The Edit
 
-One line guards the `start_date_cutscene(npc, date)` call inside `run_date`'s acceptance-conversation callback:
-
-```gml
-    play_conversation(npc, date_convo, function(_, npc, date) {
-        if (mmapi_check_guards("date.begin", { npc: npc, date: date }) == false) { return; } // mmapi_date_begin_guards
-        start_date_cutscene(npc, date);
-    }, [npc, date]);
-```
+One line guards the `start_date_cutscene(npc, date)` call inside `run_date`'s acceptance-conversation callback. It is the callback's new first statement, and it returns early when `mmapi_check_guards("date.begin", { npc: npc, date: date })` is `false`, with the marker as a trailing comment.
 
 The callback runs after the `DateAcceptance` conversation has played and its `writes` have applied. If any registered guard returns `false`, the callback returns early and `start_date_cutscene` is skipped, so the accepted date is cancelled. When every guard allows, the date begins as normal.
 

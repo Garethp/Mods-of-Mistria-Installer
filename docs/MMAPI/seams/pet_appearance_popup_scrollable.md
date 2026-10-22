@@ -15,19 +15,7 @@ Wraps the pet "Select an Appearance" variant grid in the same capped-height scro
 
 ## The Edit
 
-The anchor is the block that lays out the variant grid and grows the popup to fit it:
-
-```gml
-    var layout = new GridLayout(ListFromArray(order), popup.pilot, 10);
-
-    var container_size = layout.container_size();
-    var container = ANCHOR.positional(popup.backplate)
-        .set_size(container_size)
-        .set_align(Align.Center, Align.Middle)
-        .set_y(9)
-
-    popup.backplate.add_height(container_size.y);
-```
+The anchor is the block that lays out the variant grid and grows the popup to fit it. It builds the grid with `GridLayout(ListFromArray(order), popup.pilot, 10)`, reads `layout.container_size()`, creates a positional container under `popup.backplate` at that size, aligned `Align.Center, Align.Middle` with `set_y(9)`, and then adds the container's height to `popup.backplate`.
 
 `spawn_pet_appearance_popup` lists every pet variant from `fiddle_get("ui/misc/pet_variant_order")` as a ten-column `GridLayout` and grows the popup backplate by the grid's full height with no scroll. The vanilla variant list is short, so the grid never overflows. A pet-skin mod that registers many variants pushes the grid past the screen, and the extra rows cannot be reached.
 

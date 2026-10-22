@@ -18,13 +18,7 @@ Filters the treasure roll's rolled result on its way out.
 
 ## The Edit
 
-The dungeon treasure distribution roll has two exits, and this seam rewrites the successful one. Where pristine code ran `return [candidate_live_item, is_perk];`, the injected block captures the rolled pair into a local, filters it, and returns the result:
-
-```gml
-var __mmapi_treasure_result = [candidate_live_item, is_perk];
-try { __mmapi_treasure_result = mmapi_apply_filters("items.treasure_distribution", __mmapi_treasure_result, { x: xx, y: yy }); } catch (__mmapi_items_treasure_result) {} // mmapi_items_run_treasure_result_filters
-return __mmapi_treasure_result;
-```
+The dungeon treasure distribution roll has two exits, and this seam rewrites the successful one. Where pristine code ran `return [candidate_live_item, is_perk];`, the injected block captures the rolled pair into a local, filters it, and returns the result. It initializes `__mmapi_treasure_result` to the pristine `[candidate_live_item, is_perk]` array, assigns it the result of `mmapi_apply_filters("items.treasure_distribution", __mmapi_treasure_result, { x: xx, y: yy })` inside a try/catch with the marker as a trailing comment, and returns the local.
 
 A handler can return a replacement `[live_item, is_perk]` array to swap the drop, or `undefined` to keep the engine's roll. Because the local is initialized with the pristine array *before* the `try`, a throwing dispatch leaves the engine's result intact. The roll survives any handler failure.
 

@@ -15,13 +15,7 @@ Lets a save whose daily used-objects flags name a since-removed object load anyw
 
 ## The Edit
 
-The replace swaps the converter the array loader calls for its tolerant variant.
-
-```gml
-    ARI.used_object_today = files.player["used_object_today"] != undefined
-        ? deserialize_array_bool(files.player.used_object_today, function(__mmapi_s) { return try_string_to_object_id(__mmapi_s); }, ObjectId.LEN) // mmapi_save_used_objects_tolerance
-        : array_bool(ObjectId.LEN);
-```
+The replace swaps the converter the array loader calls for its tolerant variant. The ternary that restores `ARI.used_object_today` keeps its `undefined` check and its `array_bool(ObjectId.LEN)` fallback, and the `deserialize_array_bool` branch's converter becomes a closure returning `try_string_to_object_id` of its argument, with the marker as a trailing comment on that line.
 
 The daily used-objects flags are stored as a list of object names and resolved with fatal `string_to_object_id`, while the perks, items, recipes, and spells lines around it use the tolerant `try_` variants. Object prototypes are fiddle content, so mods can mint object names, and one stale name aborts the load natively.
 

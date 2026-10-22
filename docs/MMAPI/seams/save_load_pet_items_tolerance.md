@@ -15,19 +15,7 @@ Lets a save load when the pet's queued drop items include a since-removed custom
 
 ## The Edit
 
-The replace filters the queue through the tolerant variant.
-
-```gml
-        self.items_to_pop = []; // mmapi_save_pet_items_tolerance
-        for (var __mmapi_pi = 0; __mmapi_pi < array_length(pet_data.items_to_pop); __mmapi_pi++) {
-            var __mmapi_pit = try_string_to_item_id(pet_data.items_to_pop[__mmapi_pi]);
-            if (__mmapi_pit == undefined) {
-                warn("MMAPI: save carried an unknown item '{}' queued on the pet - dropped", pet_data.items_to_pop[__mmapi_pi]);
-                continue;
-            }
-            array_push(self.items_to_pop, __mmapi_pit);
-        }
-```
+The replace filters the queue through the tolerant variant. It resets `self.items_to_pop` to an empty array, with the marker as a trailing comment, then walks `pet_data.items_to_pop` by index, resolves each name with `try_string_to_item_id`, logs a warn and skips an unknown name, and pushes each resolved id.
 
 The pet's pending item drops are stored by name and resolved with fatal `string_to_item_id`, while the item flag arrays elsewhere in the load use the tolerant `try_` variants. A custom item sitting in the pet's queue when its mod is removed aborts the load natively.
 

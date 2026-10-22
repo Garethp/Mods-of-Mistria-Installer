@@ -15,18 +15,7 @@ Lets a save load when an item carries a since-removed custom infusion. The infus
 
 ## The Edit
 
-The replace resolves the infusion through the tolerant variant.
-
-```gml
-    if !is_nullish(item.infusion) {
-        var __mmapi_inf = try_string_to_infusion(item.infusion); // mmapi_save_infusion_tolerance
-        if (__mmapi_inf == undefined) {
-            warn("MMAPI: save carried an item with unknown infusion '{}' - dropped", item.infusion);
-        } else {
-            live_item.infusion = __mmapi_inf;
-        }
-    }
-```
+The replace resolves the infusion through the tolerant variant. Inside the `!is_nullish(item.infusion)` branch, the name is resolved with `try_string_to_infusion`, with the marker on that line. An unknown name logs a warn naming the infusion and leaves `live_item.infusion` unset, and a known one is written to `live_item.infusion`.
 
 Every serialized item records its infusion by name, and `deserialize_live_item` resolves it with fatal `string_to_infusion`. Infusions load from fiddle content, so mods can mint infusion names, and one infused tool in any inventory, chest, or lost-and-found aborts the load natively. The engine already uses the tolerant variant at its other infusion read sites, so this line is the exception.
 

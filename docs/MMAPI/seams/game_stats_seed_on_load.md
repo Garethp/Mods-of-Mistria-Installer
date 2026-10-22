@@ -15,12 +15,7 @@ Seeds the per-name game-stats structs on every load, so content added after a sa
 
 ## The Edit
 
-The replace adds one call after the `GAME_STATS` restore.
-
-```gml
-    GAME_STATS = files.game_stats;
-    patch_game_stats(GAME_STATS); // mmapi_game_stats_seed
-```
+The replace adds one call after the `GAME_STATS` restore. The line that assigns `files.game_stats` to `GAME_STATS` is followed by `patch_game_stats(GAME_STATS)`, with the marker as a trailing comment.
 
 `GAME_STATS`'s name-keyed structs (`perks`, `menu_opens`, `npcs_spoken_to`, `location_visits`) are seeded only at new-game and at save-version migration. Both paths call the engine's own `patch_game_stats`, which fills a `0` for every current enum member's key. A same-version save takes neither path, so it never gains keys for content installed after it was written, and the engine's raw `[$ key] += 1` sites crash with `bad unary op "inc" undefined` on first touch.
 

@@ -18,13 +18,7 @@ Filters the treasure roll's empty exit so mods can inject a drop where there was
 
 ## The Edit
 
-The dungeon treasure distribution roll has two exits, and this seam rewrites the empty one. Where pristine code ran `return undefined;` when the roll produced no candidate, the injected block filters that `undefined` through the hook and returns the result:
-
-```gml
-var __mmapi_treasure_none = undefined;
-try { __mmapi_treasure_none = mmapi_apply_filters("items.treasure_distribution", undefined, { x: xx, y: yy }); } catch (__mmapi_items_treasure_none) {} // mmapi_items_run_treasure_none_filters
-return __mmapi_treasure_none;
-```
+The dungeon treasure distribution roll has two exits, and this seam rewrites the empty one. Where pristine code ran `return undefined;` when the roll produced no candidate, the injected block filters that `undefined` through the hook and returns the result. It initializes `__mmapi_treasure_none` to `undefined`, assigns it the result of `mmapi_apply_filters("items.treasure_distribution", undefined, { x: xx, y: yy })` inside a try/catch with the marker as a trailing comment, and returns the local.
 
 A handler that returns a `[live_item, is_perk]` array here injects a drop where the engine rolled none. This is the case where `undefined` is the meaningful, expected value of the hook. When every handler returns `undefined` (or there are none), the branch still returns `undefined`, exactly as pristine. Because the local is initialized to `undefined` before the `try`, a throwing dispatch also leaves the pristine result intact.
 
