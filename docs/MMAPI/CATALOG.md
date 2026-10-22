@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **144 hooks**, fed by **162 seams**, **27 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **144 hooks**, fed by **162 seams**, **29 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -386,6 +386,8 @@ Hook-less edits the catalog also carries:
 | [recipe_tag_display](seams/recipe_tag_display.md) | engine fix | Lets the crafting menu draw a `tag` component with the first tagged prototype's icon and the shared has/needs count block. |
 | [recipe_tag_fulfillment](seams/recipe_tag_fulfillment.md) | engine fix | Counts a `tag` component's stock through the inventory's own tag helper, in the player's inventory and in each crafting chest, replacing a branch that threw. |
 | [recipe_tag_payment](seams/recipe_tag_payment.md) | engine fix | Pays a `tag` component's quantity-scaled cost through the inventory's own tag helper, the player's inventory first and then each crafting chest. |
+| [recipe_tag_popup](seams/recipe_tag_popup.md) | engine fix | Lets the popup that announces a learned recipe draw a `tag` component with the first tagged prototype's icon, so a recipe with nothing but `tag` entries no longer leaves its ingredient row empty. |
+| [recipe_tag_perk_return](seams/recipe_tag_perk_return.md) | engine fix | Skips the crafting menu's ingredient return when a recipe has no Item component to return, instead of building an item from an empty list. |
 | [monster_status_overlay](seams/monster_status_overlay.md) | engine fix | Sets the flat draw kind on the monster status overlay and defaults status particles on, matching the hit flash `setup_white_vfx` builds the same way. |
 | [save_load_used_objects_tolerance](seams/save_load_used_objects_tolerance.md) | engine fix | An unknown object name in the daily used-objects flags is skipped instead of aborting the load. |
 | [save_load_renown_list_tolerance](seams/save_load_renown_list_tolerance.md) | engine fix | Keeps dropped renown entries out of the pending list the end-of-day processor walks. |

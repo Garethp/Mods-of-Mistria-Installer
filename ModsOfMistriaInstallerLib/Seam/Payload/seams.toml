@@ -51,7 +51,7 @@ version = 2
 [counts]
 hooks = 144
 seams = 162
-engine_fixes = 27
+engine_fixes = 29
 call_rewrites = 1
 extensions = 1
 
@@ -4762,6 +4762,55 @@ replace = '''
                 break;
 '''
 marker  = "mmapi_recipe_tag_payment"
+
+# The popup that announces a learned recipe builds its ingredient row from a
+# filter over the recipe's components that keeps the Item and Essence kinds
+# and drops every other kind, then centers the row by reading the first and
+# last entries of its position array. A recipe with nothing but tag entries
+# leaves the row empty, and the read into the empty array throws.
+# The Tag case now resolves to the first prototype carrying the tag, the same
+# walk the crafting menu's tag box takes, and to an undefined item when no
+# prototype carries it, which item_node draws as the engine's warning sprite
+# for an unknown item with no count.
+[[engine_fix]]
+name    = "recipe_tag_popup"
+file    = "gml/scripts/UI/Anchor/Menus/TooltipMenu.gml"
+anchor  = '''
+                    case RecipeComponentType.Essence: return [ItemId.FakeEssence, comp.count];
+                    default: return undefined;
+'''
+replace = '''
+                    case RecipeComponentType.Essence: return [ItemId.FakeEssence, comp.count];
+                    case RecipeComponentType.Tag: // mmapi_recipe_tag_popup
+                        for (var k = 0; k < ItemId.LEN; k++) {
+                            if ITEM_PROTOTYPES[k].tags.contains(comp.tag) {
+                                return [k, comp.count];
+                            }
+                        }
+                        return [undefined, comp.count];
+                    default: return undefined;
+'''
+marker  = "mmapi_recipe_tag_popup"
+
+# The crafting menu's ingredient return perks collect a recipe's Item
+# components into a list and return one of them at random. A recipe with no
+# Item component leaves that list empty, choose_random answers undefined for
+# an empty list, and the LiveItem built from that answer indexes the item
+# table with undefined. The return is now skipped when the list is empty.
+# The perk's trigger counter below the push is untouched, so a successful
+# roll still counts as a trigger and returns nothing.
+[[engine_fix]]
+name    = "recipe_tag_perk_return"
+file    = "gml/scripts/UI/Anchor/Menus/CraftingMenu.gml"
+anchor  = '''
+                items_to_yield.push(new LiveItem(temp_list.choose_random()));
+'''
+replace = '''
+                if !temp_list.is_empty() { // mmapi_recipe_tag_perk_return
+                    items_to_yield.push(new LiveItem(temp_list.choose_random()));
+                }
+'''
+marker  = "mmapi_recipe_tag_perk_return"
 # par_monster builds its status overlay renderable without a draw kind, so
 # the frozen and venomous tints draw in the Normal kind, the sprite multiplied
 # by the tint over itself, which is invisible in practice. It also seeds

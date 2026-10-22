@@ -2,7 +2,7 @@
 
 Lets the crafting menu draw a `tag` component with the first tagged prototype's icon and the shared has/needs count block.
 
-`recipe_tag_display` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. Together with [recipe_tag_fulfillment](recipe_tag_fulfillment.md) and [recipe_tag_payment](recipe_tag_payment.md) it carries the `tag` half of the [Recipe Ingredients](../RECIPE_INGREDIENTS.md) contract. See [Seams](../SEAMS.md).
+`recipe_tag_display` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. Together with [recipe_tag_fulfillment](recipe_tag_fulfillment.md), [recipe_tag_payment](recipe_tag_payment.md), [recipe_tag_popup](recipe_tag_popup.md), and [recipe_tag_perk_return](recipe_tag_perk_return.md) it carries the `tag` half of the [Recipe Ingredients](../RECIPE_INGREDIENTS.md) contract. See [Seams](../SEAMS.md).
 
 ## Placement
 
