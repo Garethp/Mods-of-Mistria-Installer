@@ -6,7 +6,7 @@ Take over a date the moment the player commits to it.
 
 ## Contract
 
-Fires at the top of `run_date(date, npc)` (`Dates.gml`), before the `DateAcceptance` conversation is requested and played and before the NPC is posed. ctx is `{ date, npc }`: `date` is the `Date` enum id, `npc` is the `NpcId`.
+Fires at the top of `run_date(date, npc)` (`Dates.gml`), before the `DateAcceptance` conversation is requested and played and before the NPC is posed. ctx is `{ date, npc }`.
 
 Return a non-`undefined` value to replace `run_date` entirely. The acceptance conversation and NPC posing are skipped, and your value becomes `run_date`'s return (return `true` for a handled date).
 
@@ -17,13 +17,13 @@ Return `undefined` to defer to the engine's normal handling.
 | | |
 | --- | --- |
 | **Fires** | At the top of `run_date(date, npc)`, before the acceptance conversation and NPC posing. |
-| **ctx** | `{ date, npc }`, the `Date` id and the `NpcId`. |
+| **ctx** | `{ date, npc }` |
 | **Kind contract** | Claim-scoped: many mods may register; return `undefined` for dates you do not own. The first non-`undefined` value replaces the engine's behavior. |
 
-### The ctx parameter
+### The ctx struct
 
-- `ctx.date` - the `Date` enum id (index into `DATES`).
-- `ctx.npc` - the `NpcId` of the date partner.
+- `date` - the `Date` enum id (index into `DATES`).
+- `npc` - the `NpcId` of the date partner.
 
 ## Usage
 

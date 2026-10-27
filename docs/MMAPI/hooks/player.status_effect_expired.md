@@ -6,7 +6,7 @@ Know the moment a status effect runs out.
 
 ## Contract
 
-Fires in `StatusEffectManager.update()` when an effect's finish time lapses, right after the effect is removed from the manager. ctx is `{ type, effect, manager }`: `type` is the `StatusEffectId` map key, `effect` is the removed struct (`{ type, amount, start, finish, stacks, last_update }`), `manager` is the `StatusEffectManager`.
+Fires in `StatusEffectManager.update()` when an effect's finish time lapses, right after the effect is removed from the manager. ctx is `{ type, effect, manager }`.
 
 Disjoint from [player.status_effect_cancel](player.status_effect_cancel.md): natural expiry never calls `cancel()`, and `cancel()` never reaches this branch. The manager class is shared with monsters (`par_monster`), so monster-owned expiries fire too. Compare `ctx.manager` against `ARI.status_effects` to scope to the player.
 

@@ -6,7 +6,7 @@ Change whether a shrine entry counts as already bought.
 
 ## Contract
 
-Fires at the return of `DragonShrineMenu.entry_is_acquired(entry)`. The filtered value is the boolean the shrine menus use to treat an entry as already bought, which pristine reads straight from `ARI.perks[entry.perk]`. ctx is `{ perk }`, the entry's `Perk` enum id. Return the replacement boolean, or `undefined` to keep the current value.
+Fires at the return of `DragonShrineMenu.entry_is_acquired(entry)`. The filtered value is the boolean the shrine menus use to treat an entry as already bought, which pristine reads straight from `ARI.perks[entry.perk]`. ctx is `{ perk }`. Return the replacement boolean, or `undefined` to keep the current value.
 
 The menu asks this for every tile on the tier screen every frame, and the answer picks the tile's tint, decides whether the entry popup offers the Learn button or the Enable and Disable toggle, and shows or hides the cost. Forcing `false` on an owned perk lets the player buy it again, which spends the essence and runs `Ari.acquire_perk()` as a re-grant. Forcing `true` hides the Learn button without writing `ARI.perks`. The perk's effect is never read through this predicate.
 

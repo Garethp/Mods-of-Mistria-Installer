@@ -9,7 +9,8 @@ Routes each frame's game-seconds advance through the filter chain before it reac
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/TimeSeasons/Clock.gml` |
-| **Locator** | text anchor inside `Clock.update()`: the one-line `side_buffer` advance |
+| **Locator** | text anchor on the one-line `side_buffer` advance inside `Clock.update()` |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`clock.time_advance`](../hooks/clock.time_advance.md) |
 | **Value filtered** | the game-seconds the clock is about to advance this frame |
 | **ctx built** | `self` - the `Clock` struct |

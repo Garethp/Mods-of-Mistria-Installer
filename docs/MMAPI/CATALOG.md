@@ -24,7 +24,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [game.new_day](hooks/game.new_day.md) | event | Know the moment the engine's new-day logic has run, before the end-of-day autosave. |
 | [game.room_changed](hooks/game.room_changed.md) | event | Know when the player has landed in a different room. |
 | [game.room_transition_pre](hooks/game.room_transition_pre.md) | event | React to a room transition before it starts, and redirect it. |
-| [game.room_transition_post](hooks/game.room_transition_post.md) | event | Know the moment a room transition has finished, destination settled. |
+| [game.room_transition_post](hooks/game.room_transition_post.md) | event | Know the settled destination of a room transition before the room changes. |
 | [game.save_guard](hooks/game.save_guard.md) | guard | Block a game save before anything is written. |
 | [game.title_entered](hooks/game.title_entered.md) | event | Know when the title screen comes up, at boot or when a session ends. |
 | [save.game_loaded](hooks/save.game_loaded.md) | event | Know the moment a save file starts loading. |
@@ -144,7 +144,7 @@ Each hook has exactly one kind, and each kind has one registration directive. A 
 | [item.display_description](hooks/item.display_description.md) | filter | Reword the description an item's tooltip renders. |
 | [crafting.max_crafts](hooks/crafting.max_crafts.md) | override | Take over how many of a recipe can be crafted. |
 | [crafting.pay_component_costs](hooks/crafting.pay_component_costs.md) | guard | Veto a recipe's material payment, craft for free. |
-| [crafting.component_count](hooks/crafting.component_count.md) | filter | Adjust one recipe component's effective cost - including making crafts instant via a zero duration. |
+| [crafting.component_count](hooks/crafting.component_count.md) | filter | Adjust one recipe component's effective cost, including making crafts instant via a zero duration. |
 
 ### UI, Text, And Presentation
 
@@ -190,7 +190,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [game_clock_tick](seams/game_clock_tick.md) | Emits the every-frame clock tick from the head of `Clock.update()`. |
 | [clock_time_advance](seams/clock_time_advance.md) | Routes each frame's game-seconds advance through the filter chain before it reaches the clock's buffer. |
 | [taxi_room_transition_pre](seams/taxi_room_transition_pre.md) | Builds the room-transition ctx at the head of `taxi_player()` and writes handler edits back onto the itinerary. |
-| [taxi_room_transition_post](seams/taxi_room_transition_post.md) | Re-reads the live itinerary at the end of the taxi transition and emits the arrival event. |
+| [taxi_room_transition_post](seams/taxi_room_transition_post.md) | Re-reads the live itinerary at the end of `taxi_player()` and emits the post event with the settled destination. |
 | [game_save_guard](seams/game_save_guard.md) | Puts a veto check at the head of `save_game()`, before anything is written. |
 | [save_game_saving](seams/save_game_saving.md) | Announces an imminent save, right after the engine records the save path. |
 | [save_game_loaded](seams/save_game_loaded.md) | Announces the start of a save load, right after the save path is recorded. |
@@ -269,7 +269,7 @@ The anchored engine edits that make the hooks fire. Mod authors never write seam
 | [npc_receive_gift](seams/npc_receive_gift.md) | Announces every gift the moment an NPC receives it. |
 | [npc_created](seams/npc_created.md) | Emits at the end of `spawn_npc()`, after `initialize` attaches the NPC data and FSM. |
 | [date_run](seams/date_run.md) | Puts a claim-scoped override in front of every player-initiated date. |
-| [date_begin](seams/date_begin.md) | Guards start_date_cutscene inside run_date, after the acceptance conversation. |
+| [date_begin](seams/date_begin.md) | Guards `start_date_cutscene` inside `run_date`, after the acceptance conversation. |
 | [date_cutscene](seams/date_cutscene.md) | Threads the date cutscene name through a filter and into the completion chain. |
 | [date_cutscene_chain_args](seams/date_cutscene_chain_args.md) | Extends the date chain's args so the filtered cutscene name reaches the reward gate. |
 | [date_cooldown](seams/date_cooldown.md) | Threads the date cooldown through a filter before the eligibility scan uses it. |
@@ -400,7 +400,7 @@ Hook-less edits the catalog also carries:
 | [game_stats_seed_on_load](seams/game_stats_seed_on_load.md) | engine fix | Seeds the per-name game-stats structs on every load, so content added after a save was written cannot crash its first stats increment. |
 | [eod_intro_fade_cancel](seams/eod_intro_fade_cancel.md) | engine fix | Keeps the end-of-day menu's intro fade-in chain in a field and clears the field when it fires, so a Next Day tap that lands before the fade-in starts can cancel it. |
 | [eod_prep_cancels_intro_fade](seams/eod_prep_cancels_intro_fade.md) | engine fix | Cancels the stored intro fade-in chain when the player commits to the end of the day, so a tap during the black transition no longer strands the sequence waiting on `is_out()`. |
-| [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation waist, feeding [local.get](hooks/local.get.md) and [local.missing](hooks/local.missing.md). |
+| [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation wrapper, feeding `local.get` and `local.missing`. |
 
 ## Extension Points
 

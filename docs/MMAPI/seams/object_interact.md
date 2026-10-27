@@ -2,7 +2,7 @@
 
 Puts a claim-scoped override in front of every grid-object interaction.
 
-`object_interact` is a **text seam** (override-shaped: it dispatches `mmapi_run_override`). It feeds [object.interact](../hooks/object.interact.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`object_interact` is a **text seam** (`anchor` + `replace`). It feeds [object.interact](../hooks/object.interact.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,7 +10,7 @@ Puts a claim-scoped override in front of every grid-object interaction.
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Data/Grid/GridActions/Interact.gml` |
 | **Locator** | text anchor at the head of `interact(node)` |
-| **Op** | text (override dispatch) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`object.interact`](../hooks/object.interact.md) |
 | **ctx built** | `node` (the grid node being interacted with) |
 | **Marker** | `mmapi_object_interact_override` |

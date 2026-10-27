@@ -6,7 +6,7 @@ Block the descent ladder before it spawns.
 
 ## Contract
 
-Fires at the top of `DungeonRunner.spawn_ladder()`. ctx is `{ runner, x, y }` in tile coordinates. Return `false` to veto the ladder spawn (`spawn_ladder` returns with nothing spawned). Every other return allows.
+Fires at the top of `DungeonRunner.spawn_ladder()`. ctx is `{ runner, x, y }`. Return `false` to veto the ladder spawn (`spawn_ladder` returns with nothing spawned). Every other return allows.
 
 This stops the ladder from existing at all. To let the ladder spawn but stop the player from using it, guard [interact.ladder_down_action](interact.ladder_down_action.md) instead.
 

@@ -9,7 +9,7 @@ Emits once per monster per frame, right after the aggro update.
 | | |
 | --- | --- |
 | **File** | `gml/objects/Combat/par_monster.gml` |
-| **Locator** | pristine context: after `self.aggro = self.patience.aggro();` in the begin step, before `aggro_flipped_this_frame` is computed |
+| **Locator** | pristine context after `self.aggro = self.patience.aggro();` in the begin step, before `aggro_flipped_this_frame` is computed |
 | **Op** | `emit` |
 | **Feeds** | [`monster.step_begin`](../hooks/monster.step_begin.md) |
 | **ctx built** | `self` - the monster instance |

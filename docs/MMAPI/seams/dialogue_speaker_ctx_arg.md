@@ -2,7 +2,7 @@
 
 Threads the ConversationDriver into the initial Speaker action so `dialogue.speaker`'s ctx is filled from line one.
 
-`dialogue_speaker_ctx_arg` is a **text seam** and a **companion edit**: it dispatches nothing itself. It exists for [dialogue.speaker](../hooks/dialogue.speaker.md), whose dispatch lives in [dialogue_speaker](dialogue_speaker.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`dialogue_speaker_ctx_arg` is a **text seam** and a **companion edit**. It dispatches nothing itself. It exists for [dialogue.speaker](../hooks/dialogue.speaker.md), whose dispatch lives in [dialogue_speaker](dialogue_speaker.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 

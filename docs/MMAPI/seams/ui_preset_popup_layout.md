@@ -1,8 +1,8 @@
 # Seam: ui_preset_popup_layout
 
-Rebuilds the preset popup's layout constants through the `ui.preset_popup_layout` filter each time the popup body is generated.
+Rebuilds the preset popup's layout constants through a filter each time the popup body is generated.
 
-`ui_preset_popup_layout` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [ui.preset_popup_layout](../hooks/ui.preset_popup_layout.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`ui_preset_popup_layout` is a **text seam** (`anchor` + `replace`). It feeds [ui.preset_popup_layout](../hooks/ui.preset_popup_layout.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Rebuilds the preset popup's layout constants through the `ui.preset_popup_layout
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/CustomizationMenu.gml` |
 | **Locator** | text anchor on the four layout statics at the top of `generate_preset_popup_body()` |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`ui.preset_popup_layout`](../hooks/ui.preset_popup_layout.md) |
 | **Value filtered** | the struct `{ frame_width, frame_height, columns, rows, spacing }` |
 | **ctx built** | `self`, the CustomizationMenu struct |

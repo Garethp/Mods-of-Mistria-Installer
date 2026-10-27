@@ -6,14 +6,14 @@ Cancel an accepted date after its acceptance conversation, before the cutscene.
 
 ## Contract
 
-Fires inside `run_date(date, npc)` (`Dates.gml`), in the `DateAcceptance` conversation's completion callback. The conversation has already played and its `writes` have applied by then, and `start_date_cutscene(npc, date)` is what runs next. ctx is `{ npc, date }`: `npc` is the `NpcId`, `date` is the `Date` enum id. Return `false` to cancel the accepted date, which skips `start_date_cutscene` so no date cutscene plays. Any other return lets the date begin.
+Fires inside `run_date(date, npc)` (`Dates.gml`), in the `DateAcceptance` conversation's completion callback. The conversation has already played and its `writes` have applied by then, and `start_date_cutscene(npc, date)` is what runs next. ctx is `{ npc, date }`. Return `false` to cancel the accepted date, which skips `start_date_cutscene` so no date cutscene plays. Any other return lets the date begin.
 
 Because it lives in `run_date`'s own body, it only fires when that body runs: a date claimed by a `date.run` override (which replaces `run_date` entirely) never reaches this guard. A `date.run` override that wants to respect the decline can dispatch the guard itself with `mmapi_check_guards("date.begin", { npc, date })` before starting the cutscene.
 
 | | |
 | --- | --- |
 | **Fires** | Inside `run_date`, in the acceptance conversation's completion callback, right before `start_date_cutscene`. |
-| **ctx** | `{ npc, date }` — the `NpcId` and the `Date` enum id. |
+| **ctx** | `{ npc, date }` |
 | **Kind contract** | Only the Boolean value `false` skips the cutscene. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
 ### The ctx struct
@@ -39,12 +39,7 @@ function date_preferences_date_begin(_ctx) {
 mmapi_guard("date.begin", date_preferences_date_begin);
 ```
 
-## Interactions
-
-- A vetoed date has already committed its acceptance writes. Whichever `date_acceptance` entry played is the one whose `writes` applied, even though the date was cancelled. Progression counters advance and the follow-up dialogue arms, so the NPC will reference a date that never happened. Keep a refusal entry's writes to your own facts. See [Have an NPC Refuse a Date](#have-an-npc-refuse-a-date) below for the full pattern.
-- A vetoed date consumes nothing downstream. No `date_history` entry is written, no cooldown begins, and no rewards are granted, so the player can ask again.
-
-## Have an NPC Refuse a Date
+### Have an NPC refuse a date
 
 Three pieces must be implemented together:
 1. A refusal acceptance entry that says no and writes only your own fact.
@@ -102,6 +97,11 @@ mmapi_guard("date.begin", my_mod_date_begin);
 ```
 
 After a refusal, no `date_history` entry is written and no cooldown begins, so the player can ask again. On a day your refusal entry no longer matches, the vanilla acceptance will play as if nothing happened.
+
+## Interactions
+
+- A vetoed date has already committed its acceptance writes. Whichever `date_acceptance` entry played is the one whose `writes` applied, even though the date was cancelled. Progression counters advance and the follow-up dialogue arms, so the NPC will reference a date that never happened. Keep a refusal entry's writes to your own facts. See [Have an NPC Refuse a Date](#have-an-npc-refuse-a-date) below for the full pattern.
+- A vetoed date consumes nothing downstream. No `date_history` entry is written, no cooldown begins, and no rewards are granted, so the player can ask again.
 
 ## Engine Wiring
 

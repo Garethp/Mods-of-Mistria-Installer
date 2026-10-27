@@ -9,7 +9,7 @@ Intercepts `spawn_monster()` so mods can move, replace, or cancel every monster 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Combat/Monsters.gml` |
-| **Locator** | text anchor: the head of `spawn_monster(xx, yy, monster_id)`, before the `MONSTER_PROTOTYPES` lookup |
+| **Locator** | text anchor at the head of `spawn_monster(xx, yy, monster_id)`, before the `MONSTER_PROTOTYPES` lookup |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`monster.spawn`](../hooks/monster.spawn.md) |
 | **Value filtered** | `{ x: xx, y: yy, monster_id: monster_id, cancel: false }` |

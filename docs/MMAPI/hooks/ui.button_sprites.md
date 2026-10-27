@@ -6,7 +6,7 @@ Swap the sprite set a UI button is built from.
 
 ## Contract
 
-Fires when a button sprite set is built, just before it lands in `BUTTON_SPRITE_CACHE`. The filtered value is the built output. ctx is `{ key }`, the cache key. Return the replacement output (the result is cached, so the filter runs once per key), or `undefined` to keep the current value.
+Fires when a button sprite set is built, just before it lands in `BUTTON_SPRITE_CACHE`. The filtered value is the built output. ctx is `{ key }`. Return the replacement output (the result is cached, so the filter runs once per key), or `undefined` to keep the current value.
 
 | | |
 | --- | --- |

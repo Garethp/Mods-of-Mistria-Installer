@@ -6,7 +6,7 @@ Block a tutorial popup before it spawns.
 
 ## Contract
 
-Fires at the top of `spawn_tutorial(tutorial)`, before the tutorial is marked seen and before its popup is built. ctx is `{ tutorial }`, the `Tutorial` enum id. Return `false` to veto the popup (`spawn_tutorial` returns `undefined`). Every other return allows.
+Fires at the top of `spawn_tutorial(tutorial)`, before the tutorial is marked seen and before its popup is built. ctx is `{ tutorial }`. Return `false` to veto the popup (`spawn_tutorial` returns `undefined`). Every other return allows.
 
 A vetoed tutorial stays unmarked in `ARI.tutorials_seen`, so the game offers it again on its next trigger. A handler that wants a tutorial gone for good must veto every time (cheap), or mark it seen itself. The guard sits above the function's own test-suite early return, so it also fires, vacuously, in test-suite runs.
 

@@ -9,7 +9,7 @@ Puts a veto check on the elevator's interaction action, the press that opens the
 | | |
 | --- | --- |
 | **File** | `gml/objects/dungeon/obj_dungeon_elevator.gml` |
-| **Locator** | pristine context: the head of the interaction action closure that spawns `Menu.Elevator` |
+| **Locator** | pristine context at the head of the interaction action closure that spawns `Menu.Elevator` |
 | **Op** | `guard` |
 | **Feeds** | [`interact.elevator_action`](../hooks/interact.elevator_action.md) |
 | **ctx built** | `{ subject: self, key: "dungeon_elevator" }` |

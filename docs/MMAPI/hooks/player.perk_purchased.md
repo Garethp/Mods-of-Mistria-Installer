@@ -6,7 +6,7 @@ Know when the player buys a perk at a shrine.
 
 ## Contract
 
-Fires at the end of `DragonShrineMenu.purchase_entry(entry)`, after the shrine has spent the entry's essence through `Ari.modify_essence()` (so `player.essence_delta` has already run) and after `Ari.acquire_perk()` has run for it (so `player.perk_acquired` has already fired). ctx is `{ perk }`, the `Perk` enum id of the entry the player bought.
+Fires at the end of `DragonShrineMenu.purchase_entry(entry)`, after the shrine has spent the entry's essence through `Ari.modify_essence()` (so `player.essence_delta` has already run) and after `Ari.acquire_perk()` has run for it (so `player.perk_acquired` has already fired). ctx is `{ perk }`.
 
 This hook is observation only. `purchase_entry()` is the one purchase path in the engine, the Learn button of the Caldarus, Seridia, and horse statue shrine menus, so it fires exactly once per confirmed purchase and never for the debug CLI grant, the `ALL_UNLOCKS` loop, or save load.
 

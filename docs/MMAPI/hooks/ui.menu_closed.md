@@ -6,7 +6,7 @@ Know when a menu closes.
 
 ## Contract
 
-Fires when a menu leaves `ANCHOR.open_menus`: in the per-frame free-requested drain, and per menu when the anchor shuts down and closes everything. ctx is `{ menu, kind }`, with `kind` read from `menu.type`.
+Fires when a menu leaves `ANCHOR.open_menus`: in the per-frame free-requested drain, and per menu when the anchor shuts down and closes everything. ctx is `{ menu, kind }`.
 
 At both sites the menu has already been freed (`free()` in the drain, `on_free()` at shutdown) and removed from `open_menus` when the event fires.
 

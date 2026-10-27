@@ -29,10 +29,6 @@ Fires in `create_test_placement_furniture_draw_info()` as the furniture placemen
 > [!NOTE]
 > The preview draws the piece's `top_sprite` and `secondary_sprite` too, but this hook does not filter them. Neither is reachable for a *placed* piece by any hook either, so filtering them only in the preview would make the ghost disagree with the piece the other way around. A future hook covering both sites can add them together.
 
-## Why the ghost needs its own hook
-
-The preview never touches a node renderer. Every frame, `obj_tile_cursor` asks `create_test_placement_furniture_draw_info()` to write the ghost's sprites straight from the prototype into `obj_furniture_previewer`, which draws them and clears them again. Nothing in that path calls `obj_node_renderer.set_sprite()` or `create_furniture_renderer()`, so neither [object.node_sprite](object.node_sprite.md) nor [furniture.floor_sprite](furniture.floor_sprite.md) can reach it. A mod that swaps a placed piece's sprites through those hooks therefore shows the player a ghost that does not match what they are about to place. Registering the same handler here closes that gap. The ghost and the placed piece read their sprites from the same prototype fields, so the asset a handler receives is identical on every hook. A handler that decides by that asset alone works on all three without a branch per hook.
-
 ## Usage
 
 ```gml
@@ -55,6 +51,11 @@ function autumn_stump_furniture_preview_sprite(_value, _ctx) {
 mmapi_filter("furniture.preview_sprite", autumn_stump_furniture_preview_sprite);
 mmapi_filter("furniture.floor_sprite", autumn_stump_furniture_preview_sprite);
 ```
+
+## Interactions
+
+- The preview never touches a node renderer. Every frame, `obj_tile_cursor` asks `create_test_placement_furniture_draw_info()` to write the ghost's sprites straight from the prototype into `obj_furniture_previewer`, which draws them and clears them again. Nothing in that path calls `obj_node_renderer.set_sprite()` or `create_furniture_renderer()`, so neither [object.node_sprite](object.node_sprite.md) nor [furniture.floor_sprite](furniture.floor_sprite.md) can reach it. A mod that swaps a placed piece's sprites through those hooks therefore shows the player a ghost that does not match what they are about to place.
+- Registering the same handler here closes that gap. The ghost and the placed piece read their sprites from the same prototype fields, so the asset a handler receives is identical on every hook. A handler that decides by that asset alone works on all three without a branch per hook.
 
 ## Engine Wiring
 

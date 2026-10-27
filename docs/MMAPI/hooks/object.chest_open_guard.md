@@ -6,7 +6,7 @@ Stop a treasure chest from opening when the player interacts with or slashes it.
 
 ## Contract
 
-Fires just before a treasure chest opens from either of the two paths the player can trigger, the interact press and the sword or Fire Breath slash. It covers every node whose prototype carries a chest. ctx is `{ node, x, y, source }`, with `x` and `y` read from the chest's renderer, which is where the engine spawns its drops, and `source` naming the path as `"interact"` or `"slash"`. Return `false` to veto the open. Each site then exits exactly as its vanilla no-op path would, so the chest does not open, no animation starts, and no drop chain is created. Every other return allows.
+Fires just before a treasure chest opens from either of the two paths the player can trigger, the interact press and the sword or Fire Breath slash. It covers every node whose prototype carries a chest. ctx is `{ node, x, y, source }`. Return `false` to veto the open. Each site then exits exactly as its vanilla no-op path would, so the chest does not open, no animation starts, and no drop chain is created. Every other return allows.
 
 Both sites fire only for unlocked, closed chests. The slash branch checks the lock in its own gate, and `interact()` returns at its head when `can_interact()` fails, which it does for a locked chest, so a locked chest never reaches the interact site. The veto only stops the open. Despawning the node or substituting another effect is the handler's own work. The one other caller of `breakable_open_chest()`, the Mist `chest_unlocked` command that opens the dungeon ladder's linked chest, is not routed through this guard. On the interact path, `interact()` has already flagged `ARI.used_object_today` for the chest before the guard runs, as it does for a vanilla interact on an open chest.
 
@@ -19,7 +19,7 @@ Both sites fire only for unlocked, closed chests. The slash branch checks the lo
 ### The ctx struct
 
 - `node` - the chest's grid node, which carries `node.prototype.chest` (its chest data), `node.is_open`, `node.is_locked`, `node.object_id`, and `node.renderer`.
-- `x`, `y` - the chest's world position, read from `node.renderer`.
+- `x`, `y` - the chest's world position, read from `node.renderer`, which is where the engine spawns its drops.
 - `source` - `"interact"` (a press at the chest) or `"slash"` (a sword swing or the player's Fire Breath).
 
 ## Usage

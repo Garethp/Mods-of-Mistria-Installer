@@ -9,7 +9,7 @@ Filters every status effect's fields at the top of `register()`.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Player/StatusEffectManager.gml` |
-| **Locator** | text anchor: the head of `register(type, amount, start, finish, can_stack=false, show_hud=true)`, before the `effect` struct is built |
+| **Locator** | text anchor at the head of `register(type, amount, start, finish, can_stack=false, show_hud=true)`, before the `effect` struct is built |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`player.status_effect_register`](../hooks/player.status_effect_register.md) |
 | **Value filtered** | `{ type, amount, start_time, finish_time, can_stack, show_hud }` |

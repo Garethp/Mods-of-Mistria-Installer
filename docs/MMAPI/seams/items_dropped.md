@@ -9,7 +9,7 @@ Announces every drop before the items spawn into the world.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Inventory/drop_item.gml` |
-| **Locator** | pristine context: after the `array == undefined` early return, before the spawn loop |
+| **Locator** | pristine context after the `array == undefined` early return, before the spawn loop |
 | **Op** | `emit` |
 | **Feeds** | [`items.dropped`](../hooks/items.dropped.md) |
 | **ctx built** | `{ value: value, items: array, x: xx, y: yy, z_offset: z_offset }` |

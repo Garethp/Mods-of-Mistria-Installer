@@ -9,7 +9,7 @@ Sets the flat draw kind on the monster status overlay and defaults status partic
 | | |
 | --- | --- |
 | **File** | `gml/objects/Combat/par_monster.gml` |
-| **Locator** | text anchor: the three lines in `create()` that build `status_blender` and seed `status_cap` and `status_particles` |
+| **Locator** | text anchor on the three lines in `create()` that build `status_blender` and seed `status_cap` and `status_particles` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_monster_status_overlay` |
 

@@ -15,7 +15,7 @@ Fires in `VitalsMenu.refresh_statuses()`, in the switch's default arm, for a sta
 | **ctx** | The `StatusEffectId` ordinal of the effect. |
 | **Kind contract** | The callback receives the current value and returns a replacement, or `undefined` to keep the current value. |
 
-### The ctx value
+### The ctx parameter
 
 ctx is a plain ordinal rather than a struct. Compare it against your own id from the generated registry, `mmapi_ext_id("status_effect", "<symbol>")`, and return `undefined` for every other effect.
 

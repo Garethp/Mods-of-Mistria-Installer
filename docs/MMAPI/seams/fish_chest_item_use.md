@@ -9,7 +9,7 @@ Lets a fiddle item declaring `fish_chest` take `ItemUse.OpenChest`, carrying its
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Items/Items.gml` |
-| **Locator** | text anchor: the OpenChest branch of the use-assignment chain in `create_item_prototypes` |
+| **Locator** | text anchor on the OpenChest branch of the use-assignment chain in `create_item_prototypes` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_fish_chest_item_use` |
 

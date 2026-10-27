@@ -9,8 +9,8 @@ Filters the signed stamina delta before the stamina cost modifier applies.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Player/Ari.gml` |
-| **Locator** | pristine context: the head of `modify_stamina(amount_to_add)`, before the `set_stamina` line |
-| **Op** | `filter` (`try_catch = false`) |
+| **Locator** | pristine context at the head of `modify_stamina(amount_to_add)`, before the `set_stamina` line |
+| **Op** | `filter` |
 | **Feeds** | [`player.stamina_delta`](../hooks/player.stamina_delta.md) |
 | **Value filtered** | `amount_to_add` - the signed stamina delta |
 | **ctx built** | `{ player: self }` |

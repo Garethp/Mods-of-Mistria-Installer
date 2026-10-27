@@ -2,7 +2,7 @@
 
 Hands each crafting-grid icon node to mods as the menu builds.
 
-`ui_item_node_crafting_menu` is a **template seam** (`op = "filter_call"`, in-place: dispatch called, return discarded). It feeds [ui.item_node](../hooks/ui.item_node.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`ui_item_node_crafting_menu` is a **template seam** (`op = "filter_call"`). It feeds [ui.item_node](../hooks/ui.item_node.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,7 +10,7 @@ Hands each crafting-grid icon node to mods as the menu builds.
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/CraftingMenu.gml` |
 | **Locator** | pristine context in the crafting grid build, after `icon.set_sprite(item.get_ui_icon());` and before `square.set_tap_callback(...)` |
-| **Op** | `filter_call` (in-place) |
+| **Op** | `filter_call` |
 | **Feeds** | [`ui.item_node`](../hooks/ui.item_node.md) |
 | **Value filtered** | `{ node: icon, item: item, count: 1, source: "crafting_menu" }` - the struct rides in the value position |
 | **Marker** | `__mmapi_crafting_item_node_filter` |

@@ -23,10 +23,9 @@ The textbox close takes one of two branches. A textbox in the `Hidden` or `Trans
 
 Every driver that finishes passes through this method. `proceed_conversation()` calls it when the current line's next line behavior is `Finish`, or when the prompt the player picked finished the conversation. The cutscene runtime calls it from `Mist.clean_up_scene()` (directly on a skip, and through `proceed_conversation()` otherwise) and from the `set_conversation` script function, which finishes the scene's current driver before it builds the next. With zero handlers the seam is behaviorally identical to pristine.
 
-## Edge Cases
+A skipped cutscene closes the textbox with `close(true)` and sets `driver.textbox` to `undefined` before it calls `finish_conversation()`, so the textbox branch is skipped and the emit still fires.
 
-- A skipped cutscene closes the textbox with `close(true)` and sets `driver.textbox` to `undefined` before it calls `finish_conversation()`, so the textbox branch is skipped and the emit still fires.
-- The engine's test suite ends a conversation by closing the textbox and calling `T2R.conversation_end()` itself, without the driver, so that path never reaches this seam.
+The engine's test suite ends a conversation by closing the textbox and calling `T2R.conversation_end()` itself, without the driver, so that path never reaches this seam.
 
 ## See Also
 

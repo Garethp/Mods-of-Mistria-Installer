@@ -9,8 +9,8 @@ Filters the signed mana delta at the top of `Ari.modify_mana()`.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Player/Ari.gml` |
-| **Locator** | pristine context: the head of `modify_mana(amount_to_add)`, before the `get_mana`/`set_mana` lines |
-| **Op** | `filter` (`try_catch = false`) |
+| **Locator** | pristine context at the head of `modify_mana(amount_to_add)`, before the `get_mana`/`set_mana` lines |
+| **Op** | `filter` |
 | **Feeds** | [`player.mana_delta`](../hooks/player.mana_delta.md) |
 | **Value filtered** | `amount_to_add` - the signed mana delta |
 | **ctx built** | `{ player: self }` |

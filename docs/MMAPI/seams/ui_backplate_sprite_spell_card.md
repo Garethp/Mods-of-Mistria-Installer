@@ -2,7 +2,7 @@
 
 Routes each spell card's backplate sprite through a filter.
 
-`ui_backplate_sprite_spell_card` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [ui.backplate_sprite](../hooks/ui.backplate_sprite.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`ui_backplate_sprite_spell_card` is a **text seam** (`anchor` + `replace`). It feeds [ui.backplate_sprite](../hooks/ui.backplate_sprite.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Routes each spell card's backplate sprite through a filter.
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml` |
 | **Locator** | text anchor on the card's `set_sprite(spr_ui_journal_magic_card_backplate)` call |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`ui.backplate_sprite`](../hooks/ui.backplate_sprite.md) |
 | **Value filtered** | `spr_ui_journal_magic_card_backplate`, the default spell card backplate |
 | **ctx built** | `{ source: "spellcasting_card_backplate", spell: spell }` |

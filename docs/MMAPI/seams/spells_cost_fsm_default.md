@@ -9,7 +9,7 @@ Filters the mana deduction in the player's default cast state.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Player/AriFsm.gml` |
-| **Locator** | text anchor: `ARI.modify_mana(-SPELLS[self.spell].cost);` following `cast_spell(self.spell);`, inside the `did_cast_spell == false && self.spell != CUTSCENE_SPELL_SIGNUM` block |
+| **Locator** | text anchor on `ARI.modify_mana(-SPELLS[self.spell].cost);` following `cast_spell(self.spell);`, inside the `did_cast_spell == false && self.spell != CUTSCENE_SPELL_SIGNUM` block |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`spells.cost`](../hooks/spells.cost.md) |
 | **Value filtered** | `SPELLS[self.spell].cost` - the spell's mana cost |

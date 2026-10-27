@@ -6,7 +6,7 @@ Know the moment a treasure chest starts its drop chain.
 
 ## Contract
 
-Fires in the dungeon breakables logic when a treasure chest starts its drop chain. ctx is `{ node, object_id, x, y }`, with `x` and `y` read from the node renderer. The emit lands right after the chest's timer-led drop chain is created, so the drops themselves have not resolved yet. To change what the chest yields, filter [items.treasure_distribution](items.treasure_distribution.md) instead.
+Fires in the dungeon breakables logic when a treasure chest starts its drop chain. ctx is `{ node, object_id, x, y }`. The emit lands right after the chest's timer-led drop chain is created, so the drops themselves have not resolved yet. To change what the chest yields, filter [items.treasure_distribution](items.treasure_distribution.md) instead.
 
 | | |
 | --- | --- |

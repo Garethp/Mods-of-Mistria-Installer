@@ -1,6 +1,6 @@
 # Engine Fix: save_load_pet_items_tolerance
 
-Lets a save load when the pet's queued drop items include a since-removed custom item. Unknown items are dropped from the queue with a logged warn instead of the load aborting.
+Unknown items queued on the pet are dropped with a warn instead of aborting the load.
 
 `save_load_pet_items_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. See [Seams](../SEAMS.md).
 

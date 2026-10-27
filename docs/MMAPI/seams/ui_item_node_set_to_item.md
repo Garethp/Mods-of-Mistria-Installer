@@ -2,7 +2,7 @@
 
 Hands every populated UI item node to mods, right after its icon is set.
 
-`ui_item_node_set_to_item` is a **template seam** (`op = "filter_call"`, in-place: dispatch called, return discarded). It feeds [ui.item_node](../hooks/ui.item_node.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`ui_item_node_set_to_item` is a **template seam** (`op = "filter_call"`). It feeds [ui.item_node](../hooks/ui.item_node.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,7 +10,7 @@ Hands every populated UI item node to mods, right after its icon is set.
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/anchor_utils.gml` |
 | **Locator** | pristine context inside `item_node.set_to_item(item, count)`, after `self.set_sprite(item.get_ui_icon())` and before the `if count <= 1` count-label branch |
-| **Op** | `filter_call` (in-place) |
+| **Op** | `filter_call` |
 | **Feeds** | [`ui.item_node`](../hooks/ui.item_node.md) |
 | **Value filtered** | `{ node: self, item: item, count: count }` - the struct rides in the value position |
 | **Marker** | `mmapi_ui_run_item_node_filters` |

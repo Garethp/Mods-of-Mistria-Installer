@@ -17,15 +17,13 @@ The result is the one number the receipt and the checkout read. It sets the rece
 | **ctx** | `{ menu }` |
 | **Kind contract** | The callback receives the current value and returns a replacement, or `undefined` to keep the current value. |
 
-### The ctx struct
-
-- `menu` - the `StoreMenu`. `menu.store.id` is the `Store` id, `menu.basket` is the `Inventory` cart, and `menu.price_markup` is the store's markup.
-
-### What the value does not cover
-
 - Per-item shelf labels, the store tooltip price, and the purchase stat's cost read `store_value()` per item. [items.store_price](items.store_price.md) covers those.
 - A return of exactly 0 locks the Buy button, because the gate requires a positive total.
 - `set_gold` floors and truncates the charge, but the receipt shows the returned number as is. Return an integer.
+
+### The ctx struct
+
+- `menu` - the `StoreMenu`. `menu.store.id` is the `Store` id, `menu.basket` is the `Inventory` cart, and `menu.price_markup` is the store's markup.
 
 ## Usage
 

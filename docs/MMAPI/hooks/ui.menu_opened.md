@@ -6,7 +6,7 @@ Know the moment a menu opens.
 
 ## Contract
 
-Fires right after `ANCHOR` spawns a menu and pushes it onto `open_menus`. ctx is `{ menu, kind }`, with `kind` being the menu id passed to `spawn`.
+Fires right after `ANCHOR` spawns a menu and pushes it onto `open_menus`. ctx is `{ menu, kind }`.
 
 | | |
 | --- | --- |

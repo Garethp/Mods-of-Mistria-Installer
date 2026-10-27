@@ -9,7 +9,7 @@ Emits once per monster per frame, after the engine's last renderable write of th
 | | |
 | --- | --- |
 | **File** | `gml/objects/Combat/par_monster.gml` |
-| **Locator** | pristine context: after `self.status_blender.x_scale = self.image_xscale;`, the last line of the end step, before `animation_end:` |
+| **Locator** | pristine context after `self.status_blender.x_scale = self.image_xscale;`, the last line of the end step, before `animation_end:` |
 | **Op** | `emit` |
 | **Feeds** | [`monster.step_end`](../hooks/monster.step_end.md) |
 | **ctx built** | `self` - the monster instance |

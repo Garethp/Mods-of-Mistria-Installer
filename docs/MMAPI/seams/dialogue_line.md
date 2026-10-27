@@ -2,7 +2,7 @@
 
 Filters each localized dialogue line before the textbox shows it.
 
-`dialogue_line` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [dialogue.line](../hooks/dialogue.line.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`dialogue_line` is a **text seam** (`anchor` + `replace`). It feeds [dialogue.line](../hooks/dialogue.line.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Filters each localized dialogue line before the textbox shows it.
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml` |
 | **Locator** | text anchor on the whole body of `deliver_line(line)` |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`dialogue.line`](../hooks/dialogue.line.md) |
 | **Value filtered** | `line.local`, the localized line text |
 | **ctx built** | `{ driver: self, line: line, conversation_name: self.conversation_name, npc_id: self.npc_owner, speaker: self.textbox.requested_speaker, is_info_line: self.is_info_line }` |

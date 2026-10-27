@@ -6,7 +6,7 @@ Know what is about to drop into the world.
 
 ## Contract
 
-Fires in `drop_item()` before the dropped items spawn into the world. ctx is `{ value, items, x, y, z_offset }`, where `items` is the array of items to drop and `value` is the original drop argument.
+Fires in `drop_item()` before the dropped items spawn into the world. ctx is `{ value, items, x, y, z_offset }`.
 
 | | |
 | --- | --- |

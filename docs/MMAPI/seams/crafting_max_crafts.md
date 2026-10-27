@@ -2,7 +2,7 @@
 
 Puts an override in front of the craft-count ceiling before the engine computes it.
 
-`crafting_max_crafts` is a **text seam** (override-shaped: it dispatches `mmapi_run_override`). It feeds [crafting.max_crafts](../hooks/crafting.max_crafts.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`crafting_max_crafts` is a **text seam** (`anchor` + `replace`). It feeds [crafting.max_crafts](../hooks/crafting.max_crafts.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,7 +10,7 @@ Puts an override in front of the craft-count ceiling before the engine computes 
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/CraftingMenu.gml` |
 | **Locator** | text anchor at the head of `CraftingMenu.maximum_crafts(item)` |
-| **Op** | text (override dispatch) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`crafting.max_crafts`](../hooks/crafting.max_crafts.md) |
 | **ctx built** | `{ menu: self, item: item }` |
 | **Marker** | `mmapi_crafting_max_crafts_override` |

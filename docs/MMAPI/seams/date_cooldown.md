@@ -10,7 +10,7 @@ Threads the date cooldown through a filter before the eligibility scan uses it.
 | --- | --- |
 | **File** | `gml/scripts/Dates.gml` |
 | **Locator** | text anchor from the head of `ari_eligible_for_date(npc, time_to_check)` through the history comparison |
-| **Op** | text (filter dispatch) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`date.cooldown`](../hooks/date.cooldown.md) |
 | **Value filtered** | the cooldown in game seconds, defaulting to `days(6)` |
 | **ctx built** | `{ npc: npc, time_to_check: time_to_check }` |

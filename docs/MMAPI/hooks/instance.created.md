@@ -64,7 +64,7 @@ The `local_key` argument labels the button prompt through the localizer, and the
 
 The condition in the example gates the prompt on what Ari is holding, so it appears only while an Ancient Gold Coin is held and never competes with the fountain's own `Interact` prompt. The action consumes the coin through `ARI.inventory.remove(item_id, count)`.
 
-### Available Inputs
+### Available inputs
 
 The table below describes each usable input's availability for a mod interaction on a watched object.
 

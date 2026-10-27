@@ -1,6 +1,6 @@
 # Engine Fix: save_load_infusion_tolerance
 
-Lets a save load when an item carries a since-removed custom infusion. The infusion is dropped from the item with a logged warn instead of the load aborting.
+An item's unknown infusion is dropped with a warn instead of aborting the load.
 
 `save_load_infusion_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. See [Seams](../SEAMS.md).
 

@@ -9,7 +9,7 @@ Counts a `tag` component's stock through the inventory's own tag helper, in the 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Recipe.gml` |
-| **Locator** | text anchor: the Tag case of `maximum_fulfillment_for_component` |
+| **Locator** | text anchor on the Tag case of `maximum_fulfillment_for_component` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_recipe_tag_fulfillment` |
 

@@ -9,7 +9,7 @@ Pays a `tag` component's quantity-scaled cost through the inventory's own tag he
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Recipe.gml` |
-| **Locator** | text anchor: the Tag case of `pay_component_costs`, from the case label through its closing `break` |
+| **Locator** | text anchor on the Tag case of `pay_component_costs`, from the case label through its closing `break` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_recipe_tag_payment` |
 

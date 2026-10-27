@@ -9,7 +9,7 @@ Passes the tarball's real fire flag to its grid chop, so non-fire chops stop bei
 | | |
 | --- | --- |
 | **File** | `gml/objects/Combat/obj_damage_tarball.gml` |
-| **Locator** | text anchor: the `chop_node(...)` call in the `can_chop_grid_objects` block, plus the fire-sound check that follows it |
+| **Locator** | text anchor on the `chop_node(...)` call in the `can_chop_grid_objects` block, plus the fire-sound check that follows it |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_tarball_chop_burn_flag` |
 

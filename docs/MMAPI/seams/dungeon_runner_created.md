@@ -1,6 +1,6 @@
 # Seam: dungeon_runner_created
 
-Emits the origin of a dungeon run, after its `DungeonRunner` is constructed and before the first floor loads.
+Emits the birth of a dungeon run, after `DUNGEON_RUNNER` is constructed and before the first floor loads.
 
 `dungeon_runner_created` is a **text seam** (`anchor` + `replace`). It feeds [dungeon.runner_created](../hooks/dungeon.runner_created.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
@@ -9,7 +9,8 @@ Emits the origin of a dungeon run, after its `DungeonRunner` is constructed and 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Dungeon/enter_dungeon.gml` |
-| **Locator** | text anchor: the whole `enter_dungeon()` function body |
+| **Locator** | text anchor on the whole `enter_dungeon()` function body |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`dungeon.runner_created`](../hooks/dungeon.runner_created.md) |
 | **ctx built** | `{ runner, floor, biome, room_id, grid, level, gm_room, impl }` - field-by-field, per-field `try`/`catch` |
 | **Marker** | `mmapi_dungeon_run_runner_created` |

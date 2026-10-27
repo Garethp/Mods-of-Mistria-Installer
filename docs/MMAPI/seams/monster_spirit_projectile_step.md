@@ -9,7 +9,7 @@ Puts a destroy-on-veto check into the spirit projectile's step.
 | | |
 | --- | --- |
 | **File** | `gml/objects/Combat/obj_monster_spirit_projectile.gml` |
-| **Locator** | pristine context: in the step, after the block that starts the projectile's loop sound (`SoundEffects/Enemies/FlameSprite/ProjectileLoop`), before `if self.image_alpha < 1 {` |
+| **Locator** | pristine context in the step, after the block that starts the projectile's loop sound (`SoundEffects/Enemies/FlameSprite/ProjectileLoop`), before `if self.image_alpha < 1 {` |
 | **Op** | `guard` |
 | **Feeds** | [`monster.spirit_projectile.step`](../hooks/monster.spirit_projectile.step.md) |
 | **ctx built** | `self` - the projectile instance |

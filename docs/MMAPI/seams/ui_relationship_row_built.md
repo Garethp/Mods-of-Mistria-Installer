@@ -2,7 +2,7 @@
 
 Hands each finished NPC row to mods as the relationships journal builds its list.
 
-`ui_relationship_row_built` is a **text seam**. It feeds [ui.relationship_row_built](../hooks/ui.relationship_row_built.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`ui_relationship_row_built` is a **text seam** (`anchor` + `replace`). It feeds [ui.relationship_row_built](../hooks/ui.relationship_row_built.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Hands each finished NPC row to mods as the relationships journal builds its list
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/RelationshipsMenu.gml` |
 | **Locator** | text anchor on the row loop's trailing gift checkbox chain |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`ui.relationship_row_built`](../hooks/ui.relationship_row_built.md) |
 | **ctx built** | `{ menu, element, npc_id, npc, portrait, hearts, bar, talk_icon, talk_check, gift_icon, gift_check }` |
 | **Marker** | `mmapi_ui_relationship_row_built` |

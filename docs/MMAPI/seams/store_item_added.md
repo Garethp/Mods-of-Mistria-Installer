@@ -2,7 +2,7 @@
 
 Announces every shelf tap that puts an item in the shopping basket.
 
-`store_item_added` is a **text seam** (emit-shaped: it dispatches `mmapi_emit`). It feeds [store.item_added](../hooks/store.item_added.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`store_item_added` is a **text seam** (`anchor` + `replace`). It feeds [store.item_added](../hooks/store.item_added.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,7 +10,7 @@ Announces every shelf tap that puts an item in the shopping basket.
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/StoreMenu.gml` |
 | **Locator** | text anchor right after `self.basket.add(item);` at the shelf-tap site |
-| **Op** | text (emit dispatch) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`store.item_added`](../hooks/store.item_added.md) |
 | **ctx built** | `{ menu: self, item: item }` |
 | **Marker** | `mmapi_store_run_item_added` |

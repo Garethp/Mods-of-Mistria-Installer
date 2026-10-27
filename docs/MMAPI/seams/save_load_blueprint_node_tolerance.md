@@ -1,6 +1,6 @@
 # Engine Fix: save_load_blueprint_node_tolerance
 
-Lets a save load when a placed construction ghost references a since-removed custom blueprint. The whole node is skipped with a logged warn instead of the load aborting.
+A construction node for an unknown blueprint is skipped with a warn instead of aborting the load.
 
 `save_load_blueprint_node_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. See [Seams](../SEAMS.md).
 

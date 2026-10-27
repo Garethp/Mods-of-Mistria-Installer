@@ -1,8 +1,8 @@
 # Engine Fix: save_load_renown_item_tolerance
 
-Parser half of the renown tolerance pair. A pending museum donation of a since-removed custom item is dropped with a logged warn instead of the load aborting.
+A pending museum donation of an unknown item is dropped with a warn instead of aborting the load.
 
-`save_load_renown_item_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. See [Seams](../SEAMS.md).
+`save_load_renown_item_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. It is the parser half of the renown tolerance pair, with [save_load_renown_list_tolerance](save_load_renown_list_tolerance.md) as the caller half that rebuilds the list without the entries this edit drops. See [Seams](../SEAMS.md).
 
 ## Placement
 

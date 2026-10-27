@@ -6,7 +6,7 @@ Know the moment a dungeon run begins.
 
 ## Contract
 
-Fires in `enter_dungeon()` after the run's `DungeonRunner` is constructed, before the goto to the first level's room. ctx is `{ runner, floor, biome, room_id, grid, level, gm_room, impl }`, and each field is filled best-effort. Every read is wrapped on its own, and a failed read leaves that field absent from the struct.
+Fires in `enter_dungeon()` after the run's `DungeonRunner` is constructed, before the goto to the first level's room. ctx is `{ runner, floor, biome, room_id, grid, level, gm_room, impl }`.
 
 At emit time the runner is **not yet installed** as `DUNGEON_RUNNER`. The engine hands it to the queued room transition, and the global is assigned as that transition departs. Read the runner from ctx, not from the global.
 
@@ -17,7 +17,7 @@ This is the first event of the dungeon sequence, firing once per `enter_dungeon(
 | | |
 | --- | --- |
 | **Fires** | In `enter_dungeon()`, after the run's `DungeonRunner` is constructed and before the goto to the first level's room. |
-| **ctx** | `{ runner, floor, biome, room_id, grid, level, gm_room, impl }` - each field filled best-effort. |
+| **ctx** | `{ runner, floor, biome, room_id, grid, level, gm_room, impl }` |
 | **Kind contract** | The callback observes the moment. Its return value is ignored. |
 
 ### The ctx struct

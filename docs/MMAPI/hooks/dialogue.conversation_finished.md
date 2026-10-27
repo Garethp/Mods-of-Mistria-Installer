@@ -16,14 +16,7 @@ This hook is observation only. Every entry in `end_actions` has already run, so 
 | **ctx** | `{ driver, conversation_name, npc_id, end_actions }` |
 | **Kind contract** | The callback observes the moment. Its return value is ignored. |
 
-### The ctx struct
-
-- `driver` - the `ConversationDriver` that finished. `driver.state` reads `ConversationDriverState.Finished`, and `driver.prompt_index_selected` is the index of the last prompt the player picked, or `undefined` when no prompt was answered.
-- `conversation_name` - the full t2 conversation name inside `assets/t2`, of the form `<folder>/<file>/<table>`. For example, `Conversations/General Dialogue/time_of_day/early_morning_summer`. For a driver `play_conversation()` built, this is the path after the `dialogue.path` filter.
-- `npc_id` - the driver's `npc_owner`, the NPC the conversation was started for. When talking to an NPC, it is the NPC the player spoke to. The game generally uses `NpcId.Caldarus` for object inspect lines and `NpcId.Adeline` for cutscene conversations as defaults.
-- `end_actions` - the array of `T2Action` structs that `T2R.conversation_end()` returned, possibly empty. Each entry has already run.
-
-### The drivers that fire
+The drivers that reach this hook, and how often each one fires.
 
 | Driver | Fires |
 | --- | --- |
@@ -33,7 +26,12 @@ This hook is observation only. Every entry in `end_actions` has already run, so 
 | The debug CLI's `conversation` command | Once, with whatever `npc_id` the command named. |
 | A driver dropped before it finishes | Never. |
 
-### The end_actions array
+### The ctx struct
+
+- `driver` - the `ConversationDriver` that finished. `driver.state` reads `ConversationDriverState.Finished`, and `driver.prompt_index_selected` is the index of the last prompt the player picked, or `undefined` when no prompt was answered.
+- `conversation_name` - the full t2 conversation name inside `assets/t2`, of the form `<folder>/<file>/<table>`. For example, `Conversations/General Dialogue/time_of_day/early_morning_summer`. For a driver `play_conversation()` built, this is the path after the `dialogue.path` filter.
+- `npc_id` - the driver's `npc_owner`, the NPC the conversation was started for. When talking to an NPC, it is the NPC the player spoke to. The game generally uses `NpcId.Caldarus` for object inspect lines and `NpcId.Adeline` for cutscene conversations as defaults.
+- `end_actions` - the array of `T2Action` structs that `T2R.conversation_end()` returned, possibly empty. Each entry has already run.
 
 `T2R.conversation_end()` returns two things.
 

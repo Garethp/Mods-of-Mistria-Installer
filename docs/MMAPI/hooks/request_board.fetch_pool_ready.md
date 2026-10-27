@@ -17,7 +17,7 @@ ctx is `{ year, season, day, is_crown_quest_day, final_pool }`. The date fields 
 | --- | --- |
 | **Fires** | At the end of `create_request_board()`, after the final retain pass, before the board list is returned. Once per board build. |
 | **ctx** | `{ year, season, day, is_crown_quest_day, final_pool }` |
-| **Kind contract** | Every handler runs. Return values are ignored. |
+| **Kind contract** | The callback observes the moment. Its return value is ignored. |
 
 ### The ctx struct
 

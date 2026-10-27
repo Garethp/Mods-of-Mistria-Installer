@@ -9,7 +9,7 @@ Puts an override at the head of `cast_spell()` that can consume the whole cast.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Spells.gml` |
-| **Locator** | text anchor: the head of `cast_spell(spell)` |
+| **Locator** | text anchor at the head of `cast_spell(spell)` |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`spells.cast`](../hooks/spells.cast.md), [`spells.cast_done`](../hooks/spells.cast_done.md) |
 | **ctx built** | `spell` - the spell id |

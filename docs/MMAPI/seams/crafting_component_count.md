@@ -12,6 +12,7 @@ Filters every crafting cost read by wrapping the component-count resolver.
 | **Locator** | structural target: the `get_modified_component_count(component, context, item_id)` function |
 | **Op** | `wrap` |
 | **Feeds** | [`crafting.component_count`](../hooks/crafting.component_count.md) |
+| **Value filtered** | the count `get_modified_component_count()` returns for one recipe component |
 | **ctx built** | `{ component: component, context: context, item_id: item_id }` |
 | **Marker** | `mmapi_crafting_component_count` |
 

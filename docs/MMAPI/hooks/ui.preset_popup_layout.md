@@ -15,7 +15,7 @@ Fires each time the customization menu generates its preset popup body, on popup
 | **ctx** | The CustomizationMenu struct. |
 | **Kind contract** | The callback receives the current value and returns a replacement, or `undefined` to keep the current value. |
 
-### The layout struct
+### The value struct
 
 - `frame_width` - width of each preset frame in pixels (engine value 46). Also centers Ari inside its frame.
 - `frame_height` - height of each preset frame in pixels (engine value 47).

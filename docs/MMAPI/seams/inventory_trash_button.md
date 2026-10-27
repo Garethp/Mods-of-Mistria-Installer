@@ -9,7 +9,7 @@ Announces a journal-inventory trash tap while the slot still holds the item.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/PlayerMenu.gml` |
-| **Locator** | pristine context: the top of the trash button's `set_tap_callback`, before the Shift-checked `drain()`/`pop()` block |
+| **Locator** | pristine context at the top of the trash button's `set_tap_callback`, before the Shift-checked `drain()`/`pop()` block |
 | **Op** | `emit` |
 | **Feeds** | [`items.trashed`](../hooks/items.trashed.md) |
 | **ctx built** | `{ item: self.inventory.hand.slot(0).item, count: keyboard_check(vk_shift) ? self.inventory.hand.slot(0).count : 1 }` |

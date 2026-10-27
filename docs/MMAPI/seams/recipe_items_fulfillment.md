@@ -9,7 +9,7 @@ Sums a list component's stock across every listed id, in the player's inventory 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Recipe.gml` |
-| **Locator** | text anchor: the Item case of `maximum_fulfillment_for_component` |
+| **Locator** | text anchor on the Item case of `maximum_fulfillment_for_component` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_recipe_items_fulfillment` |
 

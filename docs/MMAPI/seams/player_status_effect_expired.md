@@ -9,7 +9,7 @@ Emits inside `update()`'s expiry branch, right after the effect is removed.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Player/StatusEffectManager.gml` |
-| **Locator** | pristine context: inside `update()`'s `if now >= effect.finish {` branch, after `self.effects.remove(i);`, before the `continue` |
+| **Locator** | pristine context inside `update()`'s `if now >= effect.finish {` branch, after `self.effects.remove(i);`, before the `continue` |
 | **Op** | `emit` |
 | **Feeds** | [`player.status_effect_expired`](../hooks/player.status_effect_expired.md) |
 | **ctx built** | `{ type: i, effect: effect, manager: self }` |

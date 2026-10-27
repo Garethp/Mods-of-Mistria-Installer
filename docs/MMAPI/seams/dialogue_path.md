@@ -2,7 +2,7 @@
 
 Rebuilds `play_conversation()`'s four arguments through the `dialogue.path` filter.
 
-`dialogue_path` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [dialogue.path](../hooks/dialogue.path.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`dialogue_path` is a **text seam** (`anchor` + `replace`). It feeds [dialogue.path](../hooks/dialogue.path.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Rebuilds `play_conversation()`'s four arguments through the `dialogue.path` filt
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Dialogue/ConversationDriver.gml` |
 | **Locator** | text anchor at the head of `play_conversation(npc_id, path, close_callback, args)` |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`dialogue.path`](../hooks/dialogue.path.md) |
 | **Value filtered** | the struct `{ npc_id, path, close_callback, args }` |
 | **ctx built** | `undefined` |

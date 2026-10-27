@@ -105,7 +105,7 @@ function arena_mod_on_monster_death(_ctx) {
 
 ### `mmapi_debug_register_fn(name, fn, opts)`
 
-Publishes a function to the debugger's call surface, so the client can invoke it by name. `opts` is `{ mod_name, description, args }`, where `args` is an array of `{ name, type, default }` descriptors so the client can render a typed argument form.
+Publishes a function to the debugger's call surface, so the client can invoke it by name. `opts` is `{ mod_name, description, args }`, where `args` is an array of `{ name, type, default }` descriptors so the client can render a typed argument form. `default` is a reserved word in the engine's parser, so it cannot appear as a bare key in a struct literal. Build the descriptor without it and set the field through the string accessor, as the example does.
 
 ```gml
 function warp_kit_debug_warp(_location) {
@@ -114,9 +114,12 @@ function warp_kit_debug_warp(_location) {
     }
 }
 
+var _location_arg = { name: "location", type: "string" };
+_location_arg[$ "default"] = "town";
+
 mmapi_debug_register_fn("warp_kit.warp", warp_kit_debug_warp, {
     description: "Warp the player to a named location",
-    args: [{ name: "location", type: "string", default: "town" }],
+    args: [_location_arg],
 });
 ```
 

@@ -6,7 +6,7 @@ Know when an item lands in the shopping basket.
 
 ## Contract
 
-Fires in `StoreMenu` right after a shelf tap adds an item to the shopping basket (`self.basket.add(item)`), before the ghost and price update. ctx is `{ menu, item }`: `menu` is the `StoreMenu` (`menu.basket` is the `Inventory` cart with `.can_add(item)`/`.add(item)`, `menu.update_prices()` refreshes the totals), `item` is the `LiveItem` just added.
+Fires in `StoreMenu` right after a shelf tap adds an item to the shopping basket (`self.basket.add(item)`), before the ghost and price update. ctx is `{ menu, item }`.
 
 Adding more from a handler via `menu.basket.add` does not re-fire this event (the emit is at the tap site, not at `basket.add`), so no re-entry guard is needed: a bulk-buy handler can add extra copies freely.
 

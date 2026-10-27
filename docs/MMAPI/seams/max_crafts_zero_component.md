@@ -9,7 +9,7 @@ Skips zero-cost components in the craft-ceiling loop, mirroring the zero guard t
 | | |
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/CraftingMenu.gml` |
-| **Locator** | text anchor: the Item-component loop inside `maximum_crafts(item)` |
+| **Locator** | text anchor on the Item-component loop inside `maximum_crafts(item)` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_max_crafts_zero_component` |
 

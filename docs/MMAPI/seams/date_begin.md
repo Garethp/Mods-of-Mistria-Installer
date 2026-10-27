@@ -2,7 +2,7 @@
 
 Guards `start_date_cutscene` inside `run_date`, after the acceptance conversation.
 
-`date_begin` is a **text seam** (guard-shaped: it dispatches `mmapi_check_guards`). It feeds [date.begin](../hooks/date.begin.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`date_begin` is a **text seam** (`anchor` + `replace`). It feeds [date.begin](../hooks/date.begin.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,9 +10,10 @@ Guards `start_date_cutscene` inside `run_date`, after the acceptance conversatio
 | --- | --- |
 | **File** | `gml/scripts/Dates.gml` |
 | **Locator** | text anchor on the `play_conversation` callback in `run_date(date, npc)` |
-| **Op** | text (guard dispatch) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`date.begin`](../hooks/date.begin.md) |
 | **ctx built** | `{ npc: npc, date: date }` |
+| **On veto** | `return;` |
 | **Marker** | `mmapi_date_begin_guards` |
 
 ## The Edit

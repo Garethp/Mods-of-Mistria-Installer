@@ -453,7 +453,9 @@ function __mmapi_debug_apply_set(path, value) {
 //   { mod_name }    attribution, defaulting to the current mod.
 //   { description } one-line summary surfaced in the Call Lab.
 //   { args }        array of { name, type, default } arg descriptors, so the
-//                   client can render a typed argument form.
+//                   client can render a typed argument form. `default` is a
+//                   reserved word in the parser, so a mod sets it through
+//                   _arg[$ "default"] rather than as a bare struct key.
 // description and args are published in state.json.functions, the catalog. The
 // `fn` method itself is never serialized.
 function mmapi_debug_register_fn(name, fn, opts) {

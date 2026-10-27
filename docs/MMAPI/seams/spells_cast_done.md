@@ -9,7 +9,7 @@ Emits at the end of the engine's `cast_spell()`.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Spells.gml` |
-| **Locator** | pristine context: after the cast switch closes (`default: impossible("Unexpected Spell: {Spell}", spell);`), at the very end of `cast_spell()` |
+| **Locator** | pristine context after the cast switch closes (`default: impossible("Unexpected Spell: {Spell}", spell);`), at the very end of `cast_spell()` |
 | **Op** | `emit` |
 | **Feeds** | [`spells.cast_done`](../hooks/spells.cast_done.md) |
 | **ctx built** | `spell` - the spell id |

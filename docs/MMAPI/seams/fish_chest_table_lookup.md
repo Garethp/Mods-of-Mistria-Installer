@@ -1,15 +1,16 @@
 # Seam: fish_chest_table_lookup
 
-Resolves an opened chest's loot table, modded chests included, and announces the open before the drops.
+Resolves an opened chest's loot table, and announces the open before the drops.
 
-`fish_chest_table_lookup` is a **text seam**. It feeds [items.chest_opened](../hooks/items.chest_opened.md) and carries the open-time half of the [`fish_chest`](../TREASURE_CHESTS.md) item-data contract. Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`fish_chest_table_lookup` is a **text seam** (`anchor` + `replace`). It feeds [items.chest_opened](../hooks/items.chest_opened.md) and carries the open-time half of the [`fish_chest`](../TREASURE_CHESTS.md) item-data contract. Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Player/AriFsm.gml` |
-| **Locator** | text anchor: the `OpenChest` item-id switch in the hold-to-use completion |
+| **Locator** | text anchor on the `OpenChest` item-id switch in the hold-to-use completion |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`items.chest_opened`](../hooks/items.chest_opened.md) |
 | **Marker** | `mmapi_fish_chest_table_lookup` |
 

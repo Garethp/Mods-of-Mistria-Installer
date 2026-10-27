@@ -1,6 +1,6 @@
 # Engine Fix: save_load_animal_variant_tolerance
 
-Lets a save load and play when a barn/coop animal wears a since-removed custom variant. The animal falls back to its kind's first variant with a logged warn.
+A barn/coop animal's unknown variant falls back to its kind's first variant instead of crashing during gameplay.
 
 `save_load_animal_variant_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. See [Seams](../SEAMS.md).
 

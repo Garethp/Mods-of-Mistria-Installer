@@ -2,7 +2,7 @@
 
 Puts a claim-scoped override in front of every player-initiated date.
 
-`date_run` is a **text seam** (override-shaped: it dispatches `mmapi_run_override`). It feeds [date.run](../hooks/date.run.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`date_run` is a **text seam** (`anchor` + `replace`). It feeds [date.run](../hooks/date.run.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,7 +10,7 @@ Puts a claim-scoped override in front of every player-initiated date.
 | --- | --- |
 | **File** | `gml/scripts/Dates.gml` |
 | **Locator** | text anchor at the head of `run_date(date, npc)` |
-| **Op** | text (override dispatch) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`date.run`](../hooks/date.run.md) |
 | **ctx built** | `{ date: date, npc: npc }` |
 | **Marker** | `mmapi_date_run_override` |

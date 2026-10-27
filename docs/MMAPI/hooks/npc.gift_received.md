@@ -6,7 +6,7 @@ Know when the player gives an NPC a gift.
 
 ## Contract
 
-Fires at the top of `par_NPC.receive_gift(item)`, when the player gives an NPC a gift, before the NPC's `give_gift` bookkeeping. ctx is `{ npc, item }`: `npc` is the NPC instance, `item` is the gifted item. This hook is observation only.
+Fires at the top of `par_NPC.receive_gift(item)`, when the player gives an NPC a gift, before the NPC's `give_gift` bookkeeping. ctx is `{ npc, item }`. This hook is observation only.
 
 | | |
 | --- | --- |

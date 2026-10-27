@@ -1,6 +1,6 @@
 # Hook: player.health_delta
 
-Change every player health gain or loss before it lands.
+Change every player health gain or loss before it applies.
 
 `player.health_delta` is a **filter** hook. Register a callback with `mmapi_filter`. See [Hooks](../HOOKS.md) for how registration and dispatch work.
 
