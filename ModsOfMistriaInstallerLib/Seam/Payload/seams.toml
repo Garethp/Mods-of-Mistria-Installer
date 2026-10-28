@@ -1735,11 +1735,11 @@ replace = '''
         } catch (__mmapi_dialogue_local) {}
 
         if line.next_line_behavior.type == NextLineBehaviorId.Prompts {
-            self.textbox.ask(local, line.next_line_behavior.prompts);
+            self.textbox.ask(local, line.next_line_behavior.prompts); // mmapi_dialogue_run_local_filters
         } else if self.is_info_line {
-            self.textbox.info(local);
+            self.textbox.info(local); // mmapi_dialogue_run_local_filters
         } else {
-            self.textbox.say(local);
+            self.textbox.say(local); // mmapi_dialogue_run_local_filters
         }
     }'''
 marker  = "mmapi_dialogue_run_local_filters"
@@ -1969,11 +1969,11 @@ replace = '''
         var full_orbs = cost div 4;
         var partial = cost - full_orbs * 4;
         var cost_icon = spr_ui_hud_health_mana_ball_on;
-        var icon_count = full_orbs + (partial > 0 ? 1 : 0);
+        var icon_count = full_orbs + (partial > 0 ? 1 : 0); // mmapi_spell_menu_cost
         var positions = centered_positions(icon_count, sprite_get_width(cost_icon), 2);
         for (var i = 0; i < array_length(positions); i++) {
             var pos = positions[i];
-            var sprite = cost_icon;
+            var sprite = cost_icon; // mmapi_spell_menu_cost
             if i >= full_orbs {
                 if partial <= 1 {
                     sprite = spr_ui_hud_health_mana_ball_threethirds;
@@ -1984,7 +1984,7 @@ replace = '''
                 }
             }
             ANCHOR.sprite(self.cost_zone)
-                .set_sprite(sprite)
+                .set_sprite(sprite) // mmapi_spell_menu_cost
                 .set_x(pos)
                 .set_align(Align.Center, Align.Middle)
         }
@@ -2103,7 +2103,7 @@ replace = '''
                         took_damage = true;
                     }
                     var damage_was_acid = has_flag(next_dmg.tarball.flags, CombatFlag.Acid);
-                    var is_dead = false;
+                    var is_dead = false; // mmapi_player_run_incoming_damage_filters
                     if final_dmg < 0 {
                         is_dead = ARI.modify_health(final_dmg, damage_was_acid == false);
                     }'''
@@ -3533,7 +3533,7 @@ anchor  = '''
             .set_x(2)
 '''
 replace = '''
-        var gift_check = ANCHOR.sprite(gift_icon)
+        var gift_check = ANCHOR.sprite(gift_icon) // mmapi_ui_relationship_row_built
             .set_sprite(!npc_data.gift_flag ? spr_ui_generic_checkbox_on : spr_ui_generic_checkbox_off)
             .set_align(Align.RightOut, Align.Middle)
             .set_x(2)
@@ -4572,7 +4572,7 @@ replace = '''
                 for (var i = 0; i < len; i++) {
                     var node = STORAGE_NODES.get(i);
                     if node.use_in_crafting {
-                        for (var j = 0; j < array_length(item_ids); j++) {
+                        for (var j = 0; j < array_length(item_ids); j++) { // mmapi_recipe_items_fulfillment
                             count += node.inventory.item_id_quantity(item_ids[j]);
                         }
                     }
@@ -4634,7 +4634,7 @@ replace = '''
                             continue;
                         }
                         var inventory = node.inventory;
-                        for (var k = 0; k < array_length(item_ids) && count != 0; k++) {
+                        for (var k = 0; k < array_length(item_ids) && count != 0; k++) { // mmapi_recipe_items_payment
                             var amount_to_remove = min(count, inventory.item_id_quantity(item_ids[k]));
                             inventory.remove(item_ids[k], amount_to_remove);
                             count -= amount_to_remove;

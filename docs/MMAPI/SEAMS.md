@@ -294,6 +294,7 @@ A marker identifies the edit in staged output. It is not an idempotency guard. E
 - Markers are unique across seams and engine fixes.
 - A marker must fit on one line.
 - Text seams put it in `replace`, never `anchor`.
+- A text seam or engine fix stamps every separated span. When pristine lines split `replace` into several spans of changed lines, each span carries the marker on one of its lines or introduces only identifiers prefixed `__mmapi_`, so every edit in the installed file names its entry.
 - A template marker normally appears as the trailing `// marker` comment. When marker and catch variable are the same token, the catch itself carries the identity and the duplicate comment is omitted.
 - Staging rejects a marker found anywhere in the pristine file or in that file's already-staged text. Pick something globally distinctive, normally prefixed `mmapi_` or `__mmapi_`.
 
