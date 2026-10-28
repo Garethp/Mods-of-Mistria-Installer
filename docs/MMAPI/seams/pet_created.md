@@ -1,8 +1,8 @@
 # Seam: pet_created
 
-Announces the farm pet's instance the moment `spawn_pet()` creates it.
+Rewrites `spawn_pet()` to capture the created pet instance and emit with it.
 
-`pet_created` is a **text seam**. It feeds [pet.created](../hooks/pet.created.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`pet_created` is a **text seam** (`anchor` + `replace`). It feeds [pet.created](../hooks/pet.created.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Announces the farm pet's instance the moment `spawn_pet()` creates it.
 | --- | --- |
 | **File** | `gml/scripts/Pet.gml` |
 | **Locator** | text anchor on the whole `spawn_pet()` definition |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`pet.created`](../hooks/pet.created.md) |
 | **ctx built** | the captured `obj_pet` instance |
 | **Marker** | `mmapi_pet_created` |

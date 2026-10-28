@@ -2,7 +2,7 @@
 
 Filters the just-built textbox speaker before it is assigned.
 
-`dialogue_speaker` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [dialogue.speaker](../hooks/dialogue.speaker.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`dialogue_speaker` is a **text seam** (`anchor` + `replace`). It feeds [dialogue.speaker](../hooks/dialogue.speaker.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Filters the just-built textbox speaker before it is assigned.
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/T2r.gml` |
 | **Locator** | text anchor in the T2 Speaker action handler, between the speaker construction and `textbox.requested_speaker = speaker;` |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`dialogue.speaker`](../hooks/dialogue.speaker.md) |
 | **Value filtered** | the `NpcSpeaker` or `CameoSpeaker` just built from `action.speaker` |
 | **ctx built** | `{ action: action, current_npc_id: current_npc_id, driver: ctx, conversation_name: <read defensively off ctx>, textbox: textbox, is_cameo: is_cameo }` |

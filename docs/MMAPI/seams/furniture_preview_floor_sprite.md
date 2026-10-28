@@ -2,7 +2,7 @@
 
 Filters the floor sprite the furniture placement preview is about to draw.
 
-`furniture_preview_floor_sprite` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [furniture.preview_sprite](../hooks/furniture.preview_sprite.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`furniture_preview_floor_sprite` is a **text seam** (`anchor` + `replace`). It feeds [furniture.preview_sprite](../hooks/furniture.preview_sprite.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 

@@ -9,7 +9,7 @@ Cancels the stored intro fade-in chain when the player commits to the end of the
 | | |
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/EodMenu.gml` |
-| **Locator** | text anchor: the four-line block in `prep_for_sequence()` that cancels `life_chain`, after the `has_prepped` early return |
+| **Locator** | text anchor on the four-line block in `prep_for_sequence()` that cancels `life_chain`, after the `has_prepped` early return |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_eod_prep_cancels_intro_fade` |
 

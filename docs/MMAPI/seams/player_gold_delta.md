@@ -9,8 +9,8 @@ Filters the signed gold delta at the top of `Ari.modify_gold()`.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Player/Ari.gml` |
-| **Locator** | pristine context: the head of `modify_gold(amount_to_add)`, before the `set_gold` line |
-| **Op** | `filter` (`try_catch = false`) |
+| **Locator** | pristine context at the head of `modify_gold(amount_to_add)`, before the `set_gold` line |
+| **Op** | `filter` |
 | **Feeds** | [`player.gold_delta`](../hooks/player.gold_delta.md) |
 | **Value filtered** | `amount_to_add` - the signed gold delta |
 | **ctx built** | `{ player: self }` |

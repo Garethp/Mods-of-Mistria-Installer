@@ -11,7 +11,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-// mmapi_local.gml. The localisation waist: the one GML point that sees every
+// mmapi_local.gml. The localisation wrapper: the one GML point that sees every
 // engine localisation lookup.
 //
 // local_get is a native builtin with no GML body, so the installer rewrites

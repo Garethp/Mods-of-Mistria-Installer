@@ -1,6 +1,6 @@
 # Seam: dungeon_floor_bracket
 
-Brackets dungeon floor entry with three emits: floor enter, room-build begin, and floor built.
+Brackets dungeon floor entry with three emits, for floor enter, room-build begin, and floor built.
 
 `dungeon_floor_bracket` is a **text seam** (`anchor` + `replace`). It feeds [dungeon.floor_enter](../hooks/dungeon.floor_enter.md), [dungeon.room_build_begin](../hooks/dungeon.room_build_begin.md), and [dungeon.floor_built](../hooks/dungeon.floor_built.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
@@ -9,7 +9,8 @@ Brackets dungeon floor entry with three emits: floor enter, room-build begin, an
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Dungeon/enter_dungeon.gml` |
-| **Locator** | text anchor: the floor-entry sequence from `build_dungeon_room(GRID)` to `DUNGEON_RUNNER.on_room_start()` |
+| **Locator** | text anchor on the floor-entry sequence from `build_dungeon_room(GRID)` to `DUNGEON_RUNNER.on_room_start()` |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`dungeon.floor_enter`](../hooks/dungeon.floor_enter.md), [`dungeon.room_build_begin`](../hooks/dungeon.room_build_begin.md), [`dungeon.floor_built`](../hooks/dungeon.floor_built.md) |
 | **ctx built** | `{ runner, floor, biome, room_id, grid, level, gm_room, impl }` - one struct, field-by-field, per-field `try`/`catch`, shared by all three emits |
 | **Marker** | `mmapi_dungeon_run_floor_enter` |

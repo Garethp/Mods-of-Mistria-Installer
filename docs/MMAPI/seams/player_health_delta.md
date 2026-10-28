@@ -9,8 +9,8 @@ Filters the signed health delta at the top of `Ari.modify_health()`.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Player/Ari.gml` |
-| **Locator** | pristine context: the head of `modify_health(amount_to_add, play_sound)`, before the `amount_to_add == 0` early-out |
-| **Op** | `filter` (`try_catch = false`) |
+| **Locator** | pristine context at the head of `modify_health(amount_to_add, play_sound)`, before the `amount_to_add == 0` early-out |
+| **Op** | `filter` |
 | **Feeds** | [`player.health_delta`](../hooks/player.health_delta.md) |
 | **Value filtered** | `amount_to_add` - the signed health delta |
 | **ctx built** | `{ player: self, play_sound: play_sound }` |

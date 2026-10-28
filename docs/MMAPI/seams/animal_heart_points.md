@@ -1,8 +1,8 @@
 # Seam: animal_heart_points
 
-Reroutes every animal heart-point delta through a filter before it lands.
+Reroutes every animal heart-point delta through a filter before it applies.
 
-`animal_heart_points` is a **text seam** (filter-shaped: it dispatches `mmapi_apply_filters`). It feeds [animal.heart_points](../hooks/animal.heart_points.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`animal_heart_points` is a **text seam** (`anchor` + `replace`). It feeds [animal.heart_points](../hooks/animal.heart_points.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,7 +10,7 @@ Reroutes every animal heart-point delta through a filter before it lands.
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Ranching/Animal.gml` |
 | **Locator** | text anchor at the head of `Animal.add_heart_points(points)`, right after the `static MAX_POINTS` line |
-| **Op** | text (filter dispatch) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`animal.heart_points`](../hooks/animal.heart_points.md) |
 | **Value filtered** | `points` - the heart points delta |
 | **ctx built** | `self` (the `Animal` struct) |

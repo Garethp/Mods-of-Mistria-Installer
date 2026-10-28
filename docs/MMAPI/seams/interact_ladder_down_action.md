@@ -9,7 +9,8 @@ Puts a veto check on the ladder's descend action, before the sound and the floor
 | | |
 | --- | --- |
 | **File** | `gml/objects/dungeon/par_ladder.gml` |
-| **Locator** | text anchor: the head of the interaction action closure that plays the descend sound |
+| **Locator** | text anchor at the head of the interaction action closure that plays the descend sound |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`interact.ladder_down_action`](../hooks/interact.ladder_down_action.md) |
 | **ctx built** | `{ subject: self, key: "dungeon_ladder_down" }` |
 | **On veto** | `return;` |

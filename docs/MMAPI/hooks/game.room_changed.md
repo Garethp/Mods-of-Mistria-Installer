@@ -6,7 +6,7 @@ Know when the player has landed in a different room.
 
 ## Contract
 
-Fires from the begin_step derived-events poll when `room()` changes, after `room_start` has already run. ctx is `{ previous, current }` (`gm_room` values). Observation only: to change room content as it loads, use the in-file seams ([dungeon.floor_enter](dungeon.floor_enter.md) and the room transition events) instead. Do not cache `ctx.current` for a later decision. See the warning below.
+Fires from the begin_step derived-events poll when `room()` changes, after `room_start` has already run. ctx is `{ previous, current }`. Observation only: to change room content as it loads, use the in-file seams ([dungeon.floor_enter](dungeon.floor_enter.md) and the room transition events) instead. Do not cache `ctx.current` for a later decision. See the warning below.
 
 | | |
 | --- | --- |
@@ -48,6 +48,6 @@ mmapi_on("game.room_changed", travel_journal_game_room_changed);
 ## See Also
 
 - [game.room_transition_pre](game.room_transition_pre.md) - This hook fires before a taxi transition starts, and it can redirect it.
-- [game.room_transition_post](game.room_transition_post.md) - This hook marks the end of the taxi transition, after arrival and music selection.
+- [game.room_transition_post](game.room_transition_post.md) - This hook marks the end of the transition request, still in the room being left, with the destination settled.
 - [dungeon.floor_enter](dungeon.floor_enter.md) - This is the in-file alternative for changing dungeon room content as it loads.
 - [game.title_entered](game.title_entered.md) - This is the derived event for the specific change into the title room. It fires after this event for the same room change.

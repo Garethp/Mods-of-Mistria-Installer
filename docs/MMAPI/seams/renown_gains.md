@@ -9,7 +9,8 @@ Emits renown level and rank gains inside `set_renown()`, past its gains-only ear
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Player/Ari.gml` |
-| **Locator** | text anchor inside `set_renown()`: the gains-only early return plus the rewards-count line that follows it |
+| **Locator** | text anchor on the gains-only early return inside `set_renown()`, plus the rewards-count line that follows it |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`renown.level_gained`](../hooks/renown.level_gained.md), [`renown.rank_gained`](../hooks/renown.rank_gained.md) |
 | **ctx built** | `{ old_level: level, new_level: new_level }` and `{ old_rank, new_rank }` |
 | **Marker** | `mmapi_renown_run_gains` |

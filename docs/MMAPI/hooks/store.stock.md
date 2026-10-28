@@ -15,19 +15,7 @@ Fires at the return of `create_store_stock(store)`, the one builder every store 
 | **ctx** | `{ store, menu }` |
 | **Kind contract** | The callback receives the current value and returns a replacement, or `undefined` to keep the current value. |
 
-### The ctx struct
-
-- `store` - the `Store` id the stock was built for. `store_to_string(store)` gives its fiddle key, and `STORES[store]` is the parsed store entry, with any keys a mod's `stores.toml` added.
-- `menu` - the `StoreMenu` under construction for the `StoreMenu` init fire, and `undefined` at the other three sites.
-
-### The value
-
-- The engine's checks run before this hook and not after it. The requirements pass, the `purchasable()` retain, and the empty-category pruning are already done when the value arrives, so nothing validates what a handler adds or changes.
-- Validate your own additions. Every category you add or alter needs a real `icon` sprite asset and a non-empty `items` List of `LiveItem`, and the List you return must hold at least one category.
-- The shelf shows at most 25 entries per category. Entries beyond that are silently invisible.
-- The daily random seed is already restored when this hook runs.
-
-### Where It Fires
+The four sites that call the builder, with what `ctx.menu` holds at each.
 
 | Site | `ctx.menu` | When |
 | --- | --- | --- |
@@ -38,25 +26,17 @@ Fires at the return of `create_store_stock(store)`, the one builder every store 
 
 Read the menu from `ctx.menu`. Only the init fire has one, and it is still under construction there, so `ANCHOR.get_menu(Menu.Store)` returns `undefined` at all four sites. Return `undefined` on the setup fire when your handler depends on config, a mod save, or file IO. That fire lands before the first frame, while `mmapi_io_is_ready()` is still false.
 
-### Data First
+### The ctx struct
 
-Static and requirement-gated stock belongs in your mod's `stores.toml`, with no handler. A bare `[[<store>.categories]]` entry appends a tab, and `MOMIidentify` with `MOMIaction = "merge"` extends an existing one.
+- `store` - the `Store` id the stock was built for. `store_to_string(store)` gives its fiddle key, and `STORES[store]` is the parsed store entry, with any keys a mod's `stores.toml` added.
+- `menu` - the `StoreMenu` under construction for the `StoreMenu` init fire, and `undefined` at the other three sites.
 
-```toml
-# fiddle/stores.toml
-[[general.categories]]
-	icon = "spr_ui_store_category_icon_seasonal"
-	constant_stock = ["seed_turnip", "sapling_cherry"]
+### The value List
 
-[[general.categories]]
-	MOMIidentify = { icon = "spr_ui_store_category_icon_seeds" }
-	MOMIaction = "merge"
-	constant_stock = [
-		{ item = "sapling_cherry", requirements = { repaired_general_store = true } },
-	]
-```
-
-Every `requirements` key the game knows works on an entry, `random_stock` with `target_selections` gives a daily rotation, and `MOMIremove` drops vanilla entries. See [Pet Cosmetics](../PET_COSMETICS.md) for a complete `stores.toml` example. This hook is for stock the data cannot compute.
+- The engine's checks run before this hook and not after it. The requirements pass, the `purchasable()` retain, and the empty-category pruning are already done when the value arrives, so nothing validates what a handler adds or changes.
+- Validate your own additions. Every category you add or alter needs a real `icon` sprite asset and a non-empty `items` List of `LiveItem`, and the List you return must hold at least one category.
+- The shelf shows at most 25 entries per category. Entries beyond that are silently invisible.
+- The daily random seed is already restored when this hook runs.
 
 ## Usage
 
@@ -80,6 +60,26 @@ function my_mod_store_stock(_value, _ctx) {
 // inside your latched register function (see Mod Anatomy):
 mmapi_filter("store.stock", my_mod_store_stock);
 ```
+
+### Data first
+
+Static and requirement-gated stock belongs in your mod's `stores.toml`, with no handler. A bare `[[<store>.categories]]` entry appends a tab, and `MOMIidentify` with `MOMIaction = "merge"` extends an existing one.
+
+```toml
+# fiddle/stores.toml
+[[general.categories]]
+	icon = "spr_ui_store_category_icon_seasonal"
+	constant_stock = ["seed_turnip", "sapling_cherry"]
+
+[[general.categories]]
+	MOMIidentify = { icon = "spr_ui_store_category_icon_seeds" }
+	MOMIaction = "merge"
+	constant_stock = [
+		{ item = "sapling_cherry", requirements = { repaired_general_store = true } },
+	]
+```
+
+Every `requirements` key the game knows works on an entry, `random_stock` with `target_selections` gives a daily rotation, and `MOMIremove` drops vanilla entries. See [Pet Cosmetics](../PET_COSMETICS.md) for a complete `stores.toml` example. This hook is for stock the data cannot compute.
 
 ## Interactions
 

@@ -2,14 +2,15 @@
 
 Filters the infusion roll chance in `craft_into()`, hoisted out of the roll condition before `chance_percent` consumes it.
 
-`items_infusion_chance` is a **text seam**. It feeds [items.infusion_chance](../hooks/items.infusion_chance.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`items_infusion_chance` is a **text seam** (`anchor` + `replace`). It feeds [items.infusion_chance](../hooks/items.infusion_chance.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Recipe.gml` |
-| **Anchor** | the roll condition in `craft_into()` (`if !infusions.is_empty() && chance_percent(15 + bonus_infusion_chance) {`) |
+| **Locator** | text anchor on the roll condition in `craft_into()` (`if !infusions.is_empty() && chance_percent(15 + bonus_infusion_chance) {`) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`items.infusion_chance`](../hooks/items.infusion_chance.md) |
 | **Value filtered** | the roll chance percent (`15 + bonus_infusion_chance`) |
 | **ctx built** | `{ recipe: self, candidates: infusions }` |

@@ -6,14 +6,14 @@ Know the moment a dungeon floor's room is fully built.
 
 ## Contract
 
-Fires in the dungeon floor entry bracket, right after `build_dungeon_room()` and before the runner's room start (`DUNGEON_RUNNER.on_room_start()`). ctx is `{ runner, floor, biome, room_id, grid, level, gm_room, impl }`, each field filled best-effort: every read is wrapped on its own, and a failed read leaves that field absent from the struct.
+Fires in the dungeon floor entry bracket, right after `build_dungeon_room()` and before the runner's room start (`DUNGEON_RUNNER.on_room_start()`). ctx is `{ runner, floor, biome, room_id, grid, level, gm_room, impl }`.
 
 The bracket captures the ctx fields once, at its top (before the build) and passes the same struct instance to all three of its events, so values a handler stashed on ctx at [dungeon.floor_enter](dungeon.floor_enter.md) are still there here. The full sequence runs: [dungeon.runner_created](dungeon.runner_created.md), then [dungeon.floor_enter](dungeon.floor_enter.md), then [dungeon.room_build_begin](dungeon.room_build_begin.md), then `build_dungeon_room()`, then `dungeon.floor_built`.
 
 | | |
 | --- | --- |
 | **Fires** | In the dungeon floor entry bracket, right after `build_dungeon_room()` and before the runner's room start. |
-| **ctx** | `{ runner, floor, biome, room_id, grid, level, gm_room, impl }` - each field filled best-effort. |
+| **ctx** | `{ runner, floor, biome, room_id, grid, level, gm_room, impl }` |
 | **Kind contract** | The callback observes the moment. Its return value is ignored. |
 
 ### The ctx struct

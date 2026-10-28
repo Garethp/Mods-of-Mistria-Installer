@@ -2,15 +2,15 @@
 
 Filters the treasure roll's empty exit so mods can inject a drop where there was none.
 
-`items_treasure_distribution_none` is a **text seam** (filter-shaped: it dispatches `mmapi_apply_filters`). It feeds [items.treasure_distribution](../hooks/items.treasure_distribution.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`items_treasure_distribution_none` is a **text seam** (`anchor` + `replace`). It feeds [items.treasure_distribution](../hooks/items.treasure_distribution.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Data/Grid/Breakables.gml` |
-| **Locator** | text anchor at the treasure roll's no-candidate exit: the `if candidate == undefined { return undefined; }` branch |
-| **Op** | text (filter dispatch) |
+| **Locator** | text anchor on the `if candidate == undefined { return undefined; }` branch that exits the treasure roll with no candidate |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`items.treasure_distribution`](../hooks/items.treasure_distribution.md) |
 | **Value filtered** | `undefined` - the roll produced no candidate |
 | **ctx built** | `{ x: xx, y: yy }` |

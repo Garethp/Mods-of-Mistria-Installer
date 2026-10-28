@@ -9,7 +9,7 @@ Makes an unknown chest rarity a no-op in the fishing distribution build instead 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Fishing/Fish.gml` |
-| **Locator** | text anchor: the chest-rarity switch default in `create_fish_distributions` |
+| **Locator** | text anchor on the chest-rarity switch default in `create_fish_distributions` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_fish_chest_custom_rarity` |
 

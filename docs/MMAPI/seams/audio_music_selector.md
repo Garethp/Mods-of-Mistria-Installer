@@ -2,7 +2,7 @@
 
 Puts a filter on the dungeon biome music track as the scene selector picks it.
 
-`audio_music_selector` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [audio.music_selector](../hooks/audio.music_selector.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`audio_music_selector` is a **text seam** (`anchor` + `replace`). It feeds [audio.music_selector](../hooks/audio.music_selector.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Puts a filter on the dungeon biome music track as the scene selector picks it.
 | --- | --- |
 | **File** | `gml/scripts/SceneAudioPlayer.gml` |
 | **Locator** | text anchor on the dungeon-room branch of the scene music selector |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`audio.music_selector`](../hooks/audio.music_selector.md) |
 | **Value filtered** | the biome music track, `DUNGEON.biomes[DUNGEON_BIOME].music` |
 | **ctx built** | `undefined` |

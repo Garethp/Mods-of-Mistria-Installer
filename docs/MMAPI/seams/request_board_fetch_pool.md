@@ -1,6 +1,6 @@
 # Seam: request_board_fetch_pool
 
-Rewrites the request board's daily random top-up so the candidate pool and the draw cap pass through a filter.
+Rewrites the request board's daily random top-up so the candidate pool and draw cap pass through a filter.
 
 `request_board_fetch_pool` is a **text seam** (`anchor` + `replace`). It feeds [request_board.fetch_pool](../hooks/request_board.fetch_pool.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 

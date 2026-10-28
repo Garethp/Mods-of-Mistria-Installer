@@ -1,6 +1,6 @@
 # Seam: animal_created
 
-Announces every barn/coop animal instance the moment `spawn_animal()` creates it.
+Emits at the end of `spawn_animal()`, after the instance is written onto the Animal struct.
 
 `animal_created` is a **template seam** (`op = "emit"`). It feeds [animal.created](../hooks/animal.created.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 

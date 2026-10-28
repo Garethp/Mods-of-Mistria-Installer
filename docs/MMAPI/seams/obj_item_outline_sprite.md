@@ -1,8 +1,8 @@
 # Seam: obj_item_outline_sprite
 
-Reroutes the world-item outline renderable to the outline its sibling seam computes.
+Reroutes the world-item outline draw to the outline its sibling seam computes.
 
-`obj_item_outline_sprite` is a **text seam** and a **companion edit**: it dispatches nothing itself. It exists for [ui.item_icon](../hooks/ui.item_icon.md). It reroutes one renderable write so the outline computed by [ui_item_icon_obj_item_world](ui_item_icon_obj_item_world.md) is what actually renders. Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`obj_item_outline_sprite` is a **text seam** and a **companion edit**. It dispatches nothing itself. It exists for [ui.item_icon](../hooks/ui.item_icon.md). It reroutes one renderable write so the outline computed by [ui_item_icon_obj_item_world](ui_item_icon_obj_item_world.md) is what actually renders. Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Reroutes the world-item outline renderable to the outline its sibling seam compu
 | --- | --- |
 | **File** | `gml/objects/objects/obj_item.gml` |
 | **Locator** | text anchor on the line in `obj_item`'s step that writes the outline renderable's `animation` |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`ui.item_icon`](../hooks/ui.item_icon.md) (no dispatch of its own, the dispatch lives in [`ui_item_icon_obj_item_world`](ui_item_icon_obj_item_world.md)) |
 | **Marker** | `outline_sprite` |
 

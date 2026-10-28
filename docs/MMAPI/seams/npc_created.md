@@ -1,6 +1,6 @@
 # Seam: npc_created
 
-Announces every NPC instance the engine spawns, after it is fully initialized.
+Emits at the end of `spawn_npc()`, after `initialize` attaches the NPC data and FSM.
 
 `npc_created` is a **template seam** (`op = "emit"`). It feeds [npc.created](../hooks/npc.created.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 

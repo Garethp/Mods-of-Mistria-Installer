@@ -9,7 +9,7 @@ Adds a list form to the recipe component factory, an Item component that stores 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Recipe.gml` |
-| **Locator** | text anchor: the `Item` static of `RecipeComponentFactory` |
+| **Locator** | text anchor on the `Item` static of `RecipeComponentFactory` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_recipe_items_factory` |
 

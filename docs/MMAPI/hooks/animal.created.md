@@ -46,7 +46,7 @@ mmapi_on("animal.created", my_mod_animal_created);
 
 The `local_key` argument labels the button prompt through the localizer, so ship a localization entry for it, or serve the key at runtime through [local.missing](local.missing.md).
 
-### Available Inputs
+### Available inputs
 
 The table below describes each usable input's availability for a mod interaction given the vanilla interactions already defined.
 

@@ -9,7 +9,7 @@ Parses a recipe component's `items` list into the factory's list form, resolving
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Items/Items.gml` |
-| **Locator** | text anchor: the `item` branch of the recipe component chain in `create_item_prototypes`, through the `else if` that opens the `tag` branch |
+| **Locator** | text anchor on the `item` branch of the recipe component chain in `create_item_prototypes`, through the `else if` that opens the `tag` branch |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_recipe_items_parse` |
 

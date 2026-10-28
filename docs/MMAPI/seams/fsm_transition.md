@@ -9,7 +9,7 @@ Filters every executed shared-FSM state transition through one funnel.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Fsm/StateMachine.gml` |
-| **Locator** | text anchor: the head of `__StateMachine.execute_state_change()`, before `if self.state.has_stop() {` |
+| **Locator** | text anchor at the head of `__StateMachine.execute_state_change()`, before `if self.state.has_stop() {` |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`fsm.transition`](../hooks/fsm.transition.md) |
 | **Value filtered** | `{ fsm: self, owner: self.state.owner, from: self.state.state_id, to: self.next_state.state_id, cancel: false }` |

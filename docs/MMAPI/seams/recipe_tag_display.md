@@ -9,7 +9,7 @@ Lets the crafting menu draw a `tag` component with the first tagged prototype's 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/CraftingMenu.gml` |
-| **Locator** | text anchor: the head of the Item case in the ingredient render switch of `set_to_item`, the case label and its icon line |
+| **Locator** | text anchor at the head of the Item case in the ingredient render switch of `set_to_item`, the case label and its icon line |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_recipe_tag_display` |
 

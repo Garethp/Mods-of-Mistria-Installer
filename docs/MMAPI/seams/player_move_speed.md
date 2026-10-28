@@ -9,8 +9,8 @@ Filters the player's computed move speed after the status-effect multipliers.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Player/Ari.gml` |
-| **Locator** | pristine context: after the `MineTime` / `SlimeDash` / `KillHaste` status-effect multipliers, before `return spd;` |
-| **Op** | `filter` (`try_catch = false`) |
+| **Locator** | pristine context after the `MineTime` / `SlimeDash` / `KillHaste` status-effect multipliers, before `return spd;` |
+| **Op** | `filter` |
 | **Feeds** | [`player.move_speed`](../hooks/player.move_speed.md) |
 | **Value filtered** | `spd` - the computed move speed |
 | **ctx built** | `{ player: self, on_mount: on_mount }` |

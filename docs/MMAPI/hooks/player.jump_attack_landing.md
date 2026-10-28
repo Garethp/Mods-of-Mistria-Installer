@@ -17,6 +17,16 @@ The attack lands only when every corner's final value is `true`.
 | **ctx** | `{ x, y, node, collideable, water }` |
 | **Kind contract** | The callback receives the current boolean and returns a replacement, or `undefined` to keep the current value. |
 
+The test runs while the player has the Jump Attack perk set, holds a weapon, and has pressed the attack input during the jump. It runs on every frame from the jump's peak until the attack lands or the jump ends, so this is not a hot path.
+
+| Case | What Happens |
+| --- | --- |
+| A monster or NPC is under the player. | The frame is refused before any corner is tested, and the hook does not fire on that frame. |
+| A corner lies outside the grid. | That corner fails before dispatch, and the engine tests no further corners on that frame. |
+| A corner's final value is `false`. | The engine tests no further corners on that frame, so a refused landing dispatches about once per frame for the rest of the jump. |
+| Every corner's final value is `true`. | The attack enters on that frame, where the player is along the jump's arc, not at the jump's destination. With a handler that allows water, a jump from the shore lands in the first open water past the shoreline. |
+| The attack ends on a water node. | The player exits into `PlayerState.Swim` instead of `PlayerState.Default`. |
+
 ### The ctx struct
 
 - `x`, `y` - the corner's room position in pixels.
@@ -29,18 +39,6 @@ The attack lands only when every corner's final value is `true`.
 - The value starts `true` for a node that is neither collideable nor water, and `false` otherwise.
 - The engine combines the four corners with `&&`, so the first `false` refuses the landing on that frame and ends that frame's corner tests.
 - A final value that is not a boolean is coerced in that `&&` chain, so a string or a number other than zero counts as `true`.
-
-### When It Fires
-
-The test runs while the player has the Jump Attack perk set, holds a weapon, and has pressed the attack input during the jump. It runs on every frame from the jump's peak until the attack lands or the jump ends, so this is not a hot path.
-
-| Case | What Happens |
-| --- | --- |
-| A monster or NPC is under the player. | The frame is refused before any corner is tested, and the hook does not fire on that frame. |
-| A corner lies outside the grid. | That corner fails before dispatch, and the engine tests no further corners on that frame. |
-| A corner's final value is `false`. | The engine tests no further corners on that frame, so a refused landing dispatches about once per frame for the rest of the jump. |
-| Every corner's final value is `true`. | The attack enters on that frame, where the player is along the jump's arc, not at the jump's destination. With a handler that allows water, a jump from the shore lands in the first open water past the shoreline. |
-| The attack ends on a water node. | The player exits into `PlayerState.Swim` instead of `PlayerState.Default`. |
 
 ## Usage
 

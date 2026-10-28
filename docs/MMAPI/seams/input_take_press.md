@@ -2,7 +2,7 @@
 
 Puts a veto between an interaction's pressed read and the interaction running.
 
-`input_take_press` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [input.take_press](../hooks/input.take_press.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`input_take_press` is a **text seam** (`anchor` + `replace`). It feeds [input.take_press](../hooks/input.take_press.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Puts a veto between an interaction's pressed read and the interaction running.
 | --- | --- |
 | **File** | `gml/objects/system/parents/par_interactable.gml` |
 | **Locator** | text anchor on the `pressed` read in the registered-interaction poll, before the `if pressed || force_press` gate |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`input.take_press`](../hooks/input.take_press.md) |
 | **ctx built** | `{ subject: self, input_id: interaction.input_id, local_key: interaction.local_key, interaction: interaction }` |
 | **On veto** | `pressed = false;` |

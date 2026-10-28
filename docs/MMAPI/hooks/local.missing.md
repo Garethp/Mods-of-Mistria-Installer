@@ -6,7 +6,7 @@ Change what a missing localization key resolves to.
 
 ## Contract
 
-Fires inside `mmapi_local_get()` only when the native localizer misses: `local_get()` returned `undefined`, echoed the key back, or returned the engine's `"MISSING"` sentinel (`"PLACEHOLDER"` is a hit: the key exists with pending text). The filtered value starts `undefined`. ctx is `{ key, fallback }`, `fallback` being what the engine would have surfaced.
+Fires inside `mmapi_local_get()` only when the native localizer misses: `local_get()` returned `undefined`, echoed the key back, or returned the engine's `"MISSING"` sentinel (`"PLACEHOLDER"` is a hit: the key exists with pending text). The filtered value starts `undefined`. ctx is `{ key, fallback }`.
 
 Return the text to inject for keys the base game lacks (computed strings, or fail-soft for keys that should have shipped as data). Return `undefined` to keep the engine fallback unchanged. Filter, not override, on purpose: many mods legitimately register here, each owning its key prefix, and later filters see earlier injections.
 

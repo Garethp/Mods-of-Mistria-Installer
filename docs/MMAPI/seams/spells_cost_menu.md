@@ -1,6 +1,6 @@
 # Seam: spells_cost_menu
 
-Filters the mana-cost read behind the spellcasting menu's cost display and renders the result at quarter granularity.
+Filters the mana-cost read behind the spellcasting menu's cost display and renders it at quarter granularity.
 
 `spells_cost_menu` is a **text seam** (`anchor` + `replace`). It feeds [spells.cost](../hooks/spells.cost.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
@@ -9,7 +9,7 @@ Filters the mana-cost read behind the spellcasting menu's cost display and rende
 | | |
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/SpellcastingMenu.gml` |
-| **Locator** | text anchor: the card's cost render block, from `var cost = self.spell_data.cost div 4;` through the orb stamp loop |
+| **Locator** | text anchor on the card's cost render block, from `var cost = self.spell_data.cost div 4;` through the orb stamp loop |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`spells.cost`](../hooks/spells.cost.md) |
 | **Value filtered** | `self.spell_data.cost` - the spell's raw mana cost |

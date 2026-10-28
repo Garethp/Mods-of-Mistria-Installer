@@ -9,7 +9,8 @@ Emits the end-of-cull moment so mods can refresh renderers the camera just react
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Camera/Camera.gml` |
-| **Locator** | text anchor at the end of `process_culls()`: the multi-line `instance_activate_region(...)` call plus the closing brace |
+| **Locator** | text anchor on the multi-line `instance_activate_region(...)` call that ends `process_culls()`, plus the closing brace |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`camera.culls_processed`](../hooks/camera.culls_processed.md) |
 | **ctx built** | `self` - the `Camera` struct |
 | **Marker** | `mmapi_camera_run_culls_processed` |

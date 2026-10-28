@@ -14,8 +14,8 @@ Puts a veto check at the head of `play_conversation()`.
 | **Feeds** | [`dialogue.play_guard`](../hooks/dialogue.play_guard.md) |
 | **ctx built** | `{ npc_id: npc_id, path: path, close_callback: close_callback, args: args }` |
 | **On veto** | `return undefined;` |
-| **Depends on** | [`dialogue_path`](dialogue_path.md) |
 | **Marker** | `mmapi_dialogue_run_play_guards` |
+| **Depends on** | [`dialogue_path`](dialogue_path.md) |
 
 ## The Edit
 

@@ -9,7 +9,7 @@ Puts an override at the head of `can_cast_spell()`.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Spells.gml` |
-| **Locator** | text anchor: the head of `can_cast_spell(spell)` |
+| **Locator** | text anchor at the head of `can_cast_spell(spell)` |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`spells.can_cast`](../hooks/spells.can_cast.md) |
 | **ctx built** | `spell` - the spell id |

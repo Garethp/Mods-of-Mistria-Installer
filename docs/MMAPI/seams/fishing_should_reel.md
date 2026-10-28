@@ -1,6 +1,6 @@
 # Seam: fishing_should_reel
 
-Filters the fishing Wait state's reel decision before the complete vanilla reel block.
+Filters the Wait state's reel decision before the complete vanilla reel block.
 
 `fishing_should_reel` is a **text seam** (`anchor` + `replace`). It feeds [fishing.should_reel](../hooks/fishing.should_reel.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 

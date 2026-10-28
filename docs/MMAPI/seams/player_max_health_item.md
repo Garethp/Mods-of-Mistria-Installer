@@ -9,7 +9,7 @@ Emits right after an item raises the player's base health.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Player/AriFsm.gml` |
-| **Locator** | pristine context: after `ARI.base_health += live_item.prototype.max_health_modifier;`, before the vitals menu update |
+| **Locator** | pristine context after `ARI.base_health += live_item.prototype.max_health_modifier;`, before the vitals menu update |
 | **Op** | `emit` |
 | **Feeds** | [`player.max_health_item`](../hooks/player.max_health_item.md) |
 | **ctx built** | `{ player: ARI, amount: live_item.prototype.max_health_modifier, live_item: live_item }` |

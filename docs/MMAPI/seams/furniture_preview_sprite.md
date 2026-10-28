@@ -12,7 +12,7 @@ Filters the main sprite the furniture placement preview is about to draw.
 | **Locator** | pristine context in `create_test_placement_furniture_draw_info()`, between the `{Season}_sprite` override and the write to `furniture_renderer.sprite_index` |
 | **Op** | `filter` |
 | **Feeds** | [`furniture.preview_sprite`](../hooks/furniture.preview_sprite.md) |
-| **Var** | `spr` |
+| **Value filtered** | `spr` - the sprite the preview is about to draw at that site |
 | **ctx built** | `{ object_id: object_id, prototype: proto, cardinal_index: calc_rot, x: xx, y: yy, source: "main_sprite" }` |
 | **Marker** | `mmapi_furniture_preview_sprite` |
 

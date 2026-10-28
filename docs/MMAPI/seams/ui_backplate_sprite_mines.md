@@ -2,7 +2,7 @@
 
 Routes the mines menu backplate sprite through a filter on dungeon room start.
 
-`ui_backplate_sprite_mines` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [ui.backplate_sprite](../hooks/ui.backplate_sprite.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`ui_backplate_sprite_mines` is a **text seam** (`anchor` + `replace`). It feeds [ui.backplate_sprite](../hooks/ui.backplate_sprite.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Routes the mines menu backplate sprite through a filter on dungeon room start.
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/MinesMenu.gml` |
 | **Locator** | text anchor in the menu's room-start callback, in the `is_dungeon_room(room())` branch, before `self.backplate.enable()` |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`ui.backplate_sprite`](../hooks/ui.backplate_sprite.md) |
 | **Value filtered** | `spr_ui_dungeon_backplate`, the default backplate sprite |
 | **ctx built** | `{ source: "mines_menu_backplate" }` |

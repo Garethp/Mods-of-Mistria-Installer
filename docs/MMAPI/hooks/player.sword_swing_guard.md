@@ -6,7 +6,7 @@ Stop any swing of the player's sword combo before it starts.
 
 ## Contract
 
-Fires inside the player FSM's Sword state at the top of `next_swing()`, before each swing of a combo starts and before its animation, sound, or hitbox exist. It fires for all three swings of a combo, the first from the state's `start()` and the second and third from its `step()` on buffered input. ctx is `{ owner, sword, combo }`, with `owner` the player instance, `sword` the `LiveItem` being swung, and `combo` the index of the swing about to start (`0`, `1`, or `2`). Return `false` to veto the swing. The site then returns from `next_swing()` before the combo count advances, so the swing never starts, and it clears the state's input buffer and the flag that admits the next swing, so the veto ends the combo. Every other return allows.
+Fires inside the player FSM's Sword state at the top of `next_swing()`, before each swing of a combo starts and before its animation, sound, or hitbox exist. It fires for all three swings of a combo, the first from the state's `start()` and the second and third from its `step()` on buffered input. ctx is `{ owner, sword, combo }`. Return `false` to veto the swing. The site then returns from `next_swing()` before the combo count advances, so the swing never starts, and it clears the state's input buffer and the flag that admits the next swing, so the veto ends the combo. Every other return allows.
 
 After a vetoed swing `1` or `2` the swing in progress plays out, the state accepts no further swing and no early exit on a direction press, and it exits to the Default state when that animation completes. After a vetoed swing `0` the site queues the exit to the Default state itself, so the state leaves at the next tick with no swing having started. The state's `stop()` runs at that exit and removes the sword attachment. A handler that wants the player somewhere other than Default calls `change_state` on `owner.fsm` before it returns `false`. The site leaves that change in place, and the engine applies it at the next tick.
 
@@ -18,13 +18,7 @@ The engine calls `next_swing()` once more when input is still buffered after the
 | **ctx** | `{ owner, sword, combo }` |
 | **Kind contract** | Only the Boolean value `false` vetoes. Every other return allows. Guards fail open: a callback that throws counts as allow. |
 
-### The ctx struct
-
-- `owner` - the player instance. Its `fsm` is the player FSM, so a handler can call `owner.fsm.change_state(...)` before it returns `false` to send the player somewhere other than Default.
-- `sword` - the `LiveItem` being swung, which carries `prototype.damage`, `infusion`, and `item_id`.
-- `combo` - the index of the swing about to start. `0` is the first swing, `1` the second, and `2` the heavy finisher.
-
-### When It Fires
+The paths that reach the guard, and the frame each one fires on.
 
 | Case | What Happens |
 | --- | --- |
@@ -32,7 +26,7 @@ The engine calls `next_swing()` once more when input is still buffered after the
 | The player presses the attack input during a swing. | The press is buffered. Once the swing in progress has finished its action, the guard fires from `step()` with `combo` set to `1` or `2`. |
 | Input is still buffered after the third swing. | The engine calls `next_swing()` once more. That call starts no swing and never reaches the guard. |
 
-### After A Veto
+What follows a veto, by the combo step it landed on.
 
 | Case | What Happens |
 | --- | --- |
@@ -42,6 +36,12 @@ The engine calls `next_swing()` once more when input is still buffered after the
 
 > [!NOTE]
 > The Sword state's `step()` runs once in the frame of a vetoed swing `0`. If the animation the player was playing completes on that exact frame, the step exits to `PlayerState.Default` at once, and that exit replaces a change the handler queued. The window is one frame per animation cycle, and the engine's own queued transitions share it.
+
+### The ctx struct
+
+- `owner` - the player instance. Its `fsm` is the player FSM, so a handler can call `owner.fsm.change_state(...)` before it returns `false` to send the player somewhere other than Default.
+- `sword` - the `LiveItem` being swung, which carries `prototype.damage`, `infusion`, and `item_id`.
+- `combo` - the index of the swing about to start. `0` is the first swing, `1` the second, and `2` the heavy finisher.
 
 ## Usage
 

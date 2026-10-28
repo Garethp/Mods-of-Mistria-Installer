@@ -9,10 +9,9 @@ Emits the finished request board at the tail of the daily build, final pool incl
 | | |
 | --- | --- |
 | **File** | `gml/scripts/RequestBoard.gml` |
-| **Locator** | text anchor on `create_request_board()`'s tail: the `randomize()` line and the `return requests` that closes the function |
+| **Locator** | text anchor on the `randomize()` line and the `return requests` that close `create_request_board()` |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`request_board.fetch_pool_ready`](../hooks/request_board.fetch_pool_ready.md) |
-| **Value filtered** | none - an emit |
 | **ctx built** | `{ year, season, day, is_crown_quest_day, final_pool }` |
 | **Marker** | `mmapi_request_board_fetch_pool_ready_emit` |
 

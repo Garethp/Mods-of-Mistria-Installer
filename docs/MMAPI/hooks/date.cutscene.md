@@ -1,12 +1,12 @@
 # Hook: date.cutscene
 
-Swap which cutscene a date plays while keeping the whole vanilla date pipeline.
+Swap which cutscene a date plays while keeping the vanilla date pipeline.
 
 `date.cutscene` is a **filter** hook. Register a callback with `mmapi_filter`. See [Hooks](../HOOKS.md) for how registration and dispatch work.
 
 ## Contract
 
-Fires in `start_date_cutscene(npc, date)` (`Dates.gml`), after the date blackboard writes and the prop selection and immediately before `MIST.run_scene` starts the date cutscene. The filtered value is the cutscene name about to run, defaulting to `DATES[date].cutscene`. ctx is `{ npc, date }`: `npc` is the `NpcId`, `date` is the `Date` enum id. Return a replacement cutscene name to swap which scene plays, or `undefined` to keep the current value.
+Fires in `start_date_cutscene(npc, date)` (`Dates.gml`), after the date blackboard writes and the prop selection and immediately before `MIST.run_scene` starts the date cutscene. The filtered value is the cutscene name about to run, defaulting to `DATES[date].cutscene`. ctx is `{ npc, date }`. Return a replacement cutscene name to swap which scene plays, or `undefined` to keep the current value.
 
 A replacement must name a loaded cutscene, meaning a fiddle `cutscenes.toml` entry backed by a mist script. Ship both with your mod, cloned verbatim from the vanilla scene's entries minus identity. An unknown name is dropped with a rate-limited warning and the vanilla scene runs.
 
@@ -18,7 +18,7 @@ A replacement that ends the day grants its rewards over the end-of-day menu the 
 | --- | --- |
 | **Fires** | Inside `start_date_cutscene`, immediately before `MIST.run_scene`, after the blackboard and prop selection. |
 | **Value** | The cutscene name about to run, defaulting to `DATES[date].cutscene`. |
-| **ctx** | `{ npc, date }` - the `NpcId` and the `Date` enum id. |
+| **ctx** | `{ npc, date }` |
 | **Kind contract** | Chained filter: return a replacement name, or `undefined` to keep the current value. Later filters receive the current result. |
 
 ### The ctx struct

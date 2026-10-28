@@ -1,8 +1,8 @@
 # Seam: ui_item_icon_obj_item_world
 
-Filters the world-drop item sprite and computes the outline its companion writes.
+Filters the world-drop item sprite and computes the outline its companion draws.
 
-`ui_item_icon_obj_item_world` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [ui.item_icon](../hooks/ui.item_icon.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`ui_item_icon_obj_item_world` is a **text seam** (`anchor` + `replace`). It feeds [ui.item_icon](../hooks/ui.item_icon.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,11 +10,12 @@ Filters the world-drop item sprite and computes the outline its companion writes
 | --- | --- |
 | **File** | `gml/objects/objects/obj_item.gml` |
 | **Locator** | text anchor in `obj_item`'s step, right after `var item_data = self.items.first();` and before the infusion outline-color logic |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`ui.item_icon`](../hooks/ui.item_icon.md) |
 | **Value filtered** | the world icon, starting as `item_data.get_world_icon()` - may be `undefined` |
 | **ctx built** | `{ item: item_data, source: "obj_item_world" }` |
-| **Depends on** | [`obj_item_outline_sprite`](obj_item_outline_sprite.md) |
 | **Marker** | `__mmapi_world_item_icon` |
+| **Depends on** | [`obj_item_outline_sprite`](obj_item_outline_sprite.md) |
 
 ## The Edit
 

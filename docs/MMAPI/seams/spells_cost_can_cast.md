@@ -9,7 +9,7 @@ Filters the mana-cost read inside `can_cast_spell()`'s mana check.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Spells.gml` |
-| **Locator** | text anchor: the `\|\| ARI.get_mana() < SPELLS[spell].cost` clause inside `can_cast_spell()` |
+| **Locator** | text anchor on the `\|\| ARI.get_mana() < SPELLS[spell].cost` clause inside `can_cast_spell()` |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`spells.cost`](../hooks/spells.cost.md) |
 | **Value filtered** | `SPELLS[spell].cost` - the spell's mana cost |

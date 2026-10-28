@@ -1,8 +1,8 @@
 # Seam: date_cutscene_chain_args
 
-Extends the date completion chain's argument list so the filtered cutscene name reaches the reward gate.
+Extends the date chain's args so the filtered cutscene name reaches the reward gate.
 
-`date_cutscene_chain_args` is a **text seam** (`anchor` + `replace`). It feeds [date.cutscene](../hooks/date.cutscene.md), though it dispatches nothing itself - the dispatch lives in [date_cutscene](date_cutscene.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`date_cutscene_chain_args` is a **text seam** (`anchor` + `replace`). It feeds [date.cutscene](../hooks/date.cutscene.md), though it dispatches nothing itself. The dispatch lives in [date_cutscene](date_cutscene.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 

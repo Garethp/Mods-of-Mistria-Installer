@@ -1,6 +1,6 @@
 # Seam: date_cutscene
 
-Threads the date cutscene name through a filter before `MIST.run_scene`, and into the completion chain.
+Threads the date cutscene name through a filter and into the completion chain.
 
 `date_cutscene` is a **text seam** (`anchor` + `replace`). It feeds [date.cutscene](../hooks/date.cutscene.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
@@ -10,7 +10,7 @@ Threads the date cutscene name through a filter before `MIST.run_scene`, and int
 | --- | --- |
 | **File** | `gml/scripts/Dates.gml` |
 | **Locator** | text anchor from the `prop_sprite` blackboard insert through the completion chain's `ends_day` gate in `start_date_cutscene(npc, date)` |
-| **Op** | text (filter dispatch) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`date.cutscene`](../hooks/date.cutscene.md) |
 | **Value filtered** | the cutscene name about to run, defaulting to `data.cutscene` |
 | **ctx built** | `{ npc: npc, date: date }` |

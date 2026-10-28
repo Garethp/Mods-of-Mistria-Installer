@@ -9,7 +9,7 @@ Keeps the end-of-day menu's intro fade-in chain in a field and clears the field 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/EodMenu.gml` |
-| **Locator** | text anchor: the three-line chain in the fade-out callback of `init()` that waits one tick and then calls `SCREEN_FADER.fade_in` |
+| **Locator** | text anchor on the three-line chain in the fade-out callback of `init()` that waits one tick and then calls `SCREEN_FADER.fade_in` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_eod_intro_fade_cancel` |
 

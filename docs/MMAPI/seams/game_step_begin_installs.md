@@ -1,6 +1,6 @@
 # Engine Fix: game_step_begin_installs
 
-Installs the MMAPI per-frame drain at the top of the game's `step_begin`.
+Installs the MMAPI per-frame drain at the top of the game's `step_begin`, the framework's lifecycle root.
 
 `game_step_begin_installs` is an **engine fix**, an anchored edit with no hook behind it. There is nothing to register for here. The edit itself is what makes registration work. See [Seams](../SEAMS.md).
 

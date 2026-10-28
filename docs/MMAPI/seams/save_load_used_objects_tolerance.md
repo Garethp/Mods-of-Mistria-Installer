@@ -1,6 +1,6 @@
 # Engine Fix: save_load_used_objects_tolerance
 
-Lets a save whose daily used-objects flags name a since-removed object load anyway. Unknown names are skipped, and the engine names them in the log.
+An unknown object name in the daily used-objects flags is skipped instead of aborting the load.
 
 `save_load_used_objects_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. See [Seams](../SEAMS.md).
 

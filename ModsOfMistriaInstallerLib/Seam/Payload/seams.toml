@@ -323,7 +323,7 @@ doc  = "Fires from the begin_step derived-events poll when room() changes, after
 [[hook]]
 name = "game.room_transition_post"
 kind = "event"
-doc  = "Fires at the end of the taxi transition, after arrival and music selection. ctx is the same struct as game.room_transition_pre ({ taxi, itinerary, from_room, to_room, gm_room, instant }), with itinerary, to_room, gm_room, and instant re-read from the live itinerary just before the emit."
+doc  = "Fires at the end of Taxi.taxi_player(), once the transition is under way but still in the room being left. The room changes on a later frame, so this is not an arrival moment. For that, use game.room_changed. ctx is the same struct as game.room_transition_pre ({ taxi, itinerary, from_room, to_room, gm_room, instant }), with itinerary, to_room, gm_room, and instant re-read from the live itinerary just before the emit, after any pre redirect."
 
 [[hook]]
 name = "game.room_transition_pre"
@@ -4202,7 +4202,7 @@ provides = ["status_effect.hud_icon"]
 
 # local_get is a native builtin (fabricator extension): the pristine tree has no
 # GML body for it, so no template, target, text, or wrap form can reach inside
-# it and a wrap has nothing to rename. The waist is created instead by
+# it and a wrap has nothing to rename. Each lookup is captured instead by
 # redirecting every GML call site to the framework wrapper: 107 calls on 102
 # lines across 35 files at catalog time, every one a direct single-argument
 # call, none in member-access or reference position (verified against

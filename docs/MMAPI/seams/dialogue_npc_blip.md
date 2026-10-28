@@ -2,7 +2,7 @@
 
 Filters an NPC speaker's blip sound right after the default lookup.
 
-`dialogue_npc_blip` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [dialogue.npc_blip](../hooks/dialogue.npc_blip.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`dialogue_npc_blip` is a **text seam** (`anchor` + `replace`). It feeds [dialogue.npc_blip](../hooks/dialogue.npc_blip.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Filters an NPC speaker's blip sound right after the default lookup.
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Menus/TextboxMenu.gml` |
 | **Locator** | text anchor in the `NpcSpeaker(id)` constructor, on the `blip_sound` default assignment |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`dialogue.npc_blip`](../hooks/dialogue.npc_blip.md) |
 | **Value filtered** | `self.blip_sound`, the default from `find_npc_blip_noise(self.id)` |
 | **ctx built** | `{ npc_id: self.id, speaker: self }` |

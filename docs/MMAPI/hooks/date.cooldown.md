@@ -6,7 +6,7 @@ Change the cooldown between dates with the same NPC.
 
 ## Contract
 
-Fires in `ari_eligible_for_date(npc, time_to_check)` (`Dates.gml`), once per eligibility check, before the date history is scanned. The filtered value is the date cooldown in game seconds, defaulting to `days(6)`, the cooldown the engine enforces between listed dates with the same NPC. ctx is `{ npc, time_to_check }`: `npc` is the `NpcId` being checked, `time_to_check` is the calendar time the check is for (usually now). Return a replacement duration, or `undefined` to keep the current value.
+Fires in `ari_eligible_for_date(npc, time_to_check)` (`Dates.gml`), once per eligibility check, before the date history is scanned. The filtered value is the date cooldown in game seconds, defaulting to `days(6)`, the cooldown the engine enforces between listed dates with the same NPC. ctx is `{ npc, time_to_check }`. Return a replacement duration, or `undefined` to keep the current value.
 
 Return `0` to remove the per NPC cooldown. This does not allow a second date on the same day. A separate engine clause beside the cooldown rejects any date whose timestamp matches an existing history entry, and `CALENDAR.time` advances a whole day at a time, so every date taken on one day carries the same timestamp. That clause is not scoped to an NPC either, so once any date is taken, no further date is possible that day whatever this hook returns. A non-numeric return is dropped with a rate-limited warning and the vanilla cooldown applies.
 
@@ -19,7 +19,7 @@ Eligibility gates whether the Date option appears at all, so this hook runs upst
 | --- | --- |
 | **Fires** | Inside `ari_eligible_for_date`, before the date history scan. |
 | **Value** | The cooldown in game seconds, defaulting to `days(6)`. |
-| **ctx** | `{ npc, time_to_check }` - the `NpcId` and the calendar time being checked. |
+| **ctx** | `{ npc, time_to_check }` |
 | **Kind contract** | Chained filter: return a replacement duration, or `undefined` to keep the current value. Later filters receive the current result. |
 
 ### The ctx struct

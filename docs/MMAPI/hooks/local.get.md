@@ -54,7 +54,7 @@ mmapi_filter("local.get", tidy_text_local_get);
 
 ## Engine Wiring
 
-- Call rewrite [`local_get_dispatch`](../seams/local_get_dispatch.md) token-rewrites every GML `local_get()` call site to `mmapi_local_get()`. The native builtin has no GML body to seam, so the rewrite is the waist that sees every lookup.
+- Call rewrite [`local_get_dispatch`](../seams/local_get_dispatch.md) token-rewrites every GML `local_get()` call site to `mmapi_local_get()`. The native builtin has no GML body to seam, so the rewrite is what sends every lookup through the wrapper.
 - Dispatch lives in the framework's `mmapi/mmapi_local.gml`: `mmapi_local_get()` calls the native localizer, runs the `local.missing` chain on a miss, then filters the result through `local.get`, so injected text is visible to this hook.
 
 ## See Also

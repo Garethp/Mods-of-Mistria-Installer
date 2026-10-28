@@ -9,7 +9,7 @@ Lets a store stock entry declaring `pet_cosmetic` sell a pet cosmetic set, valid
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Stores.gml` |
-| **Locator** | text anchor: the tail of `parse_store_item`, from the `animal_cosmetic` branch's item construction through the closing `assert_neq` |
+| **Locator** | text anchor at the tail of `parse_store_item`, from the `animal_cosmetic` branch's item construction through the closing `assert_neq` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_store_pet_cosmetic_entry` |
 

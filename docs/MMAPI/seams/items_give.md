@@ -2,7 +2,7 @@
 
 Routes every item grant through a struct filter at the head of the engine's one give-item entry point.
 
-`items_give` is a **text seam** (filter-shaped: it dispatches `mmapi_apply_filters`). It feeds [items.give](../hooks/items.give.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`items_give` is a **text seam** (`anchor` + `replace`). It feeds [items.give](../hooks/items.give.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,7 +10,7 @@ Routes every item grant through a struct filter at the head of the engine's one 
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Player/Ari.gml` |
 | **Locator** | text anchor at the head of `give_item()`, right after the LiveItem coercion |
-| **Op** | text (filter dispatch, struct-valued) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`items.give`](../hooks/items.give.md) |
 | **Value filtered** | the struct `{ item, item_id, count, show_toast, show_new_popup, play_sound }` |
 | **ctx built** | `self` (the player) |

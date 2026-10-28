@@ -2,15 +2,15 @@
 
 Hands every active swing's tarball to mods before the grid pick/chop/destroy blocks read it.
 
-`combat_tarball_grid` is a **template seam** (`op = "filter_call"`, in-place: the dispatch's return value is discarded). It feeds [combat.tarball_grid](../hooks/combat.tarball_grid.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`combat_tarball_grid` is a **template seam** (`op = "filter_call"`). It feeds [combat.tarball_grid](../hooks/combat.tarball_grid.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
 | | |
 | --- | --- |
 | **File** | `gml/objects/Combat/obj_damage_tarball.gml` |
-| **Locator** | pristine context: the top of the `if self.can_hurt {` block in the tarball's step, before `var col_count = 0;` |
-| **Op** | `filter_call` (in-place) |
+| **Locator** | pristine context at the top of the `if self.can_hurt {` block in the tarball's step, before `var col_count = 0;` |
+| **Op** | `filter_call` |
 | **Feeds** | [`combat.tarball_grid`](../hooks/combat.tarball_grid.md) |
 | **Value filtered** | `self` - the tarball instance, mutated in place |
 | **ctx built** | `undefined` |

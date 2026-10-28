@@ -1,6 +1,6 @@
 # Hook: request_board.fetch_pool
 
-Change the request board's daily candidate pool and draw cap before the random picks land.
+Change the request board's daily candidate pool and draw cap.
 
 `request_board.fetch_pool` is a **filter** hook. Register a callback with `mmapi_filter`. See [Hooks](../HOOKS.md) for how registration and dispatch work.
 

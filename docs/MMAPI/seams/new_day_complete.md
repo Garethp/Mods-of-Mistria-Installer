@@ -1,6 +1,6 @@
 # Seam: new_day_complete
 
-Announces the completion of the engine's new-day work, inside `new_day()` and ahead of the end-of-day autosave.
+Emits the completion of the engine's new-day work inside `new_day()`, ahead of the end-of-day autosave.
 
 `new_day_complete` is a **template seam** (`op = "emit"`). It feeds [game.new_day](../hooks/game.new_day.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 

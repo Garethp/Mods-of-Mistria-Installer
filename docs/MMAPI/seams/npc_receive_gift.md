@@ -9,7 +9,7 @@ Announces every gift the moment an NPC receives it.
 | | |
 | --- | --- |
 | **File** | `gml/objects/system/parents/par_NPC.gml` |
-| **Locator** | pristine context: immediately before `var data = self.me.give_gift(item);` |
+| **Locator** | pristine context immediately before `var data = self.me.give_gift(item);` |
 | **Op** | `emit` |
 | **Feeds** | [`npc.gift_received`](../hooks/npc.gift_received.md) |
 | **ctx built** | `{ npc: self, item: item }` |

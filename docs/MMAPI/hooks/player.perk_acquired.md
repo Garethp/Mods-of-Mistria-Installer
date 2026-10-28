@@ -6,7 +6,7 @@ Know when the player has acquired a perk.
 
 ## Contract
 
-Fires at the end of `Ari.acquire_perk(perk)`, after the perk is flagged owned and active, after its acquisition side effects (the Guardian's Shield extra invulnerable hit, the Ancient Inspiration timer reset) have run, and after the stats entry is pushed and the achievements refresh. ctx is `{ perk }`, the `Perk` enum id.
+Fires at the end of `Ari.acquire_perk(perk)`, after the perk is flagged owned and active, after its acquisition side effects (the Guardian's Shield extra invulnerable hit, the Ancient Inspiration timer reset) have run, and after the stats entry is pushed and the achievements refresh. ctx is `{ perk }`.
 
 This hook is observation only, and the flags are already written when handlers run, so a handler that sets `ARI.perks_active[perk]` itself has the last word on whether the perk takes effect. It fires on every acquisition path (the Dragonshrine purchase, the debug CLI grant, and the `ALL_UNLOCKS` loop that grants every perk to a new game) but never on save load, which restores the perk arrays directly. Toggling an owned perk on or off never fires either, because the shrine menu and the debug CLI flip `perks_active` directly without entering `acquire_perk()`. In vanilla play every acquisition is a first acquisition, since the shrine only offers Learn for an unowned perk.
 

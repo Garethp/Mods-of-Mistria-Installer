@@ -1,6 +1,6 @@
 # Seam: player_renown_delta
 
-Filters the renown delta at the top of `Ari.modify_renown()`.
+Filters the renown delta at the top of `Ari.modify_renown()`, once per pending entry at day rollover.
 
 `player_renown_delta` is a **template seam** (`op = "filter"`). It feeds [player.renown_delta](../hooks/player.renown_delta.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
@@ -9,8 +9,8 @@ Filters the renown delta at the top of `Ari.modify_renown()`.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Player/Ari.gml` |
-| **Locator** | pristine context: the head of `modify_renown(amount_to_add)`, before the `set_renown` line |
-| **Op** | `filter` (`try_catch = false`) |
+| **Locator** | pristine context at the head of `modify_renown(amount_to_add)`, before the `set_renown` line |
+| **Op** | `filter` |
 | **Feeds** | [`player.renown_delta`](../hooks/player.renown_delta.md) |
 | **Value filtered** | `amount_to_add` - the renown delta |
 | **ctx built** | `{ player: self }` |

@@ -12,7 +12,7 @@ Filters the floor sprite as a furniture renderer is built.
 | **Locator** | pristine context in `create_furniture_renderer(node)`, between the `winter_floor_sprite` override and the `create_renderable` call that builds the floor renderer |
 | **Op** | `filter` |
 | **Feeds** | [`furniture.floor_sprite`](../hooks/furniture.floor_sprite.md) |
-| **Var** | `sprite_to_use` |
+| **Value filtered** | `sprite_to_use` - the floor sprite about to be assigned to the furniture's floor renderer |
 | **ctx built** | `node` (the furniture node) |
 | **Marker** | `mmapi_furniture_floor_sprite` |
 

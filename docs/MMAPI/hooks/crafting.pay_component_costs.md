@@ -6,7 +6,7 @@ Veto a recipe's material payment, craft for free.
 
 ## Contract
 
-Fires at the top of `pay_component_costs(components, item_id, quantity, context)`, before a recipe's materials are deducted. ctx is `{ item_id, quantity, context }` (`context` is the crafting discipline). Return `false` to skip the payment (craft for free). `undefined` or `true` pays normally.
+Fires at the top of `pay_component_costs(components, item_id, quantity, context)`, before a recipe's materials are deducted. ctx is `{ item_id, quantity, context }`. Return `false` to skip the payment (craft for free). `undefined` or `true` pays normally.
 
 | | |
 | --- | --- |

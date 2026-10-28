@@ -17,16 +17,6 @@ Return a replacement number, or `undefined` to keep the current value.  The stor
 | **ctx** | `{ item, menu }` |
 | **Kind contract** | The callback receives the current value and returns a replacement, or `undefined` to keep the current value. |
 
-### The ctx struct
-
-- `item` - the `LiveItem` being priced (`self` inside `store_value()`).
-- `menu` - the `StoreMenu` pricing the item. `menu.store.id` is the `Store` id and `menu.price_markup` is the store's markup. It is set on every fire, the constructor pass included.
-
-> [!WARNING]
-> `ctx.item` is the live `LiveItem`, and its `prototype` is the one struct every item with that id shares. The hook filters the returned number and never writes to the prototype. A handler that modifies `_ctx.item.prototype.value.store` changes that item's price for every store until the game restarts.
-
-### Where the value lands
-
 - The shelf price label under each icon, as `round(value * price_markup)`.
 - The basket sum, which [store.basket_cost](store.basket_cost.md) then filters.
 - The store tooltip price.
@@ -34,6 +24,14 @@ Return a replacement number, or `undefined` to keep the current value.  The stor
 
 > [!NOTE]
 > The sell price, `bin_value()`, never passes through this hook.
+
+### The ctx struct
+
+- `item` - the `LiveItem` being priced (`self` inside `store_value()`).
+- `menu` - the `StoreMenu` pricing the item. `menu.store.id` is the `Store` id and `menu.price_markup` is the store's markup. It is set on every fire, the constructor pass included.
+
+> [!WARNING]
+> `ctx.item` is the live `LiveItem`, and its `prototype` is the one struct every item with that id shares. The hook filters the returned number and never writes to the prototype. A handler that modifies `_ctx.item.prototype.value.store` changes that item's price for every store until the game restarts.
 
 ## Usage
 

@@ -2,14 +2,15 @@
 
 Filters the mounted base speed where `get_move_speed` chose it, before the shared status-effect multipliers.
 
-`player_mount_speed` is a **text seam**. It feeds [player.mount_speed](../hooks/player.mount_speed.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`player_mount_speed` is a **text seam** (`anchor` + `replace`). It feeds [player.mount_speed](../hooks/player.mount_speed.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Player/Ari.gml` |
-| **Anchor** | the closing walk branch of `get_move_speed`'s base-speed selection (`spd = on_mount ? MOUNT_WALK_SPEED : HUMAN_WALK_SPEED;`) |
+| **Locator** | text anchor on the closing walk branch of `get_move_speed`'s base-speed selection (`spd = on_mount ? MOUNT_WALK_SPEED : HUMAN_WALK_SPEED;`) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`player.mount_speed`](../hooks/player.mount_speed.md) |
 | **Value filtered** | `spd` - the mounted base speed |
 | **ctx built** | `{ player: self }` |

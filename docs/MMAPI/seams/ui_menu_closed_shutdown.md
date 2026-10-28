@@ -2,7 +2,7 @@
 
 Emits per menu as the anchor shuts down and closes everything.
 
-`ui_menu_closed_shutdown` is a **text seam**, a verbatim `anchor`/`replace` edit. It feeds [ui.menu_closed](../hooks/ui.menu_closed.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`ui_menu_closed_shutdown` is a **text seam** (`anchor` + `replace`). It feeds [ui.menu_closed](../hooks/ui.menu_closed.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,6 +10,7 @@ Emits per menu as the anchor shuts down and closes everything.
 | --- | --- |
 | **File** | `gml/scripts/UI/Anchor/Anchor.gml` |
 | **Locator** | text anchor on the anchor shutdown loop (`while self.open_menus.count() > 0`) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`ui.menu_closed`](../hooks/ui.menu_closed.md) |
 | **ctx built** | `{ menu: menu, kind: menu.type }` |
 | **Marker** | `mmapi_ui_run_menu_closed_shutdown` |

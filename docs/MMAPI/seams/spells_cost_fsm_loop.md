@@ -9,7 +9,7 @@ Filters the mana deduction in the player's looping cast state.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Player/AriFsm.gml` |
-| **Locator** | text anchor: `ARI.modify_mana(-SPELLS[self.spell].cost);` inside the `if !MIST.is_running()` block of the looping cast state |
+| **Locator** | text anchor on `ARI.modify_mana(-SPELLS[self.spell].cost);` inside the `if !MIST.is_running()` block of the looping cast state |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`spells.cost`](../hooks/spells.cost.md) |
 | **Value filtered** | `SPELLS[self.spell].cost` - the spell's mana cost |

@@ -20,24 +20,6 @@ The hook fires at two sites, listed under Where It Fires, and both hand the hand
 > [!IMPORTANT]
 > Hot path. This filter fires every step of the Tool state while a tool is in use, and again each time the charge advances. Make the callback's first check its cheapest early-exit.
 
-### The ctx struct
-
-- `x`, `y` - the origin cell the use targets.
-- `range_pattern` - the `RangePattern` value of the current charge level. It is `RangePattern.One` for an uncharged use, and it climbs through `OneByThree`, `ThreeByThree`, `ThreeBySix`, `SixBySix`, and `SixByNine` as the charge advances.
-- `cardinal` - the player's facing `Cardinal`.
-- `item` - the `LiveItem` in use. `item.prototype.tool_type` is a `ToolType` for a tool and `undefined` for seeds, saplings, and grass.
-
-### The value
-
-- The value is an engine `List`, not an array. Read it with `count()` and `get(i)`, add to it with `push(cell)`, and build a cell with `Vec2(x, y)`.
-- The engine builds a new `List` for every dispatch, so a handler can mutate it in place.
-- Cells are grid cells of 8 pixels. A tile spans 2 cells, and the engine's own patterns step by 2.
-- A final value without a working `count()` is discarded, and the engine's `List` is kept. Nothing validates the entries, so every entry must be a `Vec2`.
-- The action loop skips a cell that lies outside the grid.
-- An empty `List` makes the use cover no cells.
-
-### Where It Fires
-
 | Site | When | What The Engine Does With The Final Value |
 | --- | --- | --- |
 | Step | Every step of the Tool state, up to and including the step on which the use acts. | It draws the charging preview from the value while the player charges, and it visits the value's cells on the step the use acts. |
@@ -47,6 +29,22 @@ The hook fires at two sites, listed under Where It Fires, and both hand the hand
 > Answer from ctx alone. The two sites are separate dispatches, and only a handler that returns the same cells at both is charged for the cells it works.
 
 Every use that enters the Tool state passes through the step site. That covers the axe, pickaxe, hoe, shovel, watering can, net, seeds, saplings and planting.
+
+### The ctx struct
+
+- `x`, `y` - the origin cell the use targets.
+- `range_pattern` - the `RangePattern` value of the current charge level. It is `RangePattern.One` for an uncharged use, and it climbs through `OneByThree`, `ThreeByThree`, `ThreeBySix`, `SixBySix`, and `SixByNine` as the charge advances.
+- `cardinal` - the player's facing `Cardinal`.
+- `item` - the `LiveItem` in use. `item.prototype.tool_type` is a `ToolType` for a tool and `undefined` for seeds, saplings, and grass.
+
+### The value List
+
+- The value is an engine `List`, not an array. Read it with `count()` and `get(i)`, add to it with `push(cell)`, and build a cell with `Vec2(x, y)`.
+- The engine builds a new `List` for every dispatch, so a handler can mutate it in place.
+- Cells are grid cells of 8 pixels. A tile spans 2 cells, and the engine's own patterns step by 2.
+- A final value without a working `count()` is discarded, and the engine's `List` is kept. Nothing validates the entries, so every entry must be a `Vec2`.
+- The action loop skips a cell that lies outside the grid.
+- An empty `List` makes the use cover no cells.
 
 ## Usage
 

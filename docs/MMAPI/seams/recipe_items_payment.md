@@ -9,7 +9,7 @@ Drains a list component's cost across the listed ids in order, the player's inve
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Recipe.gml` |
-| **Locator** | text anchor: the Item case of `pay_component_costs`, from the case label through its closing `break` |
+| **Locator** | text anchor on the Item case of `pay_component_costs`, from the case label through its closing `break` |
 | **Feeds** | (no hook) |
 | **Marker** | `mmapi_recipe_items_payment` |
 

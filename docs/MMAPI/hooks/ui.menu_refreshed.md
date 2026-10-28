@@ -8,7 +8,7 @@ React when a menu rebuilds its content.
 
 Fires after a menu rebuilds its content from game state, at the tail of the rebuild function. Three menus emit it today: `ToolbarMenu.update()` (slot items re-resolved from the inventory: subscriber pull, page flips, tab taps, forced rebuilds, constructor), `VitalsMenu.refresh_statuses()` (status icon strip rebuilt: register, cancel, and the expiry poll), and `CraftingMenu.select_category()` (recipe grid rebuilt onto a fresh scroller: the initialize pass after spawn, category tab taps, and the post-craft refresh).
 
-ctx is `{ menu, kind }`, with `kind` read from `menu.type`. Emits only on rebuild edges, never per idle frame. The toolbar and vitals constructors run their rebuild, so those two menus can emit before [ui.menu_opened](ui.menu_opened.md) fires for them (`ctx.menu` is not yet in `ANCHOR.open_menus` then). The crafting menu's first rebuild is the initialize pass `spawn_crafting_menu` runs after spawn, so its emits always come with the menu already open. Handlers must be idempotent and must not unconditionally force another rebuild from inside the handler.
+ctx is `{ menu, kind }`. Emits only on rebuild edges, never per idle frame. The toolbar and vitals constructors run their rebuild, so those two menus can emit before [ui.menu_opened](ui.menu_opened.md) fires for them (`ctx.menu` is not yet in `ANCHOR.open_menus` then). The crafting menu's first rebuild is the initialize pass `spawn_crafting_menu` runs after spawn, so its emits always come with the menu already open. Handlers must be idempotent and must not unconditionally force another rebuild from inside the handler.
 
 | | |
 | --- | --- |

@@ -6,7 +6,7 @@ Know the moment the player reaches a new renown rank.
 
 ## Contract
 
-Fires inside `Ari.set_renown()` when a renown level gain crosses a rank boundary, immediately after [renown.level_gained](renown.level_gained.md). ctx is `{ old_rank, new_rank }`, each as the integer indexes into `RENOWN.ranks`, so `RENOWN.ranks.get(new_rank)` is the rank struct with its name and sprites.
+Fires inside `Ari.set_renown()` when a renown level gain crosses a rank boundary, immediately after [renown.level_gained](renown.level_gained.md). ctx is `{ old_rank, new_rank }`.
 
 A gain within one rank fires `renown.level_gained` alone, and once the final rank is reached, further level gains never fire this hook again. The same caller notes apply as for its sibling. The gameplay path is the day-rollover drain, debug sets also route through, and save load never fires.
 
@@ -19,7 +19,7 @@ A gain within one rank fires `renown.level_gained` alone, and once the final ran
 ### The ctx struct
 
 - `old_rank` - the rank index before the gain.
-- `new_rank` - the rank index after, clamped to the last rank. `RENOWN.ranks.get(new_rank)` resolves the struct.
+- `new_rank` - the rank index after, clamped to the last rank. `RENOWN.ranks.get(new_rank)` resolves the rank struct with its name and sprites.
 
 ## Usage
 

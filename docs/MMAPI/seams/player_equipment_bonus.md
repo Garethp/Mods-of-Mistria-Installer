@@ -9,7 +9,7 @@ Rewrites the equipment bonus lookup's return into a filtered return.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Player/Ari.gml` |
-| **Locator** | text anchor: the `return value;` of the equipment bonus lookup, pinned by the `get_damage_mitigation()` declaration that follows it |
+| **Locator** | text anchor on the `return value;` of the equipment bonus lookup, pinned by the `get_damage_mitigation()` declaration that follows it |
 | **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`player.equipment_bonus`](../hooks/player.equipment_bonus.md) |
 | **Value filtered** | `value` - the computed equipment bonus |

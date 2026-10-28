@@ -1,8 +1,8 @@
 # Seam: npc_heart_points
 
-Reroutes every villager heart-point delta through a filter before it lands.
+Reroutes every villager heart-point delta through a filter before it applies.
 
-`npc_heart_points` is a **text seam** (filter-shaped: it dispatches `mmapi_apply_filters`). It feeds [npc.heart_points](../hooks/npc.heart_points.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`npc_heart_points` is a **text seam** (`anchor` + `replace`). It feeds [npc.heart_points](../hooks/npc.heart_points.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
@@ -10,7 +10,7 @@ Reroutes every villager heart-point delta through a filter before it lands.
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/NPCs/Npc.gml` |
 | **Locator** | text anchor at the head of `Npc.add_heart_points(amount)`, right after `var old = self.heart_level();` |
-| **Op** | text (filter dispatch) |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`npc.heart_points`](../hooks/npc.heart_points.md) |
 | **Value filtered** | `amount` - the heart points delta |
 | **ctx built** | `self` (the `Npc` struct) |

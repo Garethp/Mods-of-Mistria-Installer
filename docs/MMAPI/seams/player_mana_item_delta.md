@@ -2,7 +2,7 @@
 
 Reroutes the mana potion's direct `set_mana` call through `modify_mana`, so item restores fire the mana filter.
 
-`player_mana_item_delta` is a **text seam** (`anchor` + `replace`). It feeds [player.mana_delta](../hooks/player.mana_delta.md), though it dispatches nothing itself - the dispatch lives in [player_mana_delta](player_mana_delta.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`player_mana_item_delta` is a **text seam** (`anchor` + `replace`). It feeds [player.mana_delta](../hooks/player.mana_delta.md), though it dispatches nothing itself. The dispatch lives in [player_mana_delta](player_mana_delta.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 

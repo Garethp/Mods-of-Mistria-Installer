@@ -1,6 +1,6 @@
 # Hook: game.day_changed
 
-Know when the current day has changed - a new day beginning, or a save load landing in a different one.
+Know when the current day has changed.
 
 `game.day_changed` is an **event** hook. Register a callback with `mmapi_on`. See [Hooks](../HOOKS.md) for how registration and dispatch work.
 

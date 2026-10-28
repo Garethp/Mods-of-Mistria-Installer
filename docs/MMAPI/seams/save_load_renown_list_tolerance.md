@@ -1,8 +1,8 @@
 # Engine Fix: save_load_renown_list_tolerance
 
-Caller half of the renown tolerance pair. Keeps dropped entries out of the pending renown list so the end-of-day processor never sees them.
+Keeps dropped renown entries out of the pending list the end-of-day processor walks.
 
-`save_load_renown_list_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. See [Seams](../SEAMS.md).
+`save_load_renown_list_tolerance` is an **engine fix**, an anchored edit with no hook behind it. Nothing dispatches. It is the caller half of the renown tolerance pair, with [save_load_renown_item_tolerance](save_load_renown_item_tolerance.md) as the parser half that drops the entries this edit leaves out. See [Seams](../SEAMS.md).
 
 ## Placement
 

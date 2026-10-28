@@ -1,12 +1,12 @@
 # Hook: fishing.should_reel
 
-Change whether the player reels while waiting for a fish.
+Change whether the player reels from the fishing Wait state this frame.
 
 `fishing.should_reel` is a **filter** hook. Register a callback with `mmapi_filter`. See [Hooks](../HOOKS.md) for how registration and dispatch work.
 
 ## Contract
 
-Fires every step of the player fishing FSM's `FishingState.Wait`, after bite notification handling and before the retract sound, caught/missed handling, and Reel transitions. The filtered value is whether the normal charged or repeated tool input requested a reel. ctx is `{ bite_active }`, where `bite_active` is true while `FISHING.bite_timer` is positive. Return a replacement boolean, or `undefined` to keep the current value.
+Fires every step of the player fishing FSM's `FishingState.Wait`, after bite notification handling and before the retract sound, caught/missed handling, and Reel transitions. The filtered value is whether the normal charged or repeated tool input requested a reel. ctx is `{ bite_active }`. Return a replacement boolean, or `undefined` to keep the current value.
 
 The final true value runs the complete vanilla reel block. While `bite_active` is true that block catches the fish, fills the fishing FSM's celebration data, clears the bite timer, and starts the player and bobber Reel states. Without an active bite it takes the normal Missed path. A final false value remains in Wait, even when the player supplied reel input.
 
@@ -18,6 +18,10 @@ The final true value runs the complete vanilla reel block. While `bite_active` i
 | **Kind contract** | The callback receives the current boolean and returns a replacement, or `undefined` to keep the current value. |
 
 This is a hot hook while the player waits for a fish. Put the cheapest test first and avoid logging on every dispatch.
+
+### The ctx struct
+
+- `bite_active` - `true` while a bite is live, which the seam reads as `FISHING.bite_timer > 0` at the dispatch. A true value with the bite live catches the fish, and a true value without one takes the Missed path.
 
 ## Usage
 

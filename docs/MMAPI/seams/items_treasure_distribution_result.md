@@ -2,15 +2,15 @@
 
 Filters the treasure roll's rolled result on its way out.
 
-`items_treasure_distribution_result` is a **text seam** (filter-shaped: it dispatches `mmapi_apply_filters`). It feeds [items.treasure_distribution](../hooks/items.treasure_distribution.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
+`items_treasure_distribution_result` is a **text seam** (`anchor` + `replace`). It feeds [items.treasure_distribution](../hooks/items.treasure_distribution.md). Mod authors never write seams. You register handlers for the hooks they dispatch. See [Seams](../SEAMS.md).
 
 ## Placement
 
 | | |
 | --- | --- |
 | **File** | `gml/scripts/GameplaySystems/Data/Grid/Breakables.gml` |
-| **Locator** | text anchor at the treasure roll's successful exit: `return [candidate_live_item, is_perk];` |
-| **Op** | text (filter dispatch) |
+| **Locator** | text anchor on `return [candidate_live_item, is_perk];`, the treasure roll's successful exit |
+| **Op** | text (`anchor` + `replace`) |
 | **Feeds** | [`items.treasure_distribution`](../hooks/items.treasure_distribution.md) |
 | **Value filtered** | `[candidate_live_item, is_perk]` - the rolled drop and its perk flag |
 | **ctx built** | `{ x: xx, y: yy }` |

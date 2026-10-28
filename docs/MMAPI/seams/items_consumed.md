@@ -9,7 +9,7 @@ Announces every item the player eats, right after the stat is recorded.
 | | |
 | --- | --- |
 | **File** | `gml/scripts/Player/AriFsm.gml` |
-| **Locator** | pristine context: right after the `GAME_STATS.items_eaten` push in the player FSM's eating logic |
+| **Locator** | pristine context right after the `GAME_STATS.items_eaten` push in the player FSM's eating logic |
 | **Op** | `emit` |
 | **Feeds** | [`items.consumed`](../hooks/items.consumed.md) |
 | **ctx built** | `self.live_item` (the consumed `LiveItem`) |
