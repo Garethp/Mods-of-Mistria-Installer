@@ -51,7 +51,7 @@ version = 2
 [counts]
 hooks = 144
 seams = 162
-engine_fixes = 29
+engine_fixes = 31
 call_rewrites = 1
 extensions = 1
 
@@ -1735,11 +1735,11 @@ replace = '''
         } catch (__mmapi_dialogue_local) {}
 
         if line.next_line_behavior.type == NextLineBehaviorId.Prompts {
-            self.textbox.ask(local, line.next_line_behavior.prompts);
+            self.textbox.ask(local, line.next_line_behavior.prompts); // mmapi_dialogue_run_local_filters
         } else if self.is_info_line {
-            self.textbox.info(local);
+            self.textbox.info(local); // mmapi_dialogue_run_local_filters
         } else {
-            self.textbox.say(local);
+            self.textbox.say(local); // mmapi_dialogue_run_local_filters
         }
     }'''
 marker  = "mmapi_dialogue_run_local_filters"
@@ -1969,11 +1969,11 @@ replace = '''
         var full_orbs = cost div 4;
         var partial = cost - full_orbs * 4;
         var cost_icon = spr_ui_hud_health_mana_ball_on;
-        var icon_count = full_orbs + (partial > 0 ? 1 : 0);
+        var icon_count = full_orbs + (partial > 0 ? 1 : 0); // mmapi_spell_menu_cost
         var positions = centered_positions(icon_count, sprite_get_width(cost_icon), 2);
         for (var i = 0; i < array_length(positions); i++) {
             var pos = positions[i];
-            var sprite = cost_icon;
+            var sprite = cost_icon; // mmapi_spell_menu_cost
             if i >= full_orbs {
                 if partial <= 1 {
                     sprite = spr_ui_hud_health_mana_ball_threethirds;
@@ -1984,7 +1984,7 @@ replace = '''
                 }
             }
             ANCHOR.sprite(self.cost_zone)
-                .set_sprite(sprite)
+                .set_sprite(sprite) // mmapi_spell_menu_cost
                 .set_x(pos)
                 .set_align(Align.Center, Align.Middle)
         }
@@ -2103,7 +2103,7 @@ replace = '''
                         took_damage = true;
                     }
                     var damage_was_acid = has_flag(next_dmg.tarball.flags, CombatFlag.Acid);
-                    var is_dead = false;
+                    var is_dead = false; // mmapi_player_run_incoming_damage_filters
                     if final_dmg < 0 {
                         is_dead = ARI.modify_health(final_dmg, damage_was_acid == false);
                     }'''
@@ -3533,7 +3533,7 @@ anchor  = '''
             .set_x(2)
 '''
 replace = '''
-        var gift_check = ANCHOR.sprite(gift_icon)
+        var gift_check = ANCHOR.sprite(gift_icon) // mmapi_ui_relationship_row_built
             .set_sprite(!npc_data.gift_flag ? spr_ui_generic_checkbox_on : spr_ui_generic_checkbox_off)
             .set_align(Align.RightOut, Align.Middle)
             .set_x(2)
@@ -4572,7 +4572,7 @@ replace = '''
                 for (var i = 0; i < len; i++) {
                     var node = STORAGE_NODES.get(i);
                     if node.use_in_crafting {
-                        for (var j = 0; j < array_length(item_ids); j++) {
+                        for (var j = 0; j < array_length(item_ids); j++) { // mmapi_recipe_items_fulfillment
                             count += node.inventory.item_id_quantity(item_ids[j]);
                         }
                     }
@@ -4634,7 +4634,7 @@ replace = '''
                             continue;
                         }
                         var inventory = node.inventory;
-                        for (var k = 0; k < array_length(item_ids) && count != 0; k++) {
+                        for (var k = 0; k < array_length(item_ids) && count != 0; k++) { // mmapi_recipe_items_payment
                             var amount_to_remove = min(count, inventory.item_id_quantity(item_ids[k]));
                             inventory.remove(item_ids[k], amount_to_remove);
                             count -= amount_to_remove;
@@ -5120,6 +5120,110 @@ replace = '''
         }
 '''
 marker  = "mmapi_eod_prep_cancels_intro_fade"
+
+# PlayerAnimationRuntime carries a scale field that draw_each_component
+# derives x_scale and y_scale from and threads through every component's
+# draw call, and PlayerAnimator.draw scales its own frame offsets to match.
+# The held item is the exception. Its size follows the scale, but its
+# position is built from the frame offset and the sprite's origin offsets,
+# measured in unscaled pixels, and on the modifier animation path the y
+# frame offset, the non-West x origin and the y origin are never multiplied.
+# At any scale but 1 the item draws at the right size in the wrong place.
+# This multiplies the y frame offset local by y_scale, the non-West x origin
+# by x_scale, and the y origin by y_scale at both places it is added, the
+# held-animal render callback call and the draw_sprite_ext call, which puts
+# every term of the position on the scale and lands the item at the scaled
+# copy of its scale-1 position. The x frame offset and the West x origin are
+# untouched because both already carry x_scale. At scale 1 every
+# multiplication is an exact identity, and no runtime instance in vanilla
+# holds an item at any other scale. The companion below covers the base
+# animation path of the same case, and the two are read together.
+[[engine_fix]]
+name    = "held_item_modifier_scale"
+file    = "gml/scripts/PlayerAnimationRuntime/PlayerAnimationRuntime.gml"
+anchor  = '''
+                    var x_offset = x_off + x_scale * (slot.modifier.current_frame.offset.x + diff_offset.x - base_offset.x);
+                    var y_offset = slot.modifier.current_frame.offset.y + diff_offset.y - base_offset.y;
+
+                    var flip_item = x_scale;
+
+                    //
+                    var held_sprite_x_offset = self.held_sprite.x_offset;
+
+                    if self.cardinal == Cardinal.West {
+                        if self.held_sprite.flips == false {
+                            flip_item = abs(flip_item);
+                        }
+                        held_sprite_x_offset = x_scale * self.held_sprite.flipped_x_offset;
+                    }
+
+                    if self.held_animal_render_callback != undefined {
+                        self.held_animal_render_callback(
+                            draw_x + x_offset + held_sprite_x_offset,
+                            draw_y + y_offset + self.held_sprite.y_offset,
+                            x_scale,
+                            y_scale,
+                            rev,
+                        );
+                    } else {
+                        draw_sprite_ext(
+                            self.held_sprite.sprite_index,
+                            self.held_sprite.image_index,
+                            draw_x + x_offset + held_sprite_x_offset,
+                            draw_y + y_offset + self.held_sprite.y_offset,
+'''
+replace = '''
+                    var x_offset = x_off + x_scale * (slot.modifier.current_frame.offset.x + diff_offset.x - base_offset.x);
+                    var y_offset = y_scale * (slot.modifier.current_frame.offset.y + diff_offset.y - base_offset.y); // mmapi_held_item_modifier_scale
+
+                    var flip_item = x_scale;
+
+                    //
+                    var held_sprite_x_offset = x_scale * self.held_sprite.x_offset; // mmapi_held_item_modifier_scale
+
+                    if self.cardinal == Cardinal.West {
+                        if self.held_sprite.flips == false {
+                            flip_item = abs(flip_item);
+                        }
+                        held_sprite_x_offset = x_scale * self.held_sprite.flipped_x_offset;
+                    }
+
+                    if self.held_animal_render_callback != undefined {
+                        self.held_animal_render_callback(
+                            draw_x + x_offset + held_sprite_x_offset,
+                            draw_y + y_offset + y_scale * self.held_sprite.y_offset, // mmapi_held_item_modifier_scale
+                            x_scale,
+                            y_scale,
+                            rev,
+                        );
+                    } else {
+                        draw_sprite_ext(
+                            self.held_sprite.sprite_index,
+                            self.held_sprite.image_index,
+                            draw_x + x_offset + held_sprite_x_offset,
+                            draw_y + y_offset + y_scale * self.held_sprite.y_offset, // mmapi_held_item_modifier_scale
+'''
+marker  = "mmapi_held_item_modifier_scale"
+
+# The companion of held_item_modifier_scale. The base animation path of the
+# held-item case scales its x position in full, with the frame's x offset and
+# the sprite's x origin both inside the x_scale product, but adds the frame's
+# y offset and the y origin to draw_y unscaled. This multiplies that y sum by
+# y_scale so the y line takes the shape of the x line above it. The x line is
+# untouched because it already carries x_scale. At scale 1 the multiplication
+# is an exact identity.
+[[engine_fix]]
+name    = "held_item_base_scale"
+file    = "gml/scripts/PlayerAnimationRuntime/PlayerAnimationRuntime.gml"
+anchor  = '''
+                        draw_x + x_off + x_scale * (slot.base.current_frame.offset.x + held_sprite_x_offset),
+                        draw_y + slot.base.current_frame.offset.y + self.held_sprite.y_offset,
+'''
+replace = '''
+                        draw_x + x_off + x_scale * (slot.base.current_frame.offset.x + held_sprite_x_offset),
+                        draw_y + y_scale * (slot.base.current_frame.offset.y + self.held_sprite.y_offset), // mmapi_held_item_base_scale
+'''
+marker  = "mmapi_held_item_base_scale"
 
 # --- extension points ----------------------------------------------------------------
 
