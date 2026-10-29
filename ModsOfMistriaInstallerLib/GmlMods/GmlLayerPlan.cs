@@ -15,7 +15,8 @@ public class ExcludedMod(GmlModCode mod)
 // store. The write phase copies Added and Seamed into the rebuilt archive.
 public class GmlLayerPlan
 {
-    // rel → bytes: the mmapi framework, the surviving mods' gml, the hook catalog
+    // rel → bytes: the mmapi framework, the surviving mods' gml, the hook
+    // catalog, the install stamp
     public Dictionary<string, byte[]> Added { get; } = [];
 
     public IReadOnlyDictionary<string, StagedFile> Seamed { get; internal set; } =

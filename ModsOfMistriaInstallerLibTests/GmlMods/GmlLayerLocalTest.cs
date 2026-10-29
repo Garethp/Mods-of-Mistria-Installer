@@ -53,7 +53,8 @@ public class GmlLayerLocalTest
             GmlLayerPlan plan;
             using (var pristine = new ZipPristineSource(store.BackupPath))
             {
-                plan = GmlLayer.Stage(catalog, pristine, [gmlMod!], gate);
+                plan = GmlLayer.Stage(catalog, pristine, [gmlMod!], gate,
+                    new GmlLayerOptions { InstallerVersion = "0.0.0" });
             }
 
             Assert.That(plan.Excluded, Is.Empty);
@@ -78,6 +79,7 @@ public class GmlLayerLocalTest
                 }
 
                 Assert.That(live.GetEntry(SeamStager.HookCatalogRel), Is.Not.Null);
+                Assert.That(live.GetEntry(SeamStager.InstallStampRel), Is.Not.Null);
                 Assert.That(live.GetEntry("assets/gml/scripts/example_mod/core/State.gml"), Is.Not.Null);
 
                 foreach (var rel in plan.Seamed.Keys)

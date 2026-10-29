@@ -13,12 +13,15 @@ public class GmlLayerOptions
     public bool StrictLints { get; init; }
 
     public bool FailOnSkip { get; init; }
+
+    public string? InstallerVersion { get; init; }
 }
 
 // Stages the whole GML layer in memory. That is the mmapi framework, each
-// behavioural mod's gml, the seamed engine files and the generated hook
-// catalog. Nothing is written. A stale anchor throws before the store is
-// touched, and every mod-content failure excludes that one mod and proceeds.
+// behavioural mod's gml, the seamed engine files, the generated hook
+// catalog and the install stamp. Nothing is written. A stale anchor throws
+// before the store is touched, and every mod-content failure excludes that
+// one mod and proceeds.
 public static class GmlLayer
 {
     // The exclusion fixpoint's backstop. Survivors shrink monotonically and
@@ -77,6 +80,12 @@ public static class GmlLayer
         //    expensive part and never re-run.
         var stage = SeamStager.StageAll(catalog, pristine);
         plan.Added[SeamStager.HookCatalogRel] = Encoding.UTF8.GetBytes(stage.HookCatalogGml);
+
+        // 3a. The install stamp, when the running installer knows its release.
+        var installerVersion = options.InstallerVersion ?? Utils.InstallerVersion.Current();
+        if (installerVersion is not null)
+            plan.Added[SeamStager.InstallStampRel] =
+                Encoding.UTF8.GetBytes(InstallStampRenderer.Render(installerVersion));
 
         // 3b to 7, in rounds. A dropped mod's generated lines must disappear
         //    with it, so each round re-derives from the snapshot rather than

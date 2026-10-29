@@ -51,7 +51,7 @@ version = 2
 [counts]
 hooks = 144
 seams = 162
-engine_fixes = 31
+engine_fixes = 32
 call_rewrites = 1
 extensions = 1
 
@@ -5224,6 +5224,41 @@ replace = '''
                         draw_y + y_scale * (slot.base.current_frame.offset.y + self.held_sprite.y_offset), // mmapi_held_item_base_scale
 '''
 marker  = "mmapi_held_item_base_scale"
+
+# The title menu's setup_main_screen() labels the bottom-left corner with the
+# game version, which the runtime suffixes with "(modified)" whenever it
+# reports the archive or the command line as altered, and the debug-tools and
+# debug-assertions builds stack their own labels above it twelve pixels per
+# row. This adds one more label above those, naming the MOMI release that
+# built the archive, so the title screen says which installer is live and not
+# only that something modified the game. The row is the first free one above
+# the engine's labels, so the stamp never overlaps the tools or asserts rows.
+# The release comes from the generated install stamp through the accessor
+# form, so a build without the stamp skips the label and the screen is
+# unmodified.
+[[engine_fix]]
+name    = "title_momi_version"
+file    = "gml/scripts/UI/Anchor/Menus/TitleMenu.gml"
+anchor  = '''
+                self.sha_text.set_text(display);
+            })
+'''
+replace = '''
+                self.sha_text.set_text(display);
+            })
+
+        var momi_version = global[$ "__mmapi_installer_version"];
+        if momi_version != undefined {
+            var momi_row = DEBUG_ASSERTIONS ? 3 : (DEBUG_TOOLS ? 2 : 1);
+            ANCHOR.text(self.canvas)
+                .set_text("MOMI v" + momi_version)
+                .set_align(Align.LeftIn, Align.BottomIn)
+                .set_xy(2, -12 * momi_row)
+                .set_lut(COMMON_LUT, CommonLutIndex.WhiteOnGreen)
+                .force_font(fnt_mistria_birdseed);
+        } // mmapi_title_momi_version
+'''
+marker  = "mmapi_title_momi_version"
 
 # --- extension points ----------------------------------------------------------------
 
