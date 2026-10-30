@@ -21,7 +21,7 @@ The catalog is `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`, embedded int
 
 The catalog opens with a `[counts]` table stating how many records of each type follow. The loader refuses a catalog whose records do not match that table, so a truncated or mis-merged file fails at load time instead of shipping a partial hook surface.
 
-The shipped catalog currently declares **144 hooks**, fed by **162 seams**, **31 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The [Catalog](CATALOG.md) gives each one its own page.
+The shipped catalog currently declares **144 hooks**, fed by **162 seams**, **32 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The [Catalog](CATALOG.md) gives each one its own page.
 
 MOMI also renders the hook declarations into `mmapi_hook_catalog.gml` at install time, so the runtime can check registrations and answer introspection. See [The Installed Catalog](HOOKS.md#the-installed-catalog).
 
@@ -42,10 +42,10 @@ For the day boundary specifically, the in-engine [game.new_day](hooks/game.new_d
 
 ## How MOMI Applies The Catalog
 
-MOMI stages the GML layer in memory against the pristine archive before it starts the rebuild. The layer is staged only when at least one selected mod contains a `gml/` tree.
+MOMI stages the GML layer in memory against the pristine archive before it starts the rebuild. The layer is staged whenever at least one mod is selected, with or without a `gml/` tree, and also with no mods when the extension ledger still holds assignments, since its vacancies keep a save's references resolving. Otherwise the layer is skipped and the rebuilt archive carries no framework.
 
 1. MOMI loads and validates the catalog, then orders seams and engine fixes by catalog order plus `depends_on` edges.
-2. It adds the framework sources, applies every seam and engine fix to pristine engine files, performs the tree-wide call rewrites, and renders `mmapi_hook_catalog.gml`.
+2. It adds the framework sources, applies every seam and engine fix to pristine engine files, performs the tree-wide call rewrites, renders `mmapi_hook_catalog.gml`, and writes `mmapi_install_stamp.gml` beside it, one global naming the installer release.
 3. It adds each mod's GML, checks export and install-namespace collisions, verifies `requires_hooks`, and runs the warning-tier lints.
 4. It runs the compile gate when a checker backend is available. A release normally carries one, while an `Auto` development build logs and skips this pass when none resolves.
 5. Only the completed plan is written into the whole-archive rebuild.

@@ -26,6 +26,8 @@ public static class SeamStager
 {
     public const string HookCatalogRel = "assets/gml/scripts/mmapi/mmapi_hook_catalog.gml";
 
+    public const string InstallStampRel = "assets/gml/scripts/mmapi/mmapi_install_stamp.gml";
+
     // The framework's destination prefix. The trailing slash is load-bearing:
     // the delivery, the gate's shared set, the export scan and the call-rewrite
     // exclusion all match it, and a mod whose namespace merely starts with

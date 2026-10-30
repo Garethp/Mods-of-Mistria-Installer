@@ -54,6 +54,7 @@ public class ModInstallerTest
         var contentMod = ContentMod("contentmod");
 
         var result = new ModInstaller(_fom, "").InstallMods([gmlMod, contentMod], (_, _) => { },
+            gmlOptions: new GmlLayerOptions { InstallerVersion = "9.9.9" },
             gateMode: CompileGateMode.Off);
 
         Assert.That(result.Installed, Is.EqualTo(new IMod[] { gmlMod, contentMod }));
@@ -66,6 +67,8 @@ public class ModInstallerTest
             Assert.That(ReadEntry(live, "assets/gml/objects/Game.gml"), Does.Contain("__momi_test_game_step"));
             Assert.That(live.GetEntry("assets/gml/scripts/mmapi/mmapi.gml"), Is.Not.Null);
             Assert.That(live.GetEntry(SeamStager.HookCatalogRel), Is.Not.Null);
+            Assert.That(ReadEntry(live, SeamStager.InstallStampRel),
+                Does.Contain("global.__mmapi_installer_version = \"9.9.9\";"));
             Assert.That(live.GetEntry("assets/gml/scripts/testmod/core/State.gml"), Is.Not.Null);
             Assert.That(live.GetEntry("manifest.toml"), Is.Not.Null);
         }

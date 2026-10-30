@@ -54,6 +54,7 @@ public class GmlCompileGateTest
             .Select(src => Write(Path.GetFileName(src), File.ReadAllText(src)))
             .ToList();
         targets.Add(Write("mmapi_hook_catalog.gml", HookCatalogRenderer.Render(catalog)));
+        targets.Add(Write("mmapi_install_stamp.gml", InstallStampRenderer.Render("0.0.0")));
 
         Assert.DoesNotThrow(() => gate.RunFiles(targets));
     }

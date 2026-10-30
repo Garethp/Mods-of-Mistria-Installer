@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **144 hooks**, fed by **162 seams**, **31 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **144 hooks**, fed by **162 seams**, **32 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -402,6 +402,7 @@ Hook-less edits the catalog also carries:
 | [eod_prep_cancels_intro_fade](seams/eod_prep_cancels_intro_fade.md) | engine fix | Cancels the stored intro fade-in chain when the player commits to the end of the day, so a tap during the black transition no longer strands the sequence waiting on `is_out()`. |
 | [held_item_modifier_scale](seams/held_item_modifier_scale.md) | engine fix | Scales the held item's frame offset and sprite origin by the player animation runtime's `scale` field on the modifier animation path, so the item stays in place at any scale instead of only at 1. |
 | [held_item_base_scale](seams/held_item_base_scale.md) | engine fix | Scales the held item's frame offset and sprite origin by the player animation runtime's `scale` field on the base animation path, matching the x axis the engine already scales. |
+| [title_momi_version](seams/title_momi_version.md) | engine fix | Labels the title screen with the MOMI release that built the archive, one row above the version line the engine already draws there. |
 | [local_get_dispatch](seams/local_get_dispatch.md) | call rewrite | Reroutes every direct GML `local_get()` call through the framework's localisation wrapper, feeding `local.get` and `local.missing`. |
 
 ## Extension Points

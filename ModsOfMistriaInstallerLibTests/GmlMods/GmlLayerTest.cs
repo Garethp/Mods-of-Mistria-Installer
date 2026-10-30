@@ -355,6 +355,7 @@ public class GmlLayerTest
         var delivered = plan.Added
             .Where(e => e.Key.StartsWith(SeamStager.MmapiTreePrefix, StringComparison.Ordinal))
             .Where(e => e.Key != SeamStager.HookCatalogRel)
+            .Where(e => e.Key != SeamStager.InstallStampRel)
             .ToDictionary(e => e.Key, e => e.Value);
         Assert.That(delivered.Keys,
             Is.EquivalentTo(sources.Select(s => SeamStager.MmapiTreePrefix + s.Name)));
@@ -363,6 +364,17 @@ public class GmlLayerTest
                 $"{name}: delivered bytes differ from the embedded payload");
 
         Assert.That(plan.Added, Contains.Key(SeamStager.HookCatalogRel));
+    }
+
+    [Test]
+    public void ShouldStampTheInstallerReleaseBesideTheHookCatalog()
+    {
+        var plan = Stage(new GmlLayerOptions { InstallerVersion = "1.2.3" });
+
+        var stamp = Encoding.UTF8.GetString(plan.Added[SeamStager.InstallStampRel]);
+        Assert.That(stamp, Does.StartWith("//"));
+        Assert.That(stamp, Does.Contain("global.__mmapi_installer_version = \"1.2.3\";"));
+        Assert.That(SeamStager.InstallStampRel, Does.StartWith(SeamStager.MmapiTreePrefix));
     }
 
     [Test]
