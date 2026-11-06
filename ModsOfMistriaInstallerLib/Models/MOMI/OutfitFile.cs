@@ -20,6 +20,7 @@ public class OutfitFile
 
     // Optional — written to player_assets.toml when present.
     [TomlPropertyName("price_override")] public int? PriceOverride { get; init; }
+    [TomlPropertyName("hide_hair")] public bool? HideHair { get; init; }
 
     // Resolved sprite names
     public string ResolvedOutfitSprite => OutfitSprite ?? $"spr_player_{Id}_{UiSlot}";
