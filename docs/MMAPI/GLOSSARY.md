@@ -30,6 +30,7 @@ Plain-language definitions of the terms this documentation uses.
 | **call rewrite** | A tree-wide redirect of direct calls from one native function name to an MMAPI wrapper, used when no GML body exists to seam. |
 | **pristine source** | The untouched game archive used as the only base for seam matching and GML staging. |
 | **vanilla** | The game's own unmodded behavior and data, as distinct from the pristine source, which is the unmodified archive. |
+| **fiddle content** | The game's own data, the TOML files under `assets/fiddle/` that the engine reads at boot for items, locations, recipes, stores and the rest. A mod's own entries merge into those files at install, so a name a save carries can come from a mod. One record is a "fiddle entry" and its name is a "fiddle key". |
 | **staged tree** | The in-memory future GML tree after earlier edits have composed but before the archive rebuild is written. |
 | **compile gate** | The checker pass over the staged framework and each mod. A shared failure aborts, while an individual mod failure skips that mod. |
 | **boot** | A mod's top-level loading phase while the game is still starting. It is memory-only, with no live player or room and no file IO. |

@@ -2,7 +2,7 @@
 
 [← MMAPI](MMAPI.md)
 
-Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **144 hooks**, fed by **162 seams**, **32 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
+Every named hook the seam catalog declares has its own page, as does every seam, engine fix, call rewrite, and extension point behind them. The catalog currently declares **144 hooks**, fed by **162 seams**, **42 engine fixes**, and **1 call rewrite**, plus **1 extension point**. The authoritative source for all of it is the seam catalog itself, `ModsOfMistriaInstallerLib/Seam/Payload/seams.toml`. See [Seams](SEAMS.md).
 
 Each hook has exactly one kind, and each kind has one registration directive. A handler registered with the wrong directive never runs and produces only a warning in the MMAPI log. See [Hooks](HOOKS.md).
 
@@ -397,6 +397,16 @@ Hook-less edits the catalog also carries:
 | [save_load_infusion_tolerance](seams/save_load_infusion_tolerance.md) | engine fix | An item's unknown infusion is dropped with a warn instead of aborting the load. |
 | [save_load_animal_variant_tolerance](seams/save_load_animal_variant_tolerance.md) | engine fix | A barn/coop animal's unknown variant falls back to its kind's first variant instead of crashing during gameplay. |
 | [save_load_mount_variant_tolerance](seams/save_load_mount_variant_tolerance.md) | engine fix | The mount's unknown variant falls back to its kind's first variant instead of crashing during gameplay. |
+| [save_load_props_tolerance](seams/save_load_props_tolerance.md) | engine fix | A props entry for an unknown location is dropped with a warn instead of aborting the load. |
+| [save_load_song_override_tolerance](seams/save_load_song_override_tolerance.md) | engine fix | A song override keyed to an unknown location is skipped instead of aborting the load. |
+| [save_load_last_bed_tolerance](seams/save_load_last_bed_tolerance.md) | engine fix | A last bed in an unknown location is dropped with a warn instead of aborting the load. |
+| [save_load_save_position_setup_tolerance](seams/save_load_save_position_setup_tolerance.md) | engine fix | A save position in an unknown location places Ari at the home safe spot instead of crashing before the load begins. |
+| [save_load_save_position_tolerance](seams/save_load_save_position_tolerance.md) | engine fix | A save position in an unknown location is dropped with a warn instead of aborting the load. |
+| [save_load_npc_location_tolerance](seams/save_load_npc_location_tolerance.md) | engine fix | An NPC saved in an unknown location is flagged with a warn instead of aborting the load. |
+| [save_load_npc_location_fallback](seams/save_load_npc_location_fallback.md) | engine fix | Sends an NPC flagged by the location half to Aldaria on the basement schedule, the engine's own recovery for a lost schedule. |
+| [save_load_dyn_grid_tolerance](seams/save_load_dyn_grid_tolerance.md) | engine fix | A building interior in an unknown location is left as an empty slot, and the building that owned it is removed unless animals are housed in it, instead of aborting the load. |
+| [save_load_grid_file_guard](seams/save_load_grid_file_guard.md) | engine fix | A serializable location with no grid file in the save takes the first time setup path instead of aborting the load. |
+| [save_load_lost_items_relocate](seams/save_load_lost_items_relocate.md) | engine fix | Lost items left in an unknown location or a dropped building interior are moved to Town beside the Lost and Found box instead of being forgotten. |
 | [game_stats_seed_on_load](seams/game_stats_seed_on_load.md) | engine fix | Seeds the per-name game-stats structs on every load, so content added after a save was written cannot crash its first stats increment. |
 | [eod_intro_fade_cancel](seams/eod_intro_fade_cancel.md) | engine fix | Keeps the end-of-day menu's intro fade-in chain in a field and clears the field when it fires, so a Next Day tap that lands before the fade-in starts can cancel it. |
 | [eod_prep_cancels_intro_fade](seams/eod_prep_cancels_intro_fade.md) | engine fix | Cancels the stored intro fade-in chain when the player commits to the end of the day, so a tap during the black transition no longer strands the sequence waiting on `is_out()`. |
