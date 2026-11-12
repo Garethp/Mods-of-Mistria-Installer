@@ -51,7 +51,7 @@ version = 2
 [counts]
 hooks = 144
 seams = 162
-engine_fixes = 32
+engine_fixes = 42
 call_rewrites = 1
 extensions = 1
 
@@ -4869,23 +4869,23 @@ marker  = "mmapi_game_stats_seed"
 # deserialize_array_bool drops already sit on that tolerant path in the
 # engine, so no fix covers them. A daily used-object flag, a pending renown
 # donation, the pet's item queue, a construction node and an item's infusion
-# each still carry such a name, and a barn/coop or mount variant is copied
-# raw and dereferenced fatally during gameplay instead. One unknown name
-# aborts the load natively, with no dialog and no error_log.json entry,
-# straight back to the title screen, so removing a mod whose content a save
-# names bricks the save until the mod returns. The fixes below route each
-# site through the tolerant variant, or normalize the variant, dropping or
-# replacing the unknown entry with a warn so the next save writes the
-# cleansed data. The tolerant converters they call are the engine's own try_
-# variants, the same family the perks, items and recipes lines use. On an
-# intact install every name resolves, so the new arms never run and
-# behaviour is identical to vanilla. The renown path needs two edits, one
-# for its parser and one for its caller.
+# each still carry such a name, and a barn/coop or mount variant is copied raw
+# and dereferenced fatally during gameplay instead. One unknown name aborts
+# the load natively, with no log line naming it and no error_log.json entry,
+# only the invalid save popup and the title screen, so removing a mod whose
+# content a save names bricks the save until the mod is reinstalled. The fixes
+# below route each site through the tolerant variant, or normalize the
+# variant, dropping or replacing the unknown entry with a warn so the next
+# save writes the cleansed data. The tolerant converters they call are the
+# engine's own try_ variants, the same family the perks, items and recipes
+# lines use. On an intact install every name resolves, so the new arms never
+# run and behavior is identical to vanilla. The renown path needs two edits,
+# one for its parser and one for its caller.
 
 # The used-objects daily flag line resolves names through a fatal
 # converter. Swapping in the tolerant one routes unknown object names
 # through deserialize_array_bool's existing skip, which names them in the
-# log. Object prototypes are fiddle content, so the domain is mod-reachable.
+# log. Object prototypes are fiddle content, so mods can mint object names.
 [[engine_fix]]
 name    = "save_load_used_objects_tolerance"
 file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
@@ -5064,6 +5064,310 @@ replace = '''
             ARI.mount.variant = __mmapi_mv_keys[0];
         }'''
 marker  = "mmapi_save_mount_variant_tolerance"
+
+# The location names a save carries are the same hazard. A mod can mint a
+# LocationId member by adding a fiddle entry for the location, which the
+# installer merges, and every location the roster knows is named in the save
+# whether or not Ari ever stood there, because the props and song override
+# tables are written with one key per member. Removing a location mod
+# therefore strands every save written while it was installed, not only saves
+# made inside its rooms. The fixes below cover each fatal read of a location
+# name on the load path, and one engine check that a newly serializable
+# location fails before its first file exists. The world fountain flags
+# already use the tolerant converter, and the decor, stats and lost item
+# tables are looked up by name and never convert their keys, so they need
+# nothing.
+
+# The props table is restored with apply_struct_to_array over every saved
+# key through the fatal converter, and the saver writes one key per location
+# whether or not the location holds a prop. The swap to the tolerant variant
+# is the one the items_sold line beside it already makes. apply_struct_to_array
+# skips a key whose converter returns undefined, and the closure names the
+# location in the log first.
+[[engine_fix]]
+name    = "save_load_props_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    apply_struct_to_array(
+        PROPS.world,
+        files.gamedata.props,
+        string_to_location_id,'''
+replace = '''
+    apply_struct_to_array(
+        PROPS.world,
+        files.gamedata.props,
+        function(__mmapi_prop_loc) { // mmapi_save_props_tolerance
+            var __mmapi_prop_id = try_string_to_location_id(__mmapi_prop_loc);
+            if (__mmapi_prop_id == undefined) {
+                warn("MMAPI: save carried a props entry for unknown location '{}' - dropped", __mmapi_prop_loc);
+            }
+            return __mmapi_prop_id;
+        },'''
+marker  = "mmapi_save_props_tolerance"
+
+# The song override table is restored by a loop over every saved key through
+# the fatal converter, and the saver writes one key per location, most of
+# them holding no override. An unknown key is skipped. The warn fires only
+# when the key held an override, so the empty keys a removed location leaves
+# behind are dropped quietly, the way the loop treats a vanilla key with no
+# override.
+[[engine_fix]]
+name    = "save_load_song_override_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+        ARI.song_overrides[string_to_location_id(keys[i])] = overrides[keys[i]];'''
+replace = '''
+        var __mmapi_song_loc = try_string_to_location_id(keys[i]); // mmapi_save_song_override_tolerance
+        if (__mmapi_song_loc == undefined) {
+            if (overrides[keys[i]] != undefined) {
+                warn("MMAPI: save carried a song override for unknown location '{}' - dropped", keys[i]);
+            }
+            continue;
+        }
+        ARI.song_overrides[__mmapi_song_loc] = overrides[keys[i]];'''
+marker  = "mmapi_save_song_override_tolerance"
+
+# The last bed used resolves its location through the fatal converter. An
+# unknown location drops the record, and player_bed() already recovers from
+# an undefined record by searching every home grid for a bed, with its own
+# warn, the same path it takes when the saved bed node is gone.
+[[engine_fix]]
+name    = "save_load_last_bed_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+        return {
+            location_id: string_to_location_id(v.location_id),
+            ni: v.ni,'''
+replace = '''
+        var __mmapi_bed_loc = try_string_to_location_id(v.location_id); // mmapi_save_last_bed_tolerance
+        if (__mmapi_bed_loc == undefined) {
+            warn("MMAPI: save carried a last bed in unknown location '{}' - dropped", v.location_id);
+            return undefined;
+        }
+        return {
+            location_id: __mmapi_bed_loc,
+            ni: v.ni,'''
+marker  = "mmapi_save_last_bed_tolerance"
+
+# Ari's saved position is read twice when a save is loaded. The first read
+# is here in Setup.enter_game, before the taxi has chosen a room and before
+# load_game runs. It is outside the load's own catch, so an unknown
+# location is a hard crash rather than the return to the title screen the
+# other sites produce. The fix resolves the name first and, when it is
+# unknown, places Ari at the home safe spot player_home_safe_position would
+# choose. That helper reads DECOR, which Game has not constructed yet at this
+# point, so the two vectors are chosen here from the player file's
+# size_upgrade the same way the helper chooses them.
+[[engine_fix]]
+name    = "save_load_save_position_setup_tolerance"
+file    = "gml/objects/Setup.gml"
+anchor  = '''
+                            location_position = deserialize_location_position(player_data.save_position);'''
+replace = '''
+                            var __mmapi_sp = player_data.save_position; // mmapi_save_position_setup_tolerance
+                            if (try_string_to_location_id(__mmapi_sp.location_id) == undefined) {
+                                warn("MMAPI: save position names unknown location '{}' - placing Ari at home", __mmapi_sp.location_id);
+                                var __mmapi_sp_small = string_to_home_upgrade(player_data.size_upgrade) == HomeUpgrade.Small;
+                                location_position = new LocationPosition(LocationId.PlayerHome, __mmapi_sp_small ? Vec2(184, 244) : Vec2(184, 308));
+                            } else {
+                                location_position = deserialize_location_position(__mmapi_sp);
+                            }'''
+marker  = "mmapi_save_position_setup_tolerance"
+
+# The second read of Ari's saved position, in load_game. Its only reader is
+# the saver, and both save callers assign a fresh position on the line before
+# they save, the end of day menu from player_wake_position and the journal
+# from the journal's own spot, so an unknown location can leave the field
+# undefined and nothing dereferences it. That matches how the engine treats
+# the last bed record, undefined and derived again when needed.
+[[engine_fix]]
+name    = "save_load_save_position_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+    ARI.save_position = opt_and_then(files.player[$ "save_position"], deserialize_location_position);'''
+replace = '''
+    ARI.save_position = opt_and_then(files.player[$ "save_position"], function(__mmapi_sp) { // mmapi_save_position_tolerance
+        if (try_string_to_location_id(__mmapi_sp.location_id) == undefined) {
+            warn("MMAPI: save carried a save position in unknown location '{}' - dropped", __mmapi_sp.location_id);
+            return undefined;
+        }
+        return deserialize_location_position(__mmapi_sp);
+    });'''
+marker  = "mmapi_save_position_tolerance"
+
+# Every NPC blob carries a location position that Npc.deserialize resolves
+# through the fatal converter. This half resolves the name first and records
+# whether it was unknown in a local the companion below reads. A known name
+# takes the pristine line.
+[[engine_fix]]
+name    = "save_load_npc_location_tolerance"
+file    = "gml/scripts/GameplaySystems/NPCs/Npc.gml"
+anchor  = '''
+        self.location_position = deserialize_location_position(value.location_position);'''
+replace = '''
+        var __mmapi_npc_lost = try_string_to_location_id(value.location_position.location_id) == undefined; // mmapi_save_npc_location_tolerance
+        if (__mmapi_npc_lost) {
+            warn("MMAPI: save carried {NpcId} in unknown location '{}' - sent to Aldaria on the basement schedule", self.id, value.location_position.location_id);
+        } else {
+            self.location_position = deserialize_location_position(value.location_position);
+        }'''
+marker  = "mmapi_save_npc_location_tolerance"
+
+# The companion half. The engine already has a recovery for an NPC whose
+# saved schedule no longer exists. It starts the basement schedule and stands
+# the NPC at Aldaria's default trellis point, and that is the right outcome
+# for an NPC whose saved location no longer exists either, because resuming
+# the saved schedule from Aldaria would pathfind the NPC out on an itinerary
+# built for the missing room. When the location was unknown, this skips the
+# schedule reload and takes the same two steps, without the engine's report
+# of a missing schedule, since the schedule itself was found. The local it
+# reads is declared by the half above, so the dependency edge is real.
+[[engine_fix]]
+name    = "save_load_npc_location_fallback"
+file    = "gml/scripts/GameplaySystems/NPCs/Npc.gml"
+depends_on = ["save_load_npc_location_tolerance"]
+anchor  = '''
+        var output = T2R.schedule_reload(self.id, schedule_name, CLOCK.time, value.had_arrived);
+        if output == undefined {'''
+replace = '''
+        var output = __mmapi_npc_lost ? undefined : T2R.schedule_reload(self.id, schedule_name, CLOCK.time, value.had_arrived); // mmapi_save_npc_location_fallback
+        if __mmapi_npc_lost {
+            T2R.schedule_start(self.id, "Schedules/basement_schedule");
+            var __mmapi_npc_pt = trellis_point_find_by_name(rm_aldaria, "default");
+            self.location_position = new LocationPosition(LocationId.Aldaria, Vec2(__mmapi_npc_pt.x, __mmapi_npc_pt.y));
+        } else if output == undefined {'''
+marker  = "mmapi_save_npc_location_fallback"
+
+# A building interior names its location in its own file, and the dynamic grid
+# loop resolves it through the fatal converter. An unknown location leaves the
+# slot undefined, which is the state the engine itself leaves when a building
+# is demolished, so the saver, the end of day loops and the lost item pass
+# already handle it. The building that owned the interior is then treated the
+# way a demolition would treat it. The engine refuses a demolition only for a
+# stable with animals in it (obj_farm_plate), so the fix scans every loaded
+# location file and interior file for the object whose dyn_index matches,
+# removes it when nothing is housed, and leaves it with a warn when animals
+# are. A vanilla node left in place meets the engine's own crash in the farm
+# load, so an occupied vanilla barn still returns the save to the title until
+# the mod is reinstalled, and a mod kind left in place is dropped by the
+# object loader's own unknown name skip. The scan covers every location rather
+# than only the farm, because a mod may let buildings stand elsewhere, and it
+# runs only when an interior is dropped. Empty stalls are JSON nulls, so the
+# test uses is_nullish, as the stable's own deserializer does.
+[[engine_fix]]
+name    = "save_load_dyn_grid_tolerance"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+        var location_id = string_to_location_id(grid_file.location_id);'''
+replace = '''
+        var location_id = try_string_to_location_id(grid_file.location_id); // mmapi_save_dyn_grid_tolerance
+        if (location_id == undefined) {
+            warn("MMAPI: save carried building interior {} in unknown location '{}' - interior dropped", i, grid_file.location_id);
+            for (var __mmapi_gk = 0; __mmapi_gk < LocationId.LEN + files.gamedata.dynamic_grid_count; __mmapi_gk++) {
+                var __mmapi_owner_file = __mmapi_gk < LocationId.LEN ? files.grids[__mmapi_gk] : files.dyn_grids[__mmapi_gk - LocationId.LEN];
+                if (is_nullish(__mmapi_owner_file) || !is_array(__mmapi_owner_file[$ "object_list"])) {
+                    continue;
+                }
+                var __mmapi_where = __mmapi_gk < LocationId.LEN ? location_id_to_string(__mmapi_gk) : fmt("building interior {}", __mmapi_gk - LocationId.LEN);
+                for (var __mmapi_oi = array_length(__mmapi_owner_file.object_list) - 1; __mmapi_oi >= 0; __mmapi_oi--) {
+                    var __mmapi_obj = __mmapi_owner_file.object_list[__mmapi_oi];
+                    if (__mmapi_obj[$ "dyn_index"] != i) {
+                        continue;
+                    }
+                    var __mmapi_stable = __mmapi_obj[$ "stable"];
+                    var __mmapi_housed = false;
+                    if (is_struct(__mmapi_stable) && is_array(__mmapi_stable[$ "animals"])) {
+                        for (var __mmapi_ai = 0; __mmapi_ai < array_length(__mmapi_stable.animals); __mmapi_ai++) {
+                            if (!is_nullish(__mmapi_stable.animals[__mmapi_ai])) {
+                                __mmapi_housed = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (__mmapi_housed) {
+                        warn("MMAPI: building '{}' in {} still houses animals - left for the engine", __mmapi_obj.object_id, __mmapi_where);
+                    } else {
+                        warn("MMAPI: building '{}' in {} owned the dropped interior - removed", __mmapi_obj.object_id, __mmapi_where);
+                        array_delete(__mmapi_owner_file.object_list, __mmapi_oi, 1);
+                    }
+                }
+            }
+            continue;
+        }'''
+marker  = "mmapi_save_dyn_grid_tolerance"
+
+# A serializable location the save predates has no grid file, and the grid
+# loop tests the missing file with struct_names_count, which throws on
+# undefined. The guard makes a missing file take the else branch, which is
+# first_time_grid_setup, the same path a new game takes for the room, so the
+# room's authored priority objects and grass are stamped. A location mod that
+# opts into serialization therefore loads on an older save and writes its
+# file on the next save. Nothing is logged, because this is the room's first
+# visit rather than a loss.
+[[engine_fix]]
+name    = "save_load_grid_file_guard"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+        if location.serializable && struct_names_count(grid_file) != 0'''
+replace = '''
+        if location.serializable && grid_file != undefined && struct_names_count(grid_file) != 0 // mmapi_save_grid_file_guard'''
+marker  = "mmapi_save_grid_file_guard"
+
+# Lost items are floor items the save keeps per location, and the load only
+# reads the lists of locations it knows, so a list under an unknown location,
+# or under a building interior the dyn grid fix dropped, is never read and the
+# next save forgets it. Those items can be quest rewards that spawned on the
+# floor because the inventory was full, so losing them can block a quest. The
+# engine's own answer to stranded floor items is a lost items list in a
+# vanilla grid. The MagicKey softlock repair above pushes into the home's list,
+# and a demolished building's list is restored on the farm. This gathers the
+# orphaned lists before the engine's dynamic loop, pushes their entries into
+# Town's list in a four wide spread one tile apart starting at cell 121, 262,
+# just below the Lost and Found box's collision region (cells 119 to 122 by
+# 258 to 259 in obj_lost_and_found), and names each source in the log. The
+# items restore as floor items when Ari enters Town, and the Monday sweep
+# already collects Town's lost items into the box. The dynamic test needs no
+# flag from the dyn grid fix, because the saver writes a dynamic list only for
+# an interior it saved, so a list beside an empty slot can only come from a
+# dropped interior. The engine's own loop then finds the moved lists gone or
+# skips the empty slot as before. Nothing is written to the save.
+[[engine_fix]]
+name    = "save_load_lost_items_relocate"
+file    = "gml/scripts/GameplaySystems/Cycle/LoadGame.gml"
+anchor  = '''
+        for (var i = 0; i < array_length(lost_item_per_location.dynamic_lost_items); i++) {'''
+replace = '''
+        var __mmapi_orphan_lists = []; // mmapi_save_lost_items_relocate
+        var __mmapi_lost_keys = struct_get_names(lost_item_per_location);
+        for (var __mmapi_lk = 0; __mmapi_lk < array_length(__mmapi_lost_keys); __mmapi_lk++) {
+            var __mmapi_lost_key = __mmapi_lost_keys[__mmapi_lk];
+            if (__mmapi_lost_key != "dynamic_lost_items"
+                && try_string_to_location_id(__mmapi_lost_key) == undefined
+                && !is_nullish(lost_item_per_location[$ __mmapi_lost_key])) {
+                warn("MMAPI: save carried lost items in unknown location '{}' - moved to Town", __mmapi_lost_key);
+                array_push(__mmapi_orphan_lists, lost_item_per_location[$ __mmapi_lost_key]);
+            }
+        }
+        for (var __mmapi_ld = 0; __mmapi_ld < array_length(lost_item_per_location.dynamic_lost_items); __mmapi_ld++) {
+            if (DYNAMIC_GRIDS.get(__mmapi_ld) == undefined && !is_nullish(lost_item_per_location.dynamic_lost_items[__mmapi_ld])) {
+                warn("MMAPI: save carried lost items in dropped building interior {} - moved to Town", __mmapi_ld);
+                array_push(__mmapi_orphan_lists, lost_item_per_location.dynamic_lost_items[__mmapi_ld]);
+            }
+        }
+        var __mmapi_town_lost = GRIDS[LocationId.Town].lost_items;
+        var __mmapi_moved = 0;
+        for (var __mmapi_lo = 0; __mmapi_lo < array_length(__mmapi_orphan_lists); __mmapi_lo++) {
+            var __mmapi_entries = deserialize_lost_items(__mmapi_orphan_lists[__mmapi_lo]);
+            for (var __mmapi_le = 0; __mmapi_le < __mmapi_entries.count(); __mmapi_le++) {
+                var __mmapi_entry = __mmapi_entries.get(__mmapi_le);
+                __mmapi_entry.x = 968 + (__mmapi_moved mod 4) * 8;
+                __mmapi_entry.y = 2096 + (__mmapi_moved div 4) * 8;
+                __mmapi_town_lost.push(__mmapi_entry);
+                __mmapi_moved += 1;
+            }
+        }
+        for (var i = 0; i < array_length(lost_item_per_location.dynamic_lost_items); i++) {'''
+marker  = "mmapi_save_lost_items_relocate"
 
 # EodMenu.init() fades the screen out, and its callback spawns the receipt and
 # the two buttons, then queues an intro chain that fades the screen back in two
